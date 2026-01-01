@@ -3455,30 +3455,6 @@ export default function SwimmingClassPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Bottom Button - Total and Payment */}
-      {step === 3 && (
-        <div className="mt-6 space-y-4">
-          <div className="border-t pt-4">
-            <div className="flex items-baseline justify-between mb-1">
-              <span className="text-sm text-gray-600">총 결제 금액</span>
-              <div className="text-right">
-                <div className="text-3xl font-bold text-cyan-600">
-                  ₩
-                  {selectedTimeSlot
-                    ? selectedTimeSlot.price.toLocaleString()
-                    : "0"}
-                </div>
-                {selectedTimeSlot && selectedTimeSlot.price > 0 && (
-                  <div className="text-sm text-gray-500 line-through">
-                    ₩100,000 할인
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Step 4 - Completion */}
       {step === 4 && (
         <div className="space-y-4">

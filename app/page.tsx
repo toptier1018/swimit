@@ -3476,16 +3476,6 @@ export default function SwimmingClassPage() {
               </div>
             </div>
           </div>
-
-          {/* Payment Button */}
-          <Button
-            className="w-full py-6 text-lg font-semibold bg-cyan-600 hover:bg-cyan-700"
-            disabled={!selectedTimeSlot || !finalAgree}
-            onClick={() => setStep(4)}
-          >
-            ₩{selectedTimeSlot ? selectedTimeSlot.price.toLocaleString() : "0"}{" "}
-            결제하기
-          </Button>
         </div>
       )}
 
@@ -3664,7 +3654,7 @@ export default function SwimmingClassPage() {
             onClick={() => {
               console.log("[v0] 홈으로 돌아가기 버튼 클릭됨");
               console.log("[v0] 현재 step:", step);
-              
+
               // 모든 상태를 초기 상태로 리셋
               setStep(1);
               setSelectedDate(null);
@@ -3688,7 +3678,7 @@ export default function SwimmingClassPage() {
               setFinalAgree(false);
               setPaymentMethod("card");
               setIsSubmitting(false);
-              
+
               // 모든 모달 상태 초기화
               setShowSafetyModal(false);
               setShowRefundModal(false);
@@ -3698,11 +3688,13 @@ export default function SwimmingClassPage() {
               setShowCancellationModal(false);
               setShowWaitlistModal(false);
               setWaitlistClass(null);
-              
+
               // 페이지 상단으로 스크롤
               window.scrollTo({ top: 0, behavior: "smooth" });
-              
-              console.log("[v0] 모든 상태 초기화 완료 및 페이지 상단으로 스크롤");
+
+              console.log(
+                "[v0] 모든 상태 초기화 완료 및 페이지 상단으로 스크롤"
+              );
             }}
           >
             홈으로 돌아가기

@@ -3471,31 +3471,8 @@ export default function SwimmingClassPage() {
             </p>
           </div>
 
-          {/* Order Information */}
-          <div className="bg-white rounded-lg border p-4">
-            <h3 className="font-semibold mb-3 text-sm">주문 정보</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-600">주문일시</span>
-                <span>2025.11.오전 4:36:47</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">주문번호</span>
-                <span className="text-orange-600">WC-785352749</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">결제방법</span>
-                <span>가상계좌</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">주문상태</span>
-                <span className="text-orange-600">입금대기</span>
-              </div>
-            </div>
-          </div>
-
           {/* Virtual Account Information */}
-          <div className="bg-blue-50 rounded-lg border border-blue-200 p-4 mt-4">
+          <div className="bg-blue-50 rounded-lg border border-blue-200 p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-sm flex items-center gap-2">
                 <span className="text-blue-600">📋</span>
@@ -3506,65 +3483,45 @@ export default function SwimmingClassPage() {
               </span>
             </div>
             <div className="space-y-2 text-sm bg-white p-3 rounded">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">예금주</span>
+              <div className="flex justify-between">
+                <span className="text-gray-600">계좌번호</span>
                 <span className="font-medium">790-821510383777</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">입금기한</span>
+                <span className="text-gray-600">예금주</span>
                 <span className="font-medium text-red-600">김프레디</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">입금금액</span>
                 <span className="font-bold text-lg">₩70,000</span>
               </div>
+              <div className="flex justify-between pt-2 border-t">
+                <span className="text-gray-600">입금기한</span>
+                <span className="text-red-600 font-bold">
+                  2025년 1월 22일 오전 6시 44분
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* Deposit Instructions */}
-          <div className="bg-white rounded-lg border p-4 mt-4">
-            <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
-              <span className="text-orange-500">⚠️</span>
-              입금 안내
-            </h3>
-            <ul className="text-xs text-gray-700 space-y-1.5 pl-4 list-disc">
-              <li>입금자명은 신청자와 같아야 합니다!</li>
-              <li>기한 내 미입금시 주문이 자동 취소됩니다</li>
-              <li>입금 확인은 5~10분 정도 소요될 수 있습니다</li>
-              <li>계좌번호는 1회성 입니다. 반복 사용하실 수 없습니다</li>
-              <li>
-                입금 완료 후 자동으로 수업 등록이 진행되며 카톡으로 공지됩니다
-              </li>
-              <li>
-                기타 결제와 관련된 문의는 아래의 연락처로 문의해 주시면
-                안내드리겠습니다!
-              </li>
-            </ul>
-          </div>
-
-          {/* Payment Period */}
-          <div className="bg-white rounded-lg border p-4 mt-4">
-            <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
-              <span className="text-red-600">📅</span>
-              입금 기한
-            </h3>
-            <p className="text-sm">
-              <span className="text-red-600 font-bold">
-                2025년 1월 22일 오전 6시 44분
-              </span>
-              <span className="text-gray-600">
-                {" "}
-                (주문 후 3시간 이내 자동 취소됩니다!)
-              </span>
-            </p>
-          </div>
-
-          {/* Payment Details */}
-          <div className="bg-white rounded-lg border p-4 mt-4">
-            <h3 className="font-semibold mb-3 text-sm">결제 내역</h3>
+          {/* Order & Payment Summary */}
+          <div className="bg-white rounded-lg border p-4">
+            <h3 className="font-semibold mb-3 text-sm">주문 및 결제 정보</h3>
             <div className="space-y-2 text-sm">
-              <div className="flex justify-between text-gray-700">
-                <span>상품 금액</span>
+              <div className="flex justify-between">
+                <span className="text-gray-600">주문번호</span>
+                <span className="text-orange-600">WC-785352749</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">주문일시</span>
+                <span>2025.11. 오전 4:36:47</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">결제방법</span>
+                <span>가상계좌</span>
+              </div>
+              <div className="flex justify-between pt-2 border-t">
+                <span className="text-gray-600">상품 금액</span>
                 <span>₩100,000</span>
               </div>
               <div className="flex justify-between text-green-600">
@@ -3579,7 +3536,7 @@ export default function SwimmingClassPage() {
           </div>
 
           {/* Reservation Information */}
-          <div className="bg-white rounded-lg border p-4 mt-4">
+          <div className="bg-white rounded-lg border p-4">
             <h3 className="font-semibold mb-3 text-sm">예약자 정보</h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
@@ -3588,41 +3545,56 @@ export default function SwimmingClassPage() {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">연락처</span>
-                <span>01012345678</span>
+                <span>{formData.phone || "01012345678"}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">성별</span>
-                <span>남성</span>
+                <span>{formData.gender === "male" ? "남성" : "여성"}</span>
               </div>
             </div>
           </div>
 
-          {/* Payment Confirmation Notice */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
-            <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">
-              <span className="text-blue-600">💡</span>
-              결제 확인 안내
-            </h3>
-            <p className="text-xs text-gray-700">
-              입금이 완료되면 SMS으로 즉시 확인하실 수 있습니다. 입금 완료로
-              변경되지 않을 경우 아래 문의로 연락해 주시고 안내 받으시기
-              바랍니다. 혹시 연락이 어려우시면 v0.contact로도 연락 가능합니다.
-            </p>
-          </div>
+          {/* Important Notices */}
+          <div className="space-y-4">
+            <div className="bg-white rounded-lg border p-4">
+              <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                <span className="text-orange-500">⚠️</span>
+                입금 안내
+              </h3>
+              <ul className="text-xs text-gray-700 space-y-1.5 pl-4 list-disc">
+                <li>입금자명은 신청자와 같아야 합니다!</li>
+                <li>기한 내 미입금시 주문이 자동 취소됩니다 (주문 후 3시간 이내)</li>
+                <li>입금 확인은 5~10분 정도 소요될 수 있습니다</li>
+                <li>계좌번호는 1회성입니다. 반복 사용하실 수 없습니다</li>
+                <li>입금 완료 후 자동으로 수업 등록이 진행되며 카톡으로 공지됩니다</li>
+              </ul>
+            </div>
 
-          {/* Refund Policy Warning */}
-          <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-4 mt-4">
-            <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">
-              <span className="text-yellow-600">⚠️</span>
-              환불 정책 주의사항
-            </h3>
-            <ul className="text-xs text-gray-700 space-y-1.5 pl-4 list-disc">
-              <li>수업 7일 전 취소 요청시 100% 환불됩니다.</li>
-              <li>수업 3~6일 전 취소 요청시 70% 환불됩니다.</li>
-              <li>수업일 3일 전까지는 무료로 환불이 가능합니다.</li>
-              <li>환불은 결제일 기준으로 수업일까지 기준입니다.</li>
-              <li>자세한 환불 정책은 이용약관을 확인해주세요.</li>
-            </ul>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                <span className="text-blue-600">💡</span>
+                결제 확인 안내
+              </h3>
+              <p className="text-xs text-gray-700">
+                입금이 완료되면 SMS으로 즉시 확인하실 수 있습니다. 입금 완료로
+                변경되지 않을 경우 아래 문의로 연락해 주시고 안내 받으시기
+                바랍니다. 혹시 연락이 어려우시면 v0.contact로도 연락 가능합니다.
+              </p>
+            </div>
+
+            <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-4">
+              <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                <span className="text-yellow-600">⚠️</span>
+                환불 정책 주의사항
+              </h3>
+              <ul className="text-xs text-gray-700 space-y-1.5 pl-4 list-disc">
+                <li>수업 7일 전 취소 요청시 100% 환불됩니다</li>
+                <li>수업 3~6일 전 취소 요청시 70% 환불됩니다</li>
+                <li>수업일 3일 전까지는 무료로 환불이 가능합니다</li>
+                <li>환불은 결제일 기준으로 수업일까지 기준입니다</li>
+                <li>자세한 환불 정책은 이용약관을 확인해주세요</li>
+              </ul>
+            </div>
           </div>
 
           <Button
@@ -3680,3 +3652,4 @@ export default function SwimmingClassPage() {
     </div>
   );
 }
+

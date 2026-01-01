@@ -1670,7 +1670,7 @@ export default function SwimmingClassPage() {
                           onCheckedChange={(checked) =>
                             setFinalAgree(checked as boolean)
                           }
-                          className="mt-1"
+                          className="mt-1 size-5 border-2 border-gray-400"
                         />
                         <Label
                           htmlFor="payment-terms"
@@ -2497,7 +2497,7 @@ export default function SwimmingClassPage() {
                             onCheckedChange={(checked) =>
                               setFinalAgree(checked as boolean)
                             }
-                            className="mt-1"
+                            className="mt-1 size-5 border-2 border-gray-400"
                           />
                           <Label
                             htmlFor="payment-terms"

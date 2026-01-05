@@ -584,9 +584,6 @@ export default function SwimmingClassPage() {
               >
                 지금 바로 신청하기 →
               </Button>
-              <p className="text-center text-sm text-muted-foreground mt-3">
-                수강권 객원 사전예약 신청하기
-              </p>
             </div>
           </>
         ) : (

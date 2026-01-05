@@ -3170,7 +3170,7 @@ export default function SwimmingClassPage() {
 
           {/* Bottom Copyright */}
           <div className="text-xs space-y-2 text-gray-500">
-            <p>© 2026 Swimgate. All rights reserved.</p>
+            <p>© 2026 Swimit, All rights reserved.</p>
             <p>
               본 사이트의 모든 콘텐츠는 저작권법의 보호를 받으며, 무단 전재 및
               복제를 금합니다.

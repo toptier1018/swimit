@@ -40,58 +40,14 @@ import { submitToNotion } from "@/app/actions/notion";
 
 const classes = [
   {
-    id: 1,
-    location: "대구",
-    locationCode: "1.4",
-    date: "1월 4일 (토)",
-    dateNum: 4,
-    month: 1,
-    venue: "대림수영장",
-    address: "대구 수성구 / 욱수동 87 대림수",
-    spots: "3명 모집 중",
-  },
-  {
-    id: 2,
-    location: "안양",
-    locationCode: "1.11",
-    date: "1월 11일 (토)",
-    dateNum: 11,
-    month: 1,
-    venue: "신세계스포츠",
-    address: "경기도 안양시 만안구 / 스포츠 클럽 체육관",
-    spots: "3명 모집 중",
-  },
-  {
     id: 3,
     location: "안양",
     locationCode: "1.31",
     date: "1월 31일 (토)",
     dateNum: 31,
     month: 1,
-    venue: "신세계스포츠",
-    address: "경기도 안양시 만안구 / 스포츠 클럽 체육관",
-    spots: "3명 모집 중",
-  },
-  {
-    id: 4,
-    location: "세종",
-    locationCode: "2.8",
-    date: "2월 8일 (토)",
-    dateNum: 8,
-    month: 2,
-    venue: "세종다이브풀",
-    address: "세종 대평동 17 사계리",
-    spots: "3명 모집 중",
-  },
-  {
-    id: 5,
-    location: "대구",
-    locationCode: "2.22",
-    date: "2월 22일 (토)",
-    dateNum: 22,
-    month: 2,
-    venue: "대림수영장",
-    address: "대구 수성구 / 욱수동 87 대림수 영장",
+    venue: "신성실내수영장",
+    address: "경기도 안양시 만안구 소곡로 93 체육관",
     spots: "3명 모집 중",
   },
 ];
@@ -99,7 +55,7 @@ const classes = [
 export default function SwimmingClassPage() {
   const [step, setStep] = useState(1);
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
-  const [selectedClass, setSelectedClass] = useState<string | null>(null);
+  const [selectedClass, setSelectedClass] = useState<string | null>("3");
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<{
     name: string;
     time: string;
@@ -1200,11 +1156,11 @@ export default function SwimmingClassPage() {
                           }}
                         >
                           <CardContent className="p-4">
-                            {/* Location Badge */}
+                            {/* Location Header */}
                             <div className="mb-3 flex items-center justify-between">
                               <div className="flex items-center gap-2">
-                                <MapPin className="h-4 w-4 text-primary" />
-                                <span className="font-semibold">
+                                <MapPin className="h-5 w-5 text-blue-500 fill-blue-500/10" />
+                                <span className="font-bold text-lg">
                                   {classItem.location} ({classItem.locationCode}
                                   )
                                 </span>
@@ -1214,41 +1170,51 @@ export default function SwimmingClassPage() {
                               )}
                             </div>
 
-                            {/* Date Section */}
-                            <div className="bg-primary/10 rounded-lg p-3 mb-3">
-                              <div className="flex items-center gap-2">
-                                <Clock className="h-4 w-4 text-primary" />
-                                <span className="font-semibold text-primary">
+                            {/* Date Section - Blue Box */}
+                            <div className="bg-blue-50 rounded-lg p-4 mb-4 border border-blue-100">
+                              <div className="flex items-center gap-2 mb-1">
+                                <Calendar className="h-5 w-5 text-blue-600" />
+                                <span className="font-bold text-lg text-blue-900">
                                   {classItem.date}
                                 </span>
                               </div>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {classItem.spots}
+                              <p className="text-sm text-blue-600 font-medium ml-7">
+                                수영 특강 일정
                               </p>
                             </div>
 
-                            {/* Venue Info */}
-                            <div className="space-y-1.5">
-                              <div className="flex items-start gap-2">
-                                <span className="text-sm font-medium min-w-[40px]">
+                            {/* Details Section */}
+                            <div className="space-y-3">
+                              <div className="flex items-start gap-4">
+                                <span className="text-sm font-bold text-gray-900 min-w-[45px]">
                                   수영장
                                 </span>
-                                <span className="text-sm text-muted-foreground">
+                                <span className="text-sm text-gray-600">
                                   {classItem.venue}
                                 </span>
                               </div>
-                              <div className="flex items-start gap-2">
-                                <span className="text-sm font-medium min-w-[40px]">
+                              <div className="flex items-start gap-4 relative">
+                                <span className="text-sm font-bold text-gray-900 min-w-[45px]">
                                   주소
                                 </span>
-                                <span className="text-sm text-muted-foreground">
-                                  {classItem.address}
+                                <div className="flex-1 flex items-center justify-between gap-2">
+                                  <span className="text-sm text-gray-600 leading-relaxed">
+                                    {classItem.address}
+                                  </span>
+                                  <button className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 flex-shrink-0 border rounded px-1.5 py-0.5">
+                                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                                    </svg>
+                                    복사
+                                  </button>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2 pt-2">
+                                <Clock className="h-4 w-4 text-green-600" />
+                                <span className="text-sm font-bold text-green-600">
+                                  예약 가능
                                 </span>
                               </div>
-                              <button className="text-xs text-primary hover:underline flex items-center gap-1 mt-2">
-                                <MapPin className="h-3 w-3" />
-                                예약 가능
-                              </button>
                             </div>
                           </CardContent>
                         </Card>

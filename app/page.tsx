@@ -1202,8 +1202,18 @@ export default function SwimmingClassPage() {
                                     {classItem.address}
                                   </span>
                                   <button className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 flex-shrink-0 border rounded px-1.5 py-0.5">
-                                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                                    <svg
+                                      className="h-3 w-3"
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                      stroke="currentColor"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"
+                                      />
                                     </svg>
                                     복사
                                   </button>
@@ -2684,6 +2694,92 @@ export default function SwimmingClassPage() {
           </Button>
         </div>
       )}
+      <footer className="bg-[#1a2332] text-gray-400 py-12 mt-12">
+        <div className="container mx-auto px-4 max-w-5xl">
+          <div className="grid md:grid-cols-2 gap-8 mb-8">
+            {/* Left Column */}
+            <div className="space-y-4">
+              <h3 className="text-white text-xl font-bold">워터 클랜즈</h3>
+              <div className="text-sm space-y-1">
+                <p>
+                  대표자: <span className="text-gray-300">[김현성]</span>
+                </p>
+                <p>
+                  사업자등록번호:{" "}
+                  <span className="text-gray-300">[221-32-62147]</span>
+                </p>
+                <p>
+                  통신판매업 신고번호:{" "}
+                  <span className="text-gray-300">[2025-경기평택-1179]</span>
+                </p>
+              </div>
+            </div>
+
+            {/* Right Column */}
+            <div className="space-y-4">
+              <h3 className="text-white text-lg font-bold">연락처</h3>
+              <div className="text-sm space-y-2">
+                <div className="flex items-center gap-2 text-gray-300">
+                  <Phone className="h-4 w-4" />
+                  <p>
+                    고객센터: 빠른 상담은 카톡 플러스친구{" "}
+                    <span className="text-white font-medium">@워터클랜즈</span>
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 text-gray-300">
+                  <MessageSquare className="h-4 w-4" />
+                  <p>
+                    이메일:{" "}
+                    <span className="text-white">wlsgo1254@naver.com</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Policy Links */}
+          <div className="border-t border-gray-800 pt-8 mb-8">
+            <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm font-medium">
+              <button
+                onClick={() => setShowTermsModal(true)}
+                className="hover:text-white transition-colors text-gray-300"
+              >
+                이용약관
+              </button>
+              <span className="text-gray-700">|</span>
+              <button
+                onClick={() => setShowPrivacyModal(true)}
+                className="hover:text-white transition-colors text-gray-300"
+              >
+                개인정보처리방침
+              </button>
+              <span className="text-gray-700">|</span>
+              <button
+                onClick={() => setShowRefundModal(true)}
+                className="hover:text-white transition-colors text-gray-300"
+              >
+                환불정책
+              </button>
+              <span className="text-gray-700">|</span>
+              <button
+                onClick={() => setShowSafetyModal(true)}
+                className="hover:text-white transition-colors text-gray-300"
+              >
+                안전 및 면책
+              </button>
+            </div>
+          </div>
+
+          {/* Bottom Copyright */}
+          <div className="text-xs space-y-2 text-gray-500">
+            <p>© 2026 Swimgate. All rights reserved.</p>
+            <p>
+              본 사이트의 모든 콘텐츠는 저작권법의 보호를 받으며, 무단 전재 및
+              복제를 금합니다.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

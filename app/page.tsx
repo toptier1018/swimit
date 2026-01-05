@@ -969,21 +969,15 @@ export default function SwimmingClassPage() {
                         </div>
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>
-                            클래스 입문 A-2 (25m이상 완주 가능하신분)
-                          </span>
+                          <span>클래스 입문 A-2 (25m이상 완주 가능하신분)</span>
                         </div>
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>
-                            클래스 초급 B-1 (25~50m 완주 가능하신분)
-                          </span>
+                          <span>클래스 초급 B-1 (25~50m 완주 가능하신분)</span>
                         </div>
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>
-                            클래스 초급 B-2 (25~50m 완주 가능하신분)
-                          </span>
+                          <span>클래스 초급 B-2 (25~50m 완주 가능하신분)</span>
                         </div>
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
@@ -1034,42 +1028,6 @@ export default function SwimmingClassPage() {
                   </CardContent>
                 </Card>
 
-                <div className="mb-6">
-                  <h1 className="text-2xl font-bold text-center flex items-center justify-center gap-2">
-                    <div className="bg-primary/10 p-2 rounded">
-                      <svg
-                        className="h-6 w-6 text-primary"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                        />
-                      </svg>
-                    </div>
-                    결제하기
-                  </h1>
-                  <p className="text-center text-sm text-gray-600 mt-2">
-                    안전한 결제 시스템으로 강의를 신청하세요
-                  </p>
-                </div>
-
-                {/* Price Section */}
-                <div className="text-center mb-8 mt-8">
-                  <div className="inline-block">
-                    <p className="text-2xl text-gray-400 line-through font-medium">
-                      ₩100,000
-                    </p>
-                    <p className="text-4xl text-primary font-bold">₩70,000</p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      → (특정 지역과 상황에 따라 변동 될 수 있음)
-                    </p>
-                  </div>
-                </div>
 
                 {/* Title */}
                 <div className="mb-8">

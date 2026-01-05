@@ -283,6 +283,9 @@ export default function SwimmingClassPage() {
                 <Button
                   size="sm"
                   className="bg-yellow-500 hover:bg-yellow-600 text-white"
+                  onClick={() =>
+                    window.open("https://pf.kakao.com/_dXUgn/chat", "_blank")
+                  }
                 >
                   ☎️ 카카오톡 문의하기
                 </Button>
@@ -975,6 +978,12 @@ export default function SwimmingClassPage() {
                         variant="outline"
                         size="sm"
                         className="mt-2 bg-yellow-400 hover:bg-yellow-500 border-0"
+                        onClick={() =>
+                          window.open(
+                            "https://pf.kakao.com/_dXUgn/chat",
+                            "_blank"
+                          )
+                        }
                       >
                         <MessageCircle className="h-4 w-4 mr-2" />
                         카카오톡 문의하기

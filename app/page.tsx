@@ -860,12 +860,6 @@ export default function SwimmingClassPage() {
 
                           if (result.success) {
                             console.log("[폼 제출] Notion 저장 성공");
-                            toast({
-                              title: "신청 완료!",
-                              description:
-                                "클래스 신청이 완료되었습니다. Notion 데이터베이스에 저장되었습니다.",
-                              variant: "default",
-                            });
                             setStep(3);
                           } else {
                             console.error(

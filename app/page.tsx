@@ -22,6 +22,7 @@ import {
   Users,
   Check,
   MessageCircle,
+  RefreshCw,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -924,8 +925,7 @@ export default function SwimmingClassPage() {
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
                           <span>
-                            A 초급 (자유형 완성고 최소 50미터 가능하신
-                            분)
+                            A 초급 (자유형 완성고 최소 50미터 가능하신 분)
                           </span>
                         </div>
                         <div className="flex items-start gap-2">
@@ -944,8 +944,8 @@ export default function SwimmingClassPage() {
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
                           <span>
-                            A 초급 (자유형/배영고, 자유형 완성고 50미터
-                            가능하신 분)
+                            A 초급 (자유형/배영고, 자유형 완성고 50미터 가능하신
+                            분)
                           </span>
                         </div>
                         <div className="flex items-start gap-2">
@@ -963,9 +963,7 @@ export default function SwimmingClassPage() {
                       <div className="space-y-1 text-sm ml-6">
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>
-                            입문 A-1 (25m이상 완주 가능하신 분)
-                          </span>
+                          <span>입문 A-1 (25m이상 완주 가능하신 분)</span>
                         </div>
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
@@ -981,31 +979,27 @@ export default function SwimmingClassPage() {
                         </div>
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>
-                            초중급 C-1 (50~100m 완주 가능하신분)
-                          </span>
+                          <span>초중급 C-1 (50~100m 완주 가능하신분)</span>
                         </div>
                       </div>
                     </div>
 
-                    {/* 단 기간 기존 */}
+                    {/* 턴 기법 기준 */}
                     <div>
                       <h4 className="font-semibold flex items-center gap-2 mb-2">
-                        <span>⏱️</span> 단 기간 기존
+                        <span className="bg-blue-600 p-0.5 rounded text-white"><RefreshCw className="h-3.5 w-3.5" /></span> 턴 기법 기준
                       </h4>
                       <div className="space-y-1 text-sm ml-6">
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
                           <span>
-                            A 기초반(사이드킥) (사이드 킥 강의 배영로즈
-                            엎거나 고중이 특으신 초보분)
+                            A 기초턴(사이드턴) (사이드 턴 거의 배워본적 없거나 교정이 필요한 초보분들)
                           </span>
                         </div>
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
                           <span>
-                            B 중급반(사이드&폴릎판) (사이드 & 폴릎 판
-                            배워뽐으나 자세 교정이 필으신분)
+                            B 중급턴(사이드&플립턴) (사이드 & 플립 턴 배워봤으나 자세 교정이 필요하신분)
                           </span>
                         </div>
                       </div>

@@ -944,7 +944,8 @@ export default function SwimmingClassPage() {
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
                           <span>
-                            초급 A (접,배,평,자 배웠고, 자유형 안쉬고 50미터 가능한 분)
+                            초급 A (접,배,평,자 배웠고, 자유형 안쉬고 50미터
+                            가능한 분)
                           </span>
                         </div>
                         <div className="flex items-start gap-2">
@@ -995,14 +996,14 @@ export default function SwimmingClassPage() {
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
                           <span>
-                            A 기초턴(사이드턴) (사이드 턴 거의 배워본적 없거나
+                            기초턴 A(사이드턴) (사이드 턴 거의 배워본적 없거나
                             교정이 필요한 초보분들)
                           </span>
                         </div>
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
                           <span>
-                            B 중급턴(사이드&플립턴) (사이드 & 플립 턴 배워봤으나
+                            중급턴 B(사이드&플립턴) (사이드 & 플립 턴 배워봤으나
                             자세 교정이 필요하신분)
                           </span>
                         </div>

@@ -1851,88 +1851,94 @@ export default function SwimmingClassPage() {
             </Button>
           </DialogHeader>
 
-          <div className="space-y-4 text-sm">
+          <div className="space-y-6 text-sm">
             <div>
-              <h3 className="font-semibold mb-2">제1조 (목적)</h3>
-              <p className="text-gray-600">
-                본 약관은 회두클래스(이하 '회사')가 제공하는 수영 강의 예약
-                서비스(이하 '서비스')의 이용과 관련하여 회사와 회원 간의 이용
-                조건 및 관계를 규정함을 목적으로 합니다.
+              <h3 className="font-bold text-base mb-2">제1조 (목적)</h3>
+              <p className="text-gray-600 leading-relaxed">
+                본 약관은 (주)블루마인드(이하 "회사")가 제공하는 수영 강의 예약
+                서비스(이하 "서비스")의 이용과 관련하여 회사와 이용자의 권리,
+                의무 및 책임사항을 규정함을 목적으로 합니다.
               </p>
             </div>
 
             <div>
-              <h3 className="font-semibold mb-2">제2조 (용어의 정의)</h3>
-              <ul className="list-disc pl-5 space-y-1 text-gray-600">
+              <h3 className="font-bold text-base mb-2">제2조 (용어의 정의)</h3>
+              <ul className="list-disc pl-5 space-y-2 text-gray-600">
                 <li>
-                  '서비스'란 회사가 제공하는 수영 강의 예약 및 관리 후 서비스를
-                  말합니다.
+                  "서비스"란 회사가 제공하는 수영 강의 예약 및 관련 부가
+                  서비스를 말합니다.
                 </li>
                 <li>
-                  '회원'이란 본 약관에 따라 회사가 제공하는 서비스를 이용하는
+                  "이용자"란 본 약관에 따라 회사가 제공하는 서비스를 이용하는
                   고객을 말합니다.
                 </li>
-                <li>'강의'란 회사가 제공하는 수영 교육 프로그램을 말합니다.</li>
+                <li>"강의"란 회사가 제공하는 수영 교육 프로그램을 말합니다.</li>
               </ul>
             </div>
 
             <div>
-              <h3 className="font-semibold mb-2">제3조 (서비스의 제공)</h3>
+              <h3 className="font-bold text-base mb-2">
+                제3조 (서비스의 제공)
+              </h3>
               <p className="text-gray-600 mb-2">
                 회사는 다음과 같은 서비스를 제공합니다:
               </p>
-              <ul className="list-disc pl-5 space-y-1 text-gray-600">
+              <ul className="list-disc pl-5 space-y-2 text-gray-600">
                 <li>수영 강의 예약 및 결제 서비스</li>
                 <li>강의 일정 안내 및 변경 알림</li>
-                <li>수강 관련 문의 제공</li>
+                <li>수영 관련 정보 제공</li>
               </ul>
             </div>
 
             <div>
-              <h3 className="font-semibold mb-2">제4조 (서비스 이용)</h3>
-              <ul className="list-disc pl-5 space-y-1 text-gray-600">
+              <h3 className="font-bold text-base mb-2">제4조 (서비스 이용)</h3>
+              <ul className="list-disc pl-5 space-y-2 text-gray-600">
                 <li>
-                  서비스 이용은 회원의 신청으로 또는 가능을 통을 지정이 완료 된
-                  후부터 시작됩니다. 1회 24시간을 줍니다.
+                  서비스 이용은 회사의 업무상 또는 기술상 특별한 지장이 없는 한
+                  연중무휴, 1일 24시간을 원칙으로 합니다.
                 </li>
                 <li>
-                  회사는 시스템 정기점검, 서버 정보 및 교육 환경의 사후 서비스를
-                  중단 운영함 수 있으며, 이 경우 사전에 공지할 것 입니다.
+                  회사는 시스템 정기점검, 서버 증설 및 교체 등의 사유로 서비스를
+                  일시 중단할 수 있으며, 이 경우 사전에 공지합니다.
                 </li>
               </ul>
             </div>
 
             <div>
-              <h3 className="font-semibold mb-2">제5조 (예약 및 결제)</h3>
-              <ul className="list-disc pl-5 space-y-1 text-gray-600">
+              <h3 className="font-bold text-base mb-2">제5조 (예약 및 결제)</h3>
+              <ul className="list-disc pl-5 space-y-2 text-gray-600">
                 <li>
-                  강의 예약은 담당자를 통해 진행되며, 결제 완료 시 예약이
+                  강의 예약은 웹사이트를 통해 진행되며, 결제 완료 시 예약이
                   확정됩니다.
                 </li>
-                <li>결제는 신용카드 등 회사가 정한 방법으로 진행됩니다.</li>
                 <li>
-                  예약 확정 후 이용자의 연락처로 예약 및 입금확인 발송됩니다.
+                  결제는 신용카드, 계좌이체 등 회사가 정한 방법으로 진행됩니다.
+                </li>
+                <li>
+                  예약 확정 후 이용자의 연락처로 예약 확인 알림톡이 발송됩니다.
                 </li>
               </ul>
             </div>
 
             <div>
-              <h3 className="font-semibold mb-2">제6조 (이용자의 의무)</h3>
-              <ul className="list-disc pl-5 space-y-1 text-gray-600">
+              <h3 className="font-bold text-base mb-2">
+                제6조 (이용자의 의무)
+              </h3>
+              <ul className="list-disc pl-5 space-y-2 text-gray-600">
                 <li>
-                  이용자는 타인의 정보를 도용하여 허위 정인 정보 입력 시 예약이
+                  이용자는 정확한 정보를 제공해야 하며, 허위 정보 제공 시 예약이
                   취소될 수 있습니다.
                 </li>
-                <li>이용자는 상담 시와 30분 전까지 도착하여 합니다.</li>
-                <li>이용자는 공식적 인식 거부를 존수하여 합니다.</li>
+                <li>이용자는 강의 시작 30분 전까지 도착해야 합니다.</li>
+                <li>이용자는 강사의 안전 지침을 준수해야 합니다.</li>
               </ul>
             </div>
 
             <div>
-              <h3 className="font-semibold mb-2">제7조 (면사항 환불)</h3>
-              <ul className="list-disc pl-5 space-y-1 text-gray-600">
+              <h3 className="font-bold text-base mb-2">제7조 (회사의 의무)</h3>
+              <ul className="list-disc pl-5 space-y-2 text-gray-600">
                 <li>
-                  회사는 안정되고 및 풀은 강의를 제공하기 위해 노력합니다.
+                  회사는 안전하고 질 높은 강의를 제공하기 위해 노력합니다.
                 </li>
                 <li>
                   회사는 이용자의 개인정보를 보호하며, 관련 법령을 준수합니다.
@@ -1940,9 +1946,44 @@ export default function SwimmingClassPage() {
               </ul>
             </div>
 
-            <p className="text-xs text-gray-500 mt-4 pt-4 border-t">
-              본 약관은 2025년 1월 1일부터 시행됩니다.
-            </p>
+            <div>
+              <h3 className="font-bold text-base mb-2">
+                제8조 (개인정보 보호)
+              </h3>
+              <p className="text-gray-600 leading-relaxed">
+                회사는 이용자의 개인정보를 보호하기 위해 개인정보보호법 및 관련
+                법령을 준수하며, 개인정보처리방침에 따라 이용자의 개인정보를
+                처리합니다.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-base mb-2">제9조 (면책)</h3>
+              <ul className="list-disc pl-5 space-y-2 text-gray-600">
+                <li>
+                  회사는 천재지변, 전쟁, 기타 불가항력으로 인하여 서비스를
+                  제공할 수 없는 경우 책임이 면제됩니다.
+                </li>
+                <li>
+                  회사는 이용자의 귀책사유로 인한 서비스 이용 장애에 대하여
+                  책임을 지지 않습니다.
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-base mb-2">제10조 (분쟁 해결)</h3>
+              <p className="text-gray-600 leading-relaxed">
+                서비스 이용과 관련하여 발생한 분쟁은 회사와 이용자 간의 협의를
+                통해 해결함을 원칙으로 하며, 협의가 이루어지지 않을 경우 관련
+                법령 및 회사 소재지 법원의 관할에 따릅니다.
+              </p>
+            </div>
+
+            <div className="pt-4 border-t text-xs text-gray-500">
+              <p className="font-bold">부칙</p>
+              <p>본 약관은 2026년 1월 1일부터 시행됩니다.</p>
+            </div>
           </div>
 
           <Button

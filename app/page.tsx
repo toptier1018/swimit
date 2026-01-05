@@ -1028,7 +1028,6 @@ export default function SwimmingClassPage() {
                   </CardContent>
                 </Card>
 
-
                 {/* Title */}
                 <div className="mb-8">
                   <h1 className="text-2xl font-bold text-center flex items-center justify-center gap-2">
@@ -1304,7 +1303,11 @@ export default function SwimmingClassPage() {
                           available: true,
                           price: 70000,
                         },
-                        { name: "자유형 초등 B-1", available: false, price: 0 },
+                        {
+                          name: "자유형 초등 B-1",
+                          available: true,
+                          price: 70000,
+                        },
                         { name: "접영 A", available: true, price: 70000 },
                         { name: "평영 A", available: true, price: 70000 },
                       ].map((slot, index) => (

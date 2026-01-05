@@ -310,7 +310,7 @@ export default function SwimmingClassPage() {
                 </p>
                 <p className="text-4xl text-primary font-bold">₩70,000</p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  *할인 수강료 사전예약 특별 할인 30% 수강료
+                  → (특정 지역과 상황에 따라 변동 될 수 있음)
                 </p>
               </div>
             </div>

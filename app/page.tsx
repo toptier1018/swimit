@@ -140,6 +140,29 @@ export default function SwimmingClassPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
+  // 달력 월 상태 추가 (선택된 클래스의 월로 초기화)
+  const getCurrentYear = () => new Date().getFullYear();
+  const getCurrentMonth = () => new Date().getMonth() + 1;
+  const getCurrentDay = () => new Date().getDate();
+
+  const [calendarMonth, setCalendarMonth] = useState(getCurrentMonth());
+  const calendarYear = getCurrentYear();
+
+  // selectedClass가 변경되면 달력 월도 업데이트
+  useEffect(() => {
+    if (selectedClass) {
+      const selectedClassData = classes.find(
+        (c) => c.id === Number(selectedClass)
+      );
+      if (selectedClassData) {
+        setCalendarMonth(selectedClassData.month);
+        console.log(
+          `[v0] 선택된 클래스 변경: ${selectedClassData.location}, 월: ${selectedClassData.month}`
+        );
+      }
+    }
+  }, [selectedClass]);
+
   const getDaysInMonth = (year: number, month: number) => {
     return new Date(year, month, 0).getDate();
   };
@@ -148,8 +171,8 @@ export default function SwimmingClassPage() {
     return new Date(year, month - 1, 1).getDay();
   };
 
-  const daysInMonth = getDaysInMonth(2026, 2);
-  const firstDay = getFirstDayOfMonth(2026, 2);
+  const daysInMonth = getDaysInMonth(calendarYear, calendarMonth);
+  const firstDay = getFirstDayOfMonth(calendarYear, calendarMonth);
   const weekDays = ["일", "월", "화", "수", "목", "금", "토"];
   const monthNames = [
     "1월",
@@ -166,6 +189,13 @@ export default function SwimmingClassPage() {
     "12월",
   ];
 
+  // 오늘 날짜 정보
+  const today = {
+    year: getCurrentYear(),
+    month: getCurrentMonth(),
+    day: getCurrentDay(),
+  };
+
   // Create calendar grid
   const calendarDays = [];
   for (let i = 0; i < firstDay; i++) {
@@ -175,10 +205,15 @@ export default function SwimmingClassPage() {
     calendarDays.push(i);
   }
 
-  // Get highlighted dates for current month
-  const highlightedDates = classes
-    .filter((c) => c.month === 2)
-    .map((c) => c.dateNum);
+  // 선택된 클래스의 특강 날짜만 highlightedDates에 포함
+  const highlightedDates = selectedClass
+    ? classes
+        .filter(
+          (c) =>
+            c.id === Number(selectedClass) && c.month === calendarMonth
+        )
+        .map((c) => c.dateNum)
+    : [];
 
   const handleRegistration = () => {
     setShowRegistrationForm(true);
@@ -360,22 +395,26 @@ export default function SwimmingClassPage() {
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8"
-                        onClick={() =>
-                          setStep((prev) => (prev > 1 ? prev - 1 : 12))
-                        }
+                        onClick={() => {
+                          const newMonth = calendarMonth > 1 ? calendarMonth - 1 : 12;
+                          setCalendarMonth(newMonth);
+                          console.log(`[v0] 달력 월 변경: ${newMonth}월`);
+                        }}
                       >
                         <ChevronLeft className="h-4 w-4" />
                       </Button>
                       <span className="font-semibold">
-                        2026년 {monthNames[step - 1]}
+                        {calendarYear}년 {monthNames[calendarMonth - 1]}
                       </span>
                       <Button
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8"
-                        onClick={() =>
-                          setStep((prev) => (prev < 12 ? prev + 1 : 1))
-                        }
+                        onClick={() => {
+                          const newMonth = calendarMonth < 12 ? calendarMonth + 1 : 1;
+                          setCalendarMonth(newMonth);
+                          console.log(`[v0] 달력 월 변경: ${newMonth}월`);
+                        }}
                       >
                         <ChevronRight className="h-4 w-4" />
                       </Button>
@@ -405,6 +444,12 @@ export default function SwimmingClassPage() {
                         const isHighlighted =
                           day && highlightedDates.includes(day);
                         const dayOfWeek = index % 7;
+                        // 오늘 날짜인지 확인
+                        const isToday =
+                          day &&
+                          calendarYear === today.year &&
+                          calendarMonth === today.month &&
+                          day === today.day;
 
                         return (
                           <div
@@ -416,6 +461,8 @@ export default function SwimmingClassPage() {
                                 className={`w-full h-full flex items-center justify-center text-sm rounded-lg transition-colors ${
                                   isHighlighted
                                     ? "bg-primary text-primary-foreground font-semibold shadow-sm"
+                                    : isToday
+                                    ? "bg-gray-300 text-gray-700 font-medium"
                                     : dayOfWeek === 0
                                     ? "text-red-500 hover:bg-muted"
                                     : dayOfWeek === 6
@@ -434,10 +481,14 @@ export default function SwimmingClassPage() {
                     </div>
 
                     {/* Legend */}
-                    <div className="mt-4 pt-4 border-t flex items-center justify-center gap-4 text-xs text-muted-foreground">
+                    <div className="mt-4 pt-4 border-t flex items-center justify-center gap-4 text-xs text-muted-foreground flex-wrap">
                       <div className="flex items-center gap-1.5">
                         <div className="w-3 h-3 rounded-full bg-primary" />
                         <span>특강 일정</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-3 h-3 rounded bg-gray-300" />
+                        <span>오늘</span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <div className="w-3 h-3 rounded-full border-2 border-muted" />

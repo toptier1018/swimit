@@ -1742,9 +1742,12 @@ export default function SwimmingClassPage() {
 
           <div className="space-y-6 text-sm">
             <div>
-              <h3 className="font-bold text-base mb-2">1. 개인정보의 수집 및 이용 목적</h3>
+              <h3 className="font-bold text-base mb-2">
+                1. 개인정보의 수집 및 이용 목적
+              </h3>
               <p className="text-gray-600 mb-2">
-                (주)블루마인드(이하 "회사")는 다음의 목적을 위하여 개인정보를 수집하고 이용합니다:
+                (주)블루마인드(이하 "회사")는 다음의 목적을 위하여 개인정보를
+                수집하고 이용합니다:
               </p>
               <ul className="list-disc pl-5 space-y-1 text-gray-600">
                 <li>수영 강의 예약 및 관리</li>
@@ -1757,29 +1760,51 @@ export default function SwimmingClassPage() {
             </div>
 
             <div>
-              <h3 className="font-bold text-base mb-2">2. 수집하는 개인정보 항목</h3>
-              <p className="text-gray-600 mb-2">회사는 예약 서비스 제공을 위해 다음과 같은 개인정보를 수집합니다:</p>
+              <h3 className="font-bold text-base mb-2">
+                2. 수집하는 개인정보 항목
+              </h3>
+              <p className="text-gray-600 mb-2">
+                회사는 예약 서비스 제공을 위해 다음과 같은 개인정보를
+                수집합니다:
+              </p>
               <div className="bg-gray-50 p-3 rounded-lg space-y-3">
                 <div>
-                  <p className="font-semibold text-gray-900 mb-1">[필수 항목]</p>
-                  <p className="text-gray-600">이름, 휴대폰 번호, 성별, 거주 지역, 수영 경력, 수강 목적</p>
+                  <p className="font-semibold text-gray-900 mb-1">
+                    [필수 항목]
+                  </p>
+                  <p className="text-gray-600">
+                    이름, 휴대폰 번호, 성별, 거주 지역, 수영 경력, 수강 목적
+                  </p>
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900 mb-1">[선택 항목]</p>
-                  <p className="text-gray-600">차량번호 (주차 지원 시), 이메일 (추가 정보 수신 시)</p>
+                  <p className="font-semibold text-gray-900 mb-1">
+                    [선택 항목]
+                  </p>
+                  <p className="text-gray-600">
+                    차량번호 (주차 지원 시), 이메일 (추가 정보 수신 시)
+                  </p>
                 </div>
-                <p className="text-xs text-red-600 font-medium">* 필수 항목을 입력하지 않을 경우 서비스 이용이 제한될 수 있습니다.</p>
+                <p className="text-xs text-red-600 font-medium">
+                  * 필수 항목을 입력하지 않을 경우 서비스 이용이 제한될 수
+                  있습니다.
+                </p>
               </div>
             </div>
 
             <div>
-              <h3 className="font-bold text-base mb-2">3. 개인정보의 보유 및 이용 기간</h3>
+              <h3 className="font-bold text-base mb-2">
+                3. 개인정보의 보유 및 이용 기간
+              </h3>
               <p className="text-gray-600 mb-2">
-                회사는 개인정보 수집 및 이용 목적이 달성된 후에는 해당 정보를 지체 없이 파기합니다. 단, 다음의 경우에는 해당 기간 동안 보관합니다:
+                회사는 개인정보 수집 및 이용 목적이 달성된 후에는 해당 정보를
+                지체 없이 파기합니다. 단, 다음의 경우에는 해당 기간 동안
+                보관합니다:
               </p>
               <div className="space-y-3">
                 <div>
-                  <p className="font-semibold text-gray-900 mb-1">전자상거래 등에서의 소비자보호에 관한 법률</p>
+                  <p className="font-semibold text-gray-900 mb-1">
+                    전자상거래 등에서의 소비자보호에 관한 법률
+                  </p>
                   <ul className="list-disc pl-5 text-gray-600">
                     <li>계약 또는 청약철회 등에 관한 기록: 5년</li>
                     <li>대금결제 및 재화 등의 공급에 관한 기록: 5년</li>
@@ -1787,7 +1812,9 @@ export default function SwimmingClassPage() {
                   </ul>
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900 mb-1">통신비밀보호법</p>
+                  <p className="font-semibold text-gray-900 mb-1">
+                    통신비밀보호법
+                  </p>
                   <ul className="list-disc pl-5 text-gray-600">
                     <li>웹사이트 방문 기록: 3개월</li>
                   </ul>
@@ -1796,17 +1823,27 @@ export default function SwimmingClassPage() {
             </div>
 
             <div>
-              <h3 className="font-bold text-base mb-2">4. 개인정보의 제3자 제공</h3>
+              <h3 className="font-bold text-base mb-2">
+                4. 개인정보의 제3자 제공
+              </h3>
               <p className="text-gray-600 mb-3">
-                회사는 원칙적으로 고객의 개인정보를 외부에 제공하지 않습니다. 다만, 다음의 경우는 예외로 합니다:
+                회사는 원칙적으로 고객의 개인정보를 외부에 제공하지 않습니다.
+                다만, 다음의 경우는 예외로 합니다:
               </p>
               <ul className="list-disc pl-5 space-y-1 text-gray-600 mb-4">
                 <li>고객이 사전에 동의한 경우</li>
-                <li>법령의 규정에 의거하거나, 수사 목적으로 법령에 정해진 절차와 방법에 따라 수사기관의 요구가 있는 경우</li>
-                <li>서비스 제공을 위해 필요한 경우 (결제 대행사, 배송업체 등)</li>
+                <li>
+                  법령의 규정에 의거하거나, 수사 목적으로 법령에 정해진 절차와
+                  방법에 따라 수사기관의 요구가 있는 경우
+                </li>
+                <li>
+                  서비스 제공을 위해 필요한 경우 (결제 대행사, 배송업체 등)
+                </li>
               </ul>
-              
-              <p className="font-semibold text-gray-900 mb-2">[제3자 제공 현황]</p>
+
+              <p className="font-semibold text-gray-900 mb-2">
+                [제3자 제공 현황]
+              </p>
               <div className="border rounded-lg overflow-hidden text-xs">
                 <table className="w-full text-left border-collapse">
                   <thead className="bg-gray-50 border-b">
@@ -1833,16 +1870,28 @@ export default function SwimmingClassPage() {
             </div>
 
             <div>
-              <h3 className="font-bold text-base mb-2">5. 개인정보의 파기 절차 및 방법</h3>
+              <h3 className="font-bold text-base mb-2">
+                5. 개인정보의 파기 절차 및 방법
+              </h3>
               <div className="space-y-3">
                 <div>
-                  <p className="font-semibold text-gray-900 mb-1">[파기 절차]</p>
-                  <p className="text-gray-600 leading-relaxed">이용자가 입력한 정보는 목적 달성 후 내부 방침 및 관련 법령에 따라 일정 기간 저장된 후 파기됩니다.</p>
+                  <p className="font-semibold text-gray-900 mb-1">
+                    [파기 절차]
+                  </p>
+                  <p className="text-gray-600 leading-relaxed">
+                    이용자가 입력한 정보는 목적 달성 후 내부 방침 및 관련 법령에
+                    따라 일정 기간 저장된 후 파기됩니다.
+                  </p>
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900 mb-1">[파기 방법]</p>
+                  <p className="font-semibold text-gray-900 mb-1">
+                    [파기 방법]
+                  </p>
                   <ul className="list-disc pl-5 text-gray-600">
-                    <li>전자적 파일 형태: 복구 및 재생이 불가능한 기술적 방법을 사용하여 완전 삭제</li>
+                    <li>
+                      전자적 파일 형태: 복구 및 재생이 불가능한 기술적 방법을
+                      사용하여 완전 삭제
+                    </li>
                     <li>종이 문서: 분쇄기로 분쇄하거나 소각</li>
                   </ul>
                 </div>
@@ -1850,32 +1899,55 @@ export default function SwimmingClassPage() {
             </div>
 
             <div>
-              <h3 className="font-bold text-base mb-2">6. 이용자 및 법정대리인의 권리와 행사 방법</h3>
-              <p className="text-gray-600 mb-2">이용자는 언제든지 다음과 같은 권리를 행사할 수 있습니다:</p>
+              <h3 className="font-bold text-base mb-2">
+                6. 이용자 및 법정대리인의 권리와 행사 방법
+              </h3>
+              <p className="text-gray-600 mb-2">
+                이용자는 언제든지 다음과 같은 권리를 행사할 수 있습니다:
+              </p>
               <ul className="list-disc pl-5 space-y-1 text-gray-600 mb-3">
                 <li>개인정보 열람 요구</li>
                 <li>개인정보 정정·삭제 요구</li>
                 <li>개인정보 처리 정지 요구</li>
               </ul>
               <p className="text-gray-600 leading-relaxed bg-blue-50 p-3 rounded-lg">
-                권리 행사는 고객센터(<span className="font-bold">010-3904-1018</span>) 또는 이메일(<span className="font-bold">toptier1018@gmail.com</span>)을 통해 하실 수 있으며, 회사는 이에 대해 지체 없이 조치하겠습니다.
+                권리 행사는 고객센터(
+                <span className="font-bold">010-3904-1018</span>) 또는 이메일(
+                <span className="font-bold">toptier1018@gmail.com</span>)을 통해
+                하실 수 있으며, 회사는 이에 대해 지체 없이 조치하겠습니다.
               </p>
             </div>
 
             <div>
-              <h3 className="font-bold text-base mb-2">7. 개인정보 보호책임자</h3>
+              <h3 className="font-bold text-base mb-2">
+                7. 개인정보 보호책임자
+              </h3>
               <div className="bg-gray-50 p-3 rounded-lg space-y-1 text-gray-600">
-                <p><span className="font-bold text-gray-900">이름:</span> 김세란</p>
-                <p><span className="font-bold text-gray-900">직책:</span> 총괄</p>
-                <p><span className="font-bold text-gray-900">연락처:</span> 010-3904-1018</p>
-                <p><span className="font-bold text-gray-900">이메일:</span> toptier1018@gmail.com</p>
+                <p>
+                  <span className="font-bold text-gray-900">이름:</span> 김세란
+                </p>
+                <p>
+                  <span className="font-bold text-gray-900">직책:</span> 총괄
+                </p>
+                <p>
+                  <span className="font-bold text-gray-900">연락처:</span>{" "}
+                  010-3904-1018
+                </p>
+                <p>
+                  <span className="font-bold text-gray-900">이메일:</span>{" "}
+                  toptier1018@gmail.com
+                </p>
               </div>
             </div>
 
             <div>
-              <h3 className="font-bold text-base mb-2">8. 개인정보 처리방침 변경</h3>
+              <h3 className="font-bold text-base mb-2">
+                8. 개인정보 처리방침 변경
+              </h3>
               <p className="text-gray-600 leading-relaxed">
-                이 개인정보처리방침은 법령, 정책 또는 보안기술의 변경에 따라 내용의 추가, 삭제 및 수정이 있을 시에는 변경사항의 시행 3일 전부터 웹사이트를 통하여 공지할 것입니다.
+                이 개인정보처리방침은 법령, 정책 또는 보안기술의 변경에 따라
+                내용의 추가, 삭제 및 수정이 있을 시에는 변경사항의 시행 3일
+                전부터 웹사이트를 통하여 공지할 것입니다.
               </p>
             </div>
 
@@ -2225,138 +2297,115 @@ export default function SwimmingClassPage() {
             </Button>
           </DialogHeader>
 
-          <div className="space-y-4 text-sm">
+          <div className="space-y-6 text-sm">
             <div>
-              <h3 className="font-semibold mb-2">1. 환불 적용 기간</h3>
-              <p className="text-gray-600">
-                수업 시작 전까지 취소 시 전액 환불이 가능하며, 수업 시작 후에는
-                진도율에 따라 부분 환불이 적용됩니다.
+              <h3 className="font-bold text-base mb-2">1. 환불 정책 개요</h3>
+              <p className="text-gray-600 leading-relaxed">
+                본 정책은 모든 수영 특강 예약 서비스에 적용되며, 특강일 기준으로 환불 가능 여부가 결정됩니다.
               </p>
             </div>
 
             <div>
-              <h3 className="font-semibold mb-2">2. 환불 금액</h3>
-              <Alert className="bg-green-50 border-green-200">
-                <AlertDescription className="text-gray-700">
-                  <p className="font-semibold mb-1">💯 수업 시작 전 취소</p>
-                  <p className="text-xs">100% 전액 환불 가능</p>
-                </AlertDescription>
-              </Alert>
-            </div>
+              <h3 className="font-bold text-base mb-2">2. 환불 규정</h3>
+              <div className="space-y-4">
+                <div className="bg-green-50 p-4 rounded-lg border border-green-100">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Check className="h-5 w-5 text-green-600" />
+                    <p className="font-bold text-green-900">특강일 3일 전까지</p>
+                  </div>
+                  <p className="text-sm font-bold text-green-700 mb-2">100% 전액 환불 가능</p>
+                  <p className="text-xs text-green-600 leading-relaxed">
+                    취소 신청 시 등록하신 계좌로 환불 처리됩니다.
+                  </p>
+                </div>
 
-            <div>
-              <h3 className="font-semibold mb-2">❌ 교재비 제외</h3>
-              <Alert className="bg-red-50 border-red-200">
-                <AlertDescription className="text-gray-700">
-                  <div className="border border-red-300 rounded p-3 bg-white">
-                    <p className="font-semibold mb-2">교재비 차감 안내</p>
-                    <ul className="list-disc pl-5 space-y-1 text-xs text-gray-600">
-                      <li>수업 전</li>
-                      <li>수업 중</li>
+                <div className="bg-red-50 p-4 rounded-lg border border-red-100">
+                  <div className="flex items-center gap-2 mb-2">
+                    <X className="h-5 w-5 text-red-600" />
+                    <p className="font-bold text-red-900">특강일 3일 이내</p>
+                  </div>
+                  <p className="text-sm font-bold text-red-700 mb-2">환불 불가</p>
+                  <div className="mt-2 space-y-1">
+                    <p className="text-xs text-red-600 font-semibold">[환불 불가 사유]</p>
+                    <ul className="text-xs text-red-500 list-disc pl-4">
+                      <li>수영장 대관비 확정</li>
+                      <li>강사료 확정</li>
                     </ul>
                   </div>
-                </AlertDescription>
-              </Alert>
+                </div>
+              </div>
             </div>
 
             <div>
-              <h3 className="font-semibold mb-2">3. 환불 방법</h3>
-              <p className="text-gray-600 mb-2">
-                환불은 다음 절차로 진행됩니다:
-              </p>
-              <ul className="list-disc pl-5 space-y-1 text-gray-600">
-                <li>환불 신청 후 3~5 영업일 내 처리</li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-2">4. 환불 시점</h3>
-              <Alert className="bg-blue-50 border-blue-200">
-                <AlertDescription className="text-gray-700">
-                  <p className="font-semibold mb-2">💳 환불 시점</p>
-                  <p className="text-xs mb-2">
-                    환불은 결제 수단에 따라 처리 시간이 달라집니다:
-                  </p>
-                  <ul className="list-disc pl-5 space-y-1 text-xs text-gray-600">
-                    <li>
-                      신용카드: 카드사 승인 취소 후 3~5 영업일 소요 (카드사마다
-                      상이)
-                    </li>
-                    <li>실시간 계좌이체: 환불 신청 후 즉시 처리</li>
-                    <li>무통장 입금: 환불 계좌 확인 후 1~3 영업일 내 입금</li>
-                    <li>
-                      가상계좌: 환불 신청 후 3~5 영업일 내 환불 계좌로 입금
-                    </li>
-                  </ul>
-                </AlertDescription>
-              </Alert>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-2">5. 취소 방법 (고객)</h3>
-              <p className="text-gray-600 mb-1">
-                <span className="text-orange-600 font-medium">
-                  마이페이지 &gt; 신청내역 &gt; 취소하기
-                </span>
-              </p>
-              <p className="text-xs text-gray-500">
-                또는 고객센터(1234-5678)로 연락 주시기 바랍니다.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-2">6. 환불 불가</h3>
-              <p className="text-gray-600 mb-2">
-                다음의 경우는 환불이불가능 등 환불 진행되지 않습니다:
-              </p>
-              <ul className="list-disc pl-5 space-y-1 text-gray-600">
-                <li>수업 진행률 50% 이상 진행된 경우</li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-2">7. 환불 기한</h3>
-              <p className="text-gray-600">
-                환불은 신청일로부터 영업일 기준 7일 이내 처리되며, 카드사 및
-                은행 사정에 따라 지연될 수 있습니다.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-2">8. 취소 재등록 (신청)</h3>
-              <p className="text-gray-600">
-                수업을 취소한 후 재등록을 원하실 경우, 신청 가능한 수업이 있을
-                시 다시 신청하실 수 있습니다.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-2">9. 해지 및 환불 금지기</h3>
-              <p className="text-gray-600">
-                환불 신청 후 처리 중일 때는 중복 신청이 불가능합니다.
-              </p>
-            </div>
-
-            <Alert className="bg-yellow-50 border-yellow-200">
-              <AlertDescription className="text-gray-700">
-                <p className="font-semibold mb-2">⚠️ 특별 안내</p>
-                <ul className="list-disc pl-5 space-y-1 text-xs text-gray-600">
-                  <li>
-                    천재지변, 감염병 등으로 수업이 불가능할 경우 전액
-                    환불됩니다.
-                  </li>
-                  <li>
-                    강사 사정으로 수업이 취소될 경우 전액 환불 또는 일정 변경이
-                    가능합니다.
-                  </li>
+              <h3 className="font-bold text-base mb-2">3. 참석 자격</h3>
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                <div className="flex items-center gap-2 mb-2">
+                  <User className="h-5 w-5 text-blue-600" />
+                  <p className="font-bold text-blue-900">본인 참석 원칙</p>
+                </div>
+                <p className="text-sm text-blue-800 font-semibold mb-2">결제자 본인만 참여 가능</p>
+                <ul className="text-xs text-blue-600 space-y-1">
+                  <li>• 양도 불가</li>
+                  <li>• 대리 참석 불가</li>
                 </ul>
-              </AlertDescription>
-            </Alert>
+              </div>
+            </div>
 
-            <p className="text-xs text-gray-500 mt-4 pt-4 border-t">
-              환불 문의는 고객센터(1234-5678) 또는 이메일(support@example.com)로
-              연락 주시기 바랍니다. 평일 오전 9시~오후 6시까지 운영됩니다.
-            </p>
+            <div>
+              <h3 className="font-bold text-base mb-2">4. 환불 처리 기간</h3>
+              <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+                <div className="flex items-center gap-2">
+                  <CreditCard className="h-5 w-5 text-gray-700" />
+                  <p className="font-bold text-gray-900">환불 처리 절차</p>
+                </div>
+                <ul className="list-disc pl-5 space-y-1 text-gray-600">
+                  <li>취소 신청 후 3-5 영업일 내 환불 처리</li>
+                  <li>환불 계좌는 취소 신청 시 등록</li>
+                  <li>이체 수수료는 주최자 측에서 부담</li>
+                </ul>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-base mb-2">5. 환불 불가 사유</h3>
+              <p className="text-gray-600 mb-2">다음의 경우 환불이 불가능합니다:</p>
+              <ul className="list-disc pl-5 space-y-2 text-gray-600">
+                <li>특강일 3일 이내 - 수영장 대관비 및 강사료 확정으로 환불 불가</li>
+                <li>참가자의 무단 불참 (No-show)</li>
+                <li>참가자의 개인 사유로 인한 서비스 이용 불가</li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-base mb-2">6. 환불 관련 문의</h3>
+              <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-100 space-y-3">
+                <p className="font-bold text-yellow-900">취소 및 환불 문의처</p>
+                <ul className="space-y-2 text-sm text-yellow-800">
+                  <li className="flex items-center gap-2">• 특강 주최자에게 직접 연락</li>
+                  <li className="flex items-center gap-2">• 카카오톡 단체 채팅방</li>
+                  <li className="flex items-center gap-2">• 커뮤니티 카페</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="bg-gray-100 p-4 rounded-lg">
+              <p className="font-bold text-gray-900 mb-2">⚠️ 중요 안내</p>
+              <ul className="text-xs text-gray-700 space-y-1.5">
+                <li>• 특강일 3일 전까지: 100% 환불 가능</li>
+                <li>• 양도 및 대리 참석 불가 - 결제자 본인만 참여 가능</li>
+                <li>• 해당 내용은 결제페이지 및 신청 안내문에도 동일하게 안내됩니다</li>
+              </ul>
+            </div>
+
+            <div className="text-xs text-gray-500 leading-relaxed border-t pt-4">
+              <p className="font-bold mb-1">[참고사항]</p>
+              <p>본 환불 정책은 수영 특강 운영의 특성을 고려하여 수립되었습니다. 특강 준비를 위한 수영장 대관비 및 강사료는 특강일 3일 전에 확정되므로, 이후에는 환불이 불가능한 점 양해 부탁드립니다.</p>
+            </div>
+
+            <div className="pt-2 text-xs text-gray-500">
+              <p className="font-bold">부칙</p>
+              <p>본 정책은 2026년 1월 1일부터 시행됩니다.</p>
+            </div>
           </div>
 
           <Button

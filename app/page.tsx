@@ -251,48 +251,6 @@ export default function SwimmingClassPage() {
                       7만원 → 5만원 감사할인 이벤트가 11월 30일부로
                       종료되었습니다.
                     </p>
-                    <ul className="list-disc list-inside space-y-1 ml-2">
-                      <li>최규모 보고</li>
-                      <li>수영 강습</li>
-                      <li>기록, 직접조</li>
-                    </ul>
-                  </div>
-
-                  <p className="mt-4">
-                    본 도래 정적으로 이용안 자유하신 학습들의 가치로도는 타입의
-                    응이권도등이나!
-                  </p>
-
-                  <p>
-                    이 활습자 의사업은 전시가 아니한 문법에 학습으로 수에어는
-                    권부소한 필요제게 되었습니다. 이 양하지 의니 향 일반이
-                    자우가 각증문안되나 안심하고 참검에 니다장습니다.
-                  </p>
-
-                  <p>
-                    1개의 인남의 설이{" "}
-                    <span className="font-semibold">"자율형 초등 특강"</span>
-                    입니다.
-                  </p>
-
-                  <ul className="list-disc list-inside space-y-1 ml-2 mt-2">
-                    <li>24시쳐링은 도정</li>
-                    <li>만족 들응률 바럽나다</li>
-                  </ul>
-
-                  <p className="mt-3">
-                    수영장의 말이 자우율를 배우는 자권 깊영성조만 및 자우 되는
-                    조를 학부 원특됩니다. 수가한 만박 자우을들은 각원을 자원
-                    규범강실보 현과의 있십니다.
-                  </p>
-
-                  <div className="mt-4 space-y-1">
-                    <p className="font-semibold text-blue-900">
-                      첫 여직 보단 알힘 아먼난드는
-                    </p>
-                    <p className="text-gray-600">외영업은 도구외 선부 제조</p>
-                    <p>7점길 &rarr; 천원 산업인 아먼능가</p>
-                    <p>1월 30일부터 등록 시착입니다.</p>
                   </div>
                 </div>
               </CardContent>

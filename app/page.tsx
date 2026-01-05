@@ -706,28 +706,44 @@ export default function SwimmingClassPage() {
                       <div className="flex flex-col md:flex-row border-b border-gray-100">
                         {/* Time Label */}
                         <div className="flex flex-col justify-center px-4 py-6 bg-[#EFF6FF] w-full md:w-[200px] border-r border-gray-100 shrink-0">
-                          <div className="text-base font-bold text-gray-900">1번특강</div>
-                          <div className="text-sm text-gray-600 mt-1">12:00-14:00</div>
+                          <div className="text-base font-bold text-gray-900">
+                            1번특강
+                          </div>
+                          <div className="text-sm text-gray-600 mt-1">
+                            12:00-14:00
+                          </div>
                         </div>
                         {/* Class Grid for Row 1 */}
                         <div className="flex-1 p-2 bg-white">
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 h-full">
                             <div className="relative border rounded-lg p-3 bg-white flex flex-col justify-between min-h-[80px] sm:min-h-[100px]">
-                              <div className="text-sm font-medium text-gray-600">접영 A</div>
+                              <div className="text-sm font-medium text-gray-600">
+                                접영 A
+                              </div>
                               <div className="flex justify-end mt-2">
-                                <span className="bg-[#34D399] text-white text-[10px] px-1.5 py-0.5 rounded font-medium">신택가능</span>
+                                <span className="bg-[#34D399] text-white text-[10px] px-1.5 py-0.5 rounded font-medium">
+                                  신택가능
+                                </span>
                               </div>
                             </div>
                             <div className="relative border rounded-lg p-3 bg-white flex flex-col justify-between min-h-[80px] sm:min-h-[100px]">
-                              <div className="text-sm font-medium text-gray-600">자유형 호흡 A-1</div>
+                              <div className="text-sm font-medium text-gray-600">
+                                자유형 호흡 A-1
+                              </div>
                               <div className="flex justify-end mt-2">
-                                <span className="bg-[#34D399] text-white text-[10px] px-1.5 py-0.5 rounded font-medium">신택가능</span>
+                                <span className="bg-[#34D399] text-white text-[10px] px-1.5 py-0.5 rounded font-medium">
+                                  신택가능
+                                </span>
                               </div>
                             </div>
                             <div className="relative border rounded-lg p-3 bg-white flex flex-col justify-between min-h-[80px] sm:min-h-[100px]">
-                              <div className="text-sm font-medium text-gray-600">평영 B</div>
+                              <div className="text-sm font-medium text-gray-600">
+                                평영 B
+                              </div>
                               <div className="flex justify-end mt-2">
-                                <span className="bg-[#34D399] text-white text-[10px] px-1.5 py-0.5 rounded font-medium">신택가능</span>
+                                <span className="bg-[#34D399] text-white text-[10px] px-1.5 py-0.5 rounded font-medium">
+                                  신택가능
+                                </span>
                               </div>
                             </div>
                           </div>
@@ -738,28 +754,44 @@ export default function SwimmingClassPage() {
                       <div className="flex flex-col md:flex-row">
                         {/* Time Label */}
                         <div className="flex flex-col justify-center px-4 py-6 bg-[#EFF6FF] w-full md:w-[200px] border-r border-gray-100 shrink-0">
-                          <div className="text-base font-bold text-gray-900">2번특강</div>
-                          <div className="text-sm text-gray-600 mt-1">14:00-16:00</div>
+                          <div className="text-base font-bold text-gray-900">
+                            2번특강
+                          </div>
+                          <div className="text-sm text-gray-600 mt-1">
+                            14:00-16:00
+                          </div>
                         </div>
                         {/* Class Grid for Row 2 */}
                         <div className="flex-1 p-2 bg-white">
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 h-full">
                             <div className="relative border rounded-lg p-3 bg-white flex flex-col justify-between min-h-[80px] sm:min-h-[100px]">
-                              <div className="text-sm font-medium text-gray-600">접영 B</div>
+                              <div className="text-sm font-medium text-gray-600">
+                                접영 B
+                              </div>
                               <div className="flex justify-end mt-2">
-                                <span className="bg-[#34D399] text-white text-[10px] px-1.5 py-0.5 rounded font-medium">신택가능</span>
+                                <span className="bg-[#34D399] text-white text-[10px] px-1.5 py-0.5 rounded font-medium">
+                                  신택가능
+                                </span>
                               </div>
                             </div>
                             <div className="relative border rounded-lg p-3 bg-white flex flex-col justify-between min-h-[80px] sm:min-h-[100px]">
-                              <div className="text-sm font-medium text-gray-600">자유형 B-1</div>
+                              <div className="text-sm font-medium text-gray-600">
+                                자유형 B-1
+                              </div>
                               <div className="flex justify-end mt-2">
-                                <span className="bg-[#34D399] text-white text-[10px] px-1.5 py-0.5 rounded font-medium">신택가능</span>
+                                <span className="bg-[#34D399] text-white text-[10px] px-1.5 py-0.5 rounded font-medium">
+                                  신택가능
+                                </span>
                               </div>
                             </div>
                             <div className="relative border rounded-lg p-3 bg-white flex flex-col justify-between min-h-[80px] sm:min-h-[100px]">
-                              <div className="text-sm font-medium text-gray-600">평영 A</div>
+                              <div className="text-sm font-medium text-gray-600">
+                                평영 A
+                              </div>
                               <div className="flex justify-end mt-2">
-                                <span className="bg-[#34D399] text-white text-[10px] px-1.5 py-0.5 rounded font-medium">신택가능</span>
+                                <span className="bg-[#34D399] text-white text-[10px] px-1.5 py-0.5 rounded font-medium">
+                                  신택가능
+                                </span>
                               </div>
                             </div>
                           </div>
@@ -1160,6 +1192,35 @@ export default function SwimmingClassPage() {
                     className="flex-1"
                     onClick={async () => {
                       // Validate form data and all agreements
+                      const isKorean = /^[가-힣]+$/.test(formData.name);
+                      const isPhone010 = formData.phone.startsWith("010");
+
+                      if (!isKorean) {
+                        console.log(
+                          "[v0] 유효성 검사 실패: 이름이 한글이 아님",
+                          formData.name
+                        );
+                        toast({
+                          title: "입력 오류",
+                          description: "이름은 한글로만 입력해주세요.",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+
+                      if (!isPhone010) {
+                        console.log(
+                          "[v0] 유효성 검사 실패: 전화번호가 010으로 시작하지 않음",
+                          formData.phone
+                        );
+                        toast({
+                          title: "입력 오류",
+                          description: "전화번호는 010으로 시작해야 합니다.",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+
                       if (
                         formData.name &&
                         formData.phone &&

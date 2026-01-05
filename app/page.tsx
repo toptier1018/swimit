@@ -270,9 +270,7 @@ export default function SwimmingClassPage() {
                     수업이 되며 자유형 영법의 개선을 통한 호흡의 안정성, 장거리
                     자유형의 기초를 다지는 특강이 될 겁니다.
                   </li>
-                  <li>
-                    • 특강 특성상 평소 운동량보다 적을 수 있습니다.
-                  </li>
+                  <li>• 특강 특성상 평소 운동량보다 적을 수 있습니다.</li>
                   <li>
                     •{" "}
                     <span className="font-bold text-red-700">
@@ -289,11 +287,11 @@ export default function SwimmingClassPage() {
               <HelpCircle className="h-4 w-4 text-yellow-600" />
               <AlertDescription className="ml-2">
                 <h3 className="font-bold text-yellow-900 mb-2">
-                  💳 환불 안내 문의
+                  💬 특강 관련 문의
                 </h3>
                 <p className="text-sm text-gray-700 mb-3">
-                  최재한 대금 국크면 학이 아니선치오니 가치료도는 타입의
-                  응이력도들이샤!
+                  특강에 대해 궁금한 점이 있으신가요? 카카오톡으로 편하게
+                  문의해주세요!
                 </p>
                 <Button
                   size="sm"

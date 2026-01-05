@@ -2203,72 +2203,208 @@ export default function SwimmingClassPage() {
             </Button>
           </DialogHeader>
 
-          <div className="space-y-4 text-sm">
-            <div>
-              <h3 className="font-semibold mb-2">1. 수영 활동의 위험성 인지</h3>
-              <p className="text-gray-600 mb-2">
-                회사는 다음의 목적을 위해 수영 강의를 실시합니다:
-              </p>
-              <ul className="list-disc pl-5 space-y-1 text-gray-600">
-                <li>수강생의 수영 자세 교정 및 피드백 제공</li>
-                <li>강의 품질 향상을 위한 분석 자료</li>
-                <li>수강생 본인의 실력 향상 확인을 자료 제공</li>
-                <li>교육용 모델 콘텐츠 제작 및 수영 강의 홍보 목적</li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-2">2. 건강 상태 고지 의무</h3>
-              <p className="text-gray-600 mb-2">
-                수영장은 다음 사항에 대해 사전에 고지해야 합니다:
-              </p>
-              <ul className="list-disc pl-5 space-y-1 text-gray-600">
-                <li>
-                  심장 질환, 호흡기 질환, 고혈압 등 수영에 지장 줄 수 있는 질환
-                </li>
-                <li>피부 손상 시 상처 부위</li>
-                <li>임신 여부</li>
-                <li>평소부터 수영 특이 사항</li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-2">3. 안전 수칙 준수</h3>
-              <p className="text-gray-600 mb-2">
-                수영장은 다음 안전 수칙을 반드시 준수하여 합니다:
-              </p>
-              <ul className="list-disc pl-5 space-y-1 text-gray-600">
-                <li>준비운동 및 정리운동 철저</li>
-                <li>강사의 안전 지시 이행</li>
-                <li>본인의 체력 및 능력 범위 내에서 활동</li>
-                <li>수영 중 이상 증상 발생 시 즉시 강사에게 알림</li>
-                <li>수영장 내 뛰어 달기기, 다이빙 금지 구역 준수</li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-2">4. 면책 사항</h3>
-              <p className="text-gray-600 mb-2">
-                다음과 같은 경우는 회사는 책임을 지지 않습니다:
-              </p>
-              <ul className="list-disc pl-5 space-y-1 text-gray-600">
-                <li>수강생의 건강 상태를 고지하지 않아 발생한 사고</li>
-                <li>수강생의 안전 수칙을 위반하여 발생한 사고</li>
-                <li>수강생의 스스로 또는 부주의 안전 사고</li>
-                <li>천재지변 등 불가항력적 사유로 인한 사고</li>
-              </ul>
-            </div>
-
-            <Alert className="bg-red-50 border-red-200">
-              <AlertTriangle className="h-4 w-4 text-red-600" />
-              <AlertDescription className="text-red-900 text-xs ml-2">
-                <h4 className="font-semibold mb-1">🚨 긴급 상황 시</h4>
-                <p className="text-gray-700">
-                  수영 중 아이체크, 호흡곤란, 가슴 통증 등이 발생할 경우 즉시
-                  수영을 중지하고, 강사에게 알려주시기 바랍니다.
-                </p>
+          <div className="space-y-6 text-sm">
+            <Alert className="bg-orange-50 border-orange-200">
+              <AlertTriangle className="h-4 w-4 text-orange-600" />
+              <AlertDescription className="text-orange-900 text-xs ml-2">
+                ⚠️ 본 동의서는 수영 활동의 안전을 위한 중요한 문서입니다. 수영 강의 참여 전 반드시 숙지하시기 바랍니다.
               </AlertDescription>
             </Alert>
+
+            <div>
+              <h3 className="font-bold text-base mb-2">1. 수영 활동의 위험성 인지</h3>
+              <p className="text-gray-600 mb-3 leading-relaxed">
+                수강생은 수영이 다음과 같은 위험을 포함할 수 있음을 충분히 인지하고 이해합니다:
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                  <p className="font-bold text-blue-900 mb-2 flex items-center gap-1">
+                    🌊 수상 활동 관련 위험
+                  </p>
+                  <ul className="text-xs text-blue-700 space-y-1 list-disc pl-4">
+                    <li>익수 및 호흡 곤란</li>
+                    <li>수영 중 근육 경련</li>
+                    <li>과호흡 및 저체온증</li>
+                    <li>수중 시야 확보 어려움으로 인한 충돌</li>
+                  </ul>
+                </div>
+                <div className="bg-indigo-50 p-3 rounded-lg border border-indigo-100">
+                  <p className="font-bold text-indigo-900 mb-2 flex items-center gap-1">
+                    🏊 신체 활동 관련 위험
+                  </p>
+                  <ul className="text-xs text-indigo-700 space-y-1 list-disc pl-4">
+                    <li>근육 및 관절 부상</li>
+                    <li>미끄러짐으로 인한 낙상</li>
+                    <li>과도한 운동으로 인한 탈진</li>
+                    <li>기존 건강 상태의 악화 가능성</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-base mb-2">2. 건강 상태 고지 의무</h3>
+              <p className="text-gray-600 mb-3 leading-relaxed">
+                수강생은 다음 사항을 강사에게 반드시 사전에 고지해야 합니다:
+              </p>
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p className="font-bold text-gray-900 mb-3 text-xs">[필수 고지 사항]</p>
+                <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                  <div className="space-y-1">
+                    <p className="font-bold text-gray-800 text-xs">심혈관계 질환</p>
+                    <p className="text-gray-600 text-[11px]">심장 질환, 고혈압, 부정맥</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="font-bold text-gray-800 text-xs">호흡기 질환</p>
+                    <p className="text-gray-600 text-[11px]">천식, 폐 질환, 호흡기 알레르기</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="font-bold text-gray-800 text-xs">기타 질환</p>
+                    <p className="text-gray-600 text-[11px]">당뇨병, 간질, 척추/관절 질환</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="font-bold text-gray-800 text-xs">특이사항</p>
+                    <p className="text-gray-600 text-[11px]">최근 수술 이력, 임신 여부, 약물 복용 중</p>
+                  </div>
+                </div>
+              </div>
+              <p className="text-xs text-red-600 mt-3 font-bold">
+                ⚠️ 중요: 건강 상태를 고지하지 않아 발생한 사고에 대해서는 회사가 책임을 지지 않습니다.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-base mb-2">3. 안전 수칙 준수</h3>
+              <div className="space-y-3">
+                {[
+                  { title: "준비운동 및 정리운동 참여", desc: "강의 시작 전후 반드시 준비운동과 정리운동에 참여합니다." },
+                  { title: "강사의 안전 지시 이행", desc: "강사의 모든 안전 지침과 주의사항을 즉시 따릅니다." },
+                  { title: "능력 범위 내 활동", desc: "본인의 체력 및 수영 능력 범위 내에서만 활동합니다." },
+                  { title: "이상 증상 즉시 알림", desc: "수영 중 어지러움, 호흡곤란 등 이상 증상 발생 시 즉시 강사에게 알립니다." },
+                  { title: "수영장 규칙 준수", desc: "수영장 내 뛰지 않기, 다이빙 금지 구역 준수 등 수영장 규칙을 지킵니다." },
+                  { title: "음주 후 참여 금지", desc: "음주 상태에서는 절대 수영에 참여하지 않습니다." }
+                ].map((item, idx) => (
+                  <div key={idx} className="flex gap-3 items-start border-b border-gray-100 pb-2">
+                    <span className="bg-primary/10 text-primary rounded-full w-5 h-5 flex items-center justify-center text-xs shrink-0 font-bold">{idx + 1}</span>
+                    <div>
+                      <p className="font-bold text-gray-900 text-xs">{item.title}</p>
+                      <p className="text-gray-500 text-[11px] mt-0.5">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-base mb-2">4. 면책 사항</h3>
+              <ul className="space-y-2">
+                {[
+                  "수강생이 건강 상태를 고지하지 않아 발생한 사고",
+                  "수강생이 안전 수칙을 위반하여 발생한 사고",
+                  "수강생의 고의 또는 중대한 과실로 인한 사고",
+                  "천재지변, 전쟁 등 불가항력적 사유로 인한 사고",
+                  "수강생 간 충돌 등 제3자의 행위로 인한 사고"
+                ].map((item, idx) => (
+                  <li key={idx} className="flex items-start gap-2 text-gray-600 text-xs">
+                    <span className="text-gray-300 mt-1">•</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-base mb-2">5. 회사의 안전 관리 의무</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                  <p className="font-bold text-gray-900 text-xs mb-2 flex items-center gap-1">👨‍🏫 인력 관리</p>
+                  <ul className="text-[11px] text-gray-500 space-y-1 list-disc pl-4">
+                    <li>자격증 보유 강사 배치</li>
+                    <li>정기적인 안전 교육 실시</li>
+                    <li>응급처치 교육 이수</li>
+                  </ul>
+                </div>
+                <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                  <p className="font-bold text-gray-900 text-xs mb-2 flex items-center gap-1">🛟 안전 장비</p>
+                  <ul className="text-[11px] text-gray-500 space-y-1 list-disc pl-4">
+                    <li>구명 장비 구비</li>
+                    <li>응급 의료 키트 비치</li>
+                    <li>장비 정기 점검 실시</li>
+                  </ul>
+                </div>
+                <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                  <p className="font-bold text-gray-900 text-xs mb-2 flex items-center gap-1">📋 매뉴얼 운영</p>
+                  <ul className="text-[11px] text-gray-500 space-y-1 list-disc pl-4">
+                    <li>응급 상황 대응 매뉴얼</li>
+                    <li>사고 보고 체계 구축</li>
+                    <li>정기 안전 훈련</li>
+                  </ul>
+                </div>
+                <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                  <p className="font-bold text-gray-900 text-xs mb-2 flex items-center gap-1">🏊 시설 관리</p>
+                  <ul className="text-[11px] text-gray-500 space-y-1 list-disc pl-4">
+                    <li>수질 정기 검사</li>
+                    <li>시설 안전 점검</li>
+                    <li>미끄럼 방지 조치</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-base mb-2">6. 긴급 상황 대응</h3>
+              <div className="bg-red-50 p-4 rounded-lg border border-red-100">
+                <p className="font-bold text-red-900 text-xs mb-3 flex items-center gap-1">🚨 긴급 상황 발생 시 행동 요령</p>
+                <div className="space-y-2 text-[11px] text-red-800">
+                  <p><span className="font-bold">1단계:</span> 즉시 수영을 중단하고 안전한 곳으로 이동</p>
+                  <p><span className="font-bold">2단계:</span> 강사 또는 인근 스태프에게 즉시 알림</p>
+                  <p><span className="font-bold">3단계:</span> 강사의 지시에 따라 행동</p>
+                  <p><span className="font-bold">4단계:</span> 필요시 119 신고 (강사가 진행)</p>
+                </div>
+                <div className="mt-4 pt-4 border-t border-red-200 space-y-2">
+                  <p className="font-bold text-red-900 text-xs flex items-center gap-1">📞 긴급 연락처</p>
+                  <div className="grid grid-cols-2 gap-2 text-[11px] text-red-700">
+                    <p>수영장 관리실: [수영장별 안내]</p>
+                    <p>강사 연락처: [현장 안내]</p>
+                    <p>회사 상황실: 010-3904-1018</p>
+                    <p>응급 상황: 119</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-base mb-2">7. 보험 안내</h3>
+              <div className="bg-gray-50 p-4 rounded-lg space-y-2 text-gray-600">
+                <p className="text-[11px] leading-relaxed">회사는 다음과 같은 보험에 가입되어 있습니다:</p>
+                <ul className="text-[11px] space-y-1 list-disc pl-4 font-medium">
+                  <li>시설 배상책임보험: 시설 결함으로 인한 사고 보장</li>
+                  <li>강사 배상책임보험: 강사의 과실로 인한 사고 보장</li>
+                </ul>
+                <p className="text-[10px] text-gray-400 mt-2 leading-relaxed">
+                  * 수강생 개인의 건강 상태나 귀책사유로 인한 사고는 보험 적용 대상이 아닙니다. 개인 상해보험 가입을 권장합니다.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-base mb-2">8. 동의 철회</h3>
+              <p className="text-gray-600 leading-relaxed">
+                본 동의는 수강생이 수영 강의에 참여하는 동안 유효하며, 수강을 중단할 경우 자동으로 효력이 상실됩니다.
+              </p>
+            </div>
+
+            <div className="bg-primary/5 p-4 rounded-lg border border-primary/10">
+              <p className="font-bold text-primary text-xs mb-2">📌 최종 확인 사항</p>
+              <p className="text-[11px] text-gray-700 leading-relaxed font-medium">
+                본인은 위의 모든 내용을 충분히 숙지하였으며, 수영 활동의 위험성을 이해하고 안전 수칙을 준수할 것을 약속합니다. 또한 건강 상태를 정확히 고지하였으며, 고지하지 않은 사항으로 인한 사고에 대해서는 본인이 책임질 것을 확인합니다.
+              </p>
+            </div>
+
+            <div className="pt-2 text-[10px] text-gray-400 border-t flex justify-between items-center">
+              <p>본 동의서는 2026년 1월 1일부터 시행됩니다.</p>
+              <p className="font-bold">부칙</p>
+            </div>
           </div>
 
           <Button
@@ -2301,7 +2437,8 @@ export default function SwimmingClassPage() {
             <div>
               <h3 className="font-bold text-base mb-2">1. 환불 정책 개요</h3>
               <p className="text-gray-600 leading-relaxed">
-                본 정책은 모든 수영 특강 예약 서비스에 적용되며, 특강일 기준으로 환불 가능 여부가 결정됩니다.
+                본 정책은 모든 수영 특강 예약 서비스에 적용되며, 특강일 기준으로
+                환불 가능 여부가 결정됩니다.
               </p>
             </div>
 
@@ -2311,9 +2448,13 @@ export default function SwimmingClassPage() {
                 <div className="bg-green-50 p-4 rounded-lg border border-green-100">
                   <div className="flex items-center gap-2 mb-2">
                     <Check className="h-5 w-5 text-green-600" />
-                    <p className="font-bold text-green-900">특강일 3일 전까지</p>
+                    <p className="font-bold text-green-900">
+                      특강일 3일 전까지
+                    </p>
                   </div>
-                  <p className="text-sm font-bold text-green-700 mb-2">100% 전액 환불 가능</p>
+                  <p className="text-sm font-bold text-green-700 mb-2">
+                    100% 전액 환불 가능
+                  </p>
                   <p className="text-xs text-green-600 leading-relaxed">
                     취소 신청 시 등록하신 계좌로 환불 처리됩니다.
                   </p>
@@ -2324,9 +2465,13 @@ export default function SwimmingClassPage() {
                     <X className="h-5 w-5 text-red-600" />
                     <p className="font-bold text-red-900">특강일 3일 이내</p>
                   </div>
-                  <p className="text-sm font-bold text-red-700 mb-2">환불 불가</p>
+                  <p className="text-sm font-bold text-red-700 mb-2">
+                    환불 불가
+                  </p>
                   <div className="mt-2 space-y-1">
-                    <p className="text-xs text-red-600 font-semibold">[환불 불가 사유]</p>
+                    <p className="text-xs text-red-600 font-semibold">
+                      [환불 불가 사유]
+                    </p>
                     <ul className="text-xs text-red-500 list-disc pl-4">
                       <li>수영장 대관비 확정</li>
                       <li>강사료 확정</li>
@@ -2343,7 +2488,9 @@ export default function SwimmingClassPage() {
                   <User className="h-5 w-5 text-blue-600" />
                   <p className="font-bold text-blue-900">본인 참석 원칙</p>
                 </div>
-                <p className="text-sm text-blue-800 font-semibold mb-2">결제자 본인만 참여 가능</p>
+                <p className="text-sm text-blue-800 font-semibold mb-2">
+                  결제자 본인만 참여 가능
+                </p>
                 <ul className="text-xs text-blue-600 space-y-1">
                   <li>• 양도 불가</li>
                   <li>• 대리 참석 불가</li>
@@ -2368,9 +2515,13 @@ export default function SwimmingClassPage() {
 
             <div>
               <h3 className="font-bold text-base mb-2">5. 환불 불가 사유</h3>
-              <p className="text-gray-600 mb-2">다음의 경우 환불이 불가능합니다:</p>
+              <p className="text-gray-600 mb-2">
+                다음의 경우 환불이 불가능합니다:
+              </p>
               <ul className="list-disc pl-5 space-y-2 text-gray-600">
-                <li>특강일 3일 이내 - 수영장 대관비 및 강사료 확정으로 환불 불가</li>
+                <li>
+                  특강일 3일 이내 - 수영장 대관비 및 강사료 확정으로 환불 불가
+                </li>
                 <li>참가자의 무단 불참 (No-show)</li>
                 <li>참가자의 개인 사유로 인한 서비스 이용 불가</li>
               </ul>
@@ -2381,8 +2532,12 @@ export default function SwimmingClassPage() {
               <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-100 space-y-3">
                 <p className="font-bold text-yellow-900">취소 및 환불 문의처</p>
                 <ul className="space-y-2 text-sm text-yellow-800">
-                  <li className="flex items-center gap-2">• 특강 주최자에게 직접 연락</li>
-                  <li className="flex items-center gap-2">• 카카오톡 단체 채팅방</li>
+                  <li className="flex items-center gap-2">
+                    • 특강 주최자에게 직접 연락
+                  </li>
+                  <li className="flex items-center gap-2">
+                    • 카카오톡 단체 채팅방
+                  </li>
                   <li className="flex items-center gap-2">• 커뮤니티 카페</li>
                 </ul>
               </div>
@@ -2393,13 +2548,20 @@ export default function SwimmingClassPage() {
               <ul className="text-xs text-gray-700 space-y-1.5">
                 <li>• 특강일 3일 전까지: 100% 환불 가능</li>
                 <li>• 양도 및 대리 참석 불가 - 결제자 본인만 참여 가능</li>
-                <li>• 해당 내용은 결제페이지 및 신청 안내문에도 동일하게 안내됩니다</li>
+                <li>
+                  • 해당 내용은 결제페이지 및 신청 안내문에도 동일하게
+                  안내됩니다
+                </li>
               </ul>
             </div>
 
             <div className="text-xs text-gray-500 leading-relaxed border-t pt-4">
               <p className="font-bold mb-1">[참고사항]</p>
-              <p>본 환불 정책은 수영 특강 운영의 특성을 고려하여 수립되었습니다. 특강 준비를 위한 수영장 대관비 및 강사료는 특강일 3일 전에 확정되므로, 이후에는 환불이 불가능한 점 양해 부탁드립니다.</p>
+              <p>
+                본 환불 정책은 수영 특강 운영의 특성을 고려하여 수립되었습니다.
+                특강 준비를 위한 수영장 대관비 및 강사료는 특강일 3일 전에
+                확정되므로, 이후에는 환불이 불가능한 점 양해 부탁드립니다.
+              </p>
             </div>
 
             <div className="pt-2 text-xs text-gray-500">

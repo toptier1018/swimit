@@ -332,253 +332,10 @@ export default function SwimmingClassPage() {
               </AlertDescription>
             </Alert>
 
-            {/* Price Section */}
-            <div className="text-center mb-8">
-              <div className="inline-block">
-                <p className="text-2xl text-gray-400 line-through font-medium">
-                  ₩100,000
-                </p>
-                <p className="text-4xl text-primary font-bold">₩70,000</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  → (특정 지역과 상황에 따라 변동 될 수 있음)
-                </p>
-              </div>
-            </div>
-
-            {/* Title */}
-            <div className="mb-8">
-              <h1 className="text-2xl font-bold text-center flex items-center justify-center gap-2">
-                <div className="bg-primary/10 p-2 rounded">
-                  <svg
-                    className="h-6 w-6 text-primary"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <rect
-                      x="3"
-                      y="4"
-                      width="18"
-                      height="16"
-                      rx="2"
-                      strokeWidth="2"
-                    />
-                    <path d="M3 10h18" strokeWidth="2" />
-                  </svg>
-                </div>
-                수영 특강 지역을 선택해주세요
-              </h1>
-            </div>
-
-            {/* Two Column Layout */}
-            <div className="grid md:grid-cols-[300px_1fr] gap-6">
-              {/* Left: Calendar */}
-              <div>
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="mb-4">
-                      <div className="flex items-center justify-between mb-1">
-                        <h3 className="text-sm font-semibold text-primary">
-                          📅 수강 일정 달력
-                        </h3>
-                      </div>
-                    </div>
-
-                    {/* Calendar Header */}
-                    <div className="flex items-center justify-between mb-4">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => {
-                          const newMonth =
-                            calendarMonth > 1 ? calendarMonth - 1 : 12;
-                          setCalendarMonth(newMonth);
-                          console.log(`[v0] 달력 월 변경: ${newMonth}월`);
-                        }}
-                      >
-                        <ChevronLeft className="h-4 w-4" />
-                      </Button>
-                      <span className="font-semibold">
-                        {calendarYear}년 {monthNames[calendarMonth - 1]}
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => {
-                          const newMonth =
-                            calendarMonth < 12 ? calendarMonth + 1 : 1;
-                          setCalendarMonth(newMonth);
-                          console.log(`[v0] 달력 월 변경: ${newMonth}월`);
-                        }}
-                      >
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
-                    </div>
-
-                    {/* Weekday Headers */}
-                    <div className="grid grid-cols-7 gap-1 mb-2">
-                      {weekDays.map((day, i) => (
-                        <div
-                          key={day}
-                          className={`text-center text-xs font-medium py-1 ${
-                            i === 0
-                              ? "text-red-500"
-                              : i === 6
-                              ? "text-blue-500"
-                              : "text-muted-foreground"
-                          }`}
-                        >
-                          {day}
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Calendar Days */}
-                    <div className="grid grid-cols-7 gap-1">
-                      {calendarDays.map((day, index) => {
-                        const isHighlighted =
-                          day && highlightedDates.includes(day);
-                        const dayOfWeek = index % 7;
-                        // 오늘 날짜인지 확인
-                        const isToday =
-                          day &&
-                          calendarYear === today.year &&
-                          calendarMonth === today.month &&
-                          day === today.day;
-
-                        return (
-                          <div
-                            key={index}
-                            className="aspect-square flex items-center justify-center"
-                          >
-                            {day ? (
-                              <button
-                                className={`w-full h-full flex items-center justify-center text-sm rounded-lg transition-colors ${
-                                  isHighlighted
-                                    ? "bg-primary text-primary-foreground font-semibold shadow-sm"
-                                    : isToday
-                                    ? "bg-gray-300 text-gray-700 font-medium"
-                                    : dayOfWeek === 0
-                                    ? "text-red-500 hover:bg-muted"
-                                    : dayOfWeek === 6
-                                    ? "text-blue-500 hover:bg-muted"
-                                    : "text-foreground hover:bg-muted"
-                                }`}
-                              >
-                                {day}
-                              </button>
-                            ) : (
-                              <div />
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* Legend */}
-                    <div className="mt-4 pt-4 border-t flex items-center justify-center gap-4 text-xs text-muted-foreground flex-wrap">
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-3 h-3 rounded-full bg-primary" />
-                        <span>특강 일정</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-3 h-3 rounded bg-gray-300" />
-                        <span>오늘</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-3 h-3 rounded-full border-2 border-muted" />
-                        <span>일반</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Right: Class List */}
-              <div>
-                <div className="mb-4">
-                  <h3 className="text-sm font-semibold text-primary">
-                    📍 지역 선택
-                  </h3>
-                </div>
-
-                <div className="space-y-3">
-                  {classes.map((classItem) => (
-                    <Card
-                      key={classItem.id}
-                      className={`cursor-pointer transition-all ${
-                        selectedClass === classItem.id
-                          ? "bg-primary/5 border-primary border-2 shadow-md"
-                          : "hover:border-primary/30 hover:shadow-sm"
-                      }`}
-                      onClick={() => {
-                        setSelectedClass(classItem.id);
-                      }}
-                    >
-                      <CardContent className="p-4">
-                        {/* Location Badge */}
-                        <div className="mb-3 flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-primary" />
-                            <span className="font-semibold">
-                              {classItem.location} ({classItem.locationCode})
-                            </span>
-                          </div>
-                          {selectedClass === classItem.id && (
-                            <CheckCircle2 className="h-5 w-5 text-primary" />
-                          )}
-                        </div>
-
-                        {/* Date Section */}
-                        <div className="bg-primary/10 rounded-lg p-3 mb-3">
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4 text-primary" />
-                            <span className="font-semibold text-primary">
-                              {classItem.date}
-                            </span>
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {classItem.spots}
-                          </p>
-                        </div>
-
-                        {/* Venue Info */}
-                        <div className="space-y-1.5">
-                          <div className="flex items-start gap-2">
-                            <span className="text-sm font-medium min-w-[40px]">
-                              수영장
-                            </span>
-                            <span className="text-sm text-muted-foreground">
-                              {classItem.venue}
-                            </span>
-                          </div>
-                          <div className="flex items-start gap-2">
-                            <span className="text-sm font-medium min-w-[40px]">
-                              주소
-                            </span>
-                            <span className="text-sm text-muted-foreground">
-                              {classItem.address}
-                            </span>
-                          </div>
-                          <button className="text-xs text-primary hover:underline flex items-center gap-1 mt-2">
-                            <MapPin className="h-3 w-3" />
-                            예약 가능
-                          </button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            </div>
-
             {/* Action Button (hidden when showRegistrationForm is true) */}
             <div className="mt-8">
               <Button
                 onClick={handleRegistration}
-                disabled={!selectedClass}
                 className="w-full py-6 text-lg font-semibold"
                 size="lg"
               >
@@ -1308,6 +1065,249 @@ export default function SwimmingClassPage() {
                   </p>
                 </div>
 
+                {/* Price Section */}
+                <div className="text-center mb-8 mt-8">
+                  <div className="inline-block">
+                    <p className="text-2xl text-gray-400 line-through font-medium">
+                      ₩100,000
+                    </p>
+                    <p className="text-4xl text-primary font-bold">₩70,000</p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      → (특정 지역과 상황에 따라 변동 될 수 있음)
+                    </p>
+                  </div>
+                </div>
+
+                {/* Title */}
+                <div className="mb-8">
+                  <h1 className="text-2xl font-bold text-center flex items-center justify-center gap-2">
+                    <div className="bg-primary/10 p-2 rounded">
+                      <svg
+                        className="h-6 w-6 text-primary"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <rect
+                          x="3"
+                          y="4"
+                          width="18"
+                          height="16"
+                          rx="2"
+                          strokeWidth="2"
+                        />
+                        <path d="M3 10h18" strokeWidth="2" />
+                      </svg>
+                    </div>
+                    수영 특강 지역을 선택해주세요
+                  </h1>
+                </div>
+
+                {/* Two Column Layout */}
+                <div className="grid md:grid-cols-[300px_1fr] gap-6 mb-8">
+                  {/* Left: Calendar */}
+                  <div>
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="mb-4">
+                          <div className="flex items-center justify-between mb-1">
+                            <h3 className="text-sm font-semibold text-primary">
+                              📅 수강 일정 달력
+                            </h3>
+                          </div>
+                        </div>
+
+                        {/* Calendar Header */}
+                        <div className="flex items-center justify-between mb-4">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => {
+                              const newMonth =
+                                calendarMonth > 1 ? calendarMonth - 1 : 12;
+                              setCalendarMonth(newMonth);
+                              console.log(`[v0] 달력 월 변경: ${newMonth}월`);
+                            }}
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                          </Button>
+                          <span className="font-semibold">
+                            {calendarYear}년 {monthNames[calendarMonth - 1]}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => {
+                              const newMonth =
+                                calendarMonth < 12 ? calendarMonth + 1 : 1;
+                              setCalendarMonth(newMonth);
+                              console.log(`[v0] 달력 월 변경: ${newMonth}월`);
+                            }}
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+
+                        {/* Weekday Headers */}
+                        <div className="grid grid-cols-7 gap-1 mb-2">
+                          {weekDays.map((day, i) => (
+                            <div
+                              key={day}
+                              className={`text-center text-xs font-medium py-1 ${
+                                i === 0
+                                  ? "text-red-500"
+                                  : i === 6
+                                  ? "text-blue-500"
+                                  : "text-muted-foreground"
+                              }`}
+                            >
+                              {day}
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Calendar Days */}
+                        <div className="grid grid-cols-7 gap-1">
+                          {calendarDays.map((day, index) => {
+                            const isHighlighted =
+                              day && highlightedDates.includes(day);
+                            const dayOfWeek = index % 7;
+                            // 오늘 날짜인지 확인
+                            const isToday =
+                              day &&
+                              calendarYear === today.year &&
+                              calendarMonth === today.month &&
+                              day === today.day;
+
+                            return (
+                              <div
+                                key={index}
+                                className="aspect-square flex items-center justify-center"
+                              >
+                                {day ? (
+                                  <button
+                                    className={`w-full h-full flex items-center justify-center text-sm rounded-lg transition-colors ${
+                                      isHighlighted
+                                        ? "bg-primary text-primary-foreground font-semibold shadow-sm"
+                                        : isToday
+                                        ? "bg-gray-300 text-gray-700 font-medium"
+                                        : dayOfWeek === 0
+                                        ? "text-red-500 hover:bg-muted"
+                                        : dayOfWeek === 6
+                                        ? "text-blue-500 hover:bg-muted"
+                                        : "text-foreground hover:bg-muted"
+                                    }`}
+                                  >
+                                    {day}
+                                  </button>
+                                ) : (
+                                  <div />
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Legend */}
+                        <div className="mt-4 pt-4 border-t flex items-center justify-center gap-4 text-xs text-muted-foreground flex-wrap">
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-3 h-3 rounded-full bg-primary" />
+                            <span>특강 일정</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-3 h-3 rounded bg-gray-300" />
+                            <span>오늘</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-3 h-3 rounded-full border-2 border-muted" />
+                            <span>일반</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Right: Class List */}
+                  <div>
+                    <div className="mb-4">
+                      <h3 className="text-sm font-semibold text-primary">
+                        📍 지역 선택
+                      </h3>
+                    </div>
+
+                    <div className="space-y-3">
+                      {classes.map((classItem) => (
+                        <Card
+                          key={classItem.id}
+                          className={`cursor-pointer transition-all ${
+                            selectedClass === String(classItem.id)
+                              ? "bg-primary/5 border-primary border-2 shadow-md"
+                              : "hover:border-primary/30 hover:shadow-sm"
+                          }`}
+                          onClick={() => {
+                            setSelectedClass(String(classItem.id));
+                          }}
+                        >
+                          <CardContent className="p-4">
+                            {/* Location Badge */}
+                            <div className="mb-3 flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <MapPin className="h-4 w-4 text-primary" />
+                                <span className="font-semibold">
+                                  {classItem.location} ({classItem.locationCode}
+                                  )
+                                </span>
+                              </div>
+                              {selectedClass === String(classItem.id) && (
+                                <CheckCircle2 className="h-5 w-5 text-primary" />
+                              )}
+                            </div>
+
+                            {/* Date Section */}
+                            <div className="bg-primary/10 rounded-lg p-3 mb-3">
+                              <div className="flex items-center gap-2">
+                                <Clock className="h-4 w-4 text-primary" />
+                                <span className="font-semibold text-primary">
+                                  {classItem.date}
+                                </span>
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {classItem.spots}
+                              </p>
+                            </div>
+
+                            {/* Venue Info */}
+                            <div className="space-y-1.5">
+                              <div className="flex items-start gap-2">
+                                <span className="text-sm font-medium min-w-[40px]">
+                                  수영장
+                                </span>
+                                <span className="text-sm text-muted-foreground">
+                                  {classItem.venue}
+                                </span>
+                              </div>
+                              <div className="flex items-start gap-2">
+                                <span className="text-sm font-medium min-w-[40px]">
+                                  주소
+                                </span>
+                                <span className="text-sm text-muted-foreground">
+                                  {classItem.address}
+                                </span>
+                              </div>
+                              <button className="text-xs text-primary hover:underline flex items-center gap-1 mt-2">
+                                <MapPin className="h-3 w-3" />
+                                예약 가능
+                              </button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
                 <div className="space-y-6">
                   <Card>
                     <CardHeader>
@@ -1731,10 +1731,10 @@ export default function SwimmingClassPage() {
                           <div className="flex items-center gap-2">
                             <MapPin className="h-4 w-4 text-red-500" />
                             <span className="text-gray-700">
-                              {classes.find((c) => c.id === selectedClass)
+                              {classes.find((c) => String(c.id) === selectedClass)
                                 ?.location || "정보 없음"}{" "}
                               (
-                              {classes.find((c) => c.id === selectedClass)
+                              {classes.find((c) => String(c.id) === selectedClass)
                                 ?.locationCode || ""}
                               )
                             </span>
@@ -1890,627 +1890,7 @@ export default function SwimmingClassPage() {
                   </div>
                 </div>
               </>
-            ) : (
-              step === 3 && ( // This condition should be step === 3
-                <>
-                  {/* Step 3: Payment */}
-                  <div className="mb-6">
-                    <h1 className="text-2xl font-bold text-center flex items-center justify-center gap-2">
-                      <div className="bg-primary/10 p-2 rounded">
-                        <svg
-                          className="h-6 w-6 text-primary"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                          />
-                        </svg>
-                      </div>
-                      결제하기
-                    </h1>
-                    <p className="text-center text-sm text-gray-600 mt-2">
-                      안전한 결제 시스템으로 강의를 신청하세요
-                    </p>
-                  </div>
-
-                  <div className="space-y-6">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <span>📋</span> 클래스 상세 안내
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        {/* 평영 기존 */}
-                        <div>
-                          <h4 className="font-semibold flex items-center gap-2 mb-2">
-                            <span>🤿</span> 평영 기존
-                          </h4>
-                          <div className="space-y-1 text-sm ml-6">
-                            <div className="flex items-start gap-2">
-                              <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                              <span>
-                                클래스 A 초급 (자유형 완성고 최소 50미터
-                                가능하신 분)
-                              </span>
-                            </div>
-                            <div className="flex items-start gap-2">
-                              <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                              <span>클래스 B 초중급 (수를 1년이상 -3년)</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* 접영 기존 */}
-                        <div>
-                          <h4 className="font-semibold flex items-center gap-2 mb-2">
-                            <span>🦋</span> 접영 기존
-                          </h4>
-                          <div className="space-y-1 text-sm ml-6">
-                            <div className="flex items-start gap-2">
-                              <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                              <span>
-                                클래스 A 초급 (자유형/배영고, 자유형 완성고
-                                50미터 가능하신 분)
-                              </span>
-                            </div>
-                            <div className="flex items-start gap-2">
-                              <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                              <span>
-                                클래스 B 초중급 (수를 1년 6개월 - 3년)
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* 자유형 초등 기존 */}
-                        <div>
-                          <h4 className="font-semibold flex items-center gap-2 mb-2">
-                            <span>🏊</span> 자유형 초등 기존
-                          </h4>
-                          <div className="space-y-1 text-sm ml-6">
-                            <div className="flex items-start gap-2">
-                              <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                              <span>
-                                클래스 입문 A-1 (25m이상 완주 가능하신 분)
-                              </span>
-                            </div>
-                            <div className="flex items-start gap-2">
-                              <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                              <span>
-                                클래스 입문 A-2 (25m이상 완주 가능하신분)
-                              </span>
-                            </div>
-                            <div className="flex items-start gap-2">
-                              <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                              <span>
-                                클래스 초급 B-1 (25~50m 완주 가능하신분)
-                              </span>
-                            </div>
-                            <div className="flex items-start gap-2">
-                              <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                              <span>
-                                클래스 초급 B-2 (25~50m 완주 가능하신분)
-                              </span>
-                            </div>
-                            <div className="flex items-start gap-2">
-                              <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                              <span>
-                                클래스 초중급 C-1 (50~100m 완주 가능하신분)
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* 단 기간 기존 */}
-                        <div>
-                          <h4 className="font-semibold flex items-center gap-2 mb-2">
-                            <span>⏱️</span> 단 기간 기존
-                          </h4>
-                          <div className="space-y-1 text-sm ml-6">
-                            <div className="flex items-start gap-2">
-                              <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                              <span>
-                                클래스 A 기초반(사이드킥) (사이드 킥 강의
-                                배영로즈 엎거나 고중이 특으신 초보분)
-                              </span>
-                            </div>
-                            <div className="flex items-start gap-2">
-                              <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                              <span>
-                                클래스 B 중급반(사이드&폴릎판) (사이드 & 폴릎 판
-                                배워뽐으나 자세 교정이 필으신분)
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* 카카오톡 문의 */}
-                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                          <p className="text-sm text-gray-700">
-                            궁금한 점이 있으시면 카카오톡으로 문의해주세요!
-                          </p>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="mt-2 bg-yellow-400 hover:bg-yellow-500 border-0"
-                          >
-                            <MessageCircle className="h-4 w-4 mr-2" />
-                            카카오톡 문의하기
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <div className="text-center">
-                      <div className="inline-flex items-center gap-2 mb-4">
-                        <Calendar className="h-5 w-5" />
-                        <h3 className="text-lg font-bold">수영장 시간표</h3>
-                      </div>
-                    </div>
-
-                    <Card className="bg-primary text-white">
-                      <CardContent className="p-4">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span>📅</span>
-                          <h4 className="font-bold">수영 클래스 시간표</h4>
-                        </div>
-                        <p className="text-sm text-blue-100">
-                          시간대를 수업을 확인하고 선택해주세요
-                        </p>
-                      </CardContent>
-                    </Card>
-
-                    {/* Timetable Grid */}
-                    <div className="overflow-x-auto">
-                      <div className="min-w-[800px] grid grid-cols-7 gap-2">
-                        {/* Time Column */}
-                        <div className="space-y-2">
-                          <div className="h-12 flex items-center justify-center font-semibold text-sm">
-                            시간대
-                          </div>
-                          <div className="border rounded-lg p-3 bg-white">
-                            <div className="font-bold text-sm">1번특강</div>
-                            <div className="text-xs text-gray-600">
-                              12:00-14:00
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Class Slots */}
-                        {[
-                          { name: "접영 B", available: true, price: 70000 },
-                          { name: "평영 B", available: true, price: 70000 },
-                          {
-                            name: "자유형 초등 A-1",
-                            available: true,
-                            price: 70000,
-                          },
-                          {
-                            name: "자유형 초등 B-1",
-                            available: false,
-                            price: 0,
-                          },
-                          { name: "접영 A", available: true, price: 70000 },
-                          { name: "평영 A", available: true, price: 70000 },
-                        ].map((slot, index) => (
-                          <div key={index} className="space-y-2">
-                            <div className="h-12 flex items-center justify-center font-semibold text-sm">
-                              {slot.name.split(" ")[0]}
-                            </div>
-                            <button
-                              onClick={() => {
-                                if (slot.available) {
-                                  setSelectedTimeSlot({
-                                    name: slot.name,
-                                    time: "12:00-14:00",
-                                    price: slot.price,
-                                    isWaitlist: false,
-                                    available: slot.available,
-                                  });
-                                } else {
-                                  setSelectedTimeSlot({
-                                    name: slot.name,
-                                    time: "12:00-14:00",
-                                    price: slot.price,
-                                    isWaitlist: true,
-                                    available: slot.available,
-                                  });
-                                  setWaitlistClass({
-                                    name: slot.name,
-                                    time: "12:00-14:00",
-                                    type: "평일상 / 자유형",
-                                  });
-                                  setShowWaitlistModal(true);
-                                }
-                              }}
-                              className={`border rounded-lg p-3 bg-white w-full transition-all ${
-                                selectedTimeSlot?.name === slot.name
-                                  ? "border-primary border-2 ring-2 ring-primary/20"
-                                  : "border-gray-200 hover:border-primary"
-                              } ${
-                                !slot.available
-                                  ? "cursor-pointer"
-                                  : "cursor-pointer"
-                              }`}
-                            >
-                              <div className="text-sm font-medium mb-2">
-                                {slot.name}
-                              </div>
-                              {slot.available ? (
-                                <span className="inline-block px-2 py-1 bg-green-100 text-green-700 text-xs rounded">
-                                  선결가능
-                                </span>
-                              ) : (
-                                <span className="inline-block px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded">
-                                  대기신청
-                                </span>
-                              )}
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Payment Header */}
-                    <div className="text-center py-6 border-t">
-                      <div className="inline-flex items-center gap-2 mb-2">
-                        <span className="text-2xl">💳</span>
-                        <h2 className="text-2xl font-bold">결제하기</h2>
-                      </div>
-                      <p className="text-sm text-gray-600">
-                        안전한 결제 시스템으로 강의를 신청하세요
-                      </p>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-8">
-                      {/* Left Column - Payment Method */}
-                      <div className="space-y-6">
-                        {/* Payment Method Selection */}
-                        <div>
-                          <h3 className="text-lg font-bold mb-4">결제 방법</h3>
-
-                          <div className="space-y-3">
-                            {/* Payment Method Buttons Grid */}
-                            <div className="grid grid-cols-2 gap-3">
-                              <button
-                                onClick={() => setPaymentMethod("kakao")}
-                                className={`border-2 rounded-lg p-4 flex flex-col items-center justify-center gap-2 transition-all relative ${
-                                  paymentMethod === "kakao"
-                                    ? "border-primary bg-blue-50"
-                                    : "border-gray-300 hover:border-gray-400"
-                                }`}
-                              >
-                                {paymentMethod === "kakao" && (
-                                  <div className="absolute top-2 left-2 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
-                                    <Check className="h-3 w-3 text-white" />
-                                  </div>
-                                )}
-                                <div className="text-2xl">💛</div>
-                                <span className="text-sm font-medium">
-                                  카카오페이
-                                </span>
-                              </button>
-
-                              <button
-                                onClick={() => setPaymentMethod("tosspayments")}
-                                className={`border-2 rounded-lg p-4 flex flex-col items-center justify-center gap-2 transition-all ${
-                                  paymentMethod === "tosspayments"
-                                    ? "border-primary bg-blue-50"
-                                    : "border-gray-300 hover:border-gray-400"
-                                }`}
-                              >
-                                <div className="text-2xl text-blue-600">💳</div>
-                                <span className="text-sm font-medium">
-                                  토스페이먼츠
-                                </span>
-                              </button>
-
-                              <button
-                                onClick={() => setPaymentMethod("card")}
-                                className={`border-2 rounded-lg p-4 flex flex-col items-center justify-center gap-2 transition-all ${
-                                  paymentMethod === "card"
-                                    ? "border-primary bg-blue-50"
-                                    : "border-gray-300 hover:border-gray-400"
-                                }`}
-                              >
-                                <CreditCard className="h-8 w-8 text-gray-600" />
-                                <span className="text-sm font-medium">
-                                  신용·체크카드
-                                </span>
-                              </button>
-
-                              <button
-                                onClick={() => setPaymentMethod("naverpay")}
-                                className={`border-2 rounded-lg p-4 flex flex-col items-center justify-center gap-2 transition-all ${
-                                  paymentMethod === "naverpay"
-                                    ? "border-primary bg-blue-50"
-                                    : "border-gray-300 hover:border-gray-400"
-                                }`}
-                              >
-                                <div className="w-10 h-10 bg-green-500 rounded flex items-center justify-center">
-                                  <span className="text-white font-bold">
-                                    N
-                                  </span>
-                                </div>
-                                <span className="text-sm font-medium">
-                                  네이버페이
-                                </span>
-                              </button>
-                            </div>
-
-                            {/* Bottom Row - 2 Payment Options */}
-                            <div className="grid grid-cols-2 gap-3">
-                              <button
-                                onClick={() => setPaymentMethod("paypal")}
-                                className={`border-2 rounded-lg p-3 flex items-center justify-center gap-2 transition-all ${
-                                  paymentMethod === "paypal"
-                                    ? "border-primary bg-blue-50"
-                                    : "border-gray-300 hover:border-gray-400"
-                                }`}
-                              >
-                                <div className="w-8 h-8 bg-yellow-400 rounded flex items-center justify-center">
-                                  <span className="text-xs font-bold">pay</span>
-                                </div>
-                                <span className="text-sm font-medium">
-                                  페이팔
-                                </span>
-                              </button>
-
-                              <button
-                                onClick={() => setPaymentMethod("toss")}
-                                className={`border-2 rounded-lg p-3 flex items-center justify-center gap-2 transition-all ${
-                                  paymentMethod === "toss"
-                                    ? "border-primary bg-blue-50"
-                                    : "border-gray-300 hover:border-gray-400"
-                                }`}
-                              >
-                                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                                  <span className="text-white font-bold text-xs">
-                                    t
-                                  </span>
-                                </div>
-                                <span className="text-sm font-medium">
-                                  토스페이
-                                </span>
-                              </button>
-                            </div>
-                          </div>
-
-                          <p className="text-xs text-red-500 mt-3">
-                            * 주로 호 기한 안내 담임께서 결제는 우선이
-                            수정됩니다.
-                          </p>
-                        </div>
-
-                        {/* Installment Options */}
-                        <div>
-                          <h3 className="text-base font-semibold mb-3">
-                            할부 개월 정보
-                          </h3>
-                          <div className="grid grid-cols-3 gap-2">
-                            <select className="border border-gray-300 rounded-lg px-3 py-2.5 text-sm">
-                              <option>온행 선택</option>
-                              <option>국민</option>
-                              <option>신한</option>
-                              <option>삼성</option>
-                            </select>
-                            <Input
-                              placeholder="예금주 입력"
-                              className="border-gray-300"
-                            />
-                            <Input
-                              placeholder="계좌번호 입력(※ 제외)"
-                              className="border-gray-300"
-                            />
-                          </div>
-
-                          <p className="text-xs text-gray-500 mt-3 leading-relaxed">
-                            주문금액을 위는 결제 방법을 사용하 개별로 결제할 수
-                            있습니다.
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                            삼성 할부는 - 5/6개월 이상 결제 시 1000원 수수료가!
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                            신용카드는 무이자 할부 여부 &gt;
-                          </p>
-                        </div>
-
-                        {/* Agreement Checkbox */}
-                        <div className="flex items-start gap-2 py-2">
-                          <Checkbox
-                            id="payment-terms"
-                            checked={finalAgree}
-                            onCheckedChange={(checked) =>
-                              setFinalAgree(checked as boolean)
-                            }
-                            className="mt-1 size-5 border-2 border-gray-400"
-                          />
-                          <Label
-                            htmlFor="payment-terms"
-                            className="text-sm cursor-pointer"
-                          >
-                            [필수] 결제 서비스 이용약관, 개인정보 처리 동의 &gt;
-                          </Label>
-                        </div>
-                      </div>
-
-                      {/* Right Column - Order Summary */}
-                      <div className="space-y-6">
-                        {/* Order Summary */}
-                        <div>
-                          <h3 className="text-lg font-bold mb-4">주문 요약</h3>
-                          <div className="space-y-2.5 text-sm">
-                            <div className="flex items-center gap-2">
-                              <MapPin className="h-4 w-4 text-red-500" />
-                              <span className="text-gray-700">
-                                {classes.find((c) => c.id === selectedClass)
-                                  ?.location || "정보 없음"}{" "}
-                                (
-                                {classes.find((c) => c.id === selectedClass)
-                                  ?.locationCode || ""}
-                                )
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Calendar className="h-4 w-4 text-gray-500" />
-                              <span className="text-gray-700">
-                                {selectedTimeSlot?.time.split("(")[0] ||
-                                  "날짜 정보 없음"}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Users className="h-4 w-4 text-gray-500" />
-                              <span className="text-gray-700">어른</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Selected Class */}
-                        <div>
-                          <h3 className="text-lg font-bold mb-3">
-                            선택된 클래스
-                          </h3>
-                          <div className="border border-dashed border-gray-300 rounded-lg p-6 bg-gray-50">
-                            {selectedTimeSlot ? (
-                              <div>
-                                <p className="text-sm font-medium text-gray-800 mb-1">
-                                  {selectedTimeSlot.name}
-                                </p>
-                                <p className="text-xs text-gray-500">
-                                  시간대: 1번특강 ({selectedTimeSlot.time})
-                                </p>
-                                {selectedTimeSlot.isWaitlist && (
-                                  <span className="inline-block mt-2 px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded">
-                                    대기신청
-                                  </span>
-                                )}
-                              </div>
-                            ) : (
-                              <div className="text-center">
-                                <p className="text-sm text-gray-500 mb-1">
-                                  아직 클래스를 선택하지 않았습니다
-                                </p>
-                                <p className="text-xs text-gray-400">
-                                  위 시간표에서 클래스를 선택해주세요
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Total Amount */}
-                        <div>
-                          <div className="flex items-center justify-between mb-3">
-                            <h3 className="text-lg font-bold">총 결제 금액</h3>
-                            <span className="text-2xl font-bold text-primary">
-                              ₩
-                              {selectedTimeSlot
-                                ? selectedTimeSlot.price.toLocaleString()
-                                : 0}
-                            </span>
-                          </div>
-
-                          {selectedTimeSlot &&
-                            !selectedTimeSlot.isWaitlist &&
-                            selectedTimeSlot.available && (
-                              <div className="mb-3 space-y-1">
-                                <div className="flex justify-between text-sm text-gray-600">
-                                  <span>원가</span>
-                                  <span className="line-through">₩100,000</span>
-                                </div>
-                                <div className="flex justify-between text-sm text-red-600 font-semibold">
-                                  <span>할인</span>
-                                  <span>-₩30,000</span>
-                                </div>
-                              </div>
-                            )}
-
-                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                            <div className="flex items-start gap-2">
-                              <div className="text-blue-600 mt-0.5">
-                                <svg
-                                  className="h-4 w-4"
-                                  fill="currentColor"
-                                  viewBox="0 0 20 20"
-                                >
-                                  <path
-                                    fillRule="evenodd"
-                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                                    clipRule="evenodd"
-                                  />
-                                </svg>
-                              </div>
-                              <p className="text-xs text-blue-800 leading-relaxed">
-                                {selectedTimeSlot?.isWaitlist
-                                  ? "대기 신청은 무료입니다"
-                                  : "결제 후 즉시 영상 등록이 완료됩니다"}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Security Notice */}
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 mt-6">
-                      <div className="flex items-start gap-3">
-                        <div className="text-green-600 mt-0.5">
-                          <svg
-                            className="h-5 w-5"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="text-sm font-semibold text-green-800 mb-1">
-                            안전한 결제
-                          </h4>
-                          <p className="text-xs text-green-700 leading-relaxed">
-                            SSL 암호화 통신과 PG사 인증을 통해 안전하게
-                            보호됩니다.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Navigation Buttons */}
-                    <div className="flex gap-3 pt-4">
-                      <Button
-                        variant="outline"
-                        className="px-8 border-gray-300 text-gray-700 bg-transparent"
-                        onClick={() => setStep(2)}
-                      >
-                        ← 이전
-                      </Button>
-                      <Button
-                        className="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white"
-                        disabled={!selectedTimeSlot || !finalAgree}
-                        onClick={() => setStep(4)}
-                      >
-                        ₩
-                        {selectedTimeSlot
-                          ? selectedTimeSlot.price.toLocaleString()
-                          : "0"}{" "}
-                        결제하기
-                      </Button>
-                    </div>
-                  </div>
-                </>
-              )
-            )}
+            ) : null}
           </>
         )}
       </main>

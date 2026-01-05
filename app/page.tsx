@@ -1740,89 +1740,149 @@ export default function SwimmingClassPage() {
             </Button>
           </DialogHeader>
 
-          <div className="space-y-4 text-sm">
+          <div className="space-y-6 text-sm">
             <div>
-              <h3 className="font-semibold mb-2">
-                1. 개인정보의 수집 및 이용 목적
-              </h3>
+              <h3 className="font-bold text-base mb-2">1. 개인정보의 수집 및 이용 목적</h3>
               <p className="text-gray-600 mb-2">
-                회두클래스(이하 '회사')는 다음의 목적을 위하여 개인정보를
-                수집하고 이용합니다:
+                (주)블루마인드(이하 "회사")는 다음의 목적을 위하여 개인정보를 수집하고 이용합니다:
               </p>
               <ul className="list-disc pl-5 space-y-1 text-gray-600">
-                <li>수강 상담 예약 및 관리</li>
+                <li>수영 강의 예약 및 관리</li>
                 <li>수강생 본인 확인 및 연락</li>
-                <li>수강 상품 안내 및 취소 안내</li>
-                <li>서비스 관련 공지 및 알림 전송</li>
+                <li>수업 일정 변경 및 취소 안내</li>
+                <li>서비스 관련 중요 공지사항 전달</li>
                 <li>고객 문의 및 불만 처리</li>
+                <li>통계 분석 및 서비스 개선</li>
               </ul>
             </div>
 
             <div>
-              <h3 className="font-semibold mb-2">2. 수집하는 개인정보 항목</h3>
+              <h3 className="font-bold text-base mb-2">2. 수집하는 개인정보 항목</h3>
+              <p className="text-gray-600 mb-2">회사는 예약 서비스 제공을 위해 다음과 같은 개인정보를 수집합니다:</p>
+              <div className="bg-gray-50 p-3 rounded-lg space-y-3">
+                <div>
+                  <p className="font-semibold text-gray-900 mb-1">[필수 항목]</p>
+                  <p className="text-gray-600">이름, 휴대폰 번호, 성별, 거주 지역, 수영 경력, 수강 목적</p>
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900 mb-1">[선택 항목]</p>
+                  <p className="text-gray-600">차량번호 (주차 지원 시), 이메일 (추가 정보 수신 시)</p>
+                </div>
+                <p className="text-xs text-red-600 font-medium">* 필수 항목을 입력하지 않을 경우 서비스 이용이 제한될 수 있습니다.</p>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-base mb-2">3. 개인정보의 보유 및 이용 기간</h3>
               <p className="text-gray-600 mb-2">
-                회사는 예약 서비스 제공을 위해 다음과 같은 개인정보를
-                수집합니다:
+                회사는 개인정보 수집 및 이용 목적이 달성된 후에는 해당 정보를 지체 없이 파기합니다. 단, 다음의 경우에는 해당 기간 동안 보관합니다:
               </p>
-              <ul className="list-disc pl-5 space-y-1 text-gray-600">
-                <li>
-                  필수정보: 이름, 휴대폰 번호, 성별, 거주 지역, 수강 정보, 수강
-                  목적
-                </li>
-                <li>선택정보: 기타정보</li>
-              </ul>
+              <div className="space-y-3">
+                <div>
+                  <p className="font-semibold text-gray-900 mb-1">전자상거래 등에서의 소비자보호에 관한 법률</p>
+                  <ul className="list-disc pl-5 text-gray-600">
+                    <li>계약 또는 청약철회 등에 관한 기록: 5년</li>
+                    <li>대금결제 및 재화 등의 공급에 관한 기록: 5년</li>
+                    <li>소비자 불만 또는 분쟁처리에 관한 기록: 3년</li>
+                  </ul>
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900 mb-1">통신비밀보호법</p>
+                  <ul className="list-disc pl-5 text-gray-600">
+                    <li>웹사이트 방문 기록: 3개월</li>
+                  </ul>
+                </div>
+              </div>
             </div>
 
             <div>
-              <h3 className="font-semibold mb-2">
-                3. 개인정보의 보유 및 이용 기간
-              </h3>
-              <p className="text-gray-600">
-                회사는 개인정보 수집 및 이용 목적이 달성된 후에는 해당 정보를
-                지체 없이 파기합니다. 단, 다음의 정우에는 명시 기간 동안
-                보관됩니다:
+              <h3 className="font-bold text-base mb-2">4. 개인정보의 제3자 제공</h3>
+              <p className="text-gray-600 mb-3">
+                회사는 원칙적으로 고객의 개인정보를 외부에 제공하지 않습니다. 다만, 다음의 경우는 예외로 합니다:
               </p>
-              <ul className="list-disc pl-5 space-y-1 text-gray-600 mt-2">
-                <li>수강 상담 기록: 3년 (전자상거래법)</li>
-                <li>
-                  연금금 및 재화 등의 공급에 관한 기록: 5년 (전자상거래법)
-                </li>
-                <li>
-                  소비자 불만 또는 분쟁처리의 공급 기록: 3년 (전자상거래법)
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-2">4. 개인정보의 제3자 제공</h3>
-              <p className="text-gray-600">
-                회사는 원칙적으로 고객의 개인정보를 외부에 제공하지 않습니다.
-                다만, 다음의 경우는 예외로 합니 다:
-              </p>
-              <ul className="list-disc pl-5 space-y-1 text-gray-600 mt-2">
+              <ul className="list-disc pl-5 space-y-1 text-gray-600 mb-4">
                 <li>고객이 사전에 동의한 경우</li>
-                <li>
-                  법령의 규정에 의거하거나, 수사 목적으로 법령에 정해진 절차와
-                  방법에 따라 수사기관의 요 구가 있는 경우
-                </li>
+                <li>법령의 규정에 의거하거나, 수사 목적으로 법령에 정해진 절차와 방법에 따라 수사기관의 요구가 있는 경우</li>
+                <li>서비스 제공을 위해 필요한 경우 (결제 대행사, 배송업체 등)</li>
               </ul>
+              
+              <p className="font-semibold text-gray-900 mb-2">[제3자 제공 현황]</p>
+              <div className="border rounded-lg overflow-hidden text-xs">
+                <table className="w-full text-left border-collapse">
+                  <thead className="bg-gray-50 border-b">
+                    <tr>
+                      <th className="p-2 border-r font-bold">제공받는 자</th>
+                      <th className="p-2 border-r font-bold">제공 목적</th>
+                      <th className="p-2 font-bold">제공 항목</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    <tr>
+                      <td className="p-2 border-r">PG사 (결제 대행)</td>
+                      <td className="p-2 border-r">결제 처리</td>
+                      <td className="p-2">이름, 연락처, 결제 정보</td>
+                    </tr>
+                    <tr>
+                      <td className="p-2 border-r">알림톡 발송 업체</td>
+                      <td className="p-2 border-r">예약 확인 알림</td>
+                      <td className="p-2">이름, 연락처, 예약 정보</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             <div>
-              <h3 className="font-semibold mb-2">
-                5. 동의를 거부할 권리 및 불이익
-              </h3>
-              <p className="text-gray-600">
-                고객은 개인정보 수집 및 이용에 대한 동의를 거부할 수 있습니다.
-                다만, 동의 후 동의철회 대행 동의 후 서비스의 이용이 제한될 수
-                있습니다.
+              <h3 className="font-bold text-base mb-2">5. 개인정보의 파기 절차 및 방법</h3>
+              <div className="space-y-3">
+                <div>
+                  <p className="font-semibold text-gray-900 mb-1">[파기 절차]</p>
+                  <p className="text-gray-600 leading-relaxed">이용자가 입력한 정보는 목적 달성 후 내부 방침 및 관련 법령에 따라 일정 기간 저장된 후 파기됩니다.</p>
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900 mb-1">[파기 방법]</p>
+                  <ul className="list-disc pl-5 text-gray-600">
+                    <li>전자적 파일 형태: 복구 및 재생이 불가능한 기술적 방법을 사용하여 완전 삭제</li>
+                    <li>종이 문서: 분쇄기로 분쇄하거나 소각</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-base mb-2">6. 이용자 및 법정대리인의 권리와 행사 방법</h3>
+              <p className="text-gray-600 mb-2">이용자는 언제든지 다음과 같은 권리를 행사할 수 있습니다:</p>
+              <ul className="list-disc pl-5 space-y-1 text-gray-600 mb-3">
+                <li>개인정보 열람 요구</li>
+                <li>개인정보 정정·삭제 요구</li>
+                <li>개인정보 처리 정지 요구</li>
+              </ul>
+              <p className="text-gray-600 leading-relaxed bg-blue-50 p-3 rounded-lg">
+                권리 행사는 고객센터(<span className="font-bold">010-3904-1018</span>) 또는 이메일(<span className="font-bold">toptier1018@gmail.com</span>)을 통해 하실 수 있으며, 회사는 이에 대해 지체 없이 조치하겠습니다.
               </p>
             </div>
 
-            <p className="text-xs text-gray-500 mt-4">
-              본 동의는 서비스 이용 시작일로부터 종료일 또는 이용자의 서비스
-              종료 요청 시까지 유효합니다.
-            </p>
+            <div>
+              <h3 className="font-bold text-base mb-2">7. 개인정보 보호책임자</h3>
+              <div className="bg-gray-50 p-3 rounded-lg space-y-1 text-gray-600">
+                <p><span className="font-bold text-gray-900">이름:</span> 김세란</p>
+                <p><span className="font-bold text-gray-900">직책:</span> 총괄</p>
+                <p><span className="font-bold text-gray-900">연락처:</span> 010-3904-1018</p>
+                <p><span className="font-bold text-gray-900">이메일:</span> toptier1018@gmail.com</p>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-base mb-2">8. 개인정보 처리방침 변경</h3>
+              <p className="text-gray-600 leading-relaxed">
+                이 개인정보처리방침은 법령, 정책 또는 보안기술의 변경에 따라 내용의 추가, 삭제 및 수정이 있을 시에는 변경사항의 시행 3일 전부터 웹사이트를 통하여 공지할 것입니다.
+              </p>
+            </div>
+
+            <div className="pt-4 border-t text-xs text-gray-500">
+              <p className="font-bold">부칙</p>
+              <p>본 방침은 2026년 1월 1일부터 시행됩니다.</p>
+            </div>
           </div>
 
           <Button

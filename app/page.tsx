@@ -400,10 +400,16 @@ export default function SwimmingClassPage() {
 
               <div className="w-12 h-0.5 bg-gray-300" />
 
-              {/* Step 4 - Show as gray inactive when step 4 is complete */}
+              {/* Step 4 */}
               <div className="flex items-center">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold bg-green-500 text-white">
-                  ✓
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
+                    step === 4
+                      ? "bg-green-500 text-white"
+                      : "bg-gray-300 text-gray-600"
+                  }`}
+                >
+                  {step === 4 ? "✓" : "4"}
                 </div>
                 <span className="ml-2 text-sm font-medium">완료</span>
               </div>

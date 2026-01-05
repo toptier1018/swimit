@@ -679,22 +679,25 @@ export default function SwimmingClassPage() {
                 {/* Class Schedule Timetable */}
                 <Card className="overflow-hidden">
                   <div className="bg-primary text-primary-foreground px-4 py-3 flex items-center gap-2">
-                    <svg
-                      className="h-5 w-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <rect
-                        x="3"
-                        y="4"
-                        width="18"
-                        height="16"
-                        rx="2"
-                        strokeWidth="2"
-                      />
-                      <path d="M3 10h18" strokeWidth="2" />
-                    </svg>
+                    <div className="relative">
+                      <svg
+                        className="h-5 w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <rect
+                          x="3"
+                          y="4"
+                          width="18"
+                          height="16"
+                          rx="2"
+                          strokeWidth="2"
+                        />
+                        <path d="M3 10h18" strokeWidth="2" />
+                      </svg>
+                      <div className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></div>
+                    </div>
                     <span className="font-semibold">수영 클래스 시간표</span>
                   </div>
                   <CardContent className="p-0">

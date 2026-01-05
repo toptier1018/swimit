@@ -678,7 +678,7 @@ export default function SwimmingClassPage() {
 
                 {/* Class Schedule Timetable */}
                 <Card className="overflow-hidden">
-                  <div className="bg-primary text-primary-foreground px-4 py-3 flex items-center gap-2">
+                  <div className="bg-[#2563EB] text-white px-4 py-3 flex items-center gap-2">
                     <div className="relative">
                       <svg
                         className="h-5 w-5"
@@ -701,91 +701,59 @@ export default function SwimmingClassPage() {
                     <span className="font-semibold">수영 클래스 시간표</span>
                   </div>
                   <CardContent className="p-0">
-                    <div className="overflow-x-auto">
-                      <div className="inline-flex min-w-full">
-                        {/* Time Column */}
-                        <div className="flex flex-col border-r bg-gray-50">
-                          <div className="px-4 py-3 border-b bg-white">
-                            <div className="text-sm font-semibold text-gray-700">
-                              1번동공
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              13:00-15:00
-                            </div>
-                          </div>
+                    <div className="flex flex-col md:flex-row min-w-full">
+                      {/* Left Side: Time Labels */}
+                      <div className="flex flex-col bg-[#EFF6FF] w-full md:w-[200px] border-r border-gray-100">
+                        <div className="flex flex-col justify-center px-4 py-6 border-b border-gray-100 h-[100px] md:h-[120px]">
+                          <div className="text-base font-bold text-gray-900">1번특강</div>
+                          <div className="text-sm text-gray-600 mt-1">12:00-14:00</div>
                         </div>
+                        <div className="flex flex-col justify-center px-4 py-6 h-[100px] md:h-[120px]">
+                          <div className="text-base font-bold text-gray-900">2번특강</div>
+                          <div className="text-sm text-gray-600 mt-1">14:00-16:00</div>
+                        </div>
+                      </div>
 
-                        {/* Schedule Columns */}
-                        <div className="flex flex-1">
-                          {/* Column 1 */}
-                          <div className="flex flex-col flex-1 border-r min-w-[120px]">
-                            <div className="px-4 py-3 border-b bg-white text-center">
-                              <div className="text-sm font-medium text-gray-700 mb-2">
-                                평일 B
-                              </div>
-                              <div className="inline-flex items-center gap-1 px-3 py-1 rounded bg-green-100 text-green-700 text-xs font-medium">
-                                선택가능
-                              </div>
+                      {/* Right Side: Class Grid */}
+                      <div className="flex-1 p-2 bg-white">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                          {/* Row 1 */}
+                          <div className="relative border rounded-lg p-3 h-[100px] sm:h-auto bg-white flex flex-col justify-between">
+                            <div className="text-sm font-medium text-gray-600">접영 A</div>
+                            <div className="flex justify-end">
+                              <span className="bg-[#34D399] text-white text-[10px] px-1.5 py-0.5 rounded font-medium">신택가능</span>
+                            </div>
+                          </div>
+                          <div className="relative border rounded-lg p-3 h-[100px] sm:h-auto bg-white flex flex-col justify-between">
+                            <div className="text-sm font-medium text-gray-600">자유형 호흡 A-1</div>
+                            <div className="flex justify-end">
+                              <span className="bg-[#34D399] text-white text-[10px] px-1.5 py-0.5 rounded font-medium">신택가능</span>
+                            </div>
+                          </div>
+                          <div className="relative border rounded-lg p-3 h-[100px] sm:h-auto bg-white flex flex-col justify-between">
+                            <div className="text-sm font-medium text-gray-600">평영 B</div>
+                            <div className="flex justify-end">
+                              <span className="bg-[#34D399] text-white text-[10px] px-1.5 py-0.5 rounded font-medium">신택가능</span>
                             </div>
                           </div>
 
-                          {/* Column 2 */}
-                          <div className="flex flex-col flex-1 border-r min-w-[120px]">
-                            <div className="px-4 py-3 border-b bg-white text-center">
-                              <div className="text-sm font-medium text-gray-700 mb-2">
-                                평일 B
-                              </div>
-                              <div className="inline-flex items-center gap-1 px-3 py-1 rounded bg-green-100 text-green-700 text-xs font-medium">
-                                선택가능
-                              </div>
+                          {/* Row 2 */}
+                          <div className="relative border rounded-lg p-3 h-[100px] sm:h-auto bg-white flex flex-col justify-between">
+                            <div className="text-sm font-medium text-gray-600">접영 B</div>
+                            <div className="flex justify-end">
+                              <span className="bg-[#34D399] text-white text-[10px] px-1.5 py-0.5 rounded font-medium">신택가능</span>
                             </div>
                           </div>
-
-                          {/* Column 3 */}
-                          <div className="flex flex-col flex-1 border-r min-w-[120px]">
-                            <div className="px-4 py-3 border-b bg-white text-center">
-                              <div className="text-sm font-medium text-gray-700 mb-2">
-                                자유형 초등 A-1
-                              </div>
-                              <div className="inline-flex items-center gap-1 px-3 py-1 rounded bg-green-100 text-green-700 text-xs font-medium">
-                                선택가능
-                              </div>
+                          <div className="relative border rounded-lg p-3 h-[100px] sm:h-auto bg-white flex flex-col justify-between">
+                            <div className="text-sm font-medium text-gray-600">자유형 B-1</div>
+                            <div className="flex justify-end">
+                              <span className="bg-[#34D399] text-white text-[10px] px-1.5 py-0.5 rounded font-medium">신택가능</span>
                             </div>
                           </div>
-
-                          {/* Column 4 */}
-                          <div className="flex flex-col flex-1 border-r min-w-[120px]">
-                            <div className="px-4 py-3 border-b bg-white text-center">
-                              <div className="text-sm font-medium text-gray-700 mb-2">
-                                자유형 초등 B-1
-                              </div>
-                              <div className="inline-flex items-center gap-1 px-3 py-1 rounded bg-green-100 text-green-700 text-xs font-medium">
-                                선택가능
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Column 5 */}
-                          <div className="flex flex-col flex-1 border-r min-w-[120px]">
-                            <div className="px-4 py-3 border-b bg-white text-center">
-                              <div className="text-sm font-medium text-gray-700 mb-2">
-                                평일 A
-                              </div>
-                              <div className="inline-flex items-center gap-1 px-3 py-1 rounded bg-green-100 text-green-700 text-xs font-medium">
-                                선택가능
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Column 6 */}
-                          <div className="flex flex-col flex-1 min-w-[120px]">
-                            <div className="px-4 py-3 border-b bg-white text-center">
-                              <div className="text-sm font-medium text-gray-700 mb-2">
-                                평일 A
-                              </div>
-                              <div className="inline-flex items-center gap-1 px-3 py-1 rounded bg-green-100 text-green-700 text-xs font-medium">
-                                선택가능
-                              </div>
+                          <div className="relative border rounded-lg p-3 h-[100px] sm:h-auto bg-white flex flex-col justify-between">
+                            <div className="text-sm font-medium text-gray-600">평영 A</div>
+                            <div className="flex justify-end">
+                              <span className="bg-[#34D399] text-white text-[10px] px-1.5 py-0.5 rounded font-medium">신택가능</span>
                             </div>
                           </div>
                         </div>

@@ -908,6 +908,132 @@ export default function SwimmingClassPage() {
             ) : step === 3 ? (
               <>
                 {/* Step 3: Payment */}
+                <Card className="mb-6">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <span>📋</span> 클래스 상세 안내
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* 평영 기존 */}
+                    <div>
+                      <h4 className="font-semibold flex items-center gap-2 mb-2">
+                        <span>🤿</span> 평영 기존
+                      </h4>
+                      <div className="space-y-1 text-sm ml-6">
+                        <div className="flex items-start gap-2">
+                          <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                          <span>
+                            클래스 A 초급 (자유형 완성고 최소 50미터 가능하신
+                            분)
+                          </span>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                          <span>클래스 B 초중급 (수를 1년이상 -3년)</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 접영 기존 */}
+                    <div>
+                      <h4 className="font-semibold flex items-center gap-2 mb-2">
+                        <span>🦋</span> 접영 기존
+                      </h4>
+                      <div className="space-y-1 text-sm ml-6">
+                        <div className="flex items-start gap-2">
+                          <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                          <span>
+                            클래스 A 초급 (자유형/배영고, 자유형 완성고 50미터
+                            가능하신 분)
+                          </span>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                          <span>클래스 B 초중급 (수를 1년 6개월 - 3년)</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 자유형 초등 기존 */}
+                    <div>
+                      <h4 className="font-semibold flex items-center gap-2 mb-2">
+                        <span>🏊</span> 자유형 초등 기존
+                      </h4>
+                      <div className="space-y-1 text-sm ml-6">
+                        <div className="flex items-start gap-2">
+                          <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                          <span>
+                            클래스 입문 A-1 (25m이상 완주 가능하신 분)
+                          </span>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                          <span>
+                            클래스 입문 A-2 (25m이상 완주 가능하신분)
+                          </span>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                          <span>
+                            클래스 초급 B-1 (25~50m 완주 가능하신분)
+                          </span>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                          <span>
+                            클래스 초급 B-2 (25~50m 완주 가능하신분)
+                          </span>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                          <span>
+                            클래스 초중급 C-1 (50~100m 완주 가능하신분)
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 단 기간 기존 */}
+                    <div>
+                      <h4 className="font-semibold flex items-center gap-2 mb-2">
+                        <span>⏱️</span> 단 기간 기존
+                      </h4>
+                      <div className="space-y-1 text-sm ml-6">
+                        <div className="flex items-start gap-2">
+                          <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                          <span>
+                            클래스 A 기초반(사이드킥) (사이드 킥 강의 배영로즈
+                            엎거나 고중이 특으신 초보분)
+                          </span>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                          <span>
+                            클래스 B 중급반(사이드&폴릎판) (사이드 & 폴릎 판
+                            배워뽐으나 자세 교정이 필으신분)
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 카카오톡 문의 */}
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                      <p className="text-sm text-gray-700">
+                        궁금한 점이 있으시면 카카오톡으로 문의해주세요!
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-2 bg-yellow-400 hover:bg-yellow-500 border-0"
+                      >
+                        <MessageCircle className="h-4 w-4 mr-2" />
+                        카카오톡 문의하기
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
                 <div className="mb-6">
                   <h1 className="text-2xl font-bold text-center flex items-center justify-center gap-2">
                     <div className="bg-primary/10 p-2 rounded">
@@ -1176,132 +1302,6 @@ export default function SwimmingClassPage() {
                 </div>
 
                 <div className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <span>📋</span> 클래스 상세 안내
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {/* 평영 기존 */}
-                      <div>
-                        <h4 className="font-semibold flex items-center gap-2 mb-2">
-                          <span>🤿</span> 평영 기존
-                        </h4>
-                        <div className="space-y-1 text-sm ml-6">
-                          <div className="flex items-start gap-2">
-                            <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                            <span>
-                              클래스 A 초급 (자유형 완성고 최소 50미터 가능하신
-                              분)
-                            </span>
-                          </div>
-                          <div className="flex items-start gap-2">
-                            <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                            <span>클래스 B 초중급 (수를 1년이상 -3년)</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* 접영 기존 */}
-                      <div>
-                        <h4 className="font-semibold flex items-center gap-2 mb-2">
-                          <span>🦋</span> 접영 기존
-                        </h4>
-                        <div className="space-y-1 text-sm ml-6">
-                          <div className="flex items-start gap-2">
-                            <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                            <span>
-                              클래스 A 초급 (자유형/배영고, 자유형 완성고 50미터
-                              가능하신 분)
-                            </span>
-                          </div>
-                          <div className="flex items-start gap-2">
-                            <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                            <span>클래스 B 초중급 (수를 1년 6개월 - 3년)</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* 자유형 초등 기존 */}
-                      <div>
-                        <h4 className="font-semibold flex items-center gap-2 mb-2">
-                          <span>🏊</span> 자유형 초등 기존
-                        </h4>
-                        <div className="space-y-1 text-sm ml-6">
-                          <div className="flex items-start gap-2">
-                            <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                            <span>
-                              클래스 입문 A-1 (25m이상 완주 가능하신 분)
-                            </span>
-                          </div>
-                          <div className="flex items-start gap-2">
-                            <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                            <span>
-                              클래스 입문 A-2 (25m이상 완주 가능하신분)
-                            </span>
-                          </div>
-                          <div className="flex items-start gap-2">
-                            <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                            <span>
-                              클래스 초급 B-1 (25~50m 완주 가능하신분)
-                            </span>
-                          </div>
-                          <div className="flex items-start gap-2">
-                            <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                            <span>
-                              클래스 초급 B-2 (25~50m 완주 가능하신분)
-                            </span>
-                          </div>
-                          <div className="flex items-start gap-2">
-                            <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                            <span>
-                              클래스 초중급 C-1 (50~100m 완주 가능하신분)
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* 단 기간 기존 */}
-                      <div>
-                        <h4 className="font-semibold flex items-center gap-2 mb-2">
-                          <span>⏱️</span> 단 기간 기존
-                        </h4>
-                        <div className="space-y-1 text-sm ml-6">
-                          <div className="flex items-start gap-2">
-                            <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                            <span>
-                              클래스 A 기초반(사이드킥) (사이드 킥 강의 배영로즈
-                              엎거나 고중이 특으신 초보분)
-                            </span>
-                          </div>
-                          <div className="flex items-start gap-2">
-                            <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                            <span>
-                              클래스 B 중급반(사이드&폴릎판) (사이드 & 폴릎 판
-                              배워뽐으나 자세 교정이 필으신분)
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* 카카오톡 문의 */}
-                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                        <p className="text-sm text-gray-700">
-                          궁금한 점이 있으시면 카카오톡으로 문의해주세요!
-                        </p>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="mt-2 bg-yellow-400 hover:bg-yellow-500 border-0"
-                        >
-                          <MessageCircle className="h-4 w-4 mr-2" />
-                          카카오톡 문의하기
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-
                   <div className="text-center">
                     <div className="inline-flex items-center gap-2 mb-4">
                       <Calendar className="h-5 w-5" />

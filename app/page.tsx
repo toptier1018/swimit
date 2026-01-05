@@ -1259,115 +1259,118 @@ export default function SwimmingClassPage() {
                 </div>
 
                 <div className="space-y-6">
-                  <div className="text-center">
-                    <div className="inline-flex items-center gap-2 mb-4">
-                      <Calendar className="h-5 w-5" />
-                      <h3 className="text-lg font-bold">수영장 시간표</h3>
-                    </div>
-                  </div>
-
-                  <Card className="bg-primary text-white">
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span>📅</span>
-                        <h4 className="font-bold">수영 클래스 시간표</h4>
+                  <Card className="overflow-hidden border-0 shadow-md">
+                    <div className="bg-[#2563EB] text-white px-4 py-4">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Calendar className="h-5 w-5" />
+                        <h4 className="font-bold text-lg">수영 클래스 시간표</h4>
                       </div>
-                      <p className="text-sm text-blue-100">
-                        시간대를 수업을 확인하고 선택해주세요
+                      <p className="text-sm text-blue-100 ml-7">
+                        시간대별 수업을 확인하고 선택해주세요
                       </p>
+                    </div>
+                    <CardContent className="p-0">
+                      <div className="flex flex-col min-w-[800px]">
+                        {/* 1번특강 Row */}
+                        <div className="flex border-b border-gray-100">
+                          {/* Time Label */}
+                          <div className="flex flex-col justify-center px-6 py-6 bg-[#F8FAFC] w-[180px] border-r border-gray-100 shrink-0">
+                            <div className="text-base font-bold text-gray-900">
+                              1번특강
+                            </div>
+                            <div className="text-sm text-gray-500 mt-1">
+                              12:00-14:00
+                            </div>
+                          </div>
+                          {/* Class Grid for Row 1 */}
+                          <div className="flex-1 p-3 bg-white grid grid-cols-4 gap-3">
+                            {[
+                              { name: "접영 B", available: true, price: 70000 },
+                              { name: "자유형 호흡 A-1", available: true, price: 70000 },
+                              { name: "자유형 호흡 A-2", available: true, price: 70000 },
+                              { name: "평영 B", available: true, price: 70000 },
+                            ].map((slot, index) => (
+                              <button
+                                key={index}
+                                onClick={() => {
+                                  setSelectedTimeSlot({
+                                    name: slot.name,
+                                    time: "12:00-14:00",
+                                    price: slot.price,
+                                    isWaitlist: false,
+                                    available: true,
+                                  });
+                                }}
+                                className={`relative border rounded-lg p-4 flex flex-col justify-between min-h-[100px] transition-all ${
+                                  selectedTimeSlot?.name === slot.name && selectedTimeSlot?.time === "12:00-14:00"
+                                    ? "border-primary border-2 ring-2 ring-primary/10 bg-primary/5"
+                                    : "border-gray-200 hover:border-primary/50 hover:shadow-sm bg-white"
+                                }`}
+                              >
+                                <div className="text-sm font-bold text-gray-800">
+                                  {slot.name}
+                                </div>
+                                <div className="flex justify-end mt-2">
+                                  <span className="bg-[#10B981] text-white text-[11px] px-2 py-1 rounded font-bold">
+                                    신청가능
+                                  </span>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* 2번특강 Row */}
+                        <div className="flex">
+                          {/* Time Label */}
+                          <div className="flex flex-col justify-center px-6 py-6 bg-[#F8FAFC] w-[180px] border-r border-gray-100 shrink-0">
+                            <div className="text-base font-bold text-gray-900">
+                              2번특강
+                            </div>
+                            <div className="text-sm text-gray-500 mt-1">
+                              14:00-16:00
+                            </div>
+                          </div>
+                          {/* Class Grid for Row 2 */}
+                          <div className="flex-1 p-3 bg-white grid grid-cols-4 gap-3">
+                            {[
+                              { name: "접영 A", available: true, price: 70000 },
+                              { name: "자유형 B-1", available: true, price: 70000 },
+                              { name: "자유형 호흡 C-1", available: true, price: 70000 },
+                              { name: "평영 A", available: true, price: 70000 },
+                            ].map((slot, index) => (
+                              <button
+                                key={index}
+                                onClick={() => {
+                                  setSelectedTimeSlot({
+                                    name: slot.name,
+                                    time: "14:00-16:00",
+                                    price: slot.price,
+                                    isWaitlist: false,
+                                    available: true,
+                                  });
+                                }}
+                                className={`relative border rounded-lg p-4 flex flex-col justify-between min-h-[100px] transition-all ${
+                                  selectedTimeSlot?.name === slot.name && selectedTimeSlot?.time === "14:00-16:00"
+                                    ? "border-primary border-2 ring-2 ring-primary/10 bg-primary/5"
+                                    : "border-gray-200 hover:border-primary/50 hover:shadow-sm bg-white"
+                                }`}
+                              >
+                                <div className="text-sm font-bold text-gray-800">
+                                  {slot.name}
+                                </div>
+                                <div className="flex justify-end mt-2">
+                                  <span className="bg-[#10B981] text-white text-[11px] px-2 py-1 rounded font-bold">
+                                    신청가능
+                                  </span>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
-
-                  {/* Timetable Grid */}
-                  <div className="overflow-x-auto">
-                    <div className="min-w-[800px] grid grid-cols-7 gap-2">
-                      {/* Time Column */}
-                      <div className="space-y-2">
-                        <div className="h-12 flex items-center justify-center font-semibold text-sm">
-                          시간대
-                        </div>
-                        <div className="border rounded-lg p-3 bg-white">
-                          <div className="font-bold text-sm">1번특강</div>
-                          <div className="text-xs text-gray-600">
-                            12:00-14:00
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Class Slots */}
-                      {[
-                        { name: "접영 B", available: true, price: 70000 },
-                        { name: "평영 B", available: true, price: 70000 },
-                        {
-                          name: "자유형 초등 A-1",
-                          available: true,
-                          price: 70000,
-                        },
-                        {
-                          name: "자유형 초등 B-1",
-                          available: true,
-                          price: 70000,
-                        },
-                        { name: "접영 A", available: true, price: 70000 },
-                        { name: "평영 A", available: true, price: 70000 },
-                      ].map((slot, index) => (
-                        <div key={index} className="space-y-2">
-                          <div className="h-12 flex items-center justify-center font-semibold text-sm">
-                            {slot.name.split(" ")[0]}
-                          </div>
-                          <button
-                            onClick={() => {
-                              if (slot.available) {
-                                setSelectedTimeSlot({
-                                  name: slot.name,
-                                  time: "12:00-14:00",
-                                  price: slot.price,
-                                  isWaitlist: false,
-                                  available: slot.available,
-                                });
-                              } else {
-                                setSelectedTimeSlot({
-                                  name: slot.name,
-                                  time: "12:00-14:00",
-                                  price: slot.price,
-                                  isWaitlist: true,
-                                  available: slot.available,
-                                });
-                                setWaitlistClass({
-                                  name: slot.name,
-                                  time: "12:00-14:00",
-                                  type: "평일상 / 자유형",
-                                });
-                                setShowWaitlistModal(true);
-                              }
-                            }}
-                            className={`border rounded-lg p-3 bg-white w-full transition-all ${
-                              selectedTimeSlot?.name === slot.name
-                                ? "border-primary border-2 ring-2 ring-primary/20"
-                                : "border-gray-200 hover:border-primary"
-                            } ${
-                              !slot.available
-                                ? "cursor-pointer"
-                                : "cursor-pointer"
-                            }`}
-                          >
-                            <div className="text-sm font-medium mb-2">
-                              {slot.name}
-                            </div>
-                            {slot.available ? (
-                              <span className="inline-block px-2 py-1 bg-green-100 text-green-700 text-xs rounded">
-                                선결가능
-                              </span>
-                            ) : (
-                              <span className="inline-block px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded">
-                                대기신청
-                              </span>
-                            )}
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
 
                   {/* Payment Header */}
                   <div className="text-center py-6 border-t">

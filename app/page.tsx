@@ -433,139 +433,6 @@ export default function SwimmingClassPage() {
                   </h1>
                 </div>
 
-                {/* Class Schedule Timetable */}
-                <Card className="overflow-hidden">
-                  <div className="bg-[#2563EB] text-white px-4 py-3 flex items-center gap-2">
-                    <div className="relative">
-                      <svg
-                        className="h-5 w-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <rect
-                          x="3"
-                          y="4"
-                          width="18"
-                          height="16"
-                          rx="2"
-                          strokeWidth="2"
-                        />
-                        <path d="M3 10h18" strokeWidth="2" />
-                      </svg>
-                      <div className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></div>
-                    </div>
-                    <span className="font-semibold">수영 클래스 시간표</span>
-                  </div>
-                  <CardContent className="p-0">
-                    <div className="flex flex-col min-w-full">
-                      {/* 1번특강 Row */}
-                      <div className="flex flex-col md:flex-row border-b border-gray-100">
-                        {/* Time Label */}
-                        <div className="flex flex-col justify-center px-4 py-6 bg-[#EFF6FF] w-full md:w-[200px] border-r border-gray-100 shrink-0">
-                          <div className="text-base font-bold text-gray-900">
-                            1번특강
-                          </div>
-                          <div className="text-sm text-gray-600 mt-1">
-                            12:00-14:00
-                          </div>
-                        </div>
-                        {/* Class Grid for Row 1 */}
-                        <div className="flex-1 p-2 bg-white">
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 h-full">
-                            <div className="relative border rounded-lg p-3 bg-white flex flex-col justify-between min-h-[80px] sm:min-h-[100px]">
-                              <div className="text-sm font-medium text-gray-600">
-                                접영 A
-                              </div>
-                              <div className="flex justify-end mt-2">
-                                <span className="bg-[#34D399] text-white text-[10px] px-1.5 py-0.5 rounded font-medium">
-                                  신택가능
-                                </span>
-                              </div>
-                            </div>
-                            <div className="relative border rounded-lg p-3 bg-white flex flex-col justify-between min-h-[80px] sm:min-h-[100px]">
-                              <div className="text-sm font-medium text-gray-600">
-                                자유형 호흡 A-1
-                              </div>
-                              <div className="flex justify-end mt-2">
-                                <span className="bg-[#34D399] text-white text-[10px] px-1.5 py-0.5 rounded font-medium">
-                                  신택가능
-                                </span>
-                              </div>
-                            </div>
-                            <div className="relative border rounded-lg p-3 bg-white flex flex-col justify-between min-h-[80px] sm:min-h-[100px]">
-                              <div className="text-sm font-medium text-gray-600">
-                                평영 B
-                              </div>
-                              <div className="flex justify-end mt-2">
-                                <span className="bg-[#34D399] text-white text-[10px] px-1.5 py-0.5 rounded font-medium">
-                                  신택가능
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* 2번특강 Row */}
-                      <div className="flex flex-col md:flex-row">
-                        {/* Time Label */}
-                        <div className="flex flex-col justify-center px-4 py-6 bg-[#EFF6FF] w-full md:w-[200px] border-r border-gray-100 shrink-0">
-                          <div className="text-base font-bold text-gray-900">
-                            2번특강
-                          </div>
-                          <div className="text-sm text-gray-600 mt-1">
-                            14:00-16:00
-                          </div>
-                        </div>
-                        {/* Class Grid for Row 2 */}
-                        <div className="flex-1 p-2 bg-white">
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 h-full">
-                            <div className="relative border rounded-lg p-3 bg-white flex flex-col justify-between min-h-[80px] sm:min-h-[100px]">
-                              <div className="text-sm font-medium text-gray-600">
-                                접영 B
-                              </div>
-                              <div className="flex justify-end mt-2">
-                                <span className="bg-[#34D399] text-white text-[10px] px-1.5 py-0.5 rounded font-medium">
-                                  신택가능
-                                </span>
-                              </div>
-                            </div>
-                            <div className="relative border rounded-lg p-3 bg-white flex flex-col justify-between min-h-[80px] sm:min-h-[100px]">
-                              <div className="text-sm font-medium text-gray-600">
-                                자유형 B-1
-                              </div>
-                              <div className="flex justify-end mt-2">
-                                <span className="bg-[#34D399] text-white text-[10px] px-1.5 py-0.5 rounded font-medium">
-                                  신택가능
-                                </span>
-                              </div>
-                            </div>
-                            <div className="relative border rounded-lg p-3 bg-white flex flex-col justify-between min-h-[80px] sm:min-h-[100px]">
-                              <div className="text-sm font-medium text-gray-600">
-                                평영 A
-                              </div>
-                              <div className="flex justify-end mt-2">
-                                <span className="bg-[#34D399] text-white text-[10px] px-1.5 py-0.5 rounded font-medium">
-                                  신택가능
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Info Message */}
-                <Alert className="bg-blue-50 border-blue-200">
-                  <AlertDescription className="text-center text-sm text-gray-600">
-                    💡 준비는 신규로 가입정verbs을 결제 후 다음 참여예약시
-                    신청하실 수 있습니다.
-                  </AlertDescription>
-                </Alert>
-
                 {/* Registration Form */}
                 <Card>
                   <CardContent className="p-6 space-y-6">
@@ -1731,11 +1598,13 @@ export default function SwimmingClassPage() {
                           <div className="flex items-center gap-2">
                             <MapPin className="h-4 w-4 text-red-500" />
                             <span className="text-gray-700">
-                              {classes.find((c) => String(c.id) === selectedClass)
-                                ?.location || "정보 없음"}{" "}
+                              {classes.find(
+                                (c) => String(c.id) === selectedClass
+                              )?.location || "정보 없음"}{" "}
                               (
-                              {classes.find((c) => String(c.id) === selectedClass)
-                                ?.locationCode || ""}
+                              {classes.find(
+                                (c) => String(c.id) === selectedClass
+                              )?.locationCode || ""}
                               )
                             </span>
                           </div>

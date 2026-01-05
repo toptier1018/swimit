@@ -925,12 +925,12 @@ export default function SwimmingClassPage() {
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
                           <span>
-                            A 초급 (자유형 완성고 최소 50미터 가능하신 분)
+                            초급 A (자유형 안쉬고 최소 50미터 가능하신 분)
                           </span>
                         </div>
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>B 초중급 (수를 1년이상 -3년)</span>
+                          <span>초중급 B (수력 1년 이상~ 2년 미만)</span>
                         </div>
                       </div>
                     </div>
@@ -938,19 +938,18 @@ export default function SwimmingClassPage() {
                     {/* 접영 기존 */}
                     <div>
                       <h4 className="font-semibold flex items-center gap-2 mb-2">
-                        <span>🦋</span> 접영 기존
+                        <span>🦋</span> 접영 기준
                       </h4>
                       <div className="space-y-1 text-sm ml-6">
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
                           <span>
-                            A 초급 (자유형/배영고, 자유형 완성고 50미터 가능하신
-                            분)
+                            초급 A (접,배,평,자 배웠고, 자유형 안쉬고 50미터 가능한 분)
                           </span>
                         </div>
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>B 초중급 (수를 1년 6개월 - 3년)</span>
+                          <span>초중급 B (수력 1년 6개월~ 3년)</span>
                         </div>
                       </div>
                     </div>
@@ -987,19 +986,24 @@ export default function SwimmingClassPage() {
                     {/* 턴 기법 기준 */}
                     <div>
                       <h4 className="font-semibold flex items-center gap-2 mb-2">
-                        <span className="bg-blue-600 p-0.5 rounded text-white"><RefreshCw className="h-3.5 w-3.5" /></span> 턴 기법 기준
+                        <span className="bg-blue-600 p-0.5 rounded text-white">
+                          <RefreshCw className="h-3.5 w-3.5" />
+                        </span>{" "}
+                        턴 기법 기준
                       </h4>
                       <div className="space-y-1 text-sm ml-6">
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
                           <span>
-                            A 기초턴(사이드턴) (사이드 턴 거의 배워본적 없거나 교정이 필요한 초보분들)
+                            A 기초턴(사이드턴) (사이드 턴 거의 배워본적 없거나
+                            교정이 필요한 초보분들)
                           </span>
                         </div>
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
                           <span>
-                            B 중급턴(사이드&플립턴) (사이드 & 플립 턴 배워봤으나 자세 교정이 필요하신분)
+                            B 중급턴(사이드&플립턴) (사이드 & 플립 턴 배워봤으나
+                            자세 교정이 필요하신분)
                           </span>
                         </div>
                       </div>

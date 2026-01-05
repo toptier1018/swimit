@@ -205,15 +205,10 @@ export default function SwimmingClassPage() {
     calendarDays.push(i);
   }
 
-  // 선택된 클래스의 특강 날짜만 highlightedDates에 포함
-  const highlightedDates = selectedClass
-    ? classes
-        .filter(
-          (c) =>
-            c.id === Number(selectedClass) && c.month === calendarMonth
-        )
-        .map((c) => c.dateNum)
-    : [];
+  // 현재 달력 월의 모든 특강 날짜를 highlightedDates에 포함
+  const highlightedDates = classes
+    .filter((c) => c.month === calendarMonth)
+    .map((c) => c.dateNum);
 
   const handleRegistration = () => {
     setShowRegistrationForm(true);
@@ -396,7 +391,8 @@ export default function SwimmingClassPage() {
                         size="icon"
                         className="h-8 w-8"
                         onClick={() => {
-                          const newMonth = calendarMonth > 1 ? calendarMonth - 1 : 12;
+                          const newMonth =
+                            calendarMonth > 1 ? calendarMonth - 1 : 12;
                           setCalendarMonth(newMonth);
                           console.log(`[v0] 달력 월 변경: ${newMonth}월`);
                         }}
@@ -411,7 +407,8 @@ export default function SwimmingClassPage() {
                         size="icon"
                         className="h-8 w-8"
                         onClick={() => {
-                          const newMonth = calendarMonth < 12 ? calendarMonth + 1 : 1;
+                          const newMonth =
+                            calendarMonth < 12 ? calendarMonth + 1 : 1;
                           setCalendarMonth(newMonth);
                           console.log(`[v0] 달력 월 변경: ${newMonth}월`);
                         }}

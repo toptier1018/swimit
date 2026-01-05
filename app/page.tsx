@@ -924,13 +924,13 @@ export default function SwimmingClassPage() {
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
                           <span>
-                            클래스 A 초급 (자유형 완성고 최소 50미터 가능하신
+                            A 초급 (자유형 완성고 최소 50미터 가능하신
                             분)
                           </span>
                         </div>
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>클래스 B 초중급 (수를 1년이상 -3년)</span>
+                          <span>B 초중급 (수를 1년이상 -3년)</span>
                         </div>
                       </div>
                     </div>
@@ -944,13 +944,13 @@ export default function SwimmingClassPage() {
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
                           <span>
-                            클래스 A 초급 (자유형/배영고, 자유형 완성고 50미터
+                            A 초급 (자유형/배영고, 자유형 완성고 50미터
                             가능하신 분)
                           </span>
                         </div>
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>클래스 B 초중급 (수를 1년 6개월 - 3년)</span>
+                          <span>B 초중급 (수를 1년 6개월 - 3년)</span>
                         </div>
                       </div>
                     </div>
@@ -964,25 +964,25 @@ export default function SwimmingClassPage() {
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
                           <span>
-                            클래스 입문 A-1 (25m이상 완주 가능하신 분)
+                            입문 A-1 (25m이상 완주 가능하신 분)
                           </span>
                         </div>
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>클래스 입문 A-2 (25m이상 완주 가능하신분)</span>
+                          <span>입문 A-2 (25m이상 완주 가능하신분)</span>
                         </div>
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>클래스 초급 B-1 (25~50m 완주 가능하신분)</span>
+                          <span>초급 B-1 (25~50m 완주 가능하신분)</span>
                         </div>
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>클래스 초급 B-2 (25~50m 완주 가능하신분)</span>
+                          <span>초급 B-2 (25~50m 완주 가능하신분)</span>
                         </div>
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
                           <span>
-                            클래스 초중급 C-1 (50~100m 완주 가능하신분)
+                            초중급 C-1 (50~100m 완주 가능하신분)
                           </span>
                         </div>
                       </div>
@@ -997,14 +997,14 @@ export default function SwimmingClassPage() {
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
                           <span>
-                            클래스 A 기초반(사이드킥) (사이드 킥 강의 배영로즈
+                            A 기초반(사이드킥) (사이드 킥 강의 배영로즈
                             엎거나 고중이 특으신 초보분)
                           </span>
                         </div>
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
                           <span>
-                            클래스 B 중급반(사이드&폴릎판) (사이드 & 폴릎 판
+                            B 중급반(사이드&폴릎판) (사이드 & 폴릎 판
                             배워뽐으나 자세 교정이 필으신분)
                           </span>
                         </div>
@@ -1263,7 +1263,9 @@ export default function SwimmingClassPage() {
                     <div className="bg-[#2563EB] text-white px-4 py-4">
                       <div className="flex items-center gap-2 mb-1">
                         <Calendar className="h-5 w-5" />
-                        <h4 className="font-bold text-lg">수영 클래스 시간표</h4>
+                        <h4 className="font-bold text-lg">
+                          수영 클래스 시간표
+                        </h4>
                       </div>
                       <p className="text-sm text-blue-100 ml-7">
                         시간대별 수업을 확인하고 선택해주세요
@@ -1286,8 +1288,16 @@ export default function SwimmingClassPage() {
                           <div className="flex-1 p-3 bg-white grid grid-cols-4 gap-3">
                             {[
                               { name: "접영 B", available: true, price: 70000 },
-                              { name: "자유형 호흡 A-1", available: true, price: 70000 },
-                              { name: "자유형 호흡 A-2", available: true, price: 70000 },
+                              {
+                                name: "자유형 호흡 A-1",
+                                available: true,
+                                price: 70000,
+                              },
+                              {
+                                name: "자유형 호흡 A-2",
+                                available: true,
+                                price: 70000,
+                              },
                               { name: "평영 B", available: true, price: 70000 },
                             ].map((slot, index) => (
                               <button
@@ -1302,7 +1312,8 @@ export default function SwimmingClassPage() {
                                   });
                                 }}
                                 className={`relative border rounded-lg p-4 flex flex-col justify-between min-h-[100px] transition-all ${
-                                  selectedTimeSlot?.name === slot.name && selectedTimeSlot?.time === "12:00-14:00"
+                                  selectedTimeSlot?.name === slot.name &&
+                                  selectedTimeSlot?.time === "12:00-14:00"
                                     ? "border-primary border-2 ring-2 ring-primary/10 bg-primary/5"
                                     : "border-gray-200 hover:border-primary/50 hover:shadow-sm bg-white"
                                 }`}
@@ -1335,8 +1346,16 @@ export default function SwimmingClassPage() {
                           <div className="flex-1 p-3 bg-white grid grid-cols-4 gap-3">
                             {[
                               { name: "접영 A", available: true, price: 70000 },
-                              { name: "자유형 B-1", available: true, price: 70000 },
-                              { name: "자유형 호흡 C-1", available: true, price: 70000 },
+                              {
+                                name: "자유형 B-1",
+                                available: true,
+                                price: 70000,
+                              },
+                              {
+                                name: "자유형 호흡 C-1",
+                                available: true,
+                                price: 70000,
+                              },
                               { name: "평영 A", available: true, price: 70000 },
                             ].map((slot, index) => (
                               <button
@@ -1351,7 +1370,8 @@ export default function SwimmingClassPage() {
                                   });
                                 }}
                                 className={`relative border rounded-lg p-4 flex flex-col justify-between min-h-[100px] transition-all ${
-                                  selectedTimeSlot?.name === slot.name && selectedTimeSlot?.time === "14:00-16:00"
+                                  selectedTimeSlot?.name === slot.name &&
+                                  selectedTimeSlot?.time === "14:00-16:00"
                                     ? "border-primary border-2 ring-2 ring-primary/10 bg-primary/5"
                                     : "border-gray-200 hover:border-primary/50 hover:shadow-sm bg-white"
                                 }`}

@@ -157,9 +157,17 @@ export default function SwimmingClassPage() {
     // 길이에 따라 하이픈 추가
     if (limitedNumbers.length <= 3) {
       return limitedNumbers;
-    } else if (limitedNumbers.length <= 7) {
+    } else if (limitedNumbers.length <= 6) {
+      // 4~6자리: 010-123 형식
       return `${limitedNumbers.slice(0, 3)}-${limitedNumbers.slice(3)}`;
+    } else if (limitedNumbers.length <= 10) {
+      // 7~10자리: 010-123-4567 형식 (3-3-4)
+      return `${limitedNumbers.slice(0, 3)}-${limitedNumbers.slice(
+        3,
+        6
+      )}-${limitedNumbers.slice(6)}`;
     } else {
+      // 11자리: 010-1234-5678 형식 (3-4-4)
       return `${limitedNumbers.slice(0, 3)}-${limitedNumbers.slice(
         3,
         7

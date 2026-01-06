@@ -1285,20 +1285,20 @@ export default function SwimmingClassPage() {
                       </p>
                     </div>
                     <CardContent className="p-0">
-                      <div className="flex flex-col min-w-[800px]">
+                      <div className="flex flex-col w-full overflow-x-auto">
                         {/* 1번특강 Row */}
-                        <div className="flex border-b border-gray-100">
+                        <div className="flex flex-col sm:flex-row border-b border-gray-100">
                           {/* Time Label */}
-                          <div className="flex flex-col justify-center px-6 py-6 bg-[#F8FAFC] w-[180px] border-r border-gray-100 shrink-0">
-                            <div className="text-base font-bold text-gray-900">
+                          <div className="flex flex-row sm:flex-col justify-center sm:justify-center items-center sm:items-start px-4 sm:px-6 py-4 sm:py-6 bg-[#F8FAFC] w-full sm:w-[180px] border-b sm:border-b-0 sm:border-r border-gray-100 shrink-0">
+                            <div className="text-base font-bold text-gray-900 mr-2 sm:mr-0">
                               1번특강
                             </div>
-                            <div className="text-sm text-gray-500 mt-1">
+                            <div className="text-sm text-gray-500 sm:mt-1">
                               12:00-14:00
                             </div>
                           </div>
                           {/* Class Grid for Row 1 */}
-                          <div className="flex-1 p-3 bg-white grid grid-cols-4 gap-3">
+                          <div className="flex-1 p-3 bg-white grid grid-cols-2 sm:grid-cols-4 gap-3">
                             {[
                               { name: "접영 B", available: true, price: 70000 },
                               {
@@ -1324,14 +1324,14 @@ export default function SwimmingClassPage() {
                                     available: true,
                                   });
                                 }}
-                                className={`relative border rounded-lg p-4 flex flex-col justify-between min-h-[100px] transition-all ${
+                                className={`relative border rounded-lg p-3 sm:p-4 flex flex-col justify-between min-h-[90px] sm:min-h-[100px] transition-all ${
                                   selectedTimeSlot?.name === slot.name &&
                                   selectedTimeSlot?.time === "12:00-14:00"
                                     ? "border-primary border-2 ring-2 ring-primary/10 bg-primary/5"
                                     : "border-gray-200 hover:border-primary/50 hover:shadow-sm bg-white"
                                 }`}
                               >
-                                <div className="text-sm font-bold text-gray-800">
+                                <div className="text-xs sm:text-sm font-bold text-gray-800 break-words">
                                   {slot.name}
                                 </div>
                                 <div className="flex justify-end mt-2">
@@ -1345,18 +1345,18 @@ export default function SwimmingClassPage() {
                         </div>
 
                         {/* 2번특강 Row */}
-                        <div className="flex">
+                        <div className="flex flex-col sm:flex-row">
                           {/* Time Label */}
-                          <div className="flex flex-col justify-center px-6 py-6 bg-[#F8FAFC] w-[180px] border-r border-gray-100 shrink-0">
-                            <div className="text-base font-bold text-gray-900">
+                          <div className="flex flex-row sm:flex-col justify-center sm:justify-center items-center sm:items-start px-4 sm:px-6 py-4 sm:py-6 bg-[#F8FAFC] w-full sm:w-[180px] border-b sm:border-b-0 sm:border-r border-gray-100 shrink-0">
+                            <div className="text-base font-bold text-gray-900 mr-2 sm:mr-0">
                               2번특강
                             </div>
-                            <div className="text-sm text-gray-500 mt-1">
+                            <div className="text-sm text-gray-500 sm:mt-1">
                               14:00-16:00
                             </div>
                           </div>
                           {/* Class Grid for Row 2 */}
-                          <div className="flex-1 p-3 bg-white grid grid-cols-4 gap-3">
+                          <div className="flex-1 p-3 bg-white grid grid-cols-2 sm:grid-cols-4 gap-3">
                             {[
                               { name: "접영 A", available: true, price: 70000 },
                               {
@@ -1382,14 +1382,14 @@ export default function SwimmingClassPage() {
                                     available: true,
                                   });
                                 }}
-                                className={`relative border rounded-lg p-4 flex flex-col justify-between min-h-[100px] transition-all ${
+                                className={`relative border rounded-lg p-3 sm:p-4 flex flex-col justify-between min-h-[90px] sm:min-h-[100px] transition-all ${
                                   selectedTimeSlot?.name === slot.name &&
                                   selectedTimeSlot?.time === "14:00-16:00"
                                     ? "border-primary border-2 ring-2 ring-primary/10 bg-primary/5"
                                     : "border-gray-200 hover:border-primary/50 hover:shadow-sm bg-white"
                                 }`}
                               >
-                                <div className="text-sm font-bold text-gray-800">
+                                <div className="text-xs sm:text-sm font-bold text-gray-800 break-words">
                                   {slot.name}
                                 </div>
                                 <div className="flex justify-end mt-2">

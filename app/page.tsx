@@ -561,7 +561,7 @@ export default function SwimmingClassPage() {
                             onCheckedChange={(checked) =>
                               handleAgreeAll(checked as boolean)
                             }
-                            className="mt-0.5"
+                            className="mt-0.5 size-5 border-2 border-gray-400 data-[state=checked]:bg-primary data-[state=checked]:border-primary shadow-md hover:border-primary transition-all"
                           />
                           <Label
                             htmlFor="agree-all"
@@ -583,7 +583,7 @@ export default function SwimmingClassPage() {
                                   onCheckedChange={(checked) =>
                                     setAgree1(checked as boolean)
                                   }
-                                  className="mt-0.5"
+                                  className="mt-0.5 size-5 border-2 border-gray-400 data-[state=checked]:bg-primary data-[state=checked]:border-primary shadow-md hover:border-primary transition-all"
                                 />
                                 <Label
                                   htmlFor="agree-1"
@@ -620,7 +620,7 @@ export default function SwimmingClassPage() {
                                   onCheckedChange={(checked) =>
                                     setAgree2(checked as boolean)
                                   }
-                                  className="mt-0.5"
+                                  className="mt-0.5 size-5 border-2 border-gray-400 data-[state=checked]:bg-primary data-[state=checked]:border-primary shadow-md hover:border-primary transition-all"
                                 />
                                 <Label
                                   htmlFor="agree-2"
@@ -657,7 +657,7 @@ export default function SwimmingClassPage() {
                                   onCheckedChange={(checked) =>
                                     setAgree7(checked as boolean)
                                   }
-                                  className="mt-0.5"
+                                  className="mt-0.5 size-5 border-2 border-gray-400 data-[state=checked]:bg-primary data-[state=checked]:border-primary shadow-md hover:border-primary transition-all"
                                 />
                                 <Label
                                   htmlFor="agree-7"
@@ -694,7 +694,7 @@ export default function SwimmingClassPage() {
                                   onCheckedChange={(checked) =>
                                     setAgree6(checked as boolean)
                                   }
-                                  className="mt-0.5"
+                                  className="mt-0.5 size-5 border-2 border-gray-400 data-[state=checked]:bg-primary data-[state=checked]:border-primary shadow-md hover:border-primary transition-all"
                                 />
                                 <Label
                                   htmlFor="agree-6"
@@ -731,7 +731,7 @@ export default function SwimmingClassPage() {
                                   onCheckedChange={(checked) =>
                                     setAgree4(checked as boolean)
                                   }
-                                  className="mt-0.5"
+                                  className="mt-0.5 size-5 border-2 border-gray-400 data-[state=checked]:bg-primary data-[state=checked]:border-primary shadow-md hover:border-primary transition-all"
                                 />
                                 <Label
                                   htmlFor="agree-4"
@@ -768,7 +768,7 @@ export default function SwimmingClassPage() {
                                   onCheckedChange={(checked) =>
                                     setAgree5(checked as boolean)
                                   }
-                                  className="mt-0.5"
+                                  className="mt-0.5 size-5 border-2 border-gray-400 data-[state=checked]:bg-primary data-[state=checked]:border-primary shadow-md hover:border-primary transition-all"
                                 />
                                 <Label
                                   htmlFor="agree-5"

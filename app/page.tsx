@@ -1046,7 +1046,7 @@ export default function SwimmingClassPage() {
                         <path d="M3 10h18" strokeWidth="2" />
                       </svg>
                     </div>
-                    수영 특강 지역을 선택해주세요
+                    특강 날짜와 지역을 선택하세요
                   </h1>
                 </div>
 

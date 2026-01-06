@@ -1298,7 +1298,7 @@ export default function SwimmingClassPage() {
                             </div>
                           </div>
                           {/* Class Grid for Row 1 */}
-                          <div className="flex-1 p-3 bg-white grid grid-cols-2 sm:grid-cols-4 gap-3">
+                          <div className="flex-1 p-2 sm:p-3 bg-white grid grid-cols-4 gap-2 sm:gap-3">
                             {[
                               { name: "접영 B", available: true, price: 70000 },
                               {
@@ -1324,18 +1324,18 @@ export default function SwimmingClassPage() {
                                     available: true,
                                   });
                                 }}
-                                className={`relative border rounded-lg p-3 sm:p-4 flex flex-col justify-between min-h-[90px] sm:min-h-[100px] transition-all ${
+                                className={`relative border rounded-lg p-2 sm:p-4 flex flex-col justify-between min-h-[80px] sm:min-h-[100px] transition-all ${
                                   selectedTimeSlot?.name === slot.name &&
                                   selectedTimeSlot?.time === "12:00-14:00"
                                     ? "border-primary border-2 ring-2 ring-primary/10 bg-primary/5"
                                     : "border-gray-200 hover:border-primary/50 hover:shadow-sm bg-white"
                                 }`}
                               >
-                                <div className="text-xs sm:text-sm font-bold text-gray-800 break-words">
+                                <div className="text-[10px] sm:text-sm font-bold text-gray-800 break-words leading-tight">
                                   {slot.name}
                                 </div>
-                                <div className="flex justify-end mt-2">
-                                  <span className="bg-[#10B981] text-white text-[11px] px-2 py-1 rounded font-bold">
+                                <div className="flex justify-end mt-1 sm:mt-2">
+                                  <span className="bg-[#10B981] text-white text-[9px] sm:text-[11px] px-1.5 sm:px-2 py-0.5 sm:py-1 rounded font-bold">
                                     신청가능
                                   </span>
                                 </div>
@@ -1356,7 +1356,7 @@ export default function SwimmingClassPage() {
                             </div>
                           </div>
                           {/* Class Grid for Row 2 */}
-                          <div className="flex-1 p-3 bg-white grid grid-cols-2 sm:grid-cols-4 gap-3">
+                          <div className="flex-1 p-2 sm:p-3 bg-white grid grid-cols-4 gap-2 sm:gap-3">
                             {[
                               { name: "접영 A", available: true, price: 70000 },
                               {
@@ -1382,18 +1382,18 @@ export default function SwimmingClassPage() {
                                     available: true,
                                   });
                                 }}
-                                className={`relative border rounded-lg p-3 sm:p-4 flex flex-col justify-between min-h-[90px] sm:min-h-[100px] transition-all ${
+                                className={`relative border rounded-lg p-2 sm:p-4 flex flex-col justify-between min-h-[80px] sm:min-h-[100px] transition-all ${
                                   selectedTimeSlot?.name === slot.name &&
                                   selectedTimeSlot?.time === "14:00-16:00"
                                     ? "border-primary border-2 ring-2 ring-primary/10 bg-primary/5"
                                     : "border-gray-200 hover:border-primary/50 hover:shadow-sm bg-white"
                                 }`}
                               >
-                                <div className="text-xs sm:text-sm font-bold text-gray-800 break-words">
+                                <div className="text-[10px] sm:text-sm font-bold text-gray-800 break-words leading-tight">
                                   {slot.name}
                                 </div>
-                                <div className="flex justify-end mt-2">
-                                  <span className="bg-[#10B981] text-white text-[11px] px-2 py-1 rounded font-bold">
+                                <div className="flex justify-end mt-1 sm:mt-2">
+                                  <span className="bg-[#10B981] text-white text-[9px] sm:text-[11px] px-1.5 sm:px-2 py-0.5 sm:py-1 rounded font-bold">
                                     신청가능
                                   </span>
                                 </div>

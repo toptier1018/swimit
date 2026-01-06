@@ -1167,10 +1167,6 @@ export default function SwimmingClassPage() {
                             <div className="w-3 h-3 rounded bg-gray-300" />
                             <span>오늘</span>
                           </div>
-                          <div className="flex items-center gap-1.5">
-                            <div className="w-3 h-3 rounded-full border-2 border-muted" />
-                            <span>일반</span>
-                          </div>
                         </div>
                       </CardContent>
                     </Card>

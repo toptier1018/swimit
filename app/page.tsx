@@ -146,6 +146,27 @@ export default function SwimmingClassPage() {
     "12월",
   ];
 
+  // 전화번호 자동 포맷팅 함수
+  const formatPhoneNumber = (value: string): string => {
+    // 숫자만 추출
+    const numbers = value.replace(/[^\d]/g, "");
+
+    // 최대 11자리까지만 허용
+    const limitedNumbers = numbers.slice(0, 11);
+
+    // 길이에 따라 하이픈 추가
+    if (limitedNumbers.length <= 3) {
+      return limitedNumbers;
+    } else if (limitedNumbers.length <= 7) {
+      return `${limitedNumbers.slice(0, 3)}-${limitedNumbers.slice(3)}`;
+    } else {
+      return `${limitedNumbers.slice(0, 3)}-${limitedNumbers.slice(
+        3,
+        7
+      )}-${limitedNumbers.slice(7)}`;
+    }
+  };
+
   // 오늘 날짜 정보
   const today = {
     year: getCurrentYear(),
@@ -434,9 +455,13 @@ export default function SwimmingClassPage() {
                         id="phone"
                         placeholder="010-1234-5678"
                         value={formData.phone}
-                        onChange={(e) =>
-                          setFormData({ ...formData, phone: e.target.value })
-                        }
+                        onChange={(e) => {
+                          const formatted = formatPhoneNumber(e.target.value);
+                          setFormData({ ...formData, phone: formatted });
+                          console.log(
+                            `[v0] 전화번호 입력: ${e.target.value} -> ${formatted}`
+                          );
+                        }}
                       />
                     </div>
 

@@ -42,13 +42,13 @@ import { submitToNotion } from "@/app/actions/notion";
 const classes = [
   {
     id: 3,
-    location: "안양",
-    locationCode: "1.31",
-    date: "1월 31일 (토)",
-    dateNum: 31,
-    month: 1,
-    venue: "신성실내수영장",
-    address: "경기도 안양시 만안구 소곡로 93 체육관",
+    location: "서울 서초",
+    locationCode: "2.22",
+    date: "2월 22일 (토)",
+    dateNum: 22,
+    month: 2,
+    venue: "특강 신청 후 제공됩니다.",
+    address: "특강 신청 후 제공됩니다.",
     spots: "3명 모집 중",
   },
 ];
@@ -104,8 +104,8 @@ export default function SwimmingClassPage() {
   const getCurrentMonth = () => new Date().getMonth() + 1;
   const getCurrentDay = () => new Date().getDate();
 
-  const [calendarMonth, setCalendarMonth] = useState(getCurrentMonth());
-  const calendarYear = getCurrentYear();
+  const [calendarMonth, setCalendarMonth] = useState(2); // 2월로 초기화
+  const calendarYear = 2026; // 2026년으로 초기화
 
   // selectedClass가 변경되면 달력 월도 업데이트
   useEffect(() => {

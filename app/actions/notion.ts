@@ -86,15 +86,9 @@ export async function submitToNotion(formData: {
               },
             ],
           },
-          // 이메일 (특강/ 수영 제품 할인 정보를 제공합니다) (Rich Text 속성)
+          // 이메일 (특강/ 수영 제품 할인 정보를 제공합니다) (Email 속성)
           "이메일 (특강/ 수영 제품 할인 정보를 제공합니다)": {
-            rich_text: [
-              {
-                text: {
-                  content: formData.email || "",
-                },
-              },
-            ],
+            email: formData.email || null,
           },
           // 이건 꼭 배우고 싶어요 (Rich Text 속성)
           "이건 꼭 배우고 싶어요": {
@@ -112,14 +106,16 @@ export async function submitToNotion(formData: {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
+      const errorMessage = errorData.message || errorData.code || response.statusText
       console.error("[Notion 액션] API 오류:", {
         status: response.status,
         statusText: response.statusText,
         error: errorData,
+        fullError: JSON.stringify(errorData, null, 2),
       })
       return {
         success: false,
-        error: `데이터 저장 실패: ${response.statusText}`,
+        error: `데이터 저장 실패: ${errorMessage}`,
         details: errorData,
       }
     }

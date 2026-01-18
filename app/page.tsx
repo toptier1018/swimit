@@ -1807,7 +1807,7 @@ export default function SwimmingClassPage() {
                 1. 개인정보의 수집 및 이용 목적
               </h3>
               <p className="text-gray-600 mb-2">
-                (주)블루마인드(이하 "회사")는 다음의 목적을 위하여 개인정보를
+                탑투(주)(이하 "회사")는 다음의 목적을 위하여 개인정보를
                 수집하고 이용합니다:
               </p>
               <ul className="list-disc pl-5 space-y-1 text-gray-600">
@@ -2048,7 +2048,7 @@ export default function SwimmingClassPage() {
             <div>
               <h3 className="font-bold text-base mb-2">제1조 (목적)</h3>
               <p className="text-gray-600 leading-relaxed">
-                본 약관은 (주)블루마인드(이하 "회사")가 제공하는 수영 강의 예약
+                본 약관은 탑투(주)(이하 "회사")가 제공하는 수영 강의 예약
                 서비스(이하 "서비스")의 이용과 관련하여 회사와 이용자의 권리,
                 의무 및 책임사항을 규정함을 목적으로 합니다.
               </p>
@@ -3159,18 +3159,18 @@ export default function SwimmingClassPage() {
           <div className="grid md:grid-cols-2 gap-8 mb-8">
             {/* Left Column */}
             <div className="space-y-4">
-              <h3 className="text-white text-xl font-bold">블루마인드(주)</h3>
+              <h3 className="text-white text-xl font-bold">탑투</h3>
               <div className="text-sm space-y-1">
                 <p>
                   대표자: <span className="text-gray-300">[장연성]</span>
                 </p>
                 <p>
                   사업자등록번호:{" "}
-                  <span className="text-gray-300">[462-86-02893]</span>
+                  <span className="text-gray-300">[222-15-92628]</span>
                 </p>
                 <p>
                   통신판매업 신고번호:{" "}
-                  <span className="text-gray-300">[2023-화성봉담-0317호]</span>
+                  <span className="text-gray-300">[2021-경기송탄-0559]</span>
                 </p>
               </div>
             </div>

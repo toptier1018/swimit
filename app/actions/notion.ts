@@ -8,10 +8,15 @@ export async function submitToNotion(formData: {
   phone: string
   gender: string
   location: string
+  email: string
   message: string
 }) {
   try {
-    console.log("[Notion 액션] 데이터 제출 시작:", { name: formData.name, phone: formData.phone })
+    console.log("[Notion 액션] 데이터 제출 시작:", {
+      name: formData.name,
+      phone: formData.phone,
+      email: formData.email,
+    })
 
     // 환경 변수 확인
     const notionApiKey = process.env.NOTION_API_KEY
@@ -81,6 +86,16 @@ export async function submitToNotion(formData: {
               },
             ],
           },
+          // 이메일 (Rich Text 속성)
+          이메일: {
+            rich_text: [
+              {
+                text: {
+                  content: formData.email || "",
+                },
+              },
+            ],
+          },
           // 이건 꼭 배우고 싶어요 (Rich Text 속성)
           "이건 꼭 배우고 싶어요": {
             rich_text: [
@@ -124,6 +139,14 @@ export async function submitToNotion(formData: {
     }
   }
 }
+
+
+
+
+
+
+
+
 
 
 

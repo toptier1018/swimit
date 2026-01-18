@@ -16,6 +16,7 @@ import {
   Phone,
   MapPinned,
   MessageSquare,
+  Mail,
   X,
   Calendar,
   CreditCard,
@@ -69,6 +70,7 @@ export default function SwimmingClassPage() {
     phone: "",
     gender: "male",
     location: "", // Changed from 'residence' to 'location' for clarity
+    email: "",
     message: "",
   });
   const [agreeAll, setAgreeAll] = useState(false);
@@ -523,6 +525,27 @@ export default function SwimmingClassPage() {
                         onChange={(e) =>
                           setFormData({ ...formData, location: e.target.value })
                         }
+                      />
+                    </div>
+
+                    {/* Email Field */}
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="email"
+                        className="text-sm font-semibold flex items-center gap-1"
+                      >
+                        <Mail className="h-4 w-4" />
+                        이메일 (특강/ 수영 제품 할인 정보를 제공합니다)
+                      </Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="예시: swimit@example.com"
+                        value={formData.email}
+                        onChange={(e) => {
+                          console.log("[v0] 이메일 입력:", e.target.value);
+                          setFormData({ ...formData, email: e.target.value });
+                        }}
                       />
                     </div>
 
@@ -3095,6 +3118,7 @@ export default function SwimmingClassPage() {
                 phone: "",
                 gender: "male",
                 location: "",
+                email: "",
                 message: "",
               });
               setAgreeAll(false);

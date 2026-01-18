@@ -86,8 +86,8 @@ export async function submitToNotion(formData: {
               },
             ],
           },
-          // 이메일 (Rich Text 속성)
-          이메일: {
+          // 이메일 주소 (Rich Text 속성)
+          "이메일 주소": {
             rich_text: [
               {
                 text: {

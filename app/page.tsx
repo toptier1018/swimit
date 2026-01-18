@@ -931,97 +931,70 @@ export default function SwimmingClassPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {/* 평영 기존 */}
+                    {/* 자유형 클래스 */}
                     <div>
                       <h4 className="font-semibold flex items-center gap-2 mb-2">
-                        <span>🤿</span> 평영 기존
+                        <span>🏊</span> 자유형 클래스
                       </h4>
                       <div className="space-y-1 text-sm ml-6">
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
                           <span>
-                            초급 A (자유형 안쉬고 최소 50미터 가능하신 분)
+                            자유형 A: 자유형 25m 이상 가능하신 분
                           </span>
                         </div>
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>초중급 B (수력 1년 이상~ 2년 미만)</span>
+                          <span>자유형 B: 자유형 50m 가능 / 수영 경력 6개월 이상</span>
                         </div>
+                        <p className="text-xs text-gray-500 mt-2 ml-6">
+                          ※ 연속 수강 시 개인 실력에 맞춰 단계별로 지도합니다.
+                        </p>
                       </div>
                     </div>
 
-                    {/* 접영 기존 */}
+                    {/* 평영 클래스 */}
                     <div>
                       <h4 className="font-semibold flex items-center gap-2 mb-2">
-                        <span>🦋</span> 접영 기준
+                        <span>🐸</span> 평영 클래스
                       </h4>
                       <div className="space-y-1 text-sm ml-6">
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
                           <span>
-                            초급 A (접,배,평,자 배웠고, 자유형 안쉬고 50미터
-                            가능한 분)
+                            평영 A: 평영으로 50m 이상 가능하신 분
                           </span>
                         </div>
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>초중급 B (수력 1년 6개월~ 3년)</span>
+                          <span>평영 B: 평영 100m 가능 / 수영 경력 1년 이상</span>
                         </div>
+                        <p className="text-xs text-gray-500 mt-2 ml-6">
+                          ※ 연속 수강 시 개인 실력에 맞춰 단계별로 지도합니다.
+                        </p>
                       </div>
                     </div>
 
-                    {/* 자유형 초등 기존 */}
+                    {/* 접영 클래스 */}
                     <div>
                       <h4 className="font-semibold flex items-center gap-2 mb-2">
-                        <span>🏊</span> 자유형 초등 기존
-                      </h4>
-                      <div className="space-y-1 text-sm ml-6">
-                        <div className="flex items-start gap-2">
-                          <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>입문 A-1 (25m이상 완주 가능하신 분)</span>
-                        </div>
-                        <div className="flex items-start gap-2">
-                          <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>입문 A-2 (25m이상 완주 가능하신분)</span>
-                        </div>
-                        <div className="flex items-start gap-2">
-                          <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>초급 B-1 (25~50m 완주 가능하신분)</span>
-                        </div>
-                        <div className="flex items-start gap-2">
-                          <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>초급 B-2 (25~50m 완주 가능하신분)</span>
-                        </div>
-                        <div className="flex items-start gap-2">
-                          <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>초중급 C-1 (50~100m 완주 가능하신분)</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* 턴 기법 기준 */}
-                    <div>
-                      <h4 className="font-semibold flex items-center gap-2 mb-2">
-                        <span className="bg-blue-600 p-0.5 rounded text-white">
-                          <RefreshCw className="h-3.5 w-3.5" />
-                        </span>{" "}
-                        턴 기법 기준
+                        <span>🦋</span> 접영 클래스
                       </h4>
                       <div className="space-y-1 text-sm ml-6">
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
                           <span>
-                            기초턴 A(사이드턴) (사이드 턴 거의 배워본적 없거나
-                            교정이 필요한 초보분들)
+                            접영 A: 접영·배영·평영·자유형을 모두 배워보았으나<br />
+                            &emsp;&emsp;접영 동작이 아직 어려우신 분
                           </span>
                         </div>
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>
-                            중급턴 B(사이드&플립턴) (사이드 & 플립 턴 배워봤으나
-                            자세 교정이 필요하신분)
-                          </span>
+                          <span>접영 B: 접영 50m 가능 / 수영 경력 1년 이상</span>
                         </div>
+                        <p className="text-xs text-gray-500 mt-2 ml-6">
+                          ※ 연속 수강 시 개인 실력에 맞춰 단계별로 지도합니다.
+                        </p>
                       </div>
                     </div>
 
@@ -1807,8 +1780,8 @@ export default function SwimmingClassPage() {
                 1. 개인정보의 수집 및 이용 목적
               </h3>
               <p className="text-gray-600 mb-2">
-                탑투(주)(이하 "회사")는 다음의 목적을 위하여 개인정보를
-                수집하고 이용합니다:
+                탑투(주)(이하 "회사")는 다음의 목적을 위하여 개인정보를 수집하고
+                이용합니다:
               </p>
               <ul className="list-disc pl-5 space-y-1 text-gray-600">
                 <li>수영 강의 예약 및 관리</li>

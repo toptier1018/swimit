@@ -939,15 +939,15 @@ export default function SwimmingClassPage() {
                       <div className="space-y-1 text-sm ml-6">
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>
-                            자유형 A: 자유형 25m 이상 가능하신 분
-                          </span>
+                          <span>자유형 A: 자유형 25m 이상 가능하신 분</span>
                         </div>
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>자유형 B: 자유형 50m 가능 / 수영 경력 6개월 이상</span>
+                          <span>
+                            자유형 B: 자유형 50m 가능 / 수영 경력 6개월 이상
+                          </span>
                         </div>
-                        <p className="text-xs text-gray-500 mt-2 ml-6">
+                        <p className="text-xs text-red-500 mt-2 ml-6">
                           ※ 연속 수강 시 개인 실력에 맞춰 단계별로 지도합니다.
                         </p>
                       </div>
@@ -961,15 +961,15 @@ export default function SwimmingClassPage() {
                       <div className="space-y-1 text-sm ml-6">
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>
-                            평영 A: 평영으로 50m 이상 가능하신 분
-                          </span>
+                          <span>평영 A: 평영으로 50m 이상 가능하신 분</span>
                         </div>
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>평영 B: 평영 100m 가능 / 수영 경력 1년 이상</span>
+                          <span>
+                            평영 B: 평영 100m 가능 / 수영 경력 1년 이상
+                          </span>
                         </div>
-                        <p className="text-xs text-gray-500 mt-2 ml-6">
+                        <p className="text-xs text-red-500 mt-2 ml-6">
                           ※ 연속 수강 시 개인 실력에 맞춰 단계별로 지도합니다.
                         </p>
                       </div>
@@ -984,15 +984,18 @@ export default function SwimmingClassPage() {
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
                           <span>
-                            접영 A: 접영·배영·평영·자유형을 모두 배워보았으나<br />
+                            접영 A: 접영·배영·평영·자유형을 모두 배워보았으나
+                            <br />
                             &emsp;&emsp;접영 동작이 아직 어려우신 분
                           </span>
                         </div>
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>접영 B: 접영 50m 가능 / 수영 경력 1년 이상</span>
+                          <span>
+                            접영 B: 접영 50m 가능 / 수영 경력 1년 이상
+                          </span>
                         </div>
-                        <p className="text-xs text-gray-500 mt-2 ml-6">
+                        <p className="text-xs text-red-500 mt-2 ml-6">
                           ※ 연속 수강 시 개인 실력에 맞춰 단계별로 지도합니다.
                         </p>
                       </div>

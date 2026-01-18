@@ -42,9 +42,9 @@ import { submitToNotion } from "@/app/actions/notion";
 const classes = [
   {
     id: 3,
-    location: "서울 서초",
+    location: "서울 서초 인근",
     locationCode: "2.22",
-    date: "2월 22일 (토)",
+    date: "2월 22일 (일)",
     dateNum: 22,
     month: 2,
     venue: "특강 신청 후 제공됩니다.",
@@ -1286,38 +1286,31 @@ export default function SwimmingClassPage() {
                     <CardContent className="p-0">
                       <div className="flex flex-col w-full overflow-x-auto">
                         {/* 1번특강 Row */}
-                        <div className="flex flex-col sm:flex-row border-b border-gray-100">
+                        <div className="flex flex-col sm:flex-row">
                           {/* Time Label */}
                           <div className="flex flex-row sm:flex-col justify-center sm:justify-center items-center sm:items-start px-4 sm:px-6 py-4 sm:py-6 bg-[#F8FAFC] w-full sm:w-[180px] border-b sm:border-b-0 sm:border-r border-gray-100 shrink-0">
                             <div className="text-base font-bold text-gray-900 mr-2 sm:mr-0">
                               1번특강
                             </div>
                             <div className="text-sm text-gray-500 sm:mt-1">
-                              12:00-14:00
+                              14:00 ~ 16:00
                             </div>
                           </div>
                           {/* Class Grid for Row 1 */}
-                          <div className="flex-1 p-2 sm:p-3 bg-white grid grid-cols-4 gap-2 sm:gap-3">
+                          <div className="flex-1 p-2 sm:p-3 bg-white grid grid-cols-5 gap-2 sm:gap-3">
                             {[
-                              { name: "접영 B", available: true, price: 70000 },
-                              {
-                                name: "자유형 호흡 A-1",
-                                available: true,
-                                price: 70000,
-                              },
-                              {
-                                name: "자유형 호흡 A-2",
-                                available: true,
-                                price: 70000,
-                              },
-                              { name: "평영 B", available: true, price: 70000 },
+                              { name: "자유형 A (초급)", available: true, price: 70000 },
+                              { name: "평영 A (초급)", available: true, price: 70000 },
+                              { name: "접영 A (초급)", available: true, price: 70000 },
+                              { name: "자유형 B (중급)", available: true, price: 70000 },
+                              { name: "평영 B (중급)", available: true, price: 70000 },
                             ].map((slot, index) => (
                               <button
                                 key={index}
                                 onClick={() => {
                                   setSelectedTimeSlot({
                                     name: slot.name,
-                                    time: "12:00-14:00",
+                                    time: "14:00 ~ 16:00",
                                     price: slot.price,
                                     isWaitlist: false,
                                     available: true,
@@ -1325,65 +1318,7 @@ export default function SwimmingClassPage() {
                                 }}
                                 className={`relative border rounded-lg p-2 sm:p-4 flex flex-col justify-between min-h-[80px] sm:min-h-[100px] transition-all ${
                                   selectedTimeSlot?.name === slot.name &&
-                                  selectedTimeSlot?.time === "12:00-14:00"
-                                    ? "border-primary border-2 ring-2 ring-primary/10 bg-primary/5"
-                                    : "border-gray-200 hover:border-primary/50 hover:shadow-sm bg-white"
-                                }`}
-                              >
-                                <div className="text-[10px] sm:text-sm font-bold text-gray-800 break-words leading-tight">
-                                  {slot.name}
-                                </div>
-                                <div className="flex justify-end mt-1 sm:mt-2">
-                                  <span className="bg-[#10B981] text-white text-[9px] sm:text-[11px] px-1.5 sm:px-2 py-0.5 sm:py-1 rounded font-bold">
-                                    신청가능
-                                  </span>
-                                </div>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* 2번특강 Row */}
-                        <div className="flex flex-col sm:flex-row">
-                          {/* Time Label */}
-                          <div className="flex flex-row sm:flex-col justify-center sm:justify-center items-center sm:items-start px-4 sm:px-6 py-4 sm:py-6 bg-[#F8FAFC] w-full sm:w-[180px] border-b sm:border-b-0 sm:border-r border-gray-100 shrink-0">
-                            <div className="text-base font-bold text-gray-900 mr-2 sm:mr-0">
-                              2번특강
-                            </div>
-                            <div className="text-sm text-gray-500 sm:mt-1">
-                              14:00-16:00
-                            </div>
-                          </div>
-                          {/* Class Grid for Row 2 */}
-                          <div className="flex-1 p-2 sm:p-3 bg-white grid grid-cols-4 gap-2 sm:gap-3">
-                            {[
-                              { name: "접영 A", available: true, price: 70000 },
-                              {
-                                name: "자유형 B-1",
-                                available: true,
-                                price: 70000,
-                              },
-                              {
-                                name: "자유형 호흡 C-1",
-                                available: true,
-                                price: 70000,
-                              },
-                              { name: "평영 A", available: true, price: 70000 },
-                            ].map((slot, index) => (
-                              <button
-                                key={index}
-                                onClick={() => {
-                                  setSelectedTimeSlot({
-                                    name: slot.name,
-                                    time: "14:00-16:00",
-                                    price: slot.price,
-                                    isWaitlist: false,
-                                    available: true,
-                                  });
-                                }}
-                                className={`relative border rounded-lg p-2 sm:p-4 flex flex-col justify-between min-h-[80px] sm:min-h-[100px] transition-all ${
-                                  selectedTimeSlot?.name === slot.name &&
-                                  selectedTimeSlot?.time === "14:00-16:00"
+                                  selectedTimeSlot?.time === "14:00 ~ 16:00"
                                     ? "border-primary border-2 ring-2 ring-primary/10 bg-primary/5"
                                     : "border-gray-200 hover:border-primary/50 hover:shadow-sm bg-white"
                                 }`}

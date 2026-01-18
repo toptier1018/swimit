@@ -86,8 +86,8 @@ export async function submitToNotion(formData: {
               },
             ],
           },
-          // 이메일 주소 (Rich Text 속성)
-          "이메일 주소": {
+          // 이메일 (특강/ 수영 제품 할인 정보를 제공합니다) (Rich Text 속성)
+          "이메일 (특강/ 수영 제품 할인 정보를 제공합니다)": {
             rich_text: [
               {
                 text: {

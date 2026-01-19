@@ -2917,7 +2917,9 @@ export default function SwimmingClassPage() {
           {/* Completion Header */}
           <div className="text-center py-8">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-full mb-4">
-              <span className="text-3xl">💳</span>
+              <span className="text-3xl">
+                {paymentStatus === "예약대기" ? "✅" : "💳"}
+              </span>
             </div>
             <h2 className="text-2xl font-bold mb-2">
               {paymentStatus === "예약대기" ? "예약 대기" : "가상계좌가 발급되었습니다"}

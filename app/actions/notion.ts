@@ -136,14 +136,114 @@ export async function submitToNotion(formData: {
   }
 }
 
+/**
+ * 결제 완료 단계에서 가상계좌 및 주문 정보를 업데이트하는 서버 액션
+ * 같은 Notion 데이터베이스의 추가 컬럼(가상계좌 입금 정보, 주문번호, 선택된 클래스, 시간대)에 값을 채웁니다.
+ */
+export async function updatePaymentInNotion(data: {
+  pageId: string
+  virtualAccountInfo: string
+  orderNumber: string
+  selectedClass: string
+  timeSlot: string
+}) {
+  try {
+    const notionApiKey = process.env.NOTION_API_KEY
 
+    if (!notionApiKey) {
+      console.error("[Notion 결제 업데이트] 환경 변수가 설정되지 않았습니다")
+      return {
+        success: false,
+        error: "서버 설정 오류: 환경 변수가 설정되지 않았습니다",
+      }
+    }
 
+    const response = await fetch(
+      `https://api.notion.com/v1/pages/${data.pageId}`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${notionApiKey}`,
+          "Content-Type": "application/json",
+          "Notion-Version": "2022-06-28",
+        },
+        body: JSON.stringify({
+          properties: {
+            // 가상계좌 입금 정보 (Rich Text)
+            가상계좌입금정보: {
+              rich_text: [
+                {
+                  text: {
+                    content: data.virtualAccountInfo,
+                  },
+                },
+              ],
+            },
+            // 주문번호 (Rich Text)
+            주문번호: {
+              rich_text: [
+                {
+                  text: {
+                    content: data.orderNumber,
+                  },
+                },
+              ],
+            },
+            // 선택된 클래스 (Rich Text)
+            선택된클래스: {
+              rich_text: [
+                {
+                  text: {
+                    content: data.selectedClass,
+                  },
+                },
+              ],
+            },
+            // 시간대 (Rich Text)
+            시간대: {
+              rich_text: [
+                {
+                  text: {
+                    content: data.timeSlot,
+                  },
+                },
+              ],
+            },
+          },
+        }),
+      }
+    )
 
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      const errorMessage =
+        errorData.message || errorData.code || response.statusText
+      console.error("[Notion 결제 업데이트] API 오류:", {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorData,
+        fullError: JSON.stringify(errorData, null, 2),
+      })
+      return {
+        success: false,
+        error: `결제 정보 업데이트 실패: ${errorMessage}`,
+        details: errorData,
+      }
+    }
 
+    const result = await response.json()
+    console.log("[Notion 결제 업데이트] 결제 정보 업데이트 성공:", result.id)
 
-
-
-
-
-
-
+    return {
+      success: true,
+      pageId: result.id,
+    }
+  } catch (error) {
+    console.error("[Notion 결제 업데이트] 예외 발생:", error)
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다",
+    }
+  }
+}

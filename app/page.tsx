@@ -37,7 +37,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { submitToNotion } from "@/app/actions/notion";
+import { submitToNotion, updatePaymentInNotion } from "@/app/actions/notion";
 
 const classes = [
   {
@@ -99,6 +99,7 @@ export default function SwimmingClassPage() {
   const [finalAgree, setFinalAgree] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentDate, setPaymentDate] = useState<Date | null>(null);
+  const [notionPageId, setNotionPageId] = useState<string | null>(null);
   const [orderNumber, setOrderNumber] = useState<string>("");
   // 각 클래스별 신청 인원 추적 (클래스 이름을 키로 사용)
   const [classEnrollment, setClassEnrollment] = useState<Record<string, number>>({
@@ -1010,6 +1011,9 @@ export default function SwimmingClassPage() {
 
                           if (result.success) {
                             console.log("[폼 제출] Notion 저장 성공");
+                            if (result.pageId) {
+                              setNotionPageId(result.pageId);
+                            }
                             setStep(3);
                           } else {
                             console.error(
@@ -1628,7 +1632,7 @@ export default function SwimmingClassPage() {
                     <Button
                       className="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white"
                       disabled={!selectedTimeSlot}
-                      onClick={() => {
+                      onClick={async () => {
                         // 지역 선택 검증
                         if (!selectedClass) {
                           setRegionError(true);
@@ -1648,13 +1652,30 @@ export default function SwimmingClassPage() {
                           } else {
                             // 결제하기 모드
                             const now = new Date();
+                            const newOrderNumber = generateOrderNumber();
                             setPaymentDate(now);
-                            setOrderNumber(generateOrderNumber()); // 주문번호 생성
+                            setOrderNumber(newOrderNumber); // 주문번호 저장
                             // 신청 인원 증가
                             setClassEnrollment((prev) => ({
                               ...prev,
                               [selectedTimeSlot.name]: (prev[selectedTimeSlot.name] || 0) + 1,
                             }));
+
+                            // Notion 결제 정보 업데이트
+                            if (notionPageId) {
+                              try {
+                                await updatePaymentInNotion({
+                                  pageId: notionPageId,
+                                  virtualAccountInfo: "농협 302-1710-5277-51 / 장연성 / 60,000원",
+                                  orderNumber: newOrderNumber,
+                                  selectedClass: selectedTimeSlot.name,
+                                  timeSlot: `1번특강 (${selectedTimeSlot.time})`,
+                                });
+                              } catch (error) {
+                                console.error("[결제] Notion 결제 정보 업데이트 실패:", error);
+                              }
+                            }
+
                             setStep(4);
                           }
                         }

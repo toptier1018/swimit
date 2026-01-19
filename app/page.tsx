@@ -3062,12 +3062,10 @@ export default function SwimmingClassPage() {
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">
                   <span className="text-blue-600">💡</span>
-                  결제 확인 안내
+                  결제 관련 문의
                 </h3>
                 <p className="text-xs text-gray-700 mb-3">
-                  입금이 완료되면 SMS으로 즉시 확인하실 수 있습니다. 입금 완료로
-                  변경되지 않을 경우 아래 문의로 연락해 주시고 안내 받으시기
-                  바랍니다. 혹시 연락이 어려우시면 v0.contact로도 연락 가능합니다.
+                  결제 관련해서 문의사항이 있으시면 카카오톡 문의하기로 연락주세요
                 </p>
                 <Button
                   size="sm"

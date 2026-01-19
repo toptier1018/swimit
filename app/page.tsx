@@ -3032,44 +3032,46 @@ export default function SwimmingClassPage() {
             </div>
           </div>
 
-          {/* Important Notices */}
-          <div className="space-y-4">
-            <div className="bg-white rounded-lg border p-4">
-              <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
-                <span className="text-orange-500">⚠️</span>
-                입금 안내
-              </h3>
-              <ul className="text-base font-bold text-red-600 space-y-2 pl-4 list-disc">
-                <li>입금자명은 신청자와 같아야 합니다!</li>
-                <li>기한 내 미입금시 주문이 자동 취소됩니다</li>
-                <li>당일 입금 확인 후 익일 오후 2시 안내사항 문자로 공지됩니다.</li>
-              </ul>
-            </div>
+          {/* Important Notices - 예약대기 상태가 아닐 때만 표시 */}
+          {paymentStatus !== "예약대기" && (
+            <div className="space-y-4">
+              <div className="bg-white rounded-lg border p-4">
+                <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                  <span className="text-orange-500">⚠️</span>
+                  입금 안내
+                </h3>
+                <ul className="text-base font-bold text-red-600 space-y-2 pl-4 list-disc">
+                  <li>입금자명은 신청자와 같아야 합니다!</li>
+                  <li>기한 내 미입금시 주문이 자동 취소됩니다</li>
+                  <li>당일 입금 확인 후 익일 오후 2시 안내사항 문자로 공지됩니다.</li>
+                </ul>
+              </div>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">
-                <span className="text-blue-600">💡</span>
-                결제 확인 안내
-              </h3>
-              <p className="text-xs text-gray-700">
-                입금이 완료되면 SMS으로 즉시 확인하실 수 있습니다. 입금 완료로
-                변경되지 않을 경우 아래 문의로 연락해 주시고 안내 받으시기
-                바랍니다. 혹시 연락이 어려우시면 v0.contact로도 연락 가능합니다.
-              </p>
-            </div>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                  <span className="text-blue-600">💡</span>
+                  결제 확인 안내
+                </h3>
+                <p className="text-xs text-gray-700">
+                  입금이 완료되면 SMS으로 즉시 확인하실 수 있습니다. 입금 완료로
+                  변경되지 않을 경우 아래 문의로 연락해 주시고 안내 받으시기
+                  바랍니다. 혹시 연락이 어려우시면 v0.contact로도 연락 가능합니다.
+                </p>
+              </div>
 
-            <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-4">
-              <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">
-                <span className="text-yellow-600">⚠️</span>
-                환불 정책 주의사항
-              </h3>
-              <ul className="text-base font-bold text-gray-900 space-y-2 pl-4 list-disc">
-                <li>수업 14일 전 취소 요청시 100% 환불됩니다</li>
-                <li>이후 대관 예약을 진행하므로 환불 및 취소는 불가합니다.</li>
-                <li>자세한 환불 정책은 이용약관을 확인해주세요</li>
-              </ul>
+              <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-4">
+                <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                  <span className="text-yellow-600">⚠️</span>
+                  환불 정책 주의사항
+                </h3>
+                <ul className="text-base font-bold text-gray-900 space-y-2 pl-4 list-disc">
+                  <li>수업 14일 전 취소 요청시 100% 환불됩니다</li>
+                  <li>이후 대관 예약을 진행하므로 환불 및 취소는 불가합니다.</li>
+                  <li>자세한 환불 정책은 이용약관을 확인해주세요</li>
+                </ul>
+              </div>
             </div>
-          </div>
+          )}
 
           <Button
             className="w-full py-6 text-lg font-semibold bg-teal-600 hover:bg-teal-700"

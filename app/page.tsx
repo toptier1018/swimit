@@ -243,8 +243,7 @@ export default function SwimmingClassPage() {
                   {/* Main Title */}
                   <div>
                     <h3 className="text-lg font-bold text-gray-900 mb-4">
-                      50m 겨우 가는 사람도 단 하루만에 편하게 수영하는 방법이
-                      있다면 믿으시겠습니까?
+                      단 하루만에 수영 편하게 하는 방법이 있다면 믿으시겠습니까?
                     </h3>
                   </div>
 
@@ -257,11 +256,10 @@ export default function SwimmingClassPage() {
                       됩니다.
                     </p>
                     <p>
-                      더 큰 문제는 <span className="font-bold">잘못된 수영
-                      자세</span>로 인해 어깨, 허리, 무릎에 통증이 생길 수
-                      있다는 점입니다. 물은 공기보다 800배 밀도가 높기
-                      때문입니다. 건강을 위해 시작한 수영이 통증의 원인이 되어서는
-                      안 됩니다.
+                      더 큰 문제는 잘못된 수영 자세로 인해 어깨, 허리, 무릎에
+                      통증이 생길 수 있다는 점입니다. 물은 공기보다 800배 밀도가
+                      높기 때문입니다. 건강하려고 시작했던 수영이 통증을
+                      유발시키는 수영이 되면 안되잖아요?
                     </p>
                   </div>
 

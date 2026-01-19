@@ -1402,6 +1402,7 @@ export default function SwimmingClassPage() {
                                     isWaitlist: false,
                                     available: true,
                                   });
+                                  setStep(3); // 바로 결제 화면으로 이동
                                 }}
                                 className={`relative border rounded-lg p-2 sm:p-4 flex flex-col justify-between min-h-[80px] sm:min-h-[100px] transition-all ${
                                   selectedTimeSlot?.name === slot.name &&
@@ -1438,175 +1439,6 @@ export default function SwimmingClassPage() {
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-8">
-                    {/* Left Column - Payment Method */}
-                    <div className="space-y-6">
-                      {/* Payment Method Selection */}
-                      <div>
-                        <h3 className="text-lg font-bold mb-4">결제 방법</h3>
-
-                        <div className="space-y-3">
-                          {/* Payment Method Buttons Grid */}
-                          <div className="grid grid-cols-2 gap-3">
-                            <button
-                              onClick={() => setPaymentMethod("kakao")}
-                              className={`border-2 rounded-lg p-4 flex flex-col items-center justify-center gap-2 transition-all relative ${
-                                paymentMethod === "kakao"
-                                  ? "border-primary bg-blue-50"
-                                  : "border-gray-300 hover:border-gray-400"
-                              }`}
-                            >
-                              {paymentMethod === "kakao" && (
-                                <div className="absolute top-2 left-2 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
-                                  <Check className="h-3 w-3 text-white" />
-                                </div>
-                              )}
-                              <div className="text-2xl">💛</div>
-                              <span className="text-sm font-medium">
-                                카카오페이
-                              </span>
-                            </button>
-
-                            <button
-                              onClick={() => setPaymentMethod("tosspayments")}
-                              className={`border-2 rounded-lg p-4 flex flex-col items-center justify-center gap-2 transition-all ${
-                                paymentMethod === "tosspayments"
-                                  ? "border-primary bg-blue-50"
-                                  : "border-gray-300 hover:border-gray-400"
-                              }`}
-                            >
-                              <div className="text-2xl text-blue-600">💳</div>
-                              <span className="text-sm font-medium">
-                                토스페이먼츠
-                              </span>
-                            </button>
-
-                            <button
-                              onClick={() => setPaymentMethod("card")}
-                              className={`border-2 rounded-lg p-4 flex flex-col items-center justify-center gap-2 transition-all ${
-                                paymentMethod === "card"
-                                  ? "border-primary bg-blue-50"
-                                  : "border-gray-300 hover:border-gray-400"
-                              }`}
-                            >
-                              <CreditCard className="h-8 w-8 text-gray-600" />
-                              <span className="text-sm font-medium">
-                                신용·체크카드
-                              </span>
-                            </button>
-
-                            <button
-                              onClick={() => setPaymentMethod("naverpay")}
-                              className={`border-2 rounded-lg p-4 flex flex-col items-center justify-center gap-2 transition-all ${
-                                paymentMethod === "naverpay"
-                                  ? "border-primary bg-blue-50"
-                                  : "border-gray-300 hover:border-gray-400"
-                              }`}
-                            >
-                              <div className="w-10 h-10 bg-green-500 rounded flex items-center justify-center">
-                                <span className="text-white font-bold">N</span>
-                              </div>
-                              <span className="text-sm font-medium">
-                                네이버페이
-                              </span>
-                            </button>
-                          </div>
-
-                          {/* Bottom Row - 2 Payment Options */}
-                          <div className="grid grid-cols-2 gap-3">
-                            <button
-                              onClick={() => setPaymentMethod("paypal")}
-                              className={`border-2 rounded-lg p-3 flex items-center justify-center gap-2 transition-all ${
-                                paymentMethod === "paypal"
-                                  ? "border-primary bg-blue-50"
-                                  : "border-gray-300 hover:border-gray-400"
-                              }`}
-                            >
-                              <div className="w-8 h-8 bg-yellow-400 rounded flex items-center justify-center">
-                                <span className="text-xs font-bold">pay</span>
-                              </div>
-                              <span className="text-sm font-medium">
-                                페이팔
-                              </span>
-                            </button>
-
-                            <button
-                              onClick={() => setPaymentMethod("toss")}
-                              className={`border-2 rounded-lg p-3 flex items-center justify-center gap-2 transition-all ${
-                                paymentMethod === "toss"
-                                  ? "border-primary bg-blue-50"
-                                  : "border-gray-300 hover:border-gray-400"
-                              }`}
-                            >
-                              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                                <span className="text-white font-bold text-xs">
-                                  t
-                                </span>
-                              </div>
-                              <span className="text-sm font-medium">
-                                토스페이
-                              </span>
-                            </button>
-                          </div>
-                        </div>
-
-                        <p className="text-xs text-red-500 mt-3">
-                          * 주로 호 기한 안내 담임께서 결제는 우선이 수정됩니다.
-                        </p>
-                      </div>
-
-                      {/* Installment Options */}
-                      <div>
-                        <h3 className="text-base font-semibold mb-3">
-                          할부 개월 정보
-                        </h3>
-                        <div className="grid grid-cols-3 gap-2">
-                          <select className="border border-gray-300 rounded-lg px-3 py-2.5 text-sm">
-                            <option>온행 선택</option>
-                            <option>국민</option>
-                            <option>신한</option>
-                            <option>삼성</option>
-                          </select>
-                          <Input
-                            placeholder="예금주 입력"
-                            className="border-gray-300"
-                          />
-                          <Input
-                            placeholder="계좌번호 입력(※ 제외)"
-                            className="border-gray-300"
-                          />
-                        </div>
-
-                        <p className="text-xs text-gray-500 mt-3 leading-relaxed">
-                          주문금액을 위는 결제 방법을 사용하 개별로 결제할 수
-                          있습니다.
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                          삼성 할부는 - 5/6개월 이상 결제 시 1000원 수수료가!
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                          신용카드는 무이자 할부 여부 &gt;
-                        </p>
-                      </div>
-
-                      {/* Agreement Checkbox */}
-                      <div className="flex items-start gap-2 py-2">
-                        <Checkbox
-                          id="payment-terms"
-                          checked={finalAgree}
-                          onCheckedChange={(checked) =>
-                            setFinalAgree(checked as boolean)
-                          }
-                          className="mt-1 size-5 border-2 border-gray-400"
-                        />
-                        <Label
-                          htmlFor="payment-terms"
-                          className="text-sm cursor-pointer"
-                        >
-                          [필수] 결제 서비스 이용약관, 개인정보 처리 동의 &gt;
-                        </Label>
-                      </div>
-                    </div>
-
                     {/* Right Column - Order Summary */}
                     <div className="space-y-6">
                       {/* Order Summary */}
@@ -1726,34 +1558,6 @@ export default function SwimmingClassPage() {
                     </div>
                   </div>
 
-                  {/* Security Notice */}
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 mt-6">
-                    <div className="flex items-start gap-3">
-                      <div className="text-green-600 mt-0.5">
-                        <svg
-                          className="h-5 w-5"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="text-sm font-semibold text-green-800 mb-1">
-                          안전한 결제
-                        </h4>
-                        <p className="text-xs text-green-700 leading-relaxed">
-                          SSL 암호화 통신과 PG사 인증을 통해 안전하게
-                          보호됩니다.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
                   {/* Navigation Buttons */}
                   <div className="flex gap-3 pt-4">
                     <Button
@@ -1765,14 +1569,10 @@ export default function SwimmingClassPage() {
                     </Button>
                     <Button
                       className="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white"
-                      disabled={!selectedTimeSlot || !finalAgree}
+                      disabled={!selectedTimeSlot}
                       onClick={() => setStep(4)}
                     >
-                      ₩
-                      {selectedTimeSlot
-                        ? selectedTimeSlot.price.toLocaleString()
-                        : "0"}{" "}
-                      결제하기
+                      ₩70,000 결제하기
                     </Button>
                   </div>
                 </div>

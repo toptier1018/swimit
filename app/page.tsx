@@ -2939,7 +2939,7 @@ export default function SwimmingClassPage() {
                   ? "bg-green-500" 
                   : paymentStatus === "예약대기"
                   ? "bg-orange-500"
-                  : "bg-orange-500"
+                  : "bg-green-500"
               }`}>
                 {paymentStatus}
               </span>

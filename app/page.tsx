@@ -1386,14 +1386,14 @@ export default function SwimmingClassPage() {
                     </div>
                   )}
                   <Card className="overflow-hidden border-0 shadow-md">
-                    <div className="bg-[#2563EB] text-white px-4 py-4">
+                    <div className="bg-[#2563EB] text-white px-4 py-4 md:py-4">
                       <div className="flex items-center gap-2 mb-1">
-                        <Calendar className="h-5 w-5" />
-                        <h4 className="font-bold text-lg">
+                        <Calendar className="h-6 w-6 md:h-5 md:w-5" />
+                        <h4 className="font-bold text-xl md:text-lg">
                           수영 클래스 시간표
                         </h4>
                       </div>
-                      <p className="text-sm text-blue-100 ml-7">
+                      <p className="text-base md:text-sm text-blue-100 ml-8 md:ml-7">
                         시간대별 수업을 확인하고 선택해주세요
                       </p>
                     </div>
@@ -1403,15 +1403,15 @@ export default function SwimmingClassPage() {
                         <div className="flex flex-col sm:flex-row">
                           {/* Time Label */}
                           <div className="flex flex-row sm:flex-col justify-center sm:justify-center items-center sm:items-start px-4 sm:px-6 py-4 sm:py-6 bg-[#F8FAFC] w-full sm:w-[180px] border-b sm:border-b-0 sm:border-r border-gray-100 shrink-0">
-                            <div className="text-base font-bold text-gray-900 mr-2 sm:mr-0">
+                            <div className="text-lg md:text-base font-bold text-gray-900 mr-2 sm:mr-0">
                               1번특강
                             </div>
-                            <div className="text-sm text-gray-500 sm:mt-1">
+                            <div className="text-base md:text-sm text-gray-500 sm:mt-1">
                               14:00 ~ 16:00
                             </div>
                           </div>
                           {/* Class Grid for Row 1 */}
-                          <div className="flex-1 p-2 sm:p-3 bg-white grid grid-cols-5 gap-2 sm:gap-3">
+                          <div className="flex-1 p-3 sm:p-3 bg-white grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 sm:gap-3">
                             {[
                               {
                                 name: "자유형 A (초급)",
@@ -1454,27 +1454,27 @@ export default function SwimmingClassPage() {
                                     });
                                     setStep(3); // 바로 결제 화면으로 이동
                                   }}
-                                  className={`relative border rounded-lg p-2 sm:p-4 flex flex-col justify-between min-h-[80px] sm:min-h-[100px] transition-all ${
+                                  className={`relative border rounded-lg p-4 sm:p-4 flex flex-col justify-between min-h-[100px] sm:min-h-[100px] transition-all ${
                                     selectedTimeSlot?.name === slot.name &&
                                     selectedTimeSlot?.time === "14:00 ~ 16:00"
                                       ? "border-primary border-2 ring-2 ring-primary/10 bg-primary/5"
                                       : "border-gray-200 hover:border-primary/50 hover:shadow-sm bg-white"
                                   }`}
                                 >
-                                  <div className="text-[10px] sm:text-sm font-bold text-gray-800 break-words leading-tight">
+                                  <div className="text-base md:text-sm font-bold text-gray-800 break-words leading-tight">
                                     {slot.name}
                                   </div>
-                                  <div className="flex justify-end mt-1 sm:mt-2">
+                                  <div className="flex justify-end mt-2 sm:mt-2">
                                     {isFull ? (
-                                      <span className="bg-orange-500 text-white text-[9px] sm:text-[11px] px-1.5 sm:px-2 py-0.5 sm:py-1 rounded font-bold">
+                                      <span className="bg-orange-500 text-white text-sm md:text-[11px] px-3 md:px-2 py-1.5 md:py-1 rounded font-bold">
                                         예약하기
                                       </span>
                                     ) : hasPayment ? (
-                                      <span className="bg-orange-500 text-white text-[9px] sm:text-[11px] px-1.5 sm:px-2 py-0.5 sm:py-1 rounded font-bold">
+                                      <span className="bg-orange-500 text-white text-sm md:text-[11px] px-3 md:px-2 py-1.5 md:py-1 rounded font-bold">
                                         예약대기
                                       </span>
                                     ) : (
-                                      <span className="bg-[#10B981] text-white text-[9px] sm:text-[11px] px-1.5 sm:px-2 py-0.5 sm:py-1 rounded font-bold">
+                                      <span className="bg-[#10B981] text-white text-sm md:text-[11px] px-3 md:px-2 py-1.5 md:py-1 rounded font-bold">
                                         신청가능
                                       </span>
                                     )}

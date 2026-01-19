@@ -112,9 +112,9 @@ export default function SwimmingClassPage() {
   });
   const { toast } = useToast();
 
-  // 클래스별 신청 가능 여부 확인 (정확히 10명)
+  // 클래스별 신청 가능 여부 확인 (11명 이상이면 정원 초과)
   const isClassFull = (className: string) => {
-    return (classEnrollment[className] || 0) === 10;
+    return (classEnrollment[className] || 0) >= 11;
   };
 
   // 클래스별 결제 여부 확인 (11명 이상이면 예약대기)
@@ -1444,26 +1444,21 @@ export default function SwimmingClassPage() {
                                 <button
                                   key={index}
                                   onClick={() => {
-                                    if (!isFull) {
-                                      setSelectedTimeSlot({
-                                        name: slot.name,
-                                        time: "14:00 ~ 16:00",
-                                        price: slot.price,
-                                        isWaitlist: isFull,
-                                        available: !isFull,
-                                      });
-                                      setStep(3); // 바로 결제 화면으로 이동
-                                    }
+                                    setSelectedTimeSlot({
+                                      name: slot.name,
+                                      time: "14:00 ~ 16:00",
+                                      price: slot.price,
+                                      isWaitlist: isFull,
+                                      available: !isFull,
+                                    });
+                                    setStep(3); // 바로 결제 화면으로 이동
                                   }}
                                   className={`relative border rounded-lg p-2 sm:p-4 flex flex-col justify-between min-h-[80px] sm:min-h-[100px] transition-all ${
                                     selectedTimeSlot?.name === slot.name &&
                                     selectedTimeSlot?.time === "14:00 ~ 16:00"
                                       ? "border-primary border-2 ring-2 ring-primary/10 bg-primary/5"
-                                      : isFull
-                                      ? "border-gray-300 bg-gray-50 cursor-not-allowed"
                                       : "border-gray-200 hover:border-primary/50 hover:shadow-sm bg-white"
                                   }`}
-                                  disabled={isFull}
                                 >
                                   <div className="text-[10px] sm:text-sm font-bold text-gray-800 break-words leading-tight">
                                     {slot.name}
@@ -1626,14 +1621,7 @@ export default function SwimmingClassPage() {
                         if (selectedTimeSlot) {
                           const isFull = isClassFull(selectedTimeSlot.name);
                           const hasPayment = hasEnrollment(selectedTimeSlot.name);
-                          if (isFull) {
-                            // 예약하기 모드 (정확히 10명)
-                            toast({
-                              title: "예약 완료",
-                              description: "예약이 완료되었습니다. 다음 일정이 확정되면 연락드리겠습니다.",
-                            });
-                            // 예약 처리 로직 (필요시 추가)
-                          } else if (hasPayment) {
+                          if (isFull || hasPayment) {
                             // 예약대기 모드 (11명 이상) - 예약하기 동작 (결제 프로세스 진행)
                             // 먼저 노션에 개인정보 저장
                             try {

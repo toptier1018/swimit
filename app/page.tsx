@@ -99,6 +99,7 @@ export default function SwimmingClassPage() {
   const [finalAgree, setFinalAgree] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentDate, setPaymentDate] = useState<Date | null>(null);
+  const [orderNumber, setOrderNumber] = useState<string>("");
   // 각 클래스별 신청 인원 추적 (클래스 이름을 키로 사용)
   const [classEnrollment, setClassEnrollment] = useState<Record<string, number>>({
     "자유형 A (초급)": 0,
@@ -112,6 +113,30 @@ export default function SwimmingClassPage() {
   // 클래스별 신청 가능 여부 확인 (10명 제한)
   const isClassFull = (className: string) => {
     return (classEnrollment[className] || 0) >= 10;
+  };
+
+  // 주문번호 생성 함수 (겹치지 않도록)
+  const generateOrderNumber = () => {
+    const timestamp = Date.now();
+    const random = Math.floor(Math.random() * 10000);
+    return `WC-${timestamp}-${random}`;
+  };
+
+  // 주문일시 포맷 함수
+  const formatOrderDate = (date: Date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const seconds = date.getSeconds();
+    
+    const ampm = hours < 12 ? "오전" : "오후";
+    const displayHours = hours % 12 || 12;
+    const displayMinutes = minutes.toString().padStart(2, "0");
+    const displaySeconds = seconds.toString().padStart(2, "0");
+    
+    return `${year}.${month}.${day} ${ampm} ${displayHours}:${displayMinutes}:${displaySeconds}`;
   };
 
   // 입금기한 계산 함수 (결제 시점 + 2일)
@@ -1625,7 +1650,9 @@ export default function SwimmingClassPage() {
                             // 예약 처리 로직 (필요시 추가)
                           } else {
                             // 결제하기 모드
-                            setPaymentDate(new Date());
+                            const now = new Date();
+                            setPaymentDate(now);
+                            setOrderNumber(generateOrderNumber()); // 주문번호 생성
                             // 신청 인원 증가
                             setClassEnrollment((prev) => ({
                               ...prev,
@@ -2874,27 +2901,43 @@ export default function SwimmingClassPage() {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">주문번호</span>
-                <span className="text-orange-600">WC-785352749</span>
+                <span className="text-orange-600">
+                  {orderNumber || "WC-000000000"}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">주문일시</span>
-                <span>2025.11. 오전 4:36:47</span>
+                <span>{paymentDate ? formatOrderDate(paymentDate) : ""}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">결제방법</span>
                 <span>가상계좌</span>
               </div>
+              {selectedTimeSlot && (
+                <div className="flex justify-between pt-2 border-t">
+                  <span className="text-gray-600">선택된 클래스</span>
+                  <span className="font-medium">{selectedTimeSlot.name}</span>
+                </div>
+              )}
+              {selectedTimeSlot && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">시간대</span>
+                  <span className="text-gray-700">
+                    1번특강 ({selectedTimeSlot.time})
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between pt-2 border-t">
                 <span className="text-gray-600">상품 금액</span>
                 <span>₩100,000</span>
               </div>
               <div className="flex justify-between text-green-600">
                 <span>할인 금액</span>
-                <span>-₩30,000</span>
+                <span>-₩40,000</span>
               </div>
               <div className="flex justify-between font-bold text-base pt-2 border-t">
                 <span>결제 금액</span>
-                <span className="text-cyan-600">₩70,000</span>
+                <span className="text-cyan-600">₩60,000</span>
               </div>
             </div>
           </div>

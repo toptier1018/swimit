@@ -247,3 +247,102 @@ export async function updatePaymentInNotion(data: {
     }
   }
 }
+
+/**
+ * 노션 데이터베이스에서 이름/전화번호/성별로 입금확인 상태를 조회하는 서버 액션
+ */
+export async function checkPaymentStatus(data: {
+  name: string
+  phone: string
+  gender: string
+}) {
+  try {
+    const notionApiKey = process.env.NOTION_API_KEY
+    const databaseId = process.env.NOTION_DATABASE_ID
+
+    if (!notionApiKey || !databaseId) {
+      return {
+        success: false,
+        error: "서버 설정 오류: 환경 변수가 설정되지 않았습니다",
+      }
+    }
+
+    // 성별 값을 한글로 변환
+    const genderText = data.gender === "male" ? "남성" : "여성"
+
+    // Notion API를 사용하여 데이터베이스 쿼리
+    const response = await fetch(
+      `https://api.notion.com/v1/databases/${databaseId}/query`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${notionApiKey}`,
+          "Content-Type": "application/json",
+          "Notion-Version": "2022-06-28",
+        },
+        body: JSON.stringify({
+          filter: {
+            and: [
+              {
+                property: "이름",
+                title: {
+                  equals: data.name,
+                },
+              },
+              {
+                property: "전화번호",
+                rich_text: {
+                  equals: data.phone,
+                },
+              },
+              {
+                property: "성별",
+                rich_text: {
+                  equals: genderText,
+                },
+              },
+            ],
+          },
+        }),
+      }
+    )
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      console.error("[Notion 입금확인 조회] API 오류:", {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorData,
+      })
+      return {
+        success: false,
+        error: `조회 실패: ${errorData.message || response.statusText}`,
+      }
+    }
+
+    const result = await response.json()
+
+    if (result.results.length === 0) {
+      return {
+        success: true,
+        isPaid: false,
+      }
+    }
+
+    // 첫 번째 매칭되는 결과의 입금확인 체크박스 상태 확인
+    const page = result.results[0]
+    const paymentConfirmed = page.properties["입금확인"]?.checkbox || false
+
+    return {
+      success: true,
+      isPaid: paymentConfirmed,
+      pageId: page.id,
+    }
+  } catch (error) {
+    console.error("[Notion 입금확인 조회] 예외 발생:", error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "알 수 없는 오류",
+    }
+  }
+}

@@ -37,7 +37,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { submitToNotion, updatePaymentInNotion } from "@/app/actions/notion";
+import { submitToNotion, updatePaymentInNotion, checkPaymentStatus } from "@/app/actions/notion";
 
 const classes = [
   {
@@ -101,6 +101,7 @@ export default function SwimmingClassPage() {
   const [paymentDate, setPaymentDate] = useState<Date | null>(null);
   const [notionPageId, setNotionPageId] = useState<string | null>(null);
   const [orderNumber, setOrderNumber] = useState<string>("");
+  const [paymentStatus, setPaymentStatus] = useState<"입금대기" | "입금완료">("입금대기");
   // 각 클래스별 신청 인원 추적 (클래스 이름을 키로 사용)
   const [classEnrollment, setClassEnrollment] = useState<Record<string, number>>({
     "자유형 A (초급)": 0,
@@ -181,6 +182,38 @@ export default function SwimmingClassPage() {
       }
     }
   }, [selectedClass]);
+
+  // Step 4에서 입금 상태 확인
+  useEffect(() => {
+    if (step === 4 && formData.name && formData.phone && formData.gender) {
+      // 입금 상태 확인 함수
+      const checkStatus = async () => {
+        try {
+          const result = await checkPaymentStatus({
+            name: formData.name,
+            phone: formData.phone,
+            gender: formData.gender,
+          });
+
+          if (result.success && result.isPaid) {
+            setPaymentStatus("입금완료");
+          } else {
+            setPaymentStatus("입금대기");
+          }
+        } catch (error) {
+          console.error("[입금 상태 확인] 오류:", error);
+        }
+      };
+
+      // 초기 확인
+      checkStatus();
+
+      // 5초마다 자동으로 확인
+      const interval = setInterval(checkStatus, 5000);
+
+      return () => clearInterval(interval);
+    }
+  }, [step, formData.name, formData.phone, formData.gender]);
 
   const getDaysInMonth = (year: number, month: number) => {
     return new Date(year, month, 0).getDate();
@@ -2888,8 +2921,12 @@ export default function SwimmingClassPage() {
                 <span className="text-blue-600">📋</span>
                 가상계좌 입금 정보
               </h3>
-              <span className="bg-orange-500 text-white text-xs px-2 py-1 rounded">
-                입금대기
+              <span className={`text-white text-xs px-2 py-1 rounded ${
+                paymentStatus === "입금완료" 
+                  ? "bg-green-500" 
+                  : "bg-orange-500"
+              }`}>
+                {paymentStatus}
               </span>
             </div>
             <div className="space-y-2 text-sm bg-white p-3 rounded">

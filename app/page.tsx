@@ -327,10 +327,13 @@ export default function SwimmingClassPage() {
 
                   {/* PS Section */}
                   <div className="mt-4">
-                    <p className="text-sm text-red-600 font-semibold">
+                    <p className="text-sm text-gray-900 font-semibold">
                       PS. 해당 강습은 가격이 계속 오를 예정이므로 마감이
-                      되었다면 일정에 <span className="font-bold">예약하기</span>를
-                      눌러서 오르지 않는 가격으로 선점하시길 바랍니다
+                      되었다면{" "}
+                      <span className="font-bold text-lg text-red-600">
+                        다음 일정 예약하기
+                      </span>
+                      를 눌러서 오르지 않는 가격으로 선점하시길 바랍니다
                     </p>
                   </div>
                 </div>

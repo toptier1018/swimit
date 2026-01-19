@@ -101,7 +101,7 @@ export default function SwimmingClassPage() {
   const [paymentDate, setPaymentDate] = useState<Date | null>(null);
   const [notionPageId, setNotionPageId] = useState<string | null>(null);
   const [orderNumber, setOrderNumber] = useState<string>("");
-  const [paymentStatus, setPaymentStatus] = useState<"입금대기" | "입금완료">("입금대기");
+  const [paymentStatus, setPaymentStatus] = useState<"입금대기" | "입금완료" | "예약대기">("입금대기");
   // 각 클래스별 신청 인원 추적 (클래스 이름을 키로 사용)
   const [classEnrollment, setClassEnrollment] = useState<Record<string, number>>({
     "자유형 A (초급)": 0,
@@ -1478,13 +1478,13 @@ export default function SwimmingClassPage() {
                                 <button
                                   key={index}
                                   onClick={() => {
-                                    if (!isFull && !hasPayment) {
+                                    if (!isFull) {
                                       setSelectedTimeSlot({
                                         name: slot.name,
                                         time: "14:00 ~ 16:00",
                                         price: slot.price,
-                                        isWaitlist: isFull || hasPayment,
-                                        available: !isFull && !hasPayment,
+                                        isWaitlist: isFull,
+                                        available: !isFull,
                                       });
                                       setStep(3); // 바로 결제 화면으로 이동
                                     }
@@ -1493,11 +1493,11 @@ export default function SwimmingClassPage() {
                                     selectedTimeSlot?.name === slot.name &&
                                     selectedTimeSlot?.time === "14:00 ~ 16:00"
                                       ? "border-primary border-2 ring-2 ring-primary/10 bg-primary/5"
-                                      : isFull || hasPayment
+                                      : isFull
                                       ? "border-gray-300 bg-gray-50 cursor-not-allowed"
                                       : "border-gray-200 hover:border-primary/50 hover:shadow-sm bg-white"
                                   }`}
-                                  disabled={isFull || hasPayment}
+                                  disabled={isFull}
                                 >
                                   <div className="text-[10px] sm:text-sm font-bold text-gray-800 break-words leading-tight">
                                     {slot.name}
@@ -1673,6 +1673,7 @@ export default function SwimmingClassPage() {
                             const newOrderNumber = generateOrderNumber();
                             setPaymentDate(now);
                             setOrderNumber(newOrderNumber); // 주문번호 저장
+                            setPaymentStatus("예약대기"); // 예약대기 상태 설정
                             // 신청 인원 증가
                             setClassEnrollment((prev) => ({
                               ...prev,
@@ -1684,8 +1685,8 @@ export default function SwimmingClassPage() {
                               try {
                                 await updatePaymentInNotion({
                                   pageId: notionPageId,
-                                  // 노션 표의 '가상계좌 입금 정보' 컬럼에는 상태 값만 저장 (예: 입금대기)
-                                  virtualAccountInfo: "입금대기",
+                                  // 노션 표의 '가상계좌 입금 정보' 컬럼에는 상태 값만 저장 (예: 예약대기)
+                                  virtualAccountInfo: "예약대기",
                                   orderNumber: newOrderNumber,
                                   selectedClass: selectedTimeSlot.name,
                                   timeSlot: `1번특강 (${selectedTimeSlot.time})`,
@@ -1702,6 +1703,7 @@ export default function SwimmingClassPage() {
                             const newOrderNumber = generateOrderNumber();
                             setPaymentDate(now);
                             setOrderNumber(newOrderNumber); // 주문번호 저장
+                            setPaymentStatus("입금대기"); // 입금대기 상태 설정
                             // 신청 인원 증가
                             setClassEnrollment((prev) => ({
                               ...prev,
@@ -2939,6 +2941,8 @@ export default function SwimmingClassPage() {
               <span className={`text-white text-xs px-2 py-1 rounded ${
                 paymentStatus === "입금완료" 
                   ? "bg-green-500" 
+                  : paymentStatus === "예약대기"
+                  ? "bg-orange-500"
                   : "bg-orange-500"
               }`}>
                 {paymentStatus}

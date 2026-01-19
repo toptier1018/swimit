@@ -2920,10 +2920,10 @@ export default function SwimmingClassPage() {
               <span className="text-3xl">💳</span>
             </div>
             <h2 className="text-2xl font-bold mb-2">
-              가상계좌가 발급되었습니다
+              {paymentStatus === "예약대기" ? "예약 대기" : "가상계좌가 발급되었습니다"}
             </h2>
             <p className="text-gray-600">
-              아래 계좌로 입금하시면 결제가 완료됩니다
+              {paymentStatus === "예약대기" ? "완료" : "아래 계좌로 입금하시면 결제가 완료됩니다"}
             </p>
           </div>
 

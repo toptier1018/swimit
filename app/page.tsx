@@ -1642,7 +1642,12 @@ export default function SwimmingClassPage() {
                       ← 이전
                     </Button>
                     <Button
-                      className="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white"
+                      className={`flex-1 text-white ${
+                        selectedTimeSlot && 
+                        (isClassFull(selectedTimeSlot.name) || hasEnrollment(selectedTimeSlot.name))
+                          ? "bg-orange-500 hover:bg-orange-600"
+                          : "bg-cyan-600 hover:bg-cyan-700"
+                      }`}
                       disabled={!selectedTimeSlot}
                       onClick={async () => {
                         // 지역 선택 검증
@@ -1701,7 +1706,8 @@ export default function SwimmingClassPage() {
                         }
                       }}
                     >
-                      {selectedTimeSlot && isClassFull(selectedTimeSlot.name)
+                      {selectedTimeSlot && 
+                        (isClassFull(selectedTimeSlot.name) || hasEnrollment(selectedTimeSlot.name))
                         ? "예약하기"
                         : "₩60,000 결제하기"}
                     </Button>

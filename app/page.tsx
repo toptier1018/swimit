@@ -98,7 +98,20 @@ export default function SwimmingClassPage() {
   const [finalAgree, setFinalAgree] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentDate, setPaymentDate] = useState<Date | null>(null);
+  // 각 클래스별 신청 인원 추적 (클래스 이름을 키로 사용)
+  const [classEnrollment, setClassEnrollment] = useState<Record<string, number>>({
+    "자유형 A (초급)": 0,
+    "평영 A (초급)": 0,
+    "접영 A (초급)": 0,
+    "자유형 B (중급)": 0,
+    "평영 B (중급)": 0,
+  });
   const { toast } = useToast();
+
+  // 클래스별 신청 가능 여부 확인 (10명 제한)
+  const isClassFull = (className: string) => {
+    return (classEnrollment[className] || 0) >= 10;
+  };
 
   // 입금기한 계산 함수 (결제 시점 + 2일)
   const getDepositDeadline = () => {
@@ -1413,36 +1426,50 @@ export default function SwimmingClassPage() {
                                 available: true,
                                 price: 70000,
                               },
-                            ].map((slot, index) => (
-                              <button
-                                key={index}
-                                onClick={() => {
-                                  setSelectedTimeSlot({
-                                    name: slot.name,
-                                    time: "14:00 ~ 16:00",
-                                    price: slot.price,
-                                    isWaitlist: false,
-                                    available: true,
-                                  });
-                                  setStep(3); // 바로 결제 화면으로 이동
-                                }}
-                                className={`relative border rounded-lg p-2 sm:p-4 flex flex-col justify-between min-h-[80px] sm:min-h-[100px] transition-all ${
-                                  selectedTimeSlot?.name === slot.name &&
-                                  selectedTimeSlot?.time === "14:00 ~ 16:00"
-                                    ? "border-primary border-2 ring-2 ring-primary/10 bg-primary/5"
-                                    : "border-gray-200 hover:border-primary/50 hover:shadow-sm bg-white"
-                                }`}
-                              >
-                                <div className="text-[10px] sm:text-sm font-bold text-gray-800 break-words leading-tight">
-                                  {slot.name}
-                                </div>
-                                <div className="flex justify-end mt-1 sm:mt-2">
-                                  <span className="bg-[#10B981] text-white text-[9px] sm:text-[11px] px-1.5 sm:px-2 py-0.5 sm:py-1 rounded font-bold">
-                                    신청가능
-                                  </span>
-                                </div>
-                              </button>
-                            ))}
+                            ].map((slot, index) => {
+                              const isFull = isClassFull(slot.name);
+                              return (
+                                <button
+                                  key={index}
+                                  onClick={() => {
+                                    if (!isFull) {
+                                      setSelectedTimeSlot({
+                                        name: slot.name,
+                                        time: "14:00 ~ 16:00",
+                                        price: slot.price,
+                                        isWaitlist: isFull,
+                                        available: !isFull,
+                                      });
+                                      setStep(3); // 바로 결제 화면으로 이동
+                                    }
+                                  }}
+                                  className={`relative border rounded-lg p-2 sm:p-4 flex flex-col justify-between min-h-[80px] sm:min-h-[100px] transition-all ${
+                                    selectedTimeSlot?.name === slot.name &&
+                                    selectedTimeSlot?.time === "14:00 ~ 16:00"
+                                      ? "border-primary border-2 ring-2 ring-primary/10 bg-primary/5"
+                                      : isFull
+                                      ? "border-gray-300 bg-gray-50 cursor-not-allowed"
+                                      : "border-gray-200 hover:border-primary/50 hover:shadow-sm bg-white"
+                                  }`}
+                                  disabled={isFull}
+                                >
+                                  <div className="text-[10px] sm:text-sm font-bold text-gray-800 break-words leading-tight">
+                                    {slot.name}
+                                  </div>
+                                  <div className="flex justify-end mt-1 sm:mt-2">
+                                    {isFull ? (
+                                      <span className="bg-orange-500 text-white text-[9px] sm:text-[11px] px-1.5 sm:px-2 py-0.5 sm:py-1 rounded font-bold">
+                                        예약하기
+                                      </span>
+                                    ) : (
+                                      <span className="bg-[#10B981] text-white text-[9px] sm:text-[11px] px-1.5 sm:px-2 py-0.5 sm:py-1 rounded font-bold">
+                                        신청가능
+                                      </span>
+                                    )}
+                                  </div>
+                                </button>
+                              );
+                            })}
                           </div>
                         </div>
                       </div>
@@ -1571,11 +1598,31 @@ export default function SwimmingClassPage() {
                       className="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white"
                       disabled={!selectedTimeSlot}
                       onClick={() => {
-                        setPaymentDate(new Date());
-                        setStep(4);
+                        if (selectedTimeSlot) {
+                          const isFull = isClassFull(selectedTimeSlot.name);
+                          if (isFull) {
+                            // 예약하기 모드
+                            toast({
+                              title: "예약 완료",
+                              description: "예약이 완료되었습니다. 다음 일정이 확정되면 연락드리겠습니다.",
+                            });
+                            // 예약 처리 로직 (필요시 추가)
+                          } else {
+                            // 결제하기 모드
+                            setPaymentDate(new Date());
+                            // 신청 인원 증가
+                            setClassEnrollment((prev) => ({
+                              ...prev,
+                              [selectedTimeSlot.name]: (prev[selectedTimeSlot.name] || 0) + 1,
+                            }));
+                            setStep(4);
+                          }
+                        }
                       }}
                     >
-                      ₩70,000 결제하기
+                      {selectedTimeSlot && isClassFull(selectedTimeSlot.name)
+                        ? "예약하기"
+                        : "₩70,000 결제하기"}
                     </Button>
                   </div>
                 </div>

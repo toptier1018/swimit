@@ -97,7 +97,27 @@ export default function SwimmingClassPage() {
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [finalAgree, setFinalAgree] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [paymentDate, setPaymentDate] = useState<Date | null>(null);
   const { toast } = useToast();
+
+  // 입금기한 계산 함수 (결제 시점 + 2일)
+  const getDepositDeadline = () => {
+    if (!paymentDate) return "";
+    const deadline = new Date(paymentDate);
+    deadline.setDate(deadline.getDate() + 2);
+    
+    const year = deadline.getFullYear();
+    const month = deadline.getMonth() + 1;
+    const day = deadline.getDate();
+    const hours = deadline.getHours();
+    const minutes = deadline.getMinutes();
+    
+    const ampm = hours < 12 ? "오전" : "오후";
+    const displayHours = hours % 12 || 12;
+    const displayMinutes = minutes.toString().padStart(2, "0");
+    
+    return `${year}년 ${month}월 ${day}일 ${ampm} ${displayHours}시 ${displayMinutes}분`;
+  };
 
   // 달력 월 상태 추가 (선택된 클래스의 월로 초기화)
   const getCurrentYear = () => new Date().getFullYear();
@@ -1550,7 +1570,10 @@ export default function SwimmingClassPage() {
                     <Button
                       className="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white"
                       disabled={!selectedTimeSlot}
-                      onClick={() => setStep(4)}
+                      onClick={() => {
+                        setPaymentDate(new Date());
+                        setStep(4);
+                      }}
                     >
                       ₩70,000 결제하기
                     </Button>
@@ -2763,20 +2786,20 @@ export default function SwimmingClassPage() {
             <div className="space-y-2 text-sm bg-white p-3 rounded">
               <div className="flex justify-between">
                 <span className="text-gray-600">계좌번호</span>
-                <span className="font-medium">790-821510383777</span>
+                <span className="font-medium">농협 302-1710-5277-51</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">예금주</span>
-                <span className="font-medium text-red-600">김프레디</span>
+                <span className="font-medium text-red-600">장연성</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">입금금액</span>
-                <span className="font-bold text-lg">₩70,000</span>
+                <span className="font-bold text-lg">₩60,000</span>
               </div>
               <div className="flex justify-between pt-2 border-t">
                 <span className="text-gray-600">입금기한</span>
                 <span className="text-red-600 font-bold">
-                  2025년 1월 22일 오전 6시 44분
+                  {paymentDate ? getDepositDeadline() : ""}
                 </span>
               </div>
             </div>

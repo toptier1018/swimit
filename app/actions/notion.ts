@@ -190,7 +190,7 @@ export async function updatePaymentInNotion(data: {
               ],
             },
             // 선택된 클래스 (Rich Text)
-            선택된클래스: {
+            "선택된 클래스": {
               rich_text: [
                 {
                   text: {

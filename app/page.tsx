@@ -1438,9 +1438,9 @@ export default function SwimmingClassPage() {
                     </p>
                   </div>
 
-                  <div className="grid md:grid-cols-2 gap-8">
-                    {/* Right Column - Order Summary */}
-                    <div className="space-y-6">
+                  <div className="flex justify-center">
+                    {/* Order Summary - Centered and Wide */}
+                    <div className="space-y-6 w-full max-w-2xl">
                       {/* Order Summary */}
                       <div>
                         <h3 className="text-lg font-bold mb-4">주문 요약</h3>
@@ -1532,28 +1532,6 @@ export default function SwimmingClassPage() {
                             </div>
                           )}
 
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                          <div className="flex items-start gap-2">
-                            <div className="text-blue-600 mt-0.5">
-                              <svg
-                                className="h-4 w-4"
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                              >
-                                <path
-                                  fillRule="evenodd"
-                                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                                  clipRule="evenodd"
-                                />
-                              </svg>
-                            </div>
-                            <p className="text-xs text-blue-800 leading-relaxed">
-                              {selectedTimeSlot?.isWaitlist
-                                ? "대기 신청은 무료입니다"
-                                : "결제 후 즉시 영상 등록이 완료됩니다"}
-                            </p>
-                          </div>
-                        </div>
                       </div>
                     </div>
                   </div>

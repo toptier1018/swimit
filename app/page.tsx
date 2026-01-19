@@ -117,9 +117,9 @@ export default function SwimmingClassPage() {
     return (classEnrollment[className] || 0) >= 10;
   };
 
-  // 클래스별 결제 여부 확인 (1명 이상이면 예약대기)
+  // 클래스별 결제 여부 확인 (10명 이상이면 예약대기)
   const hasEnrollment = (className: string) => {
-    return (classEnrollment[className] || 0) >= 1;
+    return (classEnrollment[className] || 0) >= 10;
   };
 
   // 주문번호 생성 함수 (겹치지 않도록)

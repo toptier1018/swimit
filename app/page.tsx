@@ -1668,12 +1668,34 @@ export default function SwimmingClassPage() {
                             });
                             // 예약 처리 로직 (필요시 추가)
                           } else if (hasPayment) {
-                            // 예약대기 모드 (1명 이상 결제됨) - 예약하기 동작
-                            toast({
-                              title: "예약 완료",
-                              description: "예약이 완료되었습니다. 다음 일정이 확정되면 연락드리겠습니다.",
-                            });
-                            // 예약 처리 로직 (필요시 추가)
+                            // 예약대기 모드 (1명 이상 결제됨) - 예약하기 동작 (결제 프로세스 진행)
+                            const now = new Date();
+                            const newOrderNumber = generateOrderNumber();
+                            setPaymentDate(now);
+                            setOrderNumber(newOrderNumber); // 주문번호 저장
+                            // 신청 인원 증가
+                            setClassEnrollment((prev) => ({
+                              ...prev,
+                              [selectedTimeSlot.name]: (prev[selectedTimeSlot.name] || 0) + 1,
+                            }));
+
+                            // Notion 결제 정보 업데이트
+                            if (notionPageId) {
+                              try {
+                                await updatePaymentInNotion({
+                                  pageId: notionPageId,
+                                  // 노션 표의 '가상계좌 입금 정보' 컬럼에는 상태 값만 저장 (예: 입금대기)
+                                  virtualAccountInfo: "입금대기",
+                                  orderNumber: newOrderNumber,
+                                  selectedClass: selectedTimeSlot.name,
+                                  timeSlot: `1번특강 (${selectedTimeSlot.time})`,
+                                });
+                              } catch (error) {
+                                console.error("[결제] Notion 결제 정보 업데이트 실패:", error);
+                              }
+                            }
+
+                            setStep(4);
                           } else {
                             // 결제하기 모드
                             const now = new Date();

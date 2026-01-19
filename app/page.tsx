@@ -333,22 +333,6 @@ export default function SwimmingClassPage() {
                 <h3 className="font-bold text-red-900 mb-3">⚠️ 주의사항</h3>
                 <ul className="space-y-2 text-sm text-gray-700">
                   <li>
-                    • 단 한번의 특강으로 완벽한 자유형을 구사할 수는 없습니다.
-                  </li>
-                  <li>
-                    • 강의는 자유형 호흡 5: 자유형 영법 숙련도 5정도의 비율로
-                    수업이 되며 자유형 영법의 개선을 통한 호흡의 안정성, 장거리
-                    자유형의 기초를 다지는 특강이 될 겁니다.
-                  </li>
-                  <li>• 특강 특성상 평소 운동량보다 적을 수 있습니다.</li>
-                  <li>
-                    •{" "}
-                    <span className="font-bold text-red-700">
-                      본 특강은 만 19세 미만 미성년자는 참여하실 수 없습니다.
-                      성인 대상 커리큘럼으로 구성되어 있는 점 양해 부탁드립니다.
-                    </span>
-                  </li>
-                  <li>
                     • 단 한번의 특강으로 모든 문제가 해결되진 않습니다.
                     한번에 수강으로 모든게 바뀌길 원하신다면 강습을 신청하지
                     말아주세요.

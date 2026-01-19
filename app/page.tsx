@@ -183,37 +183,6 @@ export default function SwimmingClassPage() {
     }
   }, [selectedClass]);
 
-  // Step 4에서 입금 상태 확인
-  useEffect(() => {
-    if (step === 4 && formData.name && formData.phone && formData.gender) {
-      // 입금 상태 확인 함수
-      const checkStatus = async () => {
-        try {
-          const result = await checkPaymentStatus({
-            name: formData.name,
-            phone: formData.phone,
-            gender: formData.gender,
-          });
-
-          if (result.success && result.isPaid) {
-            setPaymentStatus("입금완료");
-          } else {
-            setPaymentStatus("입금대기");
-          }
-        } catch (error) {
-          console.error("[입금 상태 확인] 오류:", error);
-        }
-      };
-
-      // 초기 확인
-      checkStatus();
-
-      // 5초마다 자동으로 확인
-      const interval = setInterval(checkStatus, 5000);
-
-      return () => clearInterval(interval);
-    }
-  }, [step, formData.name, formData.phone, formData.gender]);
 
   const getDaysInMonth = (year: number, month: number) => {
     return new Date(year, month, 0).getDate();

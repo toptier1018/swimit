@@ -311,93 +311,88 @@ export default function SwimmingClassPage() {
             <div className="flex flex-col items-center space-y-6">
             {/* Class Information Section */}
             <Card className="w-full mb-6 bg-blue-50/50 border-blue-100">
-              <CardContent className="p-6">
-                <div className="space-y-6 text-sm text-gray-700 leading-relaxed">
+              <CardContent className="p-4 md:p-6">
+                <div className="space-y-6 text-base md:text-sm text-gray-700 leading-relaxed">
                   {/* Main Title */}
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-4">
+                    <h3 className="text-2xl md:text-xl font-bold text-gray-900 mb-4 md:mb-4">
                       단 하루만에 수영 편하게 하는 방법이 있다면 믿으시겠습니까?
                     </h3>
                   </div>
 
                   {/* Problem Section */}
-                  <div className="space-y-3">
-                    <p>
-                      수영을 가르치는 기관에서는 많은 분들을 한번에 가르쳐야 하기
-                      때문에
+                  <div className="space-y-4 md:space-y-3">
+                    <p className="text-lg md:text-base">
+                      수영을 가르치는 기관에서는 많은 분들을 한번에 가르쳐야 하기 때문에
                     </p>
-                    <p>
+                    <p className="text-lg md:text-base">
                       <span className="font-bold">
-                        개인의 문제 해결에 집중하기 보단 짜여진 커리큘럼과
-                        개별 피드백 없이 강습할 수 밖에 없습니다
+                        개인의 문제 해결에 집중하기 보단 짜여진 커리큘럼과 개별 피드백 없이 강습할 수 밖에 없습니다
                       </span>
                     </p>
-                    <p>
-                      결국 내 문제를 빠르고 쉽게 해결하지 못해 실력이 늘지 않고
-                      재미도 없어 수영을 포기하게 됩니다
+                    <p className="text-lg md:text-base">
+                      결국 내 문제를 빠르고 쉽게 해결하지 못해 실력이 늘지 않고 재미도 없어 수영을 포기하게 됩니다
                     </p>
-                    <p>
+                    <p className="text-lg md:text-base">
                       게다가 물의 밀도는 공기보다 800배 크기 때문에{" "}
                       <span className="font-bold">
-                        잘못된 방식으로 수영을 지속하게 되면 어깨, 허리, 무릎
-                        통증에 시달리게 되는 것이죠
+                        잘못된 방식으로 수영을 지속하게 되면 어깨, 허리, 무릎 통증에 시달리게 되는 것이죠
                       </span>
                     </p>
-                    <p className="font-bold text-lg underline">
-                      건강하려고 시작했던 수영이 통증을 유발시키는 수영이 되면
-                      안되잖아요?
+                    <p className="font-bold text-xl md:text-lg underline">
+                      건강하려고 시작했던 수영이 통증을 유발시키는 수영이 되면 안되잖아요?
                     </p>
                   </div>
 
                   {/* Solution Section */}
-                  <div className="space-y-3">
-                    <p>
+                  <div className="space-y-4 md:space-y-3">
+                    <p className="text-lg md:text-base">
                       "스윔잇"은 이 문제를 해결하기 위해{" "}
-                      <span className="font-bold text-lg">
+                      <span className="font-bold text-xl md:text-lg">
                         "다치지 않고 오래돌 수 있는 수영"
                       </span>{" "}
                       특강을 개최했습니다
                     </p>
-                    <p>
-                      스윔잇 강의와 연결된 선수/강사 경력 10년 이상 되는
-                      배테랑 분들이 잘못된 방법으로 하고 계신 수영을 손수
-                      잡아드립니다
+                    <p className="text-lg md:text-base">
+                      스윔잇 강의와 연결된 선수/강사 경력 10년 이상 되는 배테랑 분들이
                     </p>
-                    <p>
+                    <p className="text-lg md:text-base">
+                      잘못된 방법으로 하고 계신 수영을 손수 잡아드립니다
+                    </p>
+                    <p className="text-lg md:text-base">
                       즉,{" "}
-                      <span className="font-bold text-lg">
-                        "하루만에 편하게 수영하는 방법에 대해서 직접 잡아드리는
-                        원데이 특강"
+                      <span className="font-bold text-xl md:text-lg">
+                        "하루만에 편하게 수영하는 방법에 대해서 직접 잡아드리는 원데이 특강"
                       </span>
                       입니다
                     </p>
-                    <p>
-                      아래 선생님들 프로필을 보시면 최강의 선생님들로
-                      구성되었다는 걸 알 수 있죠
+                    <p className="text-lg md:text-base">
+                      아래 선생님들 프로필을 보시면 최강의 선생님들로 구성되었다는 걸 알 수 있죠
                     </p>
                   </div>
 
                   {/* Pricing Section */}
-                  <div className="space-y-3">
-                    <p>
+                  <div className="space-y-4 md:space-y-3">
+                    <p className="text-lg md:text-base">
                       첫 특강은 2시간에 10만원에서 할인된 가격{" "}
-                      <span className="font-bold text-lg">40%할인된 가격인 6만원으로 책정</span>하였습니다
+                      <span className="font-bold text-xl md:text-lg">40%할인된 가격인 6만원으로 책정</span>하였습니다
                     </p>
-                    <p>
-                      이 가격으로 영상 촬영에 담당 강사분께서 직접 피드백까지
-                      하는 보너스까지 꾹꾹 눌러 담아 알차게 구성하였습니다
+                    <p className="text-lg md:text-base">
+                      이 가격으로 영상 촬영에 담당 강사분께서 직접 피드백까지 하는 보너스까지
                     </p>
-                    <p className="text-xs text-gray-600">
-                      (강습 시간상 쉬는 시간에 촬영해야 하므로 선착순으로
-                      원하시는 분들만 촬영합니다)
+                    <p className="text-lg md:text-base">
+                      꾹꾹 눌러 담아 알차게 구성하였습니다
+                    </p>
+                    <p className="text-sm md:text-xs text-gray-600">
+                      (강습 시간상 쉬는 시간에 촬영해야 하므로 선착순으로 원하시는 분들만 촬영합니다)
                     </p>
                   </div>
 
                   {/* Call to Action */}
                   <div>
-                    <p>
+                    <p className="text-lg md:text-base">
                       <span className="font-bold">야심차게 준비한 스윔잇 특강</span>{" "}
-                      <span className="font-bold text-red-600 text-lg">지금 바로 신청하기</span>
+                      <span className="font-bold text-red-600 text-xl md:text-lg">지금 바로 신청하기</span>
                       <span className="font-bold">를 눌러</span>{" "}
                       <span className="font-bold">여러분의 문제를 해결해보세요</span>
                     </p>
@@ -405,10 +400,9 @@ export default function SwimmingClassPage() {
 
                   {/* PS Section */}
                   <div className="mt-4">
-                    <p className="text-sm text-gray-900 font-semibold">
-                      PS. 해당 강습은 가격이 계속 오를 예정이므로 마감이
-                      되었다면{" "}
-                      <span className="font-bold text-lg text-red-600">
+                    <p className="text-base md:text-sm text-gray-900 font-semibold">
+                      PS. 해당 강습은 가격이 계속 오를 예정이므로 마감이 되었다면{" "}
+                      <span className="font-bold text-xl md:text-lg text-red-600">
                         다음 일정 예약하기
                       </span>
                       를 눌러서 오르지 않는 가격으로 선점하시길 바랍니다
@@ -422,12 +416,11 @@ export default function SwimmingClassPage() {
             <Alert className="w-full mb-6 bg-yellow-50 border-yellow-200">
               <HelpCircle className="h-4 w-4 text-yellow-600" />
               <AlertDescription className="ml-2">
-                <h3 className="font-bold text-yellow-900 mb-2">
+                <h3 className="font-bold text-yellow-900 mb-2 text-lg md:text-base">
                   💬 특강 관련 문의
                 </h3>
-                <p className="text-sm text-gray-700 mb-3">
-                  특강에 대해 궁금한 점이 있으신가요? 카카오톡으로 편하게
-                  문의해주세요!
+                <p className="text-base md:text-sm text-gray-700 mb-3">
+                  특강에 대해 궁금한 점이 있으신가요? 카카오톡으로 편하게 문의해주세요!
                 </p>
                 <Button
                   size="sm"
@@ -445,20 +438,19 @@ export default function SwimmingClassPage() {
             <Alert className="w-full mb-6 bg-red-50 border-red-200">
               <AlertTriangle className="h-4 w-4 text-red-600" />
               <AlertDescription className="ml-2">
-                <h3 className="font-bold text-red-900 mb-3">⚠️ 주의사항</h3>
-                <ul className="space-y-2 text-sm text-gray-700">
+                <h3 className="font-bold text-red-900 mb-3 text-lg md:text-base">⚠️ 주의사항</h3>
+                <ul className="space-y-3 md:space-y-2 text-base md:text-sm text-gray-700">
                   <li>
                     • 단 한번의 특강으로 모든 문제가 해결되진 않습니다.
-                    한번에 수강으로 모든게 바뀌길 원하신다면 강습을 신청하지
-                    말아주세요.
                   </li>
                   <li>
-                    다만, 어떤 문제인지 확실하게 알게 되시며 개인 교정과 연습에
-                    따라 수영실력이 빠르게 좋아질 수 있습니다.
+                    한번에 수강으로 모든게 바뀌길 원하신다면 강습을 신청하지 말아주세요.
                   </li>
                   <li>
-                    • 설명이 더 많이 필요한 특강의 특성상 평소 운동량보다 적을
-                    수 있습니다.
+                    다만, 어떤 문제인지 확실하게 알게 되시며 개인 교정과 연습에 따라 수영실력이 빠르게 좋아질 수 있습니다.
+                  </li>
+                  <li>
+                    • 설명이 더 많이 필요한 특강의 특성상 평소 운동량보다 적을 수 있습니다.
                   </li>
                   <li>
                     • 본 특강은 만 19세 미만 미성년자는 참여할 수 없습니다.

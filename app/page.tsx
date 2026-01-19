@@ -229,11 +229,12 @@ export default function SwimmingClassPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
-      <main className="container mx-auto py-8 px-4 max-w-5xl">
+      <main className="container mx-auto py-8 px-4 max-w-4xl">
         {!showRegistrationForm ? (
           <>
+            <div className="flex flex-col items-center space-y-6">
             {/* Class Information Section */}
-            <Card className="mb-6 bg-blue-50/50 border-blue-100">
+            <Card className="w-full mb-6 bg-blue-50/50 border-blue-100">
               <CardContent className="p-6">
                 <div className="space-y-6 text-sm text-gray-700 leading-relaxed">
                   {/* Main Title */}
@@ -342,7 +343,7 @@ export default function SwimmingClassPage() {
             </Card>
 
             {/* Refund Policy Section */}
-            <Alert className="mb-6 bg-yellow-50 border-yellow-200">
+            <Alert className="w-full mb-6 bg-yellow-50 border-yellow-200">
               <HelpCircle className="h-4 w-4 text-yellow-600" />
               <AlertDescription className="ml-2">
                 <h3 className="font-bold text-yellow-900 mb-2">
@@ -365,7 +366,7 @@ export default function SwimmingClassPage() {
             </Alert>
 
             {/* Warning Section */}
-            <Alert className="mb-6 bg-red-50 border-red-200">
+            <Alert className="w-full mb-6 bg-red-50 border-red-200">
               <AlertTriangle className="h-4 w-4 text-red-600" />
               <AlertDescription className="ml-2">
                 <h3 className="font-bold text-red-900 mb-3">⚠️ 주의사항</h3>
@@ -391,7 +392,7 @@ export default function SwimmingClassPage() {
             </Alert>
 
             {/* Action Button (hidden when showRegistrationForm is true) */}
-            <div className="mt-8">
+            <div className="w-full mt-8">
               <Button
                 onClick={handleRegistration}
                 className="w-full py-6 text-lg font-semibold"
@@ -399,6 +400,7 @@ export default function SwimmingClassPage() {
               >
                 지금 바로 신청하기 →
               </Button>
+            </div>
             </div>
           </>
         ) : (

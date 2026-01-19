@@ -1668,11 +1668,12 @@ export default function SwimmingClassPage() {
                             });
                             // 예약 처리 로직 (필요시 추가)
                           } else if (hasPayment) {
-                            // 예약대기 모드 (1명 이상 결제됨)
+                            // 예약대기 모드 (1명 이상 결제됨) - 예약하기 동작
                             toast({
-                              title: "예약 대기",
-                              description: "이미 결제가 진행 중입니다. 예약 대기 상태입니다.",
+                              title: "예약 완료",
+                              description: "예약이 완료되었습니다. 다음 일정이 확정되면 연락드리겠습니다.",
                             });
+                            // 예약 처리 로직 (필요시 추가)
                           } else {
                             // 결제하기 모드
                             const now = new Date();

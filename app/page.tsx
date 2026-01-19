@@ -112,14 +112,14 @@ export default function SwimmingClassPage() {
   });
   const { toast } = useToast();
 
-  // 클래스별 신청 가능 여부 확인 (10명일 때 다음 클릭이 11번째이므로 정원 초과)
+  // 클래스별 신청 가능 여부 확인 (9명일 때 다음 클릭이 10번째이므로 정원 초과)
   const isClassFull = (className: string) => {
-    return (classEnrollment[className] || 0) === 10;
+    return (classEnrollment[className] || 0) === 9;
   };
 
-  // 클래스별 결제 여부 확인 (10명일 때 다음 클릭이 11번째이므로 예약대기)
+  // 클래스별 결제 여부 확인 (9명일 때 다음 클릭이 10번째이므로 예약대기)
   const hasEnrollment = (className: string) => {
-    return (classEnrollment[className] || 0) === 10;
+    return (classEnrollment[className] || 0) === 9;
   };
 
   // 주문번호 생성 함수 (겹치지 않도록)
@@ -1624,7 +1624,7 @@ export default function SwimmingClassPage() {
                           const currentEnrollment = classEnrollment[selectedTimeSlot.name] || 0;
                           console.log(`[결제] 클래스: ${selectedTimeSlot.name}, 현재 인원: ${currentEnrollment}, 다음 클릭 시: ${currentEnrollment + 1}번째`);
                           if (isFull || hasPayment) {
-                            // 예약대기 모드 (11번째 클릭) - 예약하기 동작 (결제 프로세스 진행)
+                            // 예약대기 모드 (10번째 클릭) - 예약하기 동작 (결제 프로세스 진행)
                             console.log(`[결제] 예약대기 모드로 전환 - ${selectedTimeSlot.name} 클래스의 ${currentEnrollment + 1}번째 신청자`);
                             // 먼저 노션에 개인정보 저장
                             try {

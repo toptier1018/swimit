@@ -3039,16 +3039,10 @@ export default function SwimmingClassPage() {
                 <span className="text-orange-500">⚠️</span>
                 입금 안내
               </h3>
-              <ul className="text-xs text-gray-700 space-y-1.5 pl-4 list-disc">
+              <ul className="text-base font-bold text-gray-900 space-y-2 pl-4 list-disc">
                 <li>입금자명은 신청자와 같아야 합니다!</li>
-                <li>
-                  기한 내 미입금시 주문이 자동 취소됩니다 (주문 후 3시간 이내)
-                </li>
-                <li>입금 확인은 5~10분 정도 소요될 수 있습니다</li>
-                <li>계좌번호는 1회성입니다. 반복 사용하실 수 없습니다</li>
-                <li>
-                  입금 완료 후 자동으로 수업 등록이 진행되며 카톡으로 공지됩니다
-                </li>
+                <li>기한 내 미입금시 주문이 자동 취소됩니다</li>
+                <li>입금 확인 후 오후 2시 안내사항 문자로 공지됩니다.</li>
               </ul>
             </div>
 
@@ -3069,11 +3063,9 @@ export default function SwimmingClassPage() {
                 <span className="text-yellow-600">⚠️</span>
                 환불 정책 주의사항
               </h3>
-              <ul className="text-xs text-gray-700 space-y-1.5 pl-4 list-disc">
-                <li>수업 7일 전 취소 요청시 100% 환불됩니다</li>
-                <li>수업 3~6일 전 취소 요청시 70% 환불됩니다</li>
-                <li>수업일 3일 전까지는 무료로 환불이 가능합니다</li>
-                <li>환불은 결제일 기준으로 수업일까지 기준입니다</li>
+              <ul className="text-base font-bold text-gray-900 space-y-2 pl-4 list-disc">
+                <li>수업 14일 전 취소 요청시 100% 환불됩니다</li>
+                <li>이후 대관 예약을 진행하므로 환불 및 취소는 불가합니다.</li>
                 <li>자세한 환불 정책은 이용약관을 확인해주세요</li>
               </ul>
             </div>

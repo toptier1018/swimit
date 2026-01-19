@@ -250,76 +250,80 @@ export default function SwimmingClassPage() {
                   {/* Problem Section */}
                   <div className="space-y-3">
                     <p>
-                      기존 수영 교육 기관들은 한 번에 많은 사람을 가르치며,
-                      정해진 커리큘럼에 맞춰 진행합니다. 개인별 피드백이 없어
-                      실력 향상이 느리고, 수영이 재미없어져 결국 포기하게
-                      됩니다.
+                      수영을 가르치는 기관에서는 많은 분들을 한번에 가르쳐야 하기
+                      때문에 개인의 문제 해결에 집중하기 보단 짜여진 커리큘럼과
+                      개별 피드백 없이 강습할 수 밖에 없습니다 결국 내 문제를
+                      빠르고 쉽게 해결하지 못해 실력이 늘지 않고 재미도 없어
+                      수영을 포기하게 됩니다
                     </p>
                     <p>
-                      더 큰 문제는 잘못된 수영 자세로 인해 어깨, 허리, 무릎에
-                      통증이 생길 수 있다는 점입니다. 물은 공기보다 800배 밀도가
-                      높기 때문입니다. 건강하려고 시작했던 수영이 통증을
-                      유발시키는 수영이 되면 안되잖아요?
+                      게다가 물의 밀도가 공기보다 800배 크기 때문에 잘못된
+                      방식으로 수영을 지속하게 되면 어깨, 허리, 무릎 통증에
+                      시달리게 되는 것이죠
+                    </p>
+                    <p className="font-bold">
+                      건강하려고 시작했던 수영이 통증을 유발시키는 수영이 되면
+                      안되잖아요?
                     </p>
                   </div>
 
                   {/* Solution Section */}
-                  <div className="space-y-3 bg-blue-50 p-4 rounded-lg border border-blue-200">
-                    <p className="font-semibold text-blue-900">
-                      이런 문제들을 해결하기 위해 <span className="text-lg font-bold">"스윙잇"</span>이 특강을
-                      준비했습니다.
-                    </p>
-                    <p className="font-bold text-lg text-blue-900">
-                      "다치지 않고 오래돌 수 있는 수영"
+                  <div className="space-y-3">
+                    <p>
+                      "스윙잇"은 이 문제를 해결하기 위해 "다치지 않고 오래돌 수
+                      있는 수영" 특강을 개최했습니다
                     </p>
                     <p>
-                      <span className="font-semibold">10년 이상 경력의 베테랑 강사</span>들이
-                      직접 1:1로 잡아드리는 <span className="font-semibold">원데이 특강</span>입니다.
-                      하루만에 편하게 수영하는 방법에 대해서 직접 잡아드립니다.
+                      스윙잇 강의와 연결된 선수/강사 경력 10년 이상 되는
+                      배테랑 분들이 잘못된 방법으로 하고 계신 수영을 손수
+                      잡아드립니다
+                    </p>
+                    <p>
+                      즉,{" "}
+                      <span className="font-bold">
+                        "하루만에 편하게 수영하는 방법에 대해서 직접 잡아드리는
+                        원데이 특강"
+                      </span>
+                      입니다
+                    </p>
+                    <p>
+                      아래 선생님들 프로필을 보시면 최강의 선생님들로
+                      구성되었다는 걸 알 수 있죠
                     </p>
                   </div>
 
-                  {/* Lecture Details */}
-                  <div className="space-y-4">
-                    <div>
-                      <p className="font-semibold text-gray-900 mb-2">
-                        최강의 선생님들
-                      </p>
-                      <p>
-                        첫 특강은 <span className="font-bold text-blue-900">2시간</span>으로 진행되며,
-                        원래 가격은 <span className="line-through text-gray-500">10만원</span>이지만,
-                        <span className="font-bold text-red-600 text-base"> 40% 할인</span>된{" "}
-                        <span className="font-bold text-blue-900 text-lg">6만원</span>에
-                        제공됩니다.
-                      </p>
-                    </div>
-                    <div className="bg-green-50 p-3 rounded border border-green-200">
-                      <p className="text-sm">
-                        <span className="font-semibold">특별 혜택:</span> 영상 촬영 및
-                        강사님의 직접 피드백이 포함되어 있습니다.
-                      </p>
-                      <p className="text-xs text-gray-600 mt-1">
-                        (영상 촬영은 휴식 시간에 희망자에 한해 선착순으로
-                        진행됩니다)
-                      </p>
-                    </div>
-                    <p className="font-semibold text-blue-900">
-                      강의가 만족스럽지 않거나 불편하시다면 전액 환불해드립니다.
+                  {/* Pricing Section */}
+                  <div className="space-y-3">
+                    <p>
+                      첫 특강은 2시간에 10만원에서 할인된 가격{" "}
+                      <span className="font-bold">40%할인된 가격인 6만원</span>으로
+                      책정하였습니다
                     </p>
-                    <p className="font-bold text-lg text-blue-900">
-                      지금 바로 신청하기를 눌러 여러분의 문제를 해결해보세요.
+                    <p>
+                      이 가격으로 영상 촬영에 담당 강사분께서 직접 피드백까지
+                      하는 보너스까지 꾹꾹 눌러 담아 알차게 구성하였습니다
+                    </p>
+                    <p className="text-xs text-gray-600">
+                      (강습 시간상 쉬는 시간에 촬영해야 하므로 선착순으로
+                      원하시는 분들만 촬영합니다)
+                    </p>
+                  </div>
+
+                  {/* Call to Action */}
+                  <div>
+                    <p className="font-bold">
+                      야심차게 준비한 스윙잇 특강{" "}
+                      <span className="font-bold">지금 바로 신청하기</span>를 눌러
+                      여러분의 문제를 해결해보세요
                     </p>
                   </div>
 
                   {/* PS Section */}
-                  <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200 mt-4">
-                    <p className="font-semibold text-yellow-900 mb-1">
-                      💡 PS
-                    </p>
+                  <div className="mt-4">
                     <p className="text-sm">
-                      특강 가격이 오를 예정입니다. 매진되면{" "}
-                      <span className="font-semibold">"일정에 예약하기"</span>를
-                      눌러 가격이 오르기 전에 현재 가격으로 확보하세요.
+                      PS. 해당 강습은 가격이 계속 오를 예정이므로 마감이
+                      되었다면 일정에 <span className="font-bold">예약하기</span>를
+                      눌러서 오르지 않는 가격으로 선점하시길 바랍니다
                     </p>
                   </div>
                 </div>

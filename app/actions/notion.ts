@@ -170,7 +170,7 @@ export async function updatePaymentInNotion(data: {
         body: JSON.stringify({
           properties: {
             // 가상계좌 입금 정보 (Rich Text)
-            가상계좌입금정보: {
+            "가상계좌 입금 정보": {
               rich_text: [
                 {
                   text: {

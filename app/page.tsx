@@ -1666,7 +1666,8 @@ export default function SwimmingClassPage() {
                               try {
                                 await updatePaymentInNotion({
                                   pageId: notionPageId,
-                                  virtualAccountInfo: "농협 302-1710-5277-51 / 장연성 / 60,000원",
+                                  // 노션 표의 '가상계좌 입금 정보' 컬럼에는 상태 값만 저장 (예: 입금대기)
+                                  virtualAccountInfo: "입금대기",
                                   orderNumber: newOrderNumber,
                                   selectedClass: selectedTimeSlot.name,
                                   timeSlot: `1번특강 (${selectedTimeSlot.time})`,

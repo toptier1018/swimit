@@ -56,7 +56,8 @@ const classes = [
 export default function SwimmingClassPage() {
   const [step, setStep] = useState(1);
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
-  const [selectedClass, setSelectedClass] = useState<string | null>("3");
+  const [selectedClass, setSelectedClass] = useState<string | null>(null);
+  const [regionError, setRegionError] = useState(false);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<{
     name: string;
     time: string;
@@ -1279,6 +1280,11 @@ export default function SwimmingClassPage() {
                       <h3 className="text-sm font-semibold text-primary">
                         📍 지역 선택
                       </h3>
+                      {regionError && (
+                        <p className="text-red-500 text-sm mt-1">
+                          지역을 선택해주세요
+                        </p>
+                      )}
                     </div>
 
                     <div className="space-y-3">
@@ -1292,6 +1298,7 @@ export default function SwimmingClassPage() {
                           }`}
                           onClick={() => {
                             setSelectedClass(String(classItem.id));
+                            setRegionError(false); // 에러 초기화
                           }}
                         >
                           <CardContent className="p-4">
@@ -1598,6 +1605,13 @@ export default function SwimmingClassPage() {
                       className="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white"
                       disabled={!selectedTimeSlot}
                       onClick={() => {
+                        // 지역 선택 검증
+                        if (!selectedClass) {
+                          setRegionError(true);
+                          return;
+                        }
+                        setRegionError(false);
+
                         if (selectedTimeSlot) {
                           const isFull = isClassFull(selectedTimeSlot.name);
                           if (isFull) {

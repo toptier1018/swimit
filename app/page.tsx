@@ -112,14 +112,14 @@ export default function SwimmingClassPage() {
   });
   const { toast } = useToast();
 
-  // 클래스별 신청 가능 여부 확인 (10명 제한)
+  // 클래스별 신청 가능 여부 확인 (정확히 10명)
   const isClassFull = (className: string) => {
-    return (classEnrollment[className] || 0) >= 10;
+    return (classEnrollment[className] || 0) === 10;
   };
 
-  // 클래스별 결제 여부 확인 (10명 이상이면 예약대기)
+  // 클래스별 결제 여부 확인 (11명 이상이면 예약대기)
   const hasEnrollment = (className: string) => {
-    return (classEnrollment[className] || 0) >= 10;
+    return (classEnrollment[className] || 0) >= 11;
   };
 
   // 주문번호 생성 함수 (겹치지 않도록)
@@ -1627,14 +1627,14 @@ export default function SwimmingClassPage() {
                           const isFull = isClassFull(selectedTimeSlot.name);
                           const hasPayment = hasEnrollment(selectedTimeSlot.name);
                           if (isFull) {
-                            // 예약하기 모드 (10명 이상)
+                            // 예약하기 모드 (정확히 10명)
                             toast({
                               title: "예약 완료",
                               description: "예약이 완료되었습니다. 다음 일정이 확정되면 연락드리겠습니다.",
                             });
                             // 예약 처리 로직 (필요시 추가)
                           } else if (hasPayment) {
-                            // 예약대기 모드 (1명 이상 결제됨) - 예약하기 동작 (결제 프로세스 진행)
+                            // 예약대기 모드 (11명 이상) - 예약하기 동작 (결제 프로세스 진행)
                             // 먼저 노션에 개인정보 저장
                             try {
                               const notionResult = await submitToNotion(formData);

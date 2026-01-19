@@ -2944,26 +2944,36 @@ export default function SwimmingClassPage() {
                 {paymentStatus}
               </span>
             </div>
-            <div className="space-y-2 text-sm bg-white p-3 rounded">
-              <div className="flex justify-between">
-                <span className="text-gray-600">계좌번호</span>
-                <span className="font-medium">농협 302-1710-5277-51</span>
+            {paymentStatus === "예약대기" ? (
+              <div className="bg-white p-6 rounded text-center">
+                <p className="text-xl font-bold text-gray-900 leading-relaxed">
+                  취소가 생기거나 다음 특강시 연락드리겠습니다.
+                  <br />
+                  예약해주셔서 감사합니다!
+                </p>
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">예금주</span>
-                <span className="font-medium text-red-600">장연성</span>
+            ) : (
+              <div className="space-y-2 text-sm bg-white p-3 rounded">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">계좌번호</span>
+                  <span className="font-medium">농협 302-1710-5277-51</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">예금주</span>
+                  <span className="font-medium text-red-600">장연성</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">입금금액</span>
+                  <span className="font-bold text-lg">₩60,000</span>
+                </div>
+                <div className="flex justify-between pt-2 border-t">
+                  <span className="text-gray-600">입금기한</span>
+                  <span className="text-red-600 font-bold">
+                    {paymentDate ? getDepositDeadline() : ""}
+                  </span>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">입금금액</span>
-                <span className="font-bold text-lg">₩60,000</span>
-              </div>
-              <div className="flex justify-between pt-2 border-t">
-                <span className="text-gray-600">입금기한</span>
-                <span className="text-red-600 font-bold">
-                  {paymentDate ? getDepositDeadline() : ""}
-                </span>
-              </div>
-            </div>
+            )}
           </div>
 
           {/* Order & Payment Summary */}

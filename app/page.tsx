@@ -1280,11 +1280,6 @@ export default function SwimmingClassPage() {
                       <h3 className="text-sm font-semibold text-primary">
                         📍 지역 선택
                       </h3>
-                      {regionError && (
-                        <p className="text-red-500 text-sm mt-1">
-                          지역을 선택해주세요
-                        </p>
-                      )}
                     </div>
 
                     <div className="space-y-3">
@@ -1380,6 +1375,13 @@ export default function SwimmingClassPage() {
                 </div>
 
                 <div className="space-y-6">
+                  {regionError && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                      <p className="text-red-600 font-bold text-center">
+                        지역을 선택해주세요
+                      </p>
+                    </div>
+                  )}
                   <Card className="overflow-hidden border-0 shadow-md">
                     <div className="bg-[#2563EB] text-white px-4 py-4">
                       <div className="flex items-center gap-2 mb-1">

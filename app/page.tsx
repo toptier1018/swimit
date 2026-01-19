@@ -117,6 +117,11 @@ export default function SwimmingClassPage() {
     return (classEnrollment[className] || 0) >= 10;
   };
 
+  // 클래스별 결제 여부 확인 (1명 이상이면 예약대기)
+  const hasEnrollment = (className: string) => {
+    return (classEnrollment[className] || 0) >= 1;
+  };
+
   // 주문번호 생성 함수 (겹치지 않도록)
   const generateOrderNumber = () => {
     const timestamp = Date.now();
@@ -1468,17 +1473,18 @@ export default function SwimmingClassPage() {
                               },
                             ].map((slot, index) => {
                               const isFull = isClassFull(slot.name);
+                              const hasPayment = hasEnrollment(slot.name);
                               return (
                                 <button
                                   key={index}
                                   onClick={() => {
-                                    if (!isFull) {
+                                    if (!isFull && !hasPayment) {
                                       setSelectedTimeSlot({
                                         name: slot.name,
                                         time: "14:00 ~ 16:00",
                                         price: slot.price,
-                                        isWaitlist: isFull,
-                                        available: !isFull,
+                                        isWaitlist: isFull || hasPayment,
+                                        available: !isFull && !hasPayment,
                                       });
                                       setStep(3); // 바로 결제 화면으로 이동
                                     }
@@ -1487,11 +1493,11 @@ export default function SwimmingClassPage() {
                                     selectedTimeSlot?.name === slot.name &&
                                     selectedTimeSlot?.time === "14:00 ~ 16:00"
                                       ? "border-primary border-2 ring-2 ring-primary/10 bg-primary/5"
-                                      : isFull
+                                      : isFull || hasPayment
                                       ? "border-gray-300 bg-gray-50 cursor-not-allowed"
                                       : "border-gray-200 hover:border-primary/50 hover:shadow-sm bg-white"
                                   }`}
-                                  disabled={isFull}
+                                  disabled={isFull || hasPayment}
                                 >
                                   <div className="text-[10px] sm:text-sm font-bold text-gray-800 break-words leading-tight">
                                     {slot.name}
@@ -1500,6 +1506,10 @@ export default function SwimmingClassPage() {
                                     {isFull ? (
                                       <span className="bg-orange-500 text-white text-[9px] sm:text-[11px] px-1.5 sm:px-2 py-0.5 sm:py-1 rounded font-bold">
                                         예약하기
+                                      </span>
+                                    ) : hasPayment ? (
+                                      <span className="bg-orange-500 text-white text-[9px] sm:text-[11px] px-1.5 sm:px-2 py-0.5 sm:py-1 rounded font-bold">
+                                        예약대기
                                       </span>
                                     ) : (
                                       <span className="bg-[#10B981] text-white text-[9px] sm:text-[11px] px-1.5 sm:px-2 py-0.5 sm:py-1 rounded font-bold">
@@ -1644,13 +1654,20 @@ export default function SwimmingClassPage() {
 
                         if (selectedTimeSlot) {
                           const isFull = isClassFull(selectedTimeSlot.name);
+                          const hasPayment = hasEnrollment(selectedTimeSlot.name);
                           if (isFull) {
-                            // 예약하기 모드
+                            // 예약하기 모드 (10명 이상)
                             toast({
                               title: "예약 완료",
                               description: "예약이 완료되었습니다. 다음 일정이 확정되면 연락드리겠습니다.",
                             });
                             // 예약 처리 로직 (필요시 추가)
+                          } else if (hasPayment) {
+                            // 예약대기 모드 (1명 이상 결제됨)
+                            toast({
+                              title: "예약 대기",
+                              description: "이미 결제가 진행 중입니다. 예약 대기 상태입니다.",
+                            });
                           } else {
                             // 결제하기 모드
                             const now = new Date();

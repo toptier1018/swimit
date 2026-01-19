@@ -296,6 +296,22 @@ export default function SwimmingClassPage() {
                       성인 대상 커리큘럼으로 구성되어 있는 점 양해 부탁드립니다.
                     </span>
                   </li>
+                  <li>
+                    • 단 한번의 특강으로 모든 문제가 해결되진 않습니다.
+                    한번에 수강으로 모든게 바뀌길 원하신다면 강습을 신청하지
+                    말아주세요.
+                  </li>
+                  <li>
+                    다만, 어떤 문제인지 확실하게 알게 되시며 개인 교정과 연습에
+                    따라 수영실력이 빠르게 좋아질 수 있습니다.
+                  </li>
+                  <li>
+                    • 설명이 더 많이 필요한 특강의 특성상 평소 운동량보다 적을
+                    수 있습니다.
+                  </li>
+                  <li>
+                    • 본 특강은 만 19세 미만 미성년자는 참여할 수 없습니다.
+                  </li>
                 </ul>
               </AlertDescription>
             </Alert>
@@ -1299,11 +1315,31 @@ export default function SwimmingClassPage() {
                           {/* Class Grid for Row 1 */}
                           <div className="flex-1 p-2 sm:p-3 bg-white grid grid-cols-5 gap-2 sm:gap-3">
                             {[
-                              { name: "자유형 A (초급)", available: true, price: 70000 },
-                              { name: "평영 A (초급)", available: true, price: 70000 },
-                              { name: "접영 A (초급)", available: true, price: 70000 },
-                              { name: "자유형 B (중급)", available: true, price: 70000 },
-                              { name: "평영 B (중급)", available: true, price: 70000 },
+                              {
+                                name: "자유형 A (초급)",
+                                available: true,
+                                price: 70000,
+                              },
+                              {
+                                name: "평영 A (초급)",
+                                available: true,
+                                price: 70000,
+                              },
+                              {
+                                name: "접영 A (초급)",
+                                available: true,
+                                price: 70000,
+                              },
+                              {
+                                name: "자유형 B (중급)",
+                                available: true,
+                                price: 70000,
+                              },
+                              {
+                                name: "평영 B (중급)",
+                                available: true,
+                                price: 70000,
+                              },
                             ].map((slot, index) => (
                               <button
                                 key={index}

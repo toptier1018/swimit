@@ -1637,15 +1637,18 @@ export default function SwimmingClassPage() {
                         setIsSubmitting(true);
                         console.log("[결제] 결제 처리 시작 - 버튼 비활성화");
 
-                        try {
-                          if (selectedTimeSlot) {
-                            const isFull = isClassFull(selectedTimeSlot.name);
-                            const hasPayment = hasEnrollment(selectedTimeSlot.name);
-                            const currentEnrollment = classEnrollment[selectedTimeSlot.name] || 0;
-                            console.log(`[결제] 클래스: ${selectedTimeSlot.name}, 현재 인원: ${currentEnrollment}, 다음 클릭 시: ${currentEnrollment + 1}번째`);
-                            if (isFull || hasPayment) {
-                              // 예약대기 모드 (11번째 클릭) - 예약하기 동작 (결제 프로세스 진행)
-                              console.log(`[결제] 예약대기 모드로 전환 - ${selectedTimeSlot.name} 클래스의 ${currentEnrollment + 1}번째 신청자`);
+                        if (selectedTimeSlot) {
+                          const isFull = isClassFull(selectedTimeSlot.name);
+                          const hasPayment = hasEnrollment(selectedTimeSlot.name);
+                          const currentEnrollment = classEnrollment[selectedTimeSlot.name] || 0;
+                          console.log(`[결제] 클래스: ${selectedTimeSlot.name}, 현재 인원: ${currentEnrollment}, 다음 클릭 시: ${currentEnrollment + 1}번째`);
+                          
+                          if (isFull || hasPayment) {
+                            // 예약대기 모드 (11번째 클릭) - 예약하기 동작 (결제 프로세스 진행)
+                            console.log(`[예약대기] 예약대기 모드로 전환 - ${selectedTimeSlot.name} 클래스의 ${currentEnrollment + 1}번째 신청자`);
+                            console.log(`[예약대기] 예약 처리 시작 - 중복 클릭 방지 활성화`);
+                            
+                            try {
                               // 먼저 노션에 개인정보 저장
                               const notionResult = await submitToNotion(formData);
                               if (notionResult.success && notionResult.pageId) {
@@ -1672,18 +1675,32 @@ export default function SwimmingClassPage() {
                                   timeSlot: `1번특강 (${selectedTimeSlot.time})`,
                                 });
 
-                                console.log("[결제] 결제 처리 완료 - 4단계로 이동");
+                                console.log("[예약대기] 예약 처리 완료 - 4단계로 이동");
                                 setStep(4);
                               } else {
                                 setIsSubmitting(false); // 에러 발생 시 버튼 다시 활성화
+                                console.error("[예약대기] Notion 저장 실패:", notionResult.error);
                                 toast({
                                   title: "저장 실패",
                                   description: notionResult.error || "데이터 저장 중 오류가 발생했습니다.",
                                   variant: "destructive",
                                 });
                               }
-                            } else {
-                              // 결제하기 모드
+                            } catch (error) {
+                              setIsSubmitting(false); // 에러 발생 시 버튼 다시 활성화
+                              console.error("[예약대기] 예약 처리 중 오류 발생:", error);
+                              toast({
+                                title: "오류 발생",
+                                description: "예약 처리 중 예기치 않은 오류가 발생했습니다. 다시 시도해주세요.",
+                                variant: "destructive",
+                              });
+                            }
+                          } else {
+                            // 결제하기 모드
+                            console.log(`[결제] 일반 결제 모드 - ${selectedTimeSlot.name} 클래스의 ${currentEnrollment + 1}번째 신청자`);
+                            console.log(`[결제] 결제 처리 시작 - 중복 클릭 방지 활성화`);
+                            
+                            try {
                               // 먼저 노션에 개인정보 저장
                               const notionResult = await submitToNotion(formData);
                               if (notionResult.success && notionResult.pageId) {
@@ -1714,22 +1731,23 @@ export default function SwimmingClassPage() {
                                 setStep(4);
                               } else {
                                 setIsSubmitting(false); // 에러 발생 시 버튼 다시 활성화
+                                console.error("[결제] Notion 저장 실패:", notionResult.error);
                                 toast({
                                   title: "저장 실패",
                                   description: notionResult.error || "데이터 저장 중 오류가 발생했습니다.",
                                   variant: "destructive",
                                 });
                               }
+                            } catch (error) {
+                              setIsSubmitting(false); // 에러 발생 시 버튼 다시 활성화
+                              console.error("[결제] 결제 처리 중 오류 발생:", error);
+                              toast({
+                                title: "오류 발생",
+                                description: "결제 처리 중 예기치 않은 오류가 발생했습니다. 다시 시도해주세요.",
+                                variant: "destructive",
+                              });
                             }
                           }
-                        } catch (error) {
-                          setIsSubmitting(false); // 에러 발생 시 버튼 다시 활성화
-                          console.error("[결제] Notion 저장 실패:", error);
-                          toast({
-                            title: "오류 발생",
-                            description: "예기치 않은 오류가 발생했습니다. 다시 시도해주세요.",
-                            variant: "destructive",
-                          });
                         }
                       }}
                     >

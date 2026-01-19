@@ -235,10 +235,6 @@ export default function SwimmingClassPage() {
             {/* Class Information Section */}
             <Card className="mb-6 bg-blue-50/50 border-blue-100">
               <CardContent className="p-6">
-                <h2 className="text-xl font-bold mb-6 text-blue-900">
-                  자유형 호흡 특강 상세
-                </h2>
-
                 <div className="space-y-6 text-sm text-gray-700 leading-relaxed">
                   {/* Main Title */}
                   <div>

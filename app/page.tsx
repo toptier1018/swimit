@@ -1010,42 +1010,8 @@ export default function SwimmingClassPage() {
                         formData.location &&
                         agreeAll
                       ) {
-                        setIsSubmitting(true);
-                        console.log("[폼 제출] 데이터 전송 시작:", formData);
-
-                        try {
-                          const result = await submitToNotion(formData);
-
-                          if (result.success) {
-                            console.log("[폼 제출] Notion 저장 성공");
-                            if (result.pageId) {
-                              setNotionPageId(result.pageId);
-                            }
-                            setStep(3);
-                          } else {
-                            console.error(
-                              "[폼 제출] Notion 저장 실패:",
-                              result.error
-                            );
-                            toast({
-                              title: "저장 실패",
-                              description:
-                                result.error ||
-                                "데이터 저장 중 오류가 발생했습니다.",
-                              variant: "destructive",
-                            });
-                          }
-                        } catch (error) {
-                          console.error("[폼 제출] 예외 발생:", error);
-                          toast({
-                            title: "오류 발생",
-                            description:
-                              "예기치 않은 오류가 발생했습니다. 다시 시도해주세요.",
-                            variant: "destructive",
-                          });
-                        } finally {
-                          setIsSubmitting(false);
-                        }
+                        // 개인정보 입력 단계에서는 노션에 저장하지 않고 바로 3단계로 이동
+                        setStep(3);
                       }
                     }}
                     disabled={
@@ -1669,64 +1635,94 @@ export default function SwimmingClassPage() {
                             // 예약 처리 로직 (필요시 추가)
                           } else if (hasPayment) {
                             // 예약대기 모드 (1명 이상 결제됨) - 예약하기 동작 (결제 프로세스 진행)
-                            const now = new Date();
-                            const newOrderNumber = generateOrderNumber();
-                            setPaymentDate(now);
-                            setOrderNumber(newOrderNumber); // 주문번호 저장
-                            setPaymentStatus("예약대기"); // 예약대기 상태 설정
-                            // 신청 인원 증가
-                            setClassEnrollment((prev) => ({
-                              ...prev,
-                              [selectedTimeSlot.name]: (prev[selectedTimeSlot.name] || 0) + 1,
-                            }));
+                            // 먼저 노션에 개인정보 저장
+                            try {
+                              const notionResult = await submitToNotion(formData);
+                              if (notionResult.success && notionResult.pageId) {
+                                setNotionPageId(notionResult.pageId);
+                                
+                                const now = new Date();
+                                const newOrderNumber = generateOrderNumber();
+                                setPaymentDate(now);
+                                setOrderNumber(newOrderNumber); // 주문번호 저장
+                                setPaymentStatus("예약대기"); // 예약대기 상태 설정
+                                // 신청 인원 증가
+                                setClassEnrollment((prev) => ({
+                                  ...prev,
+                                  [selectedTimeSlot.name]: (prev[selectedTimeSlot.name] || 0) + 1,
+                                }));
 
-                            // Notion 결제 정보 업데이트
-                            if (notionPageId) {
-                              try {
+                                // Notion 결제 정보 업데이트
                                 await updatePaymentInNotion({
-                                  pageId: notionPageId,
+                                  pageId: notionResult.pageId,
                                   // 노션 표의 '가상계좌 입금 정보' 컬럼에는 상태 값만 저장 (예: 예약대기)
                                   virtualAccountInfo: "예약대기",
                                   orderNumber: newOrderNumber,
                                   selectedClass: selectedTimeSlot.name,
                                   timeSlot: `1번특강 (${selectedTimeSlot.time})`,
                                 });
-                              } catch (error) {
-                                console.error("[결제] Notion 결제 정보 업데이트 실패:", error);
-                              }
-                            }
 
-                            setStep(4);
+                                setStep(4);
+                              } else {
+                                toast({
+                                  title: "저장 실패",
+                                  description: notionResult.error || "데이터 저장 중 오류가 발생했습니다.",
+                                  variant: "destructive",
+                                });
+                              }
+                            } catch (error) {
+                              console.error("[결제] Notion 저장 실패:", error);
+                              toast({
+                                title: "오류 발생",
+                                description: "예기치 않은 오류가 발생했습니다. 다시 시도해주세요.",
+                                variant: "destructive",
+                              });
+                            }
                           } else {
                             // 결제하기 모드
-                            const now = new Date();
-                            const newOrderNumber = generateOrderNumber();
-                            setPaymentDate(now);
-                            setOrderNumber(newOrderNumber); // 주문번호 저장
-                            setPaymentStatus("입금대기"); // 입금대기 상태 설정
-                            // 신청 인원 증가
-                            setClassEnrollment((prev) => ({
-                              ...prev,
-                              [selectedTimeSlot.name]: (prev[selectedTimeSlot.name] || 0) + 1,
-                            }));
+                            // 먼저 노션에 개인정보 저장
+                            try {
+                              const notionResult = await submitToNotion(formData);
+                              if (notionResult.success && notionResult.pageId) {
+                                setNotionPageId(notionResult.pageId);
+                                
+                                const now = new Date();
+                                const newOrderNumber = generateOrderNumber();
+                                setPaymentDate(now);
+                                setOrderNumber(newOrderNumber); // 주문번호 저장
+                                setPaymentStatus("입금대기"); // 입금대기 상태 설정
+                                // 신청 인원 증가
+                                setClassEnrollment((prev) => ({
+                                  ...prev,
+                                  [selectedTimeSlot.name]: (prev[selectedTimeSlot.name] || 0) + 1,
+                                }));
 
-                            // Notion 결제 정보 업데이트
-                            if (notionPageId) {
-                              try {
+                                // Notion 결제 정보 업데이트
                                 await updatePaymentInNotion({
-                                  pageId: notionPageId,
+                                  pageId: notionResult.pageId,
                                   // 노션 표의 '가상계좌 입금 정보' 컬럼에는 상태 값만 저장 (예: 입금대기)
                                   virtualAccountInfo: "입금대기",
                                   orderNumber: newOrderNumber,
                                   selectedClass: selectedTimeSlot.name,
                                   timeSlot: `1번특강 (${selectedTimeSlot.time})`,
                                 });
-                              } catch (error) {
-                                console.error("[결제] Notion 결제 정보 업데이트 실패:", error);
-                              }
-                            }
 
-                            setStep(4);
+                                setStep(4);
+                              } else {
+                                toast({
+                                  title: "저장 실패",
+                                  description: notionResult.error || "데이터 저장 중 오류가 발생했습니다.",
+                                  variant: "destructive",
+                                });
+                              }
+                            } catch (error) {
+                              console.error("[결제] Notion 저장 실패:", error);
+                              toast({
+                                title: "오류 발생",
+                                description: "예기치 않은 오류가 발생했습니다. 다시 시도해주세요.",
+                                variant: "destructive",
+                              });
+                            }
                           }
                         }
                       }}

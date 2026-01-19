@@ -319,9 +319,9 @@ export default function SwimmingClassPage() {
                   {/* Call to Action */}
                   <div>
                     <p>
-                      야심차게 준비한 스윔잇 특강{" "}
-                      <span className="font-bold text-red-600 text-lg">지금 바로 신청하기</span>를 눌러
-                      여러분의 문제를 해결해보세요
+                      <span className="font-bold">야심차게 준비한 스윔잇 특강</span>{" "}
+                      <span className="font-bold text-red-600 text-lg">지금 바로 신청하기</span>를 눌러{" "}
+                      <span className="font-bold">여러분의 문제를 해결해보세요</span>
                     </p>
                   </div>
 

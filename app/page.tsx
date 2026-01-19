@@ -3039,10 +3039,10 @@ export default function SwimmingClassPage() {
                 <span className="text-orange-500">⚠️</span>
                 입금 안내
               </h3>
-              <ul className="text-base font-bold text-gray-900 space-y-2 pl-4 list-disc">
+              <ul className="text-base font-bold text-red-600 space-y-2 pl-4 list-disc">
                 <li>입금자명은 신청자와 같아야 합니다!</li>
                 <li>기한 내 미입금시 주문이 자동 취소됩니다</li>
-                <li className="text-red-600">당일 입금 확인 후 익일 오후 2시 안내사항 문자로 공지됩니다.</li>
+                <li>당일 입금 확인 후 익일 오후 2시 안내사항 문자로 공지됩니다.</li>
               </ul>
             </div>
 

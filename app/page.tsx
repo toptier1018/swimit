@@ -1646,7 +1646,7 @@ export default function SwimmingClassPage() {
                         selectedTimeSlot && 
                         (isClassFull(selectedTimeSlot.name) || hasEnrollment(selectedTimeSlot.name))
                           ? "bg-orange-500 hover:bg-orange-600"
-                          : "bg-cyan-600 hover:bg-cyan-700"
+                          : "bg-[#10B981] hover:bg-[#059669]"
                       }`}
                       disabled={!selectedTimeSlot}
                       onClick={async () => {

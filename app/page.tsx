@@ -1593,10 +1593,7 @@ export default function SwimmingClassPage() {
                         <div className="flex items-center justify-between mb-3">
                           <h3 className="text-lg font-bold">총 결제 금액</h3>
                           <span className="text-2xl font-bold text-primary">
-                            ₩
-                            {selectedTimeSlot
-                              ? selectedTimeSlot.price.toLocaleString()
-                              : 0}
+                            ₩60,000
                           </span>
                         </div>
 
@@ -1610,7 +1607,7 @@ export default function SwimmingClassPage() {
                               </div>
                               <div className="flex justify-between text-sm text-red-600 font-semibold">
                                 <span>할인</span>
-                                <span>-₩30,000</span>
+                                <span>-₩40,000</span>
                               </div>
                             </div>
                           )}
@@ -1665,7 +1662,7 @@ export default function SwimmingClassPage() {
                     >
                       {selectedTimeSlot && isClassFull(selectedTimeSlot.name)
                         ? "예약하기"
-                        : "₩70,000 결제하기"}
+                        : "₩60,000 결제하기"}
                     </Button>
                   </div>
                 </div>

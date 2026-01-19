@@ -238,7 +238,7 @@ export default function SwimmingClassPage() {
                 <div className="space-y-6 text-sm text-gray-700 leading-relaxed">
                   {/* Main Title */}
                   <div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-4">
+                    <h3 className="text-xl font-bold text-gray-900 mb-4">
                       단 하루만에 수영 편하게 하는 방법이 있다면 믿으시겠습니까?
                     </h3>
                   </div>

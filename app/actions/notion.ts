@@ -332,6 +332,45 @@ export async function checkPaymentStatus(data: {
     // 첫 번째 매칭되는 결과의 입금확인 체크박스 상태 확인
     const page = result.results[0]
     const paymentConfirmed = page.properties["입금확인"]?.checkbox || false
+    const currentVirtualAccountInfo = page.properties["가상계좌 입금 정보"]?.rich_text?.[0]?.plain_text || ""
+
+    // 입금확인이 체크되어 있고, 가상계좌 입금 정보가 "입금대기"인 경우 "입금완료"로 업데이트
+    if (paymentConfirmed && currentVirtualAccountInfo === "입금대기") {
+      try {
+        const updateResponse = await fetch(
+          `https://api.notion.com/v1/pages/${page.id}`,
+          {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${notionApiKey}`,
+              "Content-Type": "application/json",
+              "Notion-Version": "2022-06-28",
+            },
+            body: JSON.stringify({
+              properties: {
+                "가상계좌 입금 정보": {
+                  rich_text: [
+                    {
+                      text: {
+                        content: "입금완료",
+                      },
+                    },
+                  ],
+                },
+              },
+            }),
+          }
+        )
+
+        if (updateResponse.ok) {
+          console.log("[Notion 입금확인] 가상계좌 입금 정보를 입금완료로 업데이트 완료")
+        } else {
+          console.error("[Notion 입금확인] 가상계좌 입금 정보 업데이트 실패:", await updateResponse.json().catch(() => ({})))
+        }
+      } catch (updateError) {
+        console.error("[Notion 입금확인] 업데이트 중 오류:", updateError)
+      }
+    }
 
     return {
       success: true,

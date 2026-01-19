@@ -103,14 +103,23 @@ export default function SwimmingClassPage() {
   const [orderNumber, setOrderNumber] = useState<string>("");
   const [paymentStatus, setPaymentStatus] = useState<"입금대기" | "입금완료" | "예약대기">("입금대기");
   // 각 클래스별 신청 인원 추적 (클래스 이름을 키로 사용)
+  // 모든 클래스는 0부터 시작하여 신청가능 일반 모드로 시작
+  // 1~10번째 클릭: 일반 결제 모드 (₩60,000 결제하기)
+  // 11번째 클릭: 예약대기 모드 (예약하기 버튼으로 변경)
   const [classEnrollment, setClassEnrollment] = useState<Record<string, number>>({
     "자유형 A (초급)": 0,
-    "평영 A (초급)": 0,
+    "평영 A (초급)": 0, // 신청가능 일반 모드 (0부터 시작)
     "접영 A (초급)": 0,
     "자유형 B (중급)": 0,
     "평영 B (중급)": 0,
   });
   const { toast } = useToast();
+
+  // 컴포넌트 마운트 시 클래스별 신청 인원 초기화 확인 로그
+  useEffect(() => {
+    console.log("[초기화] 클래스별 신청 인원 초기화:", classEnrollment);
+    console.log("[초기화] 평영 A (초급) 초기값:", classEnrollment["평영 A (초급)"], "- 신청가능 일반 모드");
+  }, []);
 
   // 클래스별 신청 가능 여부 확인 (10명일 때 다음 클릭이 11번째이므로 정원 초과)
   const isClassFull = (className: string) => {

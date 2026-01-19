@@ -304,8 +304,7 @@ export default function SwimmingClassPage() {
                   <div className="space-y-3">
                     <p>
                       첫 특강은 2시간에 10만원에서 할인된 가격{" "}
-                      <span className="font-bold text-lg">40%할인된 가격인 6만원</span>으로
-                      책정하였습니다
+                      <span className="font-bold text-lg">40%할인된 가격인 6만원으로 책정</span>하였습니다
                     </p>
                     <p>
                       이 가격으로 영상 촬영에 담당 강사분께서 직접 피드백까지

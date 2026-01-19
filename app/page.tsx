@@ -266,7 +266,7 @@ export default function SwimmingClassPage() {
                         통증에 시달리게 되는 것이죠
                       </span>
                     </p>
-                    <p className="font-bold">
+                    <p className="font-bold text-lg underline">
                       건강하려고 시작했던 수영이 통증을 유발시키는 수영이 되면
                       안되잖아요?
                     </p>
@@ -288,7 +288,7 @@ export default function SwimmingClassPage() {
                     </p>
                     <p>
                       즉,{" "}
-                      <span className="font-bold">
+                      <span className="font-bold text-lg">
                         "하루만에 편하게 수영하는 방법에 대해서 직접 잡아드리는
                         원데이 특강"
                       </span>
@@ -304,7 +304,7 @@ export default function SwimmingClassPage() {
                   <div className="space-y-3">
                     <p>
                       첫 특강은 2시간에 10만원에서 할인된 가격{" "}
-                      <span className="font-bold">40%할인된 가격인 6만원</span>으로
+                      <span className="font-bold text-lg">40%할인된 가격인 6만원</span>으로
                       책정하였습니다
                     </p>
                     <p>
@@ -319,9 +319,9 @@ export default function SwimmingClassPage() {
 
                   {/* Call to Action */}
                   <div>
-                    <p className="font-bold">
+                    <p>
                       야심차게 준비한 스윔잇 특강{" "}
-                      <span className="font-bold">지금 바로 신청하기</span>를 눌러
+                      <span className="font-bold text-red-600 text-lg">지금 바로 신청하기</span>를 눌러
                       여러분의 문제를 해결해보세요
                     </p>
                   </div>

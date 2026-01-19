@@ -3064,11 +3064,20 @@ export default function SwimmingClassPage() {
                   <span className="text-blue-600">💡</span>
                   결제 확인 안내
                 </h3>
-                <p className="text-xs text-gray-700">
+                <p className="text-xs text-gray-700 mb-3">
                   입금이 완료되면 SMS으로 즉시 확인하실 수 있습니다. 입금 완료로
                   변경되지 않을 경우 아래 문의로 연락해 주시고 안내 받으시기
                   바랍니다. 혹시 연락이 어려우시면 v0.contact로도 연락 가능합니다.
                 </p>
+                <Button
+                  size="sm"
+                  className="bg-yellow-500 hover:bg-yellow-600 text-white"
+                  onClick={() =>
+                    window.open("https://pf.kakao.com/_dXUgn/chat", "_blank")
+                  }
+                >
+                  ☎️ 카카오톡 문의하기
+                </Button>
               </div>
 
               <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-4">

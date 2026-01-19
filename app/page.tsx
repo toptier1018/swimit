@@ -260,9 +260,11 @@ export default function SwimmingClassPage() {
                       재미도 없어 수영을 포기하게 됩니다
                     </p>
                     <p>
-                      게다가 물의 밀도가 공기보다 800배 크기 때문에 잘못된
-                      방식으로 수영을 지속하게 되면 어깨, 허리, 무릎 통증에
-                      시달리게 되는 것이죠
+                      게다가 물의 밀도는 공기보다 800배 크기 때문에{" "}
+                      <span className="font-bold">
+                        잘못된 방식으로 수영을 지속하게 되면 어깨, 허리, 무릎
+                        통증에 시달리게 되는 것이죠
+                      </span>
                     </p>
                     <p className="font-bold">
                       건강하려고 시작했던 수영이 통증을 유발시키는 수영이 되면
@@ -273,11 +275,14 @@ export default function SwimmingClassPage() {
                   {/* Solution Section */}
                   <div className="space-y-3">
                     <p>
-                      "스윙잇"은 이 문제를 해결하기 위해 "다치지 않고 오래돌 수
-                      있는 수영" 특강을 개최했습니다
+                      "스윔잇"은 이 문제를 해결하기 위해{" "}
+                      <span className="font-bold text-lg">
+                        "다치지 않고 오래돌 수 있는 수영"
+                      </span>{" "}
+                      특강을 개최했습니다
                     </p>
                     <p>
-                      스윙잇 강의와 연결된 선수/강사 경력 10년 이상 되는
+                      스윔잇 강의와 연결된 선수/강사 경력 10년 이상 되는
                       배테랑 분들이 잘못된 방법으로 하고 계신 수영을 손수
                       잡아드립니다
                     </p>
@@ -315,7 +320,7 @@ export default function SwimmingClassPage() {
                   {/* Call to Action */}
                   <div>
                     <p className="font-bold">
-                      야심차게 준비한 스윙잇 특강{" "}
+                      야심차게 준비한 스윔잇 특강{" "}
                       <span className="font-bold">지금 바로 신청하기</span>를 눌러
                       여러분의 문제를 해결해보세요
                     </p>
@@ -323,7 +328,7 @@ export default function SwimmingClassPage() {
 
                   {/* PS Section */}
                   <div className="mt-4">
-                    <p className="text-sm">
+                    <p className="text-sm text-red-600 font-semibold">
                       PS. 해당 강습은 가격이 계속 오를 예정이므로 마감이
                       되었다면 일정에 <span className="font-bold">예약하기</span>를
                       눌러서 오르지 않는 가격으로 선점하시길 바랍니다

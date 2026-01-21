@@ -1019,106 +1019,6 @@ export default function SwimmingClassPage() {
             ) : step === 3 ? (
               <>
                 {/* Step 3: Payment */}
-                <Card className="mb-6">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <span>📋</span> 클래스 상세 안내
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {/* 자유형 클래스 */}
-                    <div>
-                      <h4 className="font-semibold flex items-center gap-2 mb-2">
-                        <span>🏊</span> 자유형 클래스
-                      </h4>
-                      <div className="space-y-1 text-sm ml-6">
-                        <div className="flex items-start gap-2">
-                          <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>자유형 A: 자유형 25m 이상 가능하신 분</span>
-                        </div>
-                        <div className="flex items-start gap-2">
-                          <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>
-                            자유형 B: 자유형 50m 가능 / 수영 경력 6개월 이상
-                          </span>
-                        </div>
-                        <p className="text-xs text-red-500 mt-2 ml-6">
-                          ※ 연속 수강 시 개인 실력에 맞춰 단계별로 지도합니다.
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* 평영 클래스 */}
-                    <div>
-                      <h4 className="font-semibold flex items-center gap-2 mb-2">
-                        <span>🐸</span> 평영 클래스
-                      </h4>
-                      <div className="space-y-1 text-sm ml-6">
-                        <div className="flex items-start gap-2">
-                          <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>평영 A: 평영으로 50m 이상 가능하신 분</span>
-                        </div>
-                        <div className="flex items-start gap-2">
-                          <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>
-                            평영 B: 평영 100m 가능 / 수영 경력 1년 이상
-                          </span>
-                        </div>
-                        <p className="text-xs text-red-500 mt-2 ml-6">
-                          ※ 연속 수강 시 개인 실력에 맞춰 단계별로 지도합니다.
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* 접영 클래스 */}
-                    <div>
-                      <h4 className="font-semibold flex items-center gap-2 mb-2">
-                        <span>🦋</span> 접영 클래스
-                      </h4>
-                      <div className="space-y-1 text-sm ml-6">
-                        <div className="flex items-start gap-2">
-                          <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>
-                            접영 A: 접영·배영·평영·자유형을 모두 배워보았으나
-                            <br />
-                            &emsp;&emsp;접영 동작이 아직 어려우신 분
-                          </span>
-                        </div>
-                        <div className="flex items-start gap-2">
-                          <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>
-                            접영 B: 접영 50m 가능 / 수영 경력 1년 이상
-                          </span>
-                        </div>
-                        <p className="text-xs text-red-500 mt-2 ml-6">
-                          ※ 연속 수강 시 개인 실력에 맞춰 단계별로 지도합니다.
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* 카카오톡 문의 */}
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                      <p className="text-sm text-gray-700">
-                        궁금한 점이 있으시면 카카오톡으로 문의해주세요!
-                      </p>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="mt-2 bg-yellow-400 hover:bg-yellow-500 border-0"
-                        onClick={() =>
-                          window.open(
-                            "https://pf.kakao.com/_dXUgn/chat",
-                            "_blank"
-                          )
-                        }
-                      >
-                        <MessageCircle className="h-4 w-4 mr-2" />
-                        카카오톡 문의하기
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-
                 {/* Title */}
                 <div className="mb-8">
                   <h1 className="text-2xl font-bold text-center flex items-center justify-center gap-2">
@@ -1366,6 +1266,107 @@ export default function SwimmingClassPage() {
                     </div>
                   </div>
                 </div>
+
+                {/* 클래스 상세 안내 */}
+                <Card className="mb-6">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <span>📋</span> 클래스 상세 안내
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* 자유형 클래스 */}
+                    <div>
+                      <h4 className="font-semibold flex items-center gap-2 mb-2">
+                        <span>🏊</span> 자유형 클래스
+                      </h4>
+                      <div className="space-y-1 text-sm ml-6">
+                        <div className="flex items-start gap-2">
+                          <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                          <span>자유형 A: 자유형 25m 이상 가능하신 분</span>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                          <span>
+                            자유형 B: 자유형 50m 가능 / 수영 경력 6개월 이상
+                          </span>
+                        </div>
+                        <p className="text-xs text-red-500 mt-2 ml-6">
+                          ※ 연속 수강 시 개인 실력에 맞춰 단계별로 지도합니다.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* 평영 클래스 */}
+                    <div>
+                      <h4 className="font-semibold flex items-center gap-2 mb-2">
+                        <span>🐸</span> 평영 클래스
+                      </h4>
+                      <div className="space-y-1 text-sm ml-6">
+                        <div className="flex items-start gap-2">
+                          <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                          <span>평영 A: 평영으로 50m 이상 가능하신 분</span>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                          <span>
+                            평영 B: 평영 100m 가능 / 수영 경력 1년 이상
+                          </span>
+                        </div>
+                        <p className="text-xs text-red-500 mt-2 ml-6">
+                          ※ 연속 수강 시 개인 실력에 맞춰 단계별로 지도합니다.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* 접영 클래스 */}
+                    <div>
+                      <h4 className="font-semibold flex items-center gap-2 mb-2">
+                        <span>🦋</span> 접영 클래스
+                      </h4>
+                      <div className="space-y-1 text-sm ml-6">
+                        <div className="flex items-start gap-2">
+                          <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                          <span>
+                            접영 A: 접영·배영·평영·자유형을 모두 배워보았으나
+                            <br />
+                            &emsp;&emsp;접영 동작이 아직 어려우신 분
+                          </span>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                          <span>
+                            접영 B: 접영 50m 가능 / 수영 경력 1년 이상
+                          </span>
+                        </div>
+                        <p className="text-xs text-red-500 mt-2 ml-6">
+                          ※ 연속 수강 시 개인 실력에 맞춰 단계별로 지도합니다.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* 카카오톡 문의 */}
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                      <p className="text-sm text-gray-700">
+                        궁금한 점이 있으시면 카카오톡으로 문의해주세요!
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-2 bg-yellow-400 hover:bg-yellow-500 border-0"
+                        onClick={() =>
+                          window.open(
+                            "https://pf.kakao.com/_dXUgn/chat",
+                            "_blank"
+                          )
+                        }
+                      >
+                        <MessageCircle className="h-4 w-4 mr-2" />
+                        카카오톡 문의하기
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
 
                 <div className="space-y-6">
                   {regionError && (

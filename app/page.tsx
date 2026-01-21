@@ -2568,11 +2568,11 @@ export default function SwimmingClassPage() {
                   <div className="flex items-center gap-2 mb-2">
                     <Check className="h-5 w-5 text-green-600" />
                     <p className="font-bold text-green-900">
-                      특강일 3일 전까지
+                      특강일 14일 이전까지
                     </p>
                   </div>
                   <p className="text-sm font-bold text-green-700 mb-2">
-                    100% 전액 환불 가능
+                    100% 전액 환불
                   </p>
                   <p className="text-xs text-green-600 leading-relaxed">
                     취소 신청 시 등록하신 계좌로 환불 처리됩니다.
@@ -2582,20 +2582,14 @@ export default function SwimmingClassPage() {
                 <div className="bg-red-50 p-4 rounded-lg border border-red-100">
                   <div className="flex items-center gap-2 mb-2">
                     <X className="h-5 w-5 text-red-600" />
-                    <p className="font-bold text-red-900">특강일 3일 이내</p>
+                    <p className="font-bold text-red-900">특강일 14일 이후</p>
                   </div>
                   <p className="text-sm font-bold text-red-700 mb-2">
-                    환불 불가
+                    환불이 불가합니다.
                   </p>
-                  <div className="mt-2 space-y-1">
-                    <p className="text-xs text-red-600 font-semibold">
-                      [환불 불가 사유]
-                    </p>
-                    <ul className="text-xs text-red-500 list-disc pl-4">
-                      <li>수영장 대관비 확정</li>
-                      <li>강사료 확정</li>
-                    </ul>
-                  </div>
+                  <p className="text-xs text-red-600 leading-relaxed">
+                    대관 및 선생님 일정이 픽스되므로 환불이 불가합니다.
+                  </p>
                 </div>
               </div>
             </div>

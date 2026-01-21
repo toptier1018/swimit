@@ -171,6 +171,16 @@ export default function SwimmingClassPage() {
 
   // 단계 진입 카운트 증가
   useEffect(() => {
+    const guardKey = "step_view_guard";
+    const now = Date.now();
+    const guardRaw = sessionStorage.getItem(guardKey);
+    const guard = guardRaw ? JSON.parse(guardRaw) : null;
+    if (guard && guard.step === step && now - guard.ts < 2000) {
+      console.log(
+        `[퍼널] 중복 카운트 차단: step=${step}, last=${guard.ts}, now=${now}`
+      );
+      return;
+    }
     const key = `step_view_${step}`;
     const prev = Number(localStorage.getItem(key) || "0");
     const next = prev + 1;
@@ -179,6 +189,7 @@ export default function SwimmingClassPage() {
       ...curr,
       [step]: next,
     }));
+    sessionStorage.setItem(guardKey, JSON.stringify({ step, ts: now }));
     console.log(`[퍼널] 단계 진입 카운트 증가: step=${step}, count=${next}`);
   }, [step]);
 

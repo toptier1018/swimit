@@ -2588,7 +2588,7 @@ export default function SwimmingClassPage() {
                     환불이 불가합니다.
                   </p>
                   <p className="text-xs text-red-600 leading-relaxed">
-                    대관 및 선생님 일정이 픽스되므로 환불이 불가합니다.
+                    수영장 대관비 및 강사료 확정으로 환불 불가
                   </p>
                 </div>
               </div>

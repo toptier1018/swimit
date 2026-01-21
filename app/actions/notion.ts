@@ -146,6 +146,7 @@ export async function updatePaymentInNotion(data: {
   orderNumber: string
   selectedClass: string
   timeSlot: string
+  region: string
 }) {
   try {
     const notionApiKey = process.env.NOTION_API_KEY
@@ -205,6 +206,16 @@ export async function updatePaymentInNotion(data: {
                 {
                   text: {
                     content: data.timeSlot,
+                  },
+                },
+              ],
+            },
+            // 지역 (Rich Text)
+            지역: {
+              rich_text: [
+                {
+                  text: {
+                    content: data.region,
                   },
                 },
               ],

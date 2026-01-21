@@ -1704,6 +1704,12 @@ export default function SwimmingClassPage() {
                                   [selectedTimeSlot.name]: (prev[selectedTimeSlot.name] || 0) + 1,
                                 }));
 
+                                const selectedRegion =
+                                  classes.find(
+                                    (c) => String(c.id) === selectedClass
+                                  )?.location || "정보 없음";
+                                console.log("[예약대기] 지역 정보 저장:", selectedRegion);
+
                                 // Notion 결제 정보 업데이트
                                 await updatePaymentInNotion({
                                   pageId: notionResult.pageId,
@@ -1712,6 +1718,7 @@ export default function SwimmingClassPage() {
                                   orderNumber: newOrderNumber,
                                   selectedClass: selectedTimeSlot.name,
                                   timeSlot: `1번특강 (${selectedTimeSlot.time})`,
+                                  region: selectedRegion,
                                 });
 
                                 console.log("[예약대기] 예약 처리 완료 - 4단계로 이동");
@@ -1756,6 +1763,12 @@ export default function SwimmingClassPage() {
                                   [selectedTimeSlot.name]: (prev[selectedTimeSlot.name] || 0) + 1,
                                 }));
 
+                                const selectedRegion =
+                                  classes.find(
+                                    (c) => String(c.id) === selectedClass
+                                  )?.location || "정보 없음";
+                                console.log("[결제] 지역 정보 저장:", selectedRegion);
+
                                 // Notion 결제 정보 업데이트
                                 await updatePaymentInNotion({
                                   pageId: notionResult.pageId,
@@ -1764,6 +1777,7 @@ export default function SwimmingClassPage() {
                                   orderNumber: newOrderNumber,
                                   selectedClass: selectedTimeSlot.name,
                                   timeSlot: `1번특강 (${selectedTimeSlot.time})`,
+                                  region: selectedRegion,
                                 });
 
                                 console.log("[결제] 결제 처리 완료 - 4단계로 이동");
@@ -3059,6 +3073,16 @@ export default function SwimmingClassPage() {
                   </span>
                 </div>
               )}
+                              {selectedTimeSlot && (
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600">지역</span>
+                                  <span className="text-gray-700">
+                                    {classes.find(
+                                      (c) => String(c.id) === selectedClass
+                                    )?.location || "정보 없음"}
+                                  </span>
+                                </div>
+                              )}
               <div className="flex justify-between pt-2 border-t">
                 <span className="text-gray-600">상품 금액</span>
                 <span>₩100,000</span>

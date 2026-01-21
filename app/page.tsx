@@ -370,10 +370,7 @@ export default function SwimmingClassPage() {
                       <span className="font-bold text-xl md:text-lg">40%할인된 가격인 6만원으로 책정</span>하였습니다
                     </p>
                     <p className="text-lg md:text-base">
-                      이 가격으로 영상 촬영에 강사분께서 직접 피드백까지 하는 보너스까지
-                    </p>
-                    <p className="text-lg md:text-base">
-                      꾹꾹 눌러 담아 알차게 구성하였습니다
+                      게다가 내 영법 물속 촬영에 강사분께서 직접 피드백까지 하는 보너스까지 꾹꾹 눌러 담아 알차게 구성하였습니다
                     </p>
                     <p className="text-sm md:text-xs text-gray-600">
                       (강습 시간상 쉬는 시간에 촬영해야 하므로 선착순으로 원하시는 분들만 촬영합니다)

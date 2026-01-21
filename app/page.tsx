@@ -154,6 +154,34 @@ export default function SwimmingClassPage() {
     console.log("[퍼널] 단계 카운트 초기화 완료:", resetCounts);
   };
 
+  const incrementFunnelCount = (stepNumber: 1 | 2 | 3 | 4, reason: string) => {
+    const guardKey = "step_view_guard";
+    const now = Date.now();
+    let guard: { step: number; ts: number } | null = null;
+    try {
+      const guardRaw = sessionStorage.getItem(guardKey);
+      guard = guardRaw ? JSON.parse(guardRaw) : null;
+    } catch {
+      guard = null;
+    }
+    if (guard && guard.step === stepNumber && now - guard.ts < 2000) {
+      console.log(
+        `[퍼널] 중복 카운트 차단: step=${stepNumber}, reason=${reason}, last=${guard.ts}, now=${now}`
+      );
+      return;
+    }
+    const key = `step_view_${stepNumber}`;
+    const prev = Number(localStorage.getItem(key) || "0");
+    const next = prev + 1;
+    localStorage.setItem(key, String(next));
+    setFunnelCounts((curr) => ({
+      ...curr,
+      [stepNumber]: next,
+    }));
+    sessionStorage.setItem(guardKey, JSON.stringify({ step: stepNumber, ts: now }));
+    console.log(`[퍼널] 카운트 증가: step=${stepNumber}, count=${next}, reason=${reason}`);
+  };
+
   // 컴포넌트 마운트 시 클래스별 신청 인원 초기화
   useEffect(() => {
     resetClassEnrollment();
@@ -168,30 +196,6 @@ export default function SwimmingClassPage() {
     setFunnelCounts(counts);
     console.log("[퍼널] 로컬 카운트 불러오기:", counts);
   }, []);
-
-  // 단계 진입 카운트 증가
-  useEffect(() => {
-    const guardKey = "step_view_guard";
-    const now = Date.now();
-    const guardRaw = sessionStorage.getItem(guardKey);
-    const guard = guardRaw ? JSON.parse(guardRaw) : null;
-    if (guard && guard.step === step && now - guard.ts < 2000) {
-      console.log(
-        `[퍼널] 중복 카운트 차단: step=${step}, last=${guard.ts}, now=${now}`
-      );
-      return;
-    }
-    const key = `step_view_${step}`;
-    const prev = Number(localStorage.getItem(key) || "0");
-    const next = prev + 1;
-    localStorage.setItem(key, String(next));
-    setFunnelCounts((curr) => ({
-      ...curr,
-      [step]: next,
-    }));
-    sessionStorage.setItem(guardKey, JSON.stringify({ step, ts: now }));
-    console.log(`[퍼널] 단계 진입 카운트 증가: step=${step}, count=${next}`);
-  }, [step]);
 
   const getApplicantKey = () => {
     const name = formData.name.trim();
@@ -355,6 +359,7 @@ export default function SwimmingClassPage() {
     .map((c) => c.dateNum);
 
   const handleRegistration = () => {
+    incrementFunnelCount(1, "지금 바로 신청하기 클릭");
     setShowRegistrationForm(true);
     setStep(2); // Move to step 2 after selecting a class
   };
@@ -1152,6 +1157,7 @@ export default function SwimmingClassPage() {
                         agreeAll
                       ) {
                         // 개인정보 입력 단계에서는 노션에 저장하지 않고 바로 3단계로 이동
+                        incrementFunnelCount(2, "클래스 신청하기 클릭");
                         setStep(3);
                       }
                     }}
@@ -1790,6 +1796,8 @@ export default function SwimmingClassPage() {
                         }
                         setRegionError(false);
 
+                        incrementFunnelCount(3, "결제하기 버튼 클릭");
+
                         // 결제 처리 시작 - 버튼 비활성화
                         setIsSubmitting(true);
                         console.log("[결제] 결제 처리 시작 - 버튼 비활성화");
@@ -1853,6 +1861,7 @@ export default function SwimmingClassPage() {
                                   submittedApplicantsRef.current.add(applicantKey);
                                   console.log("[중복방지] 신청자 정보 저장:", applicantKey);
                                 }
+                                incrementFunnelCount(4, "예약완료/가상계좌 발급");
                                 console.log("[예약대기] 예약 처리 완료 - 4단계로 이동");
                                 setStep(4);
                               } else {
@@ -1915,6 +1924,7 @@ export default function SwimmingClassPage() {
                                   submittedApplicantsRef.current.add(applicantKey);
                                   console.log("[중복방지] 신청자 정보 저장:", applicantKey);
                                 }
+                                incrementFunnelCount(4, "가상계좌 발급");
                                 console.log("[결제] 결제 처리 완료 - 4단계로 이동");
                                 setStep(4);
                               } else {

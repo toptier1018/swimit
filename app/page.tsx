@@ -1042,11 +1042,6 @@ export default function SwimmingClassPage() {
                     </div>
                     특강 날짜와 지역을 선택하세요
                   </h1>
-                  <div className="mt-4 text-center">
-                    <h3 className="text-lg font-semibold text-primary">
-                      📍 지역을 선택 해주세요
-                    </h3>
-                  </div>
                 </div>
 
                 {/* Two Column Layout */}
@@ -1173,6 +1168,11 @@ export default function SwimmingClassPage() {
 
                   {/* Right: Class List */}
                   <div>
+                    <div className="mb-4">
+                      <h3 className="text-lg font-semibold text-primary">
+                        📍 지역을 선택 해주세요
+                      </h3>
+                    </div>
                     <div className="space-y-3">
                       {classes.map((classItem) => (
                         <Card

@@ -121,6 +121,7 @@ export default function SwimmingClassPage() {
   });
   const { toast } = useToast();
   const submittedApplicantsRef = useRef<Set<string>>(new Set());
+  const lastFunnelActionRef = useRef<{ action: string; ts: number } | null>(null);
 
   // 개발자 모드 (URL 파라미터로 활성화)
   const [showDebug, setShowDebug] = useState(false);
@@ -167,6 +168,17 @@ export default function SwimmingClassPage() {
     if (guard && guard.step === stepNumber && now - guard.ts < 2000) {
       console.log(
         `[퍼널] 중복 카운트 차단: step=${stepNumber}, reason=${reason}, last=${guard.ts}, now=${now}`
+      );
+      return;
+    }
+    if (
+      stepNumber === 2 &&
+      lastFunnelActionRef.current &&
+      lastFunnelActionRef.current.action === "step1_click" &&
+      now - lastFunnelActionRef.current.ts < 3000
+    ) {
+      console.log(
+        `[퍼널] 2단계 카운트 차단: step1 클릭 직후, reason=${reason}, last=${lastFunnelActionRef.current.ts}, now=${now}`
       );
       return;
     }
@@ -360,6 +372,7 @@ export default function SwimmingClassPage() {
 
   const handleRegistration = () => {
     incrementFunnelCount(1, "지금 바로 신청하기 클릭");
+    lastFunnelActionRef.current = { action: "step1_click", ts: Date.now() };
     setShowRegistrationForm(true);
     setStep(2); // Move to step 2 after selecting a class
   };

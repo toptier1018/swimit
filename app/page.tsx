@@ -2935,7 +2935,7 @@ export default function SwimmingClassPage() {
               {paymentStatus === "예약대기" ? "예약 대기" : "가상계좌가 발급되었습니다"}
             </h2>
             <p className="text-gray-600">
-              {paymentStatus === "예약대기" ? "완료" : "아래 계좌로 입금하시면 결제가 완료됩니다"}
+              {paymentStatus === "예약대기" ? "완료" : "아래 계좌로 입금하시면 익일 오후 2시에 확정 문자와 함께 안내사항 보내드립니다"}
             </p>
           </div>
 

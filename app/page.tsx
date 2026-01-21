@@ -102,6 +102,12 @@ export default function SwimmingClassPage() {
   const [notionPageId, setNotionPageId] = useState<string | null>(null);
   const [orderNumber, setOrderNumber] = useState<string>("");
   const [paymentStatus, setPaymentStatus] = useState<"입금대기" | "입금완료" | "예약대기">("입금대기");
+  const [funnelCounts, setFunnelCounts] = useState<Record<number, number>>({
+    1: 0,
+    2: 0,
+    3: 0,
+    4: 0,
+  });
   // 각 클래스별 신청 인원 추적 (클래스 이름을 키로 사용)
   // 모든 클래스는 0부터 시작하여 신청가능 일반 모드로 시작
   // 1~10번째 클릭: 일반 결제 모드 (₩60,000 결제하기)
@@ -139,10 +145,42 @@ export default function SwimmingClassPage() {
     console.log("[중복방지] 신청자 중복 방지 데이터 초기화 완료");
   };
 
+  const resetFunnelCounts = () => {
+    const resetCounts = { 1: 0, 2: 0, 3: 0, 4: 0 };
+    [1, 2, 3, 4].forEach((stepNumber) => {
+      localStorage.removeItem(`step_view_${stepNumber}`);
+    });
+    setFunnelCounts(resetCounts);
+    console.log("[퍼널] 단계 카운트 초기화 완료:", resetCounts);
+  };
+
   // 컴포넌트 마운트 시 클래스별 신청 인원 초기화
   useEffect(() => {
     resetClassEnrollment();
   }, []);
+
+  // 컴포넌트 마운트 시 퍼널 카운트 로드
+  useEffect(() => {
+    const counts: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0 };
+    [1, 2, 3, 4].forEach((stepNumber) => {
+      counts[stepNumber] = Number(localStorage.getItem(`step_view_${stepNumber}`) || "0");
+    });
+    setFunnelCounts(counts);
+    console.log("[퍼널] 로컬 카운트 불러오기:", counts);
+  }, []);
+
+  // 단계 진입 카운트 증가
+  useEffect(() => {
+    const key = `step_view_${step}`;
+    const prev = Number(localStorage.getItem(key) || "0");
+    const next = prev + 1;
+    localStorage.setItem(key, String(next));
+    setFunnelCounts((curr) => ({
+      ...curr,
+      [step]: next,
+    }));
+    console.log(`[퍼널] 단계 진입 카운트 증가: step=${step}, count=${next}`);
+  }, [step]);
 
   const getApplicantKey = () => {
     const name = formData.name.trim();
@@ -1414,6 +1452,27 @@ export default function SwimmingClassPage() {
                           </div>
                         ))}
                       </div>
+                      <div className="mt-3 pt-2 border-t border-gray-600">
+                        <div className="text-yellow-400 font-semibold mb-1">퍼널 카운트</div>
+                        <div className="space-y-1">
+                          <div className="flex justify-between">
+                            <span>1. 선택</span>
+                            <span className="font-bold">{funnelCounts[1] || 0}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>2. 개인 정보 입력</span>
+                            <span className="font-bold">{funnelCounts[2] || 0}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>3. 결제</span>
+                            <span className="font-bold">{funnelCounts[3] || 0}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>4. 완료</span>
+                            <span className="font-bold">{funnelCounts[4] || 0}</span>
+                          </div>
+                        </div>
+                      </div>
                       <Button
                         size="sm"
                         className="mt-3 w-full bg-red-500 hover:bg-red-600 text-white text-xs"
@@ -1422,6 +1481,15 @@ export default function SwimmingClassPage() {
                         }}
                       >
                         카운터 초기화
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="mt-2 w-full bg-gray-700 hover:bg-gray-600 text-white text-xs"
+                        onClick={() => {
+                          resetFunnelCounts();
+                        }}
+                      >
+                        퍼널 카운터 초기화
                       </Button>
                       {selectedTimeSlot && (
                         <div className="mt-2 pt-2 border-t border-gray-600">

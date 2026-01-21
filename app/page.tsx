@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -114,6 +114,7 @@ export default function SwimmingClassPage() {
     "평영 B (중급)": 0,
   });
   const { toast } = useToast();
+  const submittedApplicantsRef = useRef<Set<string>>(new Set());
 
   // 개발자 모드 (URL 파라미터로 활성화)
   const [showDebug, setShowDebug] = useState(false);
@@ -124,11 +125,30 @@ export default function SwimmingClassPage() {
     setShowDebug(params.get('debug') === 'true');
   }, []);
 
-  // 컴포넌트 마운트 시 클래스별 신청 인원 초기화 확인 로그
+  const resetClassEnrollment = () => {
+    const resetCounts = {
+      "자유형 A (초급)": 0,
+      "평영 A (초급)": 0,
+      "접영 A (초급)": 0,
+      "자유형 B (중급)": 0,
+      "평영 B (중급)": 0,
+    };
+    setClassEnrollment(resetCounts);
+    console.log("[카운터] 수영 클래스 선택 카운터 초기화:", resetCounts);
+  };
+
+  // 컴포넌트 마운트 시 클래스별 신청 인원 초기화
   useEffect(() => {
-    console.log("[초기화] 클래스별 신청 인원 초기화:", classEnrollment);
-    console.log("[초기화] 평영 A (초급) 초기값:", classEnrollment["평영 A (초급)"], "- 신청가능 일반 모드");
+    resetClassEnrollment();
   }, []);
+
+  const getApplicantKey = () => {
+    const name = formData.name.trim();
+    const phone = formData.phone.trim();
+    const gender = formData.gender.trim();
+    if (!name || !phone || !gender) return "";
+    return `${name}|${gender}|${phone}`;
+  };
 
   // 클래스별 신청 가능 여부 확인 (10명일 때 다음 클릭이 11번째이므로 정원 초과)
   const isClassFull = (className: string) => {
@@ -1677,6 +1697,17 @@ export default function SwimmingClassPage() {
                         console.log("[결제] 결제 처리 시작 - 버튼 비활성화");
 
                         if (selectedTimeSlot) {
+                          const applicantKey = getApplicantKey();
+                          if (applicantKey && submittedApplicantsRef.current.has(applicantKey)) {
+                            console.log("[중복방지] 동일 정보로 중복 결제 시도 차단:", applicantKey);
+                            toast({
+                              title: "중복 신청 방지",
+                              description: "같은 이름/성별/전화번호로 이미 신청이 진행되었습니다.",
+                              variant: "destructive",
+                            });
+                            setIsSubmitting(false);
+                            return;
+                          }
                           const isFull = isClassFull(selectedTimeSlot.name);
                           const hasPayment = hasEnrollment(selectedTimeSlot.name);
                           const currentEnrollment = classEnrollment[selectedTimeSlot.name] || 0;
@@ -1698,12 +1729,6 @@ export default function SwimmingClassPage() {
                                 setPaymentDate(now);
                                 setOrderNumber(newOrderNumber); // 주문번호 저장
                                 setPaymentStatus("예약대기"); // 예약대기 상태 설정
-                                // 신청 인원 증가
-                                setClassEnrollment((prev) => ({
-                                  ...prev,
-                                  [selectedTimeSlot.name]: (prev[selectedTimeSlot.name] || 0) + 1,
-                                }));
-
                                 const selectedRegion =
                                   classes.find(
                                     (c) => String(c.id) === selectedClass
@@ -1721,6 +1746,15 @@ export default function SwimmingClassPage() {
                                   region: selectedRegion,
                                 });
 
+                                // 신청 인원 증가
+                                setClassEnrollment((prev) => ({
+                                  ...prev,
+                                  [selectedTimeSlot.name]: (prev[selectedTimeSlot.name] || 0) + 1,
+                                }));
+                                if (applicantKey) {
+                                  submittedApplicantsRef.current.add(applicantKey);
+                                  console.log("[중복방지] 신청자 정보 저장:", applicantKey);
+                                }
                                 console.log("[예약대기] 예약 처리 완료 - 4단계로 이동");
                                 setStep(4);
                               } else {
@@ -1757,12 +1791,6 @@ export default function SwimmingClassPage() {
                                 setPaymentDate(now);
                                 setOrderNumber(newOrderNumber); // 주문번호 저장
                                 setPaymentStatus("입금대기"); // 입금대기 상태 설정
-                                // 신청 인원 증가
-                                setClassEnrollment((prev) => ({
-                                  ...prev,
-                                  [selectedTimeSlot.name]: (prev[selectedTimeSlot.name] || 0) + 1,
-                                }));
-
                                 const selectedRegion =
                                   classes.find(
                                     (c) => String(c.id) === selectedClass
@@ -1780,6 +1808,15 @@ export default function SwimmingClassPage() {
                                   region: selectedRegion,
                                 });
 
+                                // 신청 인원 증가
+                                setClassEnrollment((prev) => ({
+                                  ...prev,
+                                  [selectedTimeSlot.name]: (prev[selectedTimeSlot.name] || 0) + 1,
+                                }));
+                                if (applicantKey) {
+                                  submittedApplicantsRef.current.add(applicantKey);
+                                  console.log("[중복방지] 신청자 정보 저장:", applicantKey);
+                                }
                                 console.log("[결제] 결제 처리 완료 - 4단계로 이동");
                                 setStep(4);
                               } else {

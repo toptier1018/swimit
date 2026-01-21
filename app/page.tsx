@@ -359,7 +359,7 @@ export default function SwimmingClassPage() {
                       스윔잇 강의와 연결된 선수/강사 경력 10년 이상 되는 배테랑 분들이
                     </p>
                     <p className="text-lg md:text-base">
-                      여러분의 문제점을 해결해드립니다.
+                      여러분의 문제점에 해결책을 제시하며 티칭해드립니다.
                     </p>
                   </div>
 

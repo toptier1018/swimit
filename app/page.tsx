@@ -3073,16 +3073,16 @@ export default function SwimmingClassPage() {
                   </span>
                 </div>
               )}
-                              {selectedTimeSlot && (
-                                <div className="flex justify-between">
-                                  <span className="text-gray-600">지역</span>
-                                  <span className="text-gray-700">
-                                    {classes.find(
-                                      (c) => String(c.id) === selectedClass
-                                    )?.location || "정보 없음"}
-                                  </span>
-                                </div>
-                              )}
+              {selectedTimeSlot && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">지역</span>
+                  <span className="text-gray-700">
+                    {classes.find(
+                      (c) => String(c.id) === selectedClass
+                    )?.location || "정보 없음"}
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between pt-2 border-t">
                 <span className="text-gray-600">상품 금액</span>
                 <span>₩100,000</span>

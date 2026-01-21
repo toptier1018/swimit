@@ -2707,18 +2707,14 @@ export default function SwimmingClassPage() {
             <div>
               <h3 className="font-semibold mb-2">1. 강의 취소 사유</h3>
               <p className="text-gray-700 mb-2">
-                다음과 같이 예측된 강의의 개최가 어려울 수 있습니다:
+                다음의 경우 예약된 강의가 취소될 수 있습니다:
               </p>
               <ul className="list-disc list-inside space-y-1 text-gray-700 ml-2">
-                <li>자연 재해로 인한 경우 (폭우 또는 태풍 등 기상 특보)</li>
-                <li>수영장 시설 관리 문제로 시설 관리 측에서 요청할 경우</li>
-                <li>
-                  강사의 개인적인 건강 문제 또는 부득이한 상황 (입원 및 긴급
-                  사태 등의 경우)
-                </li>
-                <li>
-                  최소 인원 미달: 낮은 강좌의 경우 진행 여부를 사전에 검토
-                </li>
+                <li>기상 악화: 폭우, 태풍, 폭설 등으로 인한 안전 문제</li>
+                <li>수영장 시설 문제: 수질 문제, 시설 고장, 긴급 보수 등</li>
+                <li>강사 사정: 강사의 급병, 사고 등 불가피한 사유</li>
+                <li>최소 인원 미달: 그룹 강의의 경우 최소 인원 미달 시 (사전 공지)</li>
+                <li>기타 불가항력: 천재지변, 감염병 확산 등</li>
               </ul>
             </div>
 
@@ -2726,62 +2722,54 @@ export default function SwimmingClassPage() {
             <div>
               <h3 className="font-semibold mb-2">2. 취소 안내 방법</h3>
               <p className="text-gray-700 mb-2">
-                강의 취소 시, 등록 시 안내드립니다:
+                강의 취소 시 다음과 같이 안내됩니다:
               </p>
               <ul className="list-disc list-inside space-y-1 text-gray-700 ml-2">
-                <li>카카오톡 공개톡 &gt; 톡</li>
-                <li>네이버 추가 예약</li>
-                <li>단체 전화 (긴급 상황 시)</li>
-                <li>
-                  가능한 한 빠른 시간 내에 안내드리기 위해 노력하겠습니다.
-                </li>
+                <li>카카오톡 알림톡 발송</li>
+                <li>SMS 문자 메시지 발송</li>
+                <li>전화 연락 (긴급 상황 시)</li>
               </ul>
+              <p className="text-xs text-gray-600 mt-2">
+                * 가능한 한 강의 시작 최소 3시간 전에 안내드리기 위해 노력합니다.
+              </p>
             </div>
 
             {/* 3. 취소 시 조치 */}
             <div>
               <h3 className="font-semibold mb-2">3. 취소 시 조치</h3>
-              <div className="bg-green-50 border border-green-200 rounded-md p-3 space-y-1">
-                <p className="text-green-800 font-medium">
-                  수업료는 다음 중 선택하실 수 있습니다:
-                </p>
-                <ul className="list-disc list-inside space-y-1 text-green-700 ml-2">
-                  <li className="font-medium">
-                    전액 환불: 강의의 전액을 환불해 드립니다
-                  </li>
-                  <li className="font-medium">
-                    일정 변경: 다른 가능한 날짜로 수업 일정 변경
-                  </li>
-                  <li className="font-medium">
-                    크레딧 적립: 향후 제공될 강좌에 사용 가능한 크레딧으로 보관
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            {/* 4. 환불 절차 */}
-            <div>
-              <h3 className="font-semibold mb-2">4. 환불 절차</h3>
               <p className="text-gray-700 mb-2">
-                강의 취소로 인한 환불은 다음과 같습니다:
+                수강생은 다음 중 선택할 수 있습니다:
               </p>
               <ul className="list-disc list-inside space-y-1 text-gray-700 ml-2">
-                <li>전액 신청 시 예약 시기와 같은 금액 환불됩니다</li>
-                <li>환불 수수료 없이 전액 환불 가능 합니다</li>
-                <li>네이버 수료는 구매 취소</li>
+                <li>전액 환불: 결제 금액 100% 환불</li>
+                <li>일정 변경: 다른 가능한 날짜로 무료 변경</li>
+                <li>크레딧 적립: 다음 강의 예약 시 사용 가능한 크레딧으로 보관</li>
               </ul>
             </div>
 
-            {/* 5. 날짜 변경 */}
+            {/* 4. 환불 처리 */}
             <div>
-              <h3 className="font-semibold mb-2">5. 날짜 변경</h3>
+              <h3 className="font-semibold mb-2">4. 환불 처리</h3>
               <p className="text-gray-700 mb-2">
-                이미 설치된 남편 일정을 대관할 경우 일정
+                회사 사유로 강의가 취소된 경우:
               </p>
               <ul className="list-disc list-inside space-y-1 text-gray-700 ml-2">
-                <li>화요일 공개면 예모안는 고참선 변경</li>
-                <li>나에게 추천 장애이 추가는 학급 추추</li>
-                <li>타분 제공은 항목도 및 후 부위 구역도 타입</li>
+                <li>환불 신청 즉시 처리 (별도 신청 불필요)</li>
+                <li>결제 수단에 따라 3-5 영업일 내 환불 완료</li>
+                <li>취소 수수료 없음</li>
+              </ul>
+            </div>
+
+            {/* 5. 부분 취소 */}
+            <div>
+              <h3 className="font-semibold mb-2">5. 부분 취소</h3>
+              <p className="text-gray-700 mb-2">
+                여러 회차 또는 여러 강의를 예약한 경우:
+              </p>
+              <ul className="list-disc list-inside space-y-1 text-gray-700 ml-2">
+                <li>취소된 강의에 해당하는 금액만 환불</li>
+                <li>나머지 예약 강의는 정상 진행</li>
+                <li>전체 취소를 원할 경우 별도 요청 가능</li>
               </ul>
             </div>
 
@@ -2789,32 +2777,28 @@ export default function SwimmingClassPage() {
             <div>
               <h3 className="font-semibold mb-2">6. 보상 정책</h3>
               <p className="text-gray-700 mb-2">
-                반복적인 입장 체취의 발생될 경우:
+                반복적인 강의 취소가 발생할 경우:
               </p>
               <ul className="list-disc list-inside space-y-1 text-gray-700 ml-2">
-                <li>추가 무료 연장 세션 제공</li>
-                <li>다음 주말 장 정보 시 할인 적용</li>
-                <li>저희 과정은 부성 제공</li>
+                <li>추가 무료 강의권 제공</li>
+                <li>다음 예약 시 할인 쿠폰 제공</li>
+                <li>우선 예약권 부여</li>
               </ul>
             </div>
 
-            {/* 알림사항 */}
+            {/* 안내사항 */}
             <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
-              <p className="text-blue-800 font-medium flex items-start gap-2">
-                <span className="text-blue-600 text-lg">ℹ️</span>
-                <span>알림사항</span>
+              <p className="text-blue-800 font-medium flex items-start gap-2 mb-2">
+                <span className="text-blue-600 text-lg">💡</span>
+                <span>안내사항</span>
               </p>
-              <p className="text-blue-700 text-xs mt-2 leading-relaxed">
-                수업 품질 유지와 안전을 최우선으로 강의 취소 시 신속히 안내해
-                드리며 최선을 다해 준비하도록 약속드립니다. 또 모두가 즐거운
-                수영 경험을 가질 수 있도록 노력하겠습니다.
+              <p className="text-blue-700 text-xs leading-relaxed mb-2">
+                강의 당일 기상 상황이 불안정한 경우, 강의 시작 2-3시간 전에 최종 진행 여부를 결정하여 안내드립니다. 수영장으로 출발하기 전 카카오톡 알림을 확인해 주시기 바랍니다.
+              </p>
+              <p className="text-blue-700 text-xs leading-relaxed">
+                본 안내는 수강생의 권익 보호를 위한 것이며, 회사는 최대한 강의 취소가 발생하지 않도록 노력하겠습니다.
               </p>
             </div>
-
-            <p className="text-xs text-gray-500 border-t pt-3">
-              본 약관은 수영장의 운영 정책에 따라 주자적은 변동이 없지만, 이해와
-              협조를 부탁 드립니다.
-            </p>
           </div>
           <div className="flex justify-end mt-4">
             <Button

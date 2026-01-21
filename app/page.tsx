@@ -37,7 +37,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { submitToNotion, updatePaymentInNotion, checkPaymentStatus } from "@/app/actions/notion";
+import { submitToNotion, updatePaymentInNotion, checkPaymentStatus, getClassEnrollmentCounts } from "@/app/actions/notion";
 
 const classes = [
   {
@@ -116,19 +116,45 @@ export default function SwimmingClassPage() {
   const { toast } = useToast();
 
   // 개발자 모드 (URL 파라미터로 활성화)
+  // 배포 환경에서는 환경 변수로도 제어 가능 (보안을 위해)
   const [showDebug, setShowDebug] = useState(false);
 
-  // URL 파라미터 확인
+  // URL 파라미터 확인 (로컬 개발 환경 또는 배포 환경에서 모두 동작)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    setShowDebug(params.get('debug') === 'true');
+    const debugParam = params.get('debug') === 'true';
+    // 환경 변수가 설정되어 있으면 그것을 우선, 없으면 URL 파라미터 사용
+    // 프로덕션에서는 환경 변수로 제어 가능 (예: NEXT_PUBLIC_ENABLE_DEBUG=false)
+    const envDebug = process.env.NEXT_PUBLIC_ENABLE_DEBUG === 'true';
+    setShowDebug(envDebug || debugParam);
+    if (debugParam || envDebug) {
+      console.log('[개발자 모드] 활성화됨 - 클래스별 신청 인원 카운터 표시');
+    }
   }, []);
 
-  // 컴포넌트 마운트 시 클래스별 신청 인원 초기화 확인 로그
+  // 컴포넌트 마운트 시 Notion에서 실제 결제 건수를 조회하여 카운터 초기화
   useEffect(() => {
-    console.log("[초기화] 클래스별 신청 인원 초기화:", classEnrollment);
-    console.log("[초기화] 평영 A (초급) 초기값:", classEnrollment["평영 A (초급)"], "- 신청가능 일반 모드");
-  }, []);
+    const loadEnrollmentCounts = async () => {
+      try {
+        console.log("[초기화] Notion에서 클래스별 결제 건수 조회 시작...");
+        const result = await getClassEnrollmentCounts();
+        
+        if (result.success && result.counts) {
+          console.log("[초기화] Notion에서 조회된 클래스별 결제 건수:", result.counts);
+          setClassEnrollment(result.counts);
+          console.log("[초기화] 클래스별 신청 인원 업데이트 완료:", result.counts);
+        } else {
+          console.warn("[초기화] Notion 조회 실패, 기본값 사용:", result.error);
+          // 에러 발생 시 기본값 유지 (이미 0으로 초기화됨)
+        }
+      } catch (error) {
+        console.error("[초기화] 결제 건수 조회 중 오류 발생:", error);
+        // 에러 발생 시 기본값 유지
+      }
+    };
+
+    loadEnrollmentCounts();
+  }, []); // 컴포넌트 마운트 시 한 번만 실행
 
   // 클래스별 신청 가능 여부 확인 (10명일 때 다음 클릭이 11번째이므로 정원 초과)
   const isClassFull = (className: string) => {
@@ -1700,6 +1726,20 @@ export default function SwimmingClassPage() {
                                 });
 
                                 console.log("[예약대기] 예약 처리 완료 - 4단계로 이동");
+                                
+                                // 결제 완료 후 Notion에서 최신 카운터 조회하여 동기화
+                                try {
+                                  const countResult = await getClassEnrollmentCounts();
+                                  if (countResult.success && countResult.counts) {
+                                    console.log("[예약대기] Notion에서 최신 카운터 조회 완료:", countResult.counts);
+                                    setClassEnrollment(countResult.counts);
+                                  }
+                                } catch (countError) {
+                                  console.warn("[예약대기] 카운터 동기화 중 오류 (무시됨):", countError);
+                                  // 카운터 동기화 실패는 무시 (로컬 상태는 이미 업데이트됨)
+                                }
+                                
+                                setIsSubmitting(false); // 결제 완료 후 버튼 다시 활성화
                                 setStep(4);
                               } else {
                                 setIsSubmitting(false); // 에러 발생 시 버튼 다시 활성화
@@ -1752,6 +1792,20 @@ export default function SwimmingClassPage() {
                                 });
 
                                 console.log("[결제] 결제 처리 완료 - 4단계로 이동");
+                                
+                                // 결제 완료 후 Notion에서 최신 카운터 조회하여 동기화
+                                try {
+                                  const countResult = await getClassEnrollmentCounts();
+                                  if (countResult.success && countResult.counts) {
+                                    console.log("[결제] Notion에서 최신 카운터 조회 완료:", countResult.counts);
+                                    setClassEnrollment(countResult.counts);
+                                  }
+                                } catch (countError) {
+                                  console.warn("[결제] 카운터 동기화 중 오류 (무시됨):", countError);
+                                  // 카운터 동기화 실패는 무시 (로컬 상태는 이미 업데이트됨)
+                                }
+                                
+                                setIsSubmitting(false); // 결제 완료 후 버튼 다시 활성화
                                 setStep(4);
                               } else {
                                 setIsSubmitting(false); // 에러 발생 시 버튼 다시 활성화

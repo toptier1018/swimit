@@ -115,6 +115,15 @@ export default function SwimmingClassPage() {
   });
   const { toast } = useToast();
 
+  // 개발자 모드 (URL 파라미터로 활성화)
+  const [showDebug, setShowDebug] = useState(false);
+
+  // URL 파라미터 확인
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setShowDebug(params.get('debug') === 'true');
+  }, []);
+
   // 컴포넌트 마운트 시 클래스별 신청 인원 초기화 확인 로그
   useEffect(() => {
     console.log("[초기화] 클래스별 신청 인원 초기화:", classEnrollment);
@@ -1369,6 +1378,31 @@ export default function SwimmingClassPage() {
                 </Card>
 
                 <div className="space-y-6">
+                  {/* 개발자 모드: 카운터 표시 */}
+                  {showDebug && (
+                    <div className="fixed top-4 right-4 bg-black/90 text-white p-3 rounded-lg text-xs z-50 shadow-lg border-2 border-yellow-500">
+                      <div className="font-bold text-yellow-400 mb-2">🔧 개발자 모드</div>
+                      <div className="space-y-1">
+                        {Object.entries(classEnrollment).map(([className, count]) => (
+                          <div key={className} className="flex justify-between gap-4">
+                            <span className="text-gray-300">{className}:</span>
+                            <span className="font-bold">
+                              {count}명 / 다음: {count + 1}번째
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                      {selectedTimeSlot && (
+                        <div className="mt-2 pt-2 border-t border-gray-600">
+                          <div className="text-yellow-400 font-semibold">선택된 클래스:</div>
+                          <div className="text-white">
+                            {selectedTimeSlot.name} - 현재: {classEnrollment[selectedTimeSlot.name] || 0}명
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
                   {regionError && (
                     <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                       <p className="text-red-600 font-bold text-center">

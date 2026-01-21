@@ -1454,22 +1454,26 @@ export default function SwimmingClassPage() {
                       </div>
                       <div className="mt-3 pt-2 border-t border-gray-600">
                         <div className="text-yellow-400 font-semibold mb-1">퍼널 카운트</div>
-                        <div className="space-y-1">
-                          <div className="flex justify-between">
-                            <span>1. 선택</span>
-                            <span className="font-bold">{funnelCounts[1] || 0}</span>
+                        <div className="grid grid-cols-1 gap-2">
+                          <div className="bg-white/5 border border-white/10 rounded-md p-2">
+                            <div className="text-[11px] text-gray-300">1. 선택</div>
+                            <div className="text-base font-bold">{funnelCounts[1] || 0}</div>
+                            <div className="text-[10px] text-gray-400 mt-1">선택 페이지</div>
                           </div>
-                          <div className="flex justify-between">
-                            <span>2. 개인 정보 입력</span>
-                            <span className="font-bold">{funnelCounts[2] || 0}</span>
+                          <div className="bg-white/5 border border-white/10 rounded-md p-2">
+                            <div className="text-[11px] text-gray-300">2. 개인 정보 입력</div>
+                            <div className="text-base font-bold">{funnelCounts[2] || 0}</div>
+                            <div className="text-[10px] text-gray-400 mt-1">개인 정보 입력</div>
                           </div>
-                          <div className="flex justify-between">
-                            <span>3. 결제</span>
-                            <span className="font-bold">{funnelCounts[3] || 0}</span>
+                          <div className="bg-white/5 border border-white/10 rounded-md p-2">
+                            <div className="text-[11px] text-gray-300">3. 결제</div>
+                            <div className="text-base font-bold">{funnelCounts[3] || 0}</div>
+                            <div className="text-[10px] text-gray-400 mt-1">결제</div>
                           </div>
-                          <div className="flex justify-between">
-                            <span>4. 완료</span>
-                            <span className="font-bold">{funnelCounts[4] || 0}</span>
+                          <div className="bg-white/5 border border-white/10 rounded-md p-2">
+                            <div className="text-[11px] text-gray-300">4. 완료</div>
+                            <div className="text-base font-bold">{funnelCounts[4] || 0}</div>
+                            <div className="text-[10px] text-gray-400 mt-1">완료</div>
                           </div>
                         </div>
                       </div>
@@ -1482,15 +1486,17 @@ export default function SwimmingClassPage() {
                       >
                         카운터 초기화
                       </Button>
-                      <Button
-                        size="sm"
-                        className="mt-2 w-full bg-gray-700 hover:bg-gray-600 text-white text-xs"
-                        onClick={() => {
-                          resetFunnelCounts();
-                        }}
-                      >
-                        퍼널 카운터 초기화
-                      </Button>
+                      <div className="mt-2 pt-2 border-t border-gray-700">
+                        <Button
+                          size="sm"
+                          className="w-full bg-gray-700 hover:bg-gray-600 text-white text-xs"
+                          onClick={() => {
+                            resetFunnelCounts();
+                          }}
+                        >
+                          퍼널 카운터 초기화
+                        </Button>
+                      </div>
                       {selectedTimeSlot && (
                         <div className="mt-2 pt-2 border-t border-gray-600">
                           <div className="text-yellow-400 font-semibold">선택된 클래스:</div>

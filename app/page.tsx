@@ -324,7 +324,7 @@ export default function SwimmingClassPage() {
                   <div className="space-y-4 md:space-y-3">
                     <p className="text-lg md:text-base">
                       초중급자가 수영이 가장 빠르게 늘 수 있는 방법은{" "}
-                      <span className="font-bold">
+                      <span className="font-bold text-2xl md:text-xl">
                         "저항을 줄이는 방법"
                       </span>
                       입니다.

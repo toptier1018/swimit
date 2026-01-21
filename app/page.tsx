@@ -1584,6 +1584,13 @@ export default function SwimmingClassPage() {
                   </div>
 
                   {/* Navigation Buttons */}
+                  {regionError && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                      <p className="text-red-600 font-bold text-center">
+                        지역을 선택해주세요
+                      </p>
+                    </div>
+                  )}
                   <div className="flex gap-3 pt-4">
                     <Button
                       variant="outline"

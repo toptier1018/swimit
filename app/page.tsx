@@ -601,6 +601,76 @@ export default function SwimmingClassPage() {
               </div>
             </div>
 
+            {/* 개발자 모드: 카운터 표시 (모든 단계에서 표시) */}
+            {showDebug && (
+              <div className="fixed top-4 right-4 bg-black/90 text-white p-3 rounded-lg text-xs z-50 shadow-lg border-2 border-yellow-500">
+                <div className="font-bold text-yellow-400 mb-2">🔧 개발자 모드</div>
+                <div className="space-y-1">
+                  {Object.entries(classEnrollment).map(([className, count]) => (
+                    <div key={className} className="flex justify-between gap-4">
+                      <span className="text-gray-300">{className}:</span>
+                      <span className="font-bold">
+                        {count}명 / 다음: {count + 1}번째
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-3 pt-2 border-t border-gray-600">
+                  <div className="text-yellow-400 font-semibold mb-1">퍼널 카운트</div>
+                  <div className="grid grid-cols-1 gap-2">
+                    <div className="bg-white/5 border border-white/10 rounded-md p-2">
+                      <div className="text-[11px] text-gray-300">1. 선택</div>
+                      <div className="text-base font-bold">{funnelCounts[1] || 0}</div>
+                      <div className="text-[10px] text-gray-400 mt-1">선택 페이지</div>
+                    </div>
+                    <div className="bg-white/5 border border-white/10 rounded-md p-2">
+                      <div className="text-[11px] text-gray-300">2. 개인 정보 입력</div>
+                      <div className="text-base font-bold">{funnelCounts[2] || 0}</div>
+                      <div className="text-[10px] text-gray-400 mt-1">개인 정보 입력</div>
+                    </div>
+                    <div className="bg-white/5 border border-white/10 rounded-md p-2">
+                      <div className="text-[11px] text-gray-300">3. 결제</div>
+                      <div className="text-base font-bold">{funnelCounts[3] || 0}</div>
+                      <div className="text-[10px] text-gray-400 mt-1">결제</div>
+                    </div>
+                    <div className="bg-white/5 border border-white/10 rounded-md p-2">
+                      <div className="text-[11px] text-gray-300">4. 완료</div>
+                      <div className="text-base font-bold">{funnelCounts[4] || 0}</div>
+                      <div className="text-[10px] text-gray-400 mt-1">완료</div>
+                    </div>
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  className="mt-3 w-full bg-red-500 hover:bg-red-600 text-white text-xs"
+                  onClick={() => {
+                    resetClassEnrollment();
+                  }}
+                >
+                  카운터 초기화
+                </Button>
+                <div className="mt-2 pt-2 border-t border-gray-700">
+                  <Button
+                    size="sm"
+                    className="w-full bg-gray-700 hover:bg-gray-600 text-white text-xs"
+                    onClick={() => {
+                      resetFunnelCounts();
+                    }}
+                  >
+                    퍼널 카운터 초기화
+                  </Button>
+                </div>
+                {selectedTimeSlot && (
+                  <div className="mt-2 pt-2 border-t border-gray-600">
+                    <div className="text-yellow-400 font-semibold">선택된 클래스:</div>
+                    <div className="text-white">
+                      {selectedTimeSlot.name} - 현재: {classEnrollment[selectedTimeSlot.name] || 0}명
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {step === 2 ? (
               <>
                 {/* Step 2: Registration Form */}
@@ -1438,75 +1508,6 @@ export default function SwimmingClassPage() {
                 </Card>
 
                 <div className="space-y-6">
-                  {/* 개발자 모드: 카운터 표시 */}
-                  {showDebug && (
-                    <div className="fixed top-4 right-4 bg-black/90 text-white p-3 rounded-lg text-xs z-50 shadow-lg border-2 border-yellow-500">
-                      <div className="font-bold text-yellow-400 mb-2">🔧 개발자 모드</div>
-                      <div className="space-y-1">
-                        {Object.entries(classEnrollment).map(([className, count]) => (
-                          <div key={className} className="flex justify-between gap-4">
-                            <span className="text-gray-300">{className}:</span>
-                            <span className="font-bold">
-                              {count}명 / 다음: {count + 1}번째
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="mt-3 pt-2 border-t border-gray-600">
-                        <div className="text-yellow-400 font-semibold mb-1">퍼널 카운트</div>
-                        <div className="grid grid-cols-1 gap-2">
-                          <div className="bg-white/5 border border-white/10 rounded-md p-2">
-                            <div className="text-[11px] text-gray-300">1. 선택</div>
-                            <div className="text-base font-bold">{funnelCounts[1] || 0}</div>
-                            <div className="text-[10px] text-gray-400 mt-1">선택 페이지</div>
-                          </div>
-                          <div className="bg-white/5 border border-white/10 rounded-md p-2">
-                            <div className="text-[11px] text-gray-300">2. 개인 정보 입력</div>
-                            <div className="text-base font-bold">{funnelCounts[2] || 0}</div>
-                            <div className="text-[10px] text-gray-400 mt-1">개인 정보 입력</div>
-                          </div>
-                          <div className="bg-white/5 border border-white/10 rounded-md p-2">
-                            <div className="text-[11px] text-gray-300">3. 결제</div>
-                            <div className="text-base font-bold">{funnelCounts[3] || 0}</div>
-                            <div className="text-[10px] text-gray-400 mt-1">결제</div>
-                          </div>
-                          <div className="bg-white/5 border border-white/10 rounded-md p-2">
-                            <div className="text-[11px] text-gray-300">4. 완료</div>
-                            <div className="text-base font-bold">{funnelCounts[4] || 0}</div>
-                            <div className="text-[10px] text-gray-400 mt-1">완료</div>
-                          </div>
-                        </div>
-                      </div>
-                      <Button
-                        size="sm"
-                        className="mt-3 w-full bg-red-500 hover:bg-red-600 text-white text-xs"
-                        onClick={() => {
-                          resetClassEnrollment();
-                        }}
-                      >
-                        카운터 초기화
-                      </Button>
-                      <div className="mt-2 pt-2 border-t border-gray-700">
-                        <Button
-                          size="sm"
-                          className="w-full bg-gray-700 hover:bg-gray-600 text-white text-xs"
-                          onClick={() => {
-                            resetFunnelCounts();
-                          }}
-                        >
-                          퍼널 카운터 초기화
-                        </Button>
-                      </div>
-                      {selectedTimeSlot && (
-                        <div className="mt-2 pt-2 border-t border-gray-600">
-                          <div className="text-yellow-400 font-semibold">선택된 클래스:</div>
-                          <div className="text-white">
-                            {selectedTimeSlot.name} - 현재: {classEnrollment[selectedTimeSlot.name] || 0}명
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
                   
                   {regionError && (
                     <div className="bg-red-50 border border-red-200 rounded-lg p-3">

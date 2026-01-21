@@ -146,13 +146,21 @@ export default function SwimmingClassPage() {
     console.log("[중복방지] 신청자 중복 방지 데이터 초기화 완료");
   };
 
-  const resetFunnelCounts = () => {
-    const resetCounts = { 1: 0, 2: 0, 3: 0, 4: 0 };
-    [1, 2, 3, 4].forEach((stepNumber) => {
-      localStorage.removeItem(`step_view_${stepNumber}`);
-    });
-    setFunnelCounts(resetCounts);
-    console.log("[퍼널] 단계 카운트 초기화 완료:", resetCounts);
+  const resetFunnelCounts = async () => {
+    try {
+      const response = await fetch("/api/funnel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "reset" }),
+      });
+      const data = await response.json();
+      if (data?.totals) {
+        setFunnelCounts(data.totals);
+      }
+      console.log("[퍼널] 단계 카운트 초기화 완료:", data?.totals);
+    } catch (error) {
+      console.log("[퍼널] 카운터 초기화 실패:", error);
+    }
   };
 
   const incrementFunnelCount = (stepNumber: 1 | 2 | 3 | 4, reason: string) => {
@@ -182,16 +190,25 @@ export default function SwimmingClassPage() {
       );
       return;
     }
-    const key = `step_view_${stepNumber}`;
-    const prev = Number(localStorage.getItem(key) || "0");
-    const next = prev + 1;
-    localStorage.setItem(key, String(next));
-    setFunnelCounts((curr) => ({
-      ...curr,
-      [stepNumber]: next,
-    }));
     sessionStorage.setItem(guardKey, JSON.stringify({ step: stepNumber, ts: now }));
-    console.log(`[퍼널] 카운트 증가: step=${stepNumber}, count=${next}, reason=${reason}`);
+    void (async () => {
+      try {
+        const response = await fetch("/api/funnel", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ step: stepNumber, reason }),
+        });
+        const data = await response.json();
+        if (data?.totals) {
+          setFunnelCounts(data.totals);
+        }
+        console.log(
+          `[퍼널] 카운트 ${data?.counted ? "증가" : "차단"}: step=${stepNumber}, reason=${reason}`
+        );
+      } catch (error) {
+        console.log("[퍼널] 카운트 요청 실패:", error);
+      }
+    })();
   };
 
   // 컴포넌트 마운트 시 클래스별 신청 인원 초기화
@@ -199,14 +216,20 @@ export default function SwimmingClassPage() {
     resetClassEnrollment();
   }, []);
 
-  // 컴포넌트 마운트 시 퍼널 카운트 로드
+  // 컴포넌트 마운트 시 퍼널 카운트 로드 (서버 기준)
   useEffect(() => {
-    const counts: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0 };
-    [1, 2, 3, 4].forEach((stepNumber) => {
-      counts[stepNumber] = Number(localStorage.getItem(`step_view_${stepNumber}`) || "0");
-    });
-    setFunnelCounts(counts);
-    console.log("[퍼널] 로컬 카운트 불러오기:", counts);
+    void (async () => {
+      try {
+        const response = await fetch("/api/funnel", { cache: "no-store" });
+        const data = await response.json();
+        if (data?.totals) {
+          setFunnelCounts(data.totals);
+          console.log("[퍼널] 서버 카운트 불러오기:", data.totals);
+        }
+      } catch (error) {
+        console.log("[퍼널] 서버 카운트 불러오기 실패:", error);
+      }
+    })();
   }, []);
 
   const getApplicantKey = () => {

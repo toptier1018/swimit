@@ -2968,7 +2968,7 @@ export default function SwimmingClassPage() {
               <div className="space-y-2 text-sm bg-white p-3 rounded">
                 <div className="flex justify-between">
                   <span className="text-gray-600">계좌번호</span>
-                  <span className="font-medium">농협 302-1710-5277-51</span>
+                  <span className="font-bold text-red-600 text-lg">농협 302-1710-5277-51</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">예금주</span>

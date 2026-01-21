@@ -322,9 +322,9 @@ export default function SwimmingClassPage() {
 
                   {/* Problem Section */}
                   <div className="space-y-4 md:space-y-3">
-                    <p className="text-lg md:text-base">
+                    <p className="text-xl md:text-base font-semibold">
                       초중급자가 수영이 가장 빠르게 늘 수 있는 방법은{" "}
-                      <span className="font-bold text-2xl md:text-xl">
+                      <span className="font-bold text-2xl md:text-xl text-blue-600">
                         "저항을 줄이는 방법"
                       </span>
                       입니다.
@@ -334,7 +334,7 @@ export default function SwimmingClassPage() {
                     </p>
                     <p className="text-lg md:text-base">
                       이를 무시하고 수영하다가 결국{" "}
-                      <span className="font-bold">
+                      <span className="font-bold text-red-600">
                         건강하려고 시작했던 수영 때문에 어깨, 허리, 무릎 통증에 시달리게 될 수도 있습니다
                       </span>
                     </p>
@@ -344,7 +344,7 @@ export default function SwimmingClassPage() {
                   <div className="space-y-4 md:space-y-3">
                     <p className="text-lg md:text-base">
                       "스윔잇"은{" "}
-                      <span className="font-bold text-xl md:text-lg">
+                      <span className="font-bold text-xl md:text-lg text-blue-600">
                         "저항을 줄이는 수영"
                       </span>
                       을 기본으로 하며
@@ -352,7 +352,7 @@ export default function SwimmingClassPage() {
                     <p className="text-lg md:text-base">
                       각자 문제점에 맞춘 티칭을 제공합니다.
                     </p>
-                    <p className="font-bold text-xl md:text-lg underline">
+                    <p className="font-bold text-xl md:text-lg underline text-gray-900 bg-yellow-50 p-3 rounded-lg">
                       "이건 꼭 배우고 싶어요"에 가장 안되는 문제점을 적어주세요
                     </p>
                     <p className="text-lg md:text-base">
@@ -364,22 +364,22 @@ export default function SwimmingClassPage() {
                   </div>
 
                   {/* Pricing Section */}
-                  <div className="space-y-4 md:space-y-3">
+                  <div className="space-y-4 md:space-y-3 bg-green-50 p-4 rounded-lg border border-green-200">
                     <p className="text-lg md:text-base">
                       첫 특강은 2시간에 10만원에서 할인된 가격{" "}
-                      <span className="font-bold text-xl md:text-lg">40%할인된 가격인 6만원으로 책정</span>하였습니다
+                      <span className="font-bold text-xl md:text-lg text-green-600">40%할인된 가격인 6만원으로 책정</span>하였습니다
                     </p>
                     <p className="text-lg md:text-base">
                       게다가 내 영법 물속 촬영에 강사분께서 직접 피드백까지 하는 보너스까지 꾹꾹 눌러 담아 알차게 구성하였습니다
                     </p>
-                    <p className="text-sm md:text-xs text-gray-600">
+                    <p className="text-sm md:text-xs text-gray-600 bg-white p-2 rounded border border-gray-200">
                       (강습 시간상 쉬는 시간에 촬영해야 하므로 선착순으로 원하시는 분들만 촬영합니다)
                     </p>
                   </div>
 
                   {/* Call to Action */}
-                  <div>
-                    <p className="text-lg md:text-base">
+                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <p className="text-lg md:text-base text-center">
                       <span className="font-bold">야심차게 준비한 스윔잇 특강</span>{" "}
                       <span className="font-bold text-red-600 text-xl md:text-lg">지금 바로 신청하기</span>
                       <span className="font-bold">를 눌러</span>{" "}
@@ -388,7 +388,7 @@ export default function SwimmingClassPage() {
                   </div>
 
                   {/* PS Section */}
-                  <div className="mt-4">
+                  <div className="mt-4 bg-orange-50 p-4 rounded-lg border border-orange-200">
                     <p className="text-base md:text-sm text-gray-900 font-semibold">
                       PS. 해당 강습은 가격이 계속 오를 예정이므로 마감이 되었다면{" "}
                       <span className="font-bold text-xl md:text-lg text-red-600">

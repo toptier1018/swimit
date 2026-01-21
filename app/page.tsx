@@ -134,7 +134,9 @@ export default function SwimmingClassPage() {
       "평영 B (중급)": 0,
     };
     setClassEnrollment(resetCounts);
+    submittedApplicantsRef.current.clear();
     console.log("[카운터] 수영 클래스 선택 카운터 초기화:", resetCounts);
+    console.log("[중복방지] 신청자 중복 방지 데이터 초기화 완료");
   };
 
   // 컴포넌트 마운트 시 클래스별 신청 인원 초기화
@@ -1412,6 +1414,15 @@ export default function SwimmingClassPage() {
                           </div>
                         ))}
                       </div>
+                      <Button
+                        size="sm"
+                        className="mt-3 w-full bg-red-500 hover:bg-red-600 text-white text-xs"
+                        onClick={() => {
+                          resetClassEnrollment();
+                        }}
+                      >
+                        카운터 초기화
+                      </Button>
                       {selectedTimeSlot && (
                         <div className="mt-2 pt-2 border-t border-gray-600">
                           <div className="text-yellow-400 font-semibold">선택된 클래스:</div>

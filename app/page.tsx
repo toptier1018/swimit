@@ -1279,7 +1279,9 @@ export default function SwimmingClassPage() {
                         <Card
                           key={classItem.id}
                           className={`cursor-pointer transition-all ${
-                            selectedClass === String(classItem.id)
+                            regionError
+                              ? "bg-red-50 border-red-500 border-2 shadow-md"
+                              : selectedClass === String(classItem.id)
                               ? "bg-primary/5 border-primary border-2 shadow-md"
                               : "hover:border-primary/30 hover:shadow-sm"
                           }`}

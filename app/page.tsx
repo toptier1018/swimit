@@ -589,25 +589,29 @@ export default function SwimmingClassPage() {
                     </ol>
                   </div>
 
-                  {/* Urgency Section */}
-                  <div className="space-y-2">
-                    <p className="text-base md:text-sm font-semibold text-gray-900">
-                      마감 주의: 제대로 된 코칭을 위해 <span className="font-bold text-red-600">소수 정예</span>로만 진행합니다.
-                    </p>
-                    <p className="text-base md:text-sm text-gray-700">
-                      현재 유튜브 홍보 직후라 실시간으로 자리가 차고 있습니다.
-                    </p>
-                    <p className="text-base md:text-sm font-bold text-red-600">
-                      "다음에 해야지"라고 생각하는 순간, 가격은 오르고 자리는 없습니다.
-                    </p>
-                    <p className="text-base md:text-sm text-gray-900">
-                      가장 저렴한 가격으로 최고의 코칭을 받을 기회,{" "}
-                      <span className="font-bold text-red-600">지금 바로 선점하세요.</span>
-                    </p>
-                  </div>
                 </div>
               </CardContent>
             </Card>
+
+            {/* CTA Copy Section */}
+            <div className="w-full mt-6 rounded-xl border border-orange-200 bg-orange-50 p-4 md:p-5">
+              <p className="text-base md:text-sm font-bold text-orange-800 mb-2">
+                마감 주의
+              </p>
+              <p className="text-base md:text-sm text-gray-900">
+                제대로 된 코칭을 위해 <span className="font-bold text-red-600">소수 정예</span>로만 진행합니다.
+              </p>
+              <p className="text-base md:text-sm text-gray-700 mt-1">
+                현재 유튜브 홍보 직후라 실시간으로 자리가 차고 있습니다.
+              </p>
+              <p className="text-base md:text-sm font-bold text-red-600 mt-2">
+                "다음에 해야지"라고 생각하는 순간, 가격은 오르고 자리는 없습니다.
+              </p>
+              <p className="text-base md:text-sm text-gray-900 mt-1">
+                가장 저렴한 가격으로 최고의 코칭을 받을 기회,{" "}
+                <span className="font-bold text-red-600">지금 바로 선점하세요.</span>
+              </p>
+            </div>
 
             {/* Action Button (hidden when showRegistrationForm is true) */}
             <div className="w-full mt-8">

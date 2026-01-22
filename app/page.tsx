@@ -609,28 +609,6 @@ export default function SwimmingClassPage() {
               </CardContent>
             </Card>
 
-            {/* Refund Policy Section */}
-            <Alert className="w-full mb-6 bg-yellow-50 border-yellow-200">
-              <HelpCircle className="h-4 w-4 text-yellow-600" />
-              <AlertDescription className="ml-2">
-                <h3 className="font-bold text-yellow-900 mb-2 text-lg md:text-base">
-                  💬 특강 관련 문의
-                </h3>
-                <p className="text-base md:text-sm text-gray-700 mb-3">
-                  특강에 대해 궁금한 점이 있으신가요? 카카오톡으로 편하게 문의해주세요!
-                </p>
-                <Button
-                  size="sm"
-                  className="bg-yellow-500 hover:bg-yellow-600 text-white"
-                  onClick={() =>
-                    window.open("https://pf.kakao.com/_dXUgn/chat", "_blank")
-                  }
-                >
-                  ☎️ 카카오톡 문의하기
-                </Button>
-              </AlertDescription>
-            </Alert>
-
             {/* Warning Section */}
             <Alert className="w-full mb-6 bg-red-50 border-red-200">
               <AlertTriangle className="h-4 w-4 text-red-600" />
@@ -666,6 +644,27 @@ export default function SwimmingClassPage() {
                 지금 바로 신청하기 →
               </Button>
             </div>
+            {/* Refund Policy Section */}
+            <Alert className="w-full mt-6 bg-yellow-50 border-yellow-200">
+              <HelpCircle className="h-4 w-4 text-yellow-600" />
+              <AlertDescription className="ml-2">
+                <h3 className="font-bold text-yellow-900 mb-2 text-lg md:text-base">
+                  💬 특강 관련 문의
+                </h3>
+                <p className="text-base md:text-sm text-gray-700 mb-3">
+                  특강에 대해 궁금한 점이 있으신가요? 카카오톡으로 편하게 문의해주세요!
+                </p>
+                <Button
+                  size="sm"
+                  className="bg-yellow-500 hover:bg-yellow-600 text-white"
+                  onClick={() =>
+                    window.open("https://pf.kakao.com/_dXUgn/chat", "_blank")
+                  }
+                >
+                  ☎️ 카카오톡 문의하기
+                </Button>
+              </AlertDescription>
+            </Alert>
             </div>
           </>
         ) : (

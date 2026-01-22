@@ -505,86 +505,78 @@ export default function SwimmingClassPage() {
               <CardContent className="p-4 md:p-6">
                 <div className="space-y-6 text-base md:text-sm text-gray-700 leading-relaxed">
                   {/* Main Title */}
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <h3 className="text-2xl md:text-xl font-bold text-gray-900">
-                      수영, 왜 나는 항상 제자리걸음일까요?
+                      수영, 왜 제자리일까요?
                     </h3>
-                    <p className="text-lg md:text-base text-gray-800">
-                      매일 숨이 차고, 어깨가 아픈{" "}
-                      <span className="font-bold text-red-600">진짜 이유</span>를 알고 계신가요?
+                    <p className="text-base md:text-sm text-gray-800">
+                      숨이 차고 어깨가 아픈{" "}
+                      <span className="font-bold text-red-600">진짜 이유</span>가 있습니다.
                     </p>
-                    <p className="text-lg md:text-base font-semibold text-red-600">
-                      단 하루, 당신의 수영 인생이 바뀝니다.
+                    <p className="text-base md:text-sm font-semibold text-red-600">
+                      단 하루, 방향이 바뀝니다.
                     </p>
                   </div>
 
                   {/* Problem Section */}
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     <p className="text-base md:text-sm text-gray-700">
-                      믿기 힘드시겠지만,{" "}
-                      <span className="font-bold text-gray-900">
-                        "물과 싸우지 않는 법"
-                      </span>
-                      을 알면 수영은 놀랍도록 편해집니다.
+                      수영이 힘든 이유는{" "}
+                      <span className="font-bold text-gray-900">물과 싸우는 습관</span> 때문입니다.
                     </p>
                     <p className="text-base md:text-sm font-semibold text-gray-900">
                       혹시 이런 경험 있으신가요?
                     </p>
                     <ul className="space-y-2 text-base md:text-sm list-disc pl-5">
-                      <li>남들은 편하게 몇 바퀴씩 도는데 나만 25m 가기가 벅차다</li>
-                      <li>건강하려고 시작했는데 오히려 어깨와 허리가 쑤신다</li>
-                      <li>유튜브를 아무리 봐도 내 자세가 뭐가 문제인지 모르겠다</li>
+                      <li>25m가 유독 벅차다</li>
+                      <li>어깨·허리가 오히려 아프다</li>
+                      <li>내 자세의 문제를 모르겠다</li>
                     </ul>
                     <p className="text-base md:text-sm">
-                      이건 여러분의 운동신경 문제가 아닙니다. 물의 밀도는 공기보다{" "}
-                      <span className="font-bold text-gray-900">800배</span>나 큽니다.
+                      물의 밀도는 공기보다{" "}
+                      <span className="font-bold text-gray-900">800배</span> 큽니다.
                     </p>
                     <p className="text-base md:text-sm">
-                      이 거대한 벽을{" "}
-                      <span className="font-bold text-red-600">힘으로만</span> 뚫으려 했기 때문입니다.
-                    </p>
-                    <p className="text-base md:text-sm">
-                      초중급자가 가장 빠르게 실력을 올리는 유일한 길은{" "}
-                      <span className="font-bold text-red-600">
-                        "힘을 빼고 저항을 줄이는 것"
-                      </span>
-                      입니다.
+                      그래서{" "}
+                      <span className="font-bold text-red-600">힘을 빼고 저항을 줄이는 것</span>이
+                      핵심입니다.
                     </p>
                   </div>
 
                   {/* Solution Section */}
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     <p className="text-base md:text-sm">
-                      <span className="font-bold text-gray-900">스윔잇(Swim-It)</span>은 단순한 강습이 아닙니다.
+                      <span className="font-bold text-gray-900">스윔잇(Swim-It)</span>은
+                      기술 교정에 집중합니다.
                     </p>
                     <p className="text-base md:text-sm">
-                      국가대표급 선수와{" "}
-                      <span className="font-bold text-gray-900">10년 차 베테랑 강사</span>들이
-                      여러분의 영법을 정밀 진단합니다.
+                      국가대표급 선수 +{" "}
+                      <span className="font-bold text-gray-900">10년 차 강사</span>가
+                      영법을 정밀 진단합니다.
                     </p>
                     <p className="text-base md:text-sm">
-                      <span className="font-bold text-red-600">"저항을 줄이는 수영"</span>의 메커니즘을 몸에 심어드립니다.
+                      <span className="font-bold text-red-600">저항을 줄이는 수영</span>을
+                      몸에 익혀드립니다.
                     </p>
                   </div>
 
                   {/* Benefits Section */}
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     <p className="text-base md:text-sm font-bold text-gray-900">
-                      지금 신청하시면 얻어가는 3가지 혜택
+                      지금 신청하면 받는 3가지
                     </p>
                     <ol className="space-y-2 text-base md:text-sm list-decimal pl-5">
                       <li>
-                        <span className="font-bold text-gray-900">1:1 맞춤형 문제 진단</span>{" "}
-                        신청서에 고민을 적어주세요. 그 부분을 집중적으로 교정해 드립니다.
+                        <span className="font-bold text-gray-900">1:1 문제 진단</span>{" "}
+                        — 고민 지점을 정확히 교정
                       </li>
                       <li>
-                        <span className="font-bold text-gray-900">수중 촬영 및 정밀 피드백 (선착순)</span>{" "}
-                        강사님이 직접 촬영한 영상을 보며 브레이크 요소를 찾아드립니다.
+                        <span className="font-bold text-gray-900">수중 촬영 피드백</span>{" "}
+                        — 선착순 진행
                       </li>
                       <li>
-                        <span className="font-bold text-red-600">오픈 기념 파격 할인가</span>{" "}
-                        정가 100,000원 → <span className="font-bold text-red-600">60,000원 (40% 즉시 할인)</span>
-                        단, 이번 1기 특강에만 적용됩니다.
+                        <span className="font-bold text-red-600">오픈 할인</span>{" "}
+                        — 정가 100,000원 → <span className="font-bold text-red-600">60,000원</span>
                       </li>
                     </ol>
                   </div>

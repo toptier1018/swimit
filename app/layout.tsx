@@ -9,8 +9,20 @@ const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "수영 특강 - 전문 강사와 함께하는 프리미엄 레슨",
-  description: "초급부터 중급까지, 체계적인 커리큘럼으로 진행되는 수영 특강. 지금 바로 신청하세요!",
+  title: "스윔잇 수영 저항 특강",
+  description: "[마감임박] 하루 만에 수영이 편해지는 저항의 비밀",
+  openGraph: {
+    title: "스윔잇 수영 저항 특강",
+    description: "[마감임박] 하루 만에 수영이 편해지는 저항의 비밀",
+    type: "website",
+    locale: "ko_KR",
+    url: "https://swimit.vercel.app/",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "스윔잇 수영 저항 특강",
+    description: "[마감임박] 하루 만에 수영이 편해지는 저항의 비밀",
+  },
   generator: "v0.app",
   icons: {
     icon: [

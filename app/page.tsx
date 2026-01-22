@@ -567,7 +567,7 @@ export default function SwimmingClassPage() {
                     </p>
                     <p className="text-base md:text-sm text-gray-700">
                       국가대표급 선수와{" "}
-                      <span className="font-bold text-gray-900">10년 차 베테랑 강사</span>들이
+                      <span className="font-bold text-gray-900">10년 차 이상 베테랑 강사</span>들이
                       여러분의 영법을 정밀 진단합니다.
                     </p>
                     <p className="text-base md:text-sm text-gray-700">
@@ -624,7 +624,7 @@ export default function SwimmingClassPage() {
               <div className="mt-4">
                 <Button
                   onClick={handleRegistration}
-                  className="w-full py-4 text-lg font-semibold"
+                  className="w-full py-3 sm:py-4 text-base sm:text-lg font-semibold leading-tight"
                   size="lg"
                 >
                   오늘만 40% 할인받고 내 수영 분석받기 →

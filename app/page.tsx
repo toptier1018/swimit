@@ -616,19 +616,15 @@ export default function SwimmingClassPage() {
                 <h3 className="font-bold text-red-900 mb-3 text-lg md:text-base">⚠️ 주의사항</h3>
                 <ul className="space-y-3 md:space-y-2 text-base md:text-sm text-gray-700">
                   <li>
-                    • 단 한번의 특강으로 모든 문제가 해결되진 않습니다.
+                    • 본 특강은 마법이 아닌 '정확한 기술'을 전수합니다. 단 한 번으로 국가대표가
+                    될 수는 없지만, 무엇이 문제인지 확실히 깨닫고 교정할 수 있는 '방향키'를
+                    쥐여드립니다.
                   </li>
                   <li>
-                    한번에 수강으로 모든게 바뀌길 원하신다면 강습을 신청하지 말아주세요.
+                    • 디테일한 교정을 위해 평소 운동량보다 대기 시간이 있을 수 있습니다.
                   </li>
                   <li>
-                    다만, 어떤 문제인지 확실하게 알게 되시며 개인 교정과 연습에 따라 수영실력이 빠르게 좋아질 수 있습니다.
-                  </li>
-                  <li>
-                    • 설명이 더 많이 필요한 특강의 특성상 평소 운동량보다 적을 수 있습니다.
-                  </li>
-                  <li>
-                    • 본 특강은 만 19세 미만 미성년자는 참여할 수 없습니다.
+                    • 만 19세 미만은 참여가 제한됩니다.
                   </li>
                 </ul>
               </AlertDescription>

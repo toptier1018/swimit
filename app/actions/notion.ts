@@ -9,6 +9,7 @@ export async function submitToNotion(formData: {
   gender: string
   location: string
   email: string
+  painAreas: string[]
   message: string
 }) {
   try {
@@ -90,8 +91,20 @@ export async function submitToNotion(formData: {
           "이메일 (특강/ 수영 제품 할인 정보를 제공합니다)": {
             email: formData.email || null,
           },
-          // 이건 꼭 배우고 싶어요 (Rich Text 속성)
-          "이건 꼭 배우고 싶어요": {
+          // 수영 후 통증이 느껴지거나 불편한 부위가 있나요? (중복 선택) (Rich Text 속성)
+          "수영 후 통증이 느껴지거나 불편한 부위가 있나요? (중복 선택)": {
+            rich_text: [
+              {
+                text: {
+                  content: formData.painAreas.length
+                    ? formData.painAreas.join(", ")
+                    : "없음",
+                },
+              },
+            ],
+          },
+          // 이번 특강을 통해 가장 해결하고 싶은 단 하나는 무엇인가요? (Rich Text 속성)
+          "이번 특강을 통해 가장 해결하고 싶은 단 하나는 무엇인가요?": {
             rich_text: [
               {
                 text: {

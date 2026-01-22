@@ -72,6 +72,7 @@ export default function SwimmingClassPage() {
     gender: "male",
     location: "", // Changed from 'residence' to 'location' for clarity
     email: "",
+    painAreas: [] as string[],
     message: "",
   });
   const [agreeAll, setAgreeAll] = useState(false);
@@ -238,6 +239,17 @@ export default function SwimmingClassPage() {
     const gender = formData.gender.trim();
     if (!name || !phone || !gender) return "";
     return `${name}|${gender}|${phone}`;
+  };
+
+  const togglePainArea = (area: string) => {
+    setFormData((prev) => {
+      const hasArea = prev.painAreas.includes(area);
+      const nextAreas = hasArea
+        ? prev.painAreas.filter((item) => item !== area)
+        : [...prev.painAreas, area];
+      console.log("[설문] 통증 부위 선택:", nextAreas);
+      return { ...prev, painAreas: nextAreas };
+    });
   };
 
   // 클래스별 신청 가능 여부 확인 (10명일 때 다음 클릭이 11번째이므로 정원 초과)
@@ -881,6 +893,30 @@ export default function SwimmingClassPage() {
                       />
                     </div>
 
+                    {/* Pain Area Survey */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-semibold flex items-center gap-1">
+                        수영 후 통증이 느껴지거나 불편한 부위가 있나요? (중복 선택)
+                      </Label>
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        {["어깨", "허리", "무릎", "목", "없음"].map((area) => {
+                          const checked = formData.painAreas.includes(area);
+                          return (
+                            <label
+                              key={area}
+                              className="flex items-center gap-2 rounded-md border border-gray-200 px-3 py-2 cursor-pointer hover:border-primary/60"
+                            >
+                              <Checkbox
+                                checked={checked}
+                                onCheckedChange={() => togglePainArea(area)}
+                              />
+                              <span>{area}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+
                     {/* Message Field */}
                     <div className="space-y-2">
                       <Label
@@ -888,11 +924,12 @@ export default function SwimmingClassPage() {
                         className="text-sm font-semibold flex items-center gap-1"
                       >
                         <MessageSquare className="h-4 w-4" />
-                        이건 꼭 배우고 싶어요
+                        이번 특강을 통해 가장 해결하고 싶은 단 하나는 무엇인가요?
                       </Label>
                       <Textarea
                         id="message"
                         rows={4}
+                        placeholder="예시: 숨쉬기 때문에 자세가 무너지는 문제를 해결하고 싶어요."
                         value={formData.message}
                         onChange={(e) =>
                           setFormData({ ...formData, message: e.target.value })
@@ -3378,6 +3415,7 @@ export default function SwimmingClassPage() {
                 gender: "male",
                 location: "",
                 email: "",
+                painAreas: [],
                 message: "",
               });
               setAgreeAll(false);

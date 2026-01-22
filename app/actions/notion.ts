@@ -102,8 +102,8 @@ export async function submitToNotion(formData: {
           "이메일 (특강/ 수영 제품 할인 정보를 제공합니다)": {
             email: formData.email || null,
           },
-          // 수영 후 통증이 느껴지거나 불편한 부위가 있나요? (중복 선택) (Rich Text 속성)
-          "수영 후 통증이 느껴지거나 불편한 부위가 있나요? (중복 선택)": {
+          // 수영 후 통증이 느껴지거나 불편한 부위가 있나요? (중복 선택 가능) (Rich Text 속성)
+          "수영 후 통증이 느껴지거나 불편한 부위가 있나요? (중복 선택 가능)": {
             rich_text: [
               {
                 text: {

@@ -929,7 +929,7 @@ export default function SwimmingClassPage() {
                     {/* Pain Area Survey */}
                     <div className="space-y-2">
                       <Label className="text-sm font-semibold flex items-center gap-1">
-                        수영 후 통증이 느껴지거나 불편한 부위가 있나요? (중복 선택)
+                        수영 후 통증이 느껴지거나 불편한 부위가 있나요? (중복 선택 가능)
                       </Label>
                       <div className="grid grid-cols-2 gap-2 text-sm">
                         {["어깨", "허리", "무릎", "목", "없음"].map((area) => {

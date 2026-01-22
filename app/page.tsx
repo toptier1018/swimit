@@ -501,7 +501,7 @@ export default function SwimmingClassPage() {
           <>
             <div className="flex flex-col items-center space-y-6">
             {/* Class Information Section */}
-            <Card className="w-full mb-6 bg-blue-50/50 border-blue-100">
+            <Card className="w-full mb-6 bg-white border-gray-200">
               <CardContent className="p-4 md:p-6">
                 <div className="space-y-6 text-base md:text-sm text-gray-700 leading-relaxed">
                   {/* Main Title */}
@@ -513,7 +513,7 @@ export default function SwimmingClassPage() {
                       매일 숨이 차고, 어깨가 아픈{" "}
                       <span className="font-bold text-red-600">진짜 이유</span>를 알고 계신가요?
                     </p>
-                    <p className="text-lg md:text-base font-semibold text-blue-700">
+                    <p className="text-lg md:text-base font-semibold text-red-600">
                       단 하루, 당신의 수영 인생이 바뀝니다.
                     </p>
                   </div>
@@ -545,7 +545,7 @@ export default function SwimmingClassPage() {
                     </p>
                     <p className="text-base md:text-sm">
                       초중급자가 가장 빠르게 실력을 올리는 유일한 길은{" "}
-                      <span className="font-bold text-blue-700">
+                      <span className="font-bold text-red-600">
                         "힘을 빼고 저항을 줄이는 것"
                       </span>
                       입니다.
@@ -563,7 +563,7 @@ export default function SwimmingClassPage() {
                       여러분의 영법을 정밀 진단합니다.
                     </p>
                     <p className="text-base md:text-sm">
-                      <span className="font-bold text-blue-700">"저항을 줄이는 수영"</span>의 메커니즘을 몸에 심어드립니다.
+                      <span className="font-bold text-red-600">"저항을 줄이는 수영"</span>의 메커니즘을 몸에 심어드립니다.
                     </p>
                   </div>
 
@@ -583,7 +583,7 @@ export default function SwimmingClassPage() {
                       </li>
                       <li>
                         <span className="font-bold text-red-600">오픈 기념 파격 할인가</span>{" "}
-                        정가 100,000원 → <span className="font-bold text-blue-700">60,000원 (40% 즉시 할인)</span>
+                        정가 100,000원 → <span className="font-bold text-red-600">60,000원 (40% 즉시 할인)</span>
                         단, 이번 1기 특강에만 적용됩니다.
                       </li>
                     </ol>
@@ -597,7 +597,7 @@ export default function SwimmingClassPage() {
                     <p className="text-base md:text-sm text-gray-700">
                       현재 유튜브 홍보 직후라 실시간으로 자리가 차고 있습니다.
                     </p>
-                    <p className="text-base md:text-sm font-bold text-blue-700">
+                    <p className="text-base md:text-sm font-bold text-red-600">
                       "다음에 해야지"라고 생각하는 순간, 가격은 오르고 자리는 없습니다.
                     </p>
                     <p className="text-base md:text-sm text-gray-900">

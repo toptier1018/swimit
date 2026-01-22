@@ -505,87 +505,104 @@ export default function SwimmingClassPage() {
               <CardContent className="p-4 md:p-6">
                 <div className="space-y-6 text-base md:text-sm text-gray-700 leading-relaxed">
                   {/* Main Title */}
-                  <div>
-                    <h3 className="text-2xl md:text-xl font-bold text-gray-900 mb-4 md:mb-4">
-                      단 하루만에 수영을 편하게 하는 방법이 있다면 믿으시겠습니까?
+                  <div className="space-y-2">
+                    <h3 className="text-2xl md:text-xl font-bold text-gray-900">
+                      수영, 왜 나는 항상 제자리걸음일까요?
                     </h3>
+                    <p className="text-lg md:text-base text-gray-800">
+                      매일 숨이 차고, 어깨가 아픈{" "}
+                      <span className="font-bold text-red-600">진짜 이유</span>를 알고 계신가요?
+                    </p>
+                    <p className="text-lg md:text-base font-semibold text-blue-700">
+                      단 하루, 당신의 수영 인생이 바뀝니다.
+                    </p>
                   </div>
 
                   {/* Problem Section */}
-                  <div className="space-y-4 md:space-y-3">
-                    <p className="text-xl md:text-base font-semibold">
-                      초중급자가 수영이 가장 빠르게 늘 수 있는 방법은{" "}
-                      <span className="font-bold text-2xl md:text-xl">
-                        "저항을 줄이는 방법"
+                  <div className="space-y-3">
+                    <p className="text-base md:text-sm text-gray-700">
+                      믿기 힘드시겠지만,{" "}
+                      <span className="font-bold text-gray-900">
+                        "물과 싸우지 않는 법"
+                      </span>
+                      을 알면 수영은 놀랍도록 편해집니다.
+                    </p>
+                    <p className="text-base md:text-sm font-semibold text-gray-900">
+                      혹시 이런 경험 있으신가요?
+                    </p>
+                    <ul className="space-y-2 text-base md:text-sm list-disc pl-5">
+                      <li>남들은 편하게 몇 바퀴씩 도는데 나만 25m 가기가 벅차다</li>
+                      <li>건강하려고 시작했는데 오히려 어깨와 허리가 쑤신다</li>
+                      <li>유튜브를 아무리 봐도 내 자세가 뭐가 문제인지 모르겠다</li>
+                    </ul>
+                    <p className="text-base md:text-sm">
+                      이건 여러분의 운동신경 문제가 아닙니다. 물의 밀도는 공기보다{" "}
+                      <span className="font-bold text-gray-900">800배</span>나 큽니다.
+                    </p>
+                    <p className="text-base md:text-sm">
+                      이 거대한 벽을{" "}
+                      <span className="font-bold text-red-600">힘으로만</span> 뚫으려 했기 때문입니다.
+                    </p>
+                    <p className="text-base md:text-sm">
+                      초중급자가 가장 빠르게 실력을 올리는 유일한 길은{" "}
+                      <span className="font-bold text-blue-700">
+                        "힘을 빼고 저항을 줄이는 것"
                       </span>
                       입니다.
-                    </p>
-                    <p className="text-lg md:text-base">
-                      물의 밀도는 공기보다 800배 크기 때문에 저항을 줄이지 못하면 수영을 편하고 오래 할 수 없습니다.
-                    </p>
-                    <p className="text-lg md:text-base">
-                      이를 무시하고 수영하다가 결국{" "}
-                      <span className="font-bold text-red-600">
-                        건강하려고 시작했던 수영 때문에 어깨, 허리, 무릎 통증에 시달리게 될 수도 있습니다
-                      </span>
                     </p>
                   </div>
 
                   {/* Solution Section */}
-                  <div className="space-y-4 md:space-y-3">
-                    <p className="text-lg md:text-base">
-                      "스윔잇"은{" "}
-                      <span className="font-bold text-xl md:text-lg">
-                        "저항을 줄이는 수영"
-                      </span>
-                      을 기본으로 하며
+                  <div className="space-y-3">
+                    <p className="text-base md:text-sm">
+                      <span className="font-bold text-gray-900">스윔잇(Swim-It)</span>은 단순한 강습이 아닙니다.
                     </p>
-                    <p className="text-lg md:text-base">
-                      각자 문제점에 맞춘 티칭을 제공합니다.
+                    <p className="text-base md:text-sm">
+                      국가대표급 선수와{" "}
+                      <span className="font-bold text-gray-900">10년 차 베테랑 강사</span>들이
+                      여러분의 영법을 정밀 진단합니다.
                     </p>
-                    <p className="font-bold text-xl md:text-lg underline">
-                      "이건 꼭 배우고 싶어요"에 가장 안되는 문제점을 적어주세요
-                    </p>
-                    <p className="text-lg md:text-base">
-                      스윔잇 강의와 연결된 선수/강사 경력 10년 이상 되는 배테랑 분들이
-                    </p>
-                    <p className="text-lg md:text-base">
-                      여러분의 문제점에 해결책을 제시하며 티칭해드립니다.
+                    <p className="text-base md:text-sm">
+                      <span className="font-bold text-blue-700">"저항을 줄이는 수영"</span>의 메커니즘을 몸에 심어드립니다.
                     </p>
                   </div>
 
-                  {/* Pricing Section */}
-                  <div className="space-y-4 md:space-y-3">
-                    <p className="text-lg md:text-base">
-                      첫 특강은 2시간에 10만원에서 할인된 가격{" "}
-                      <span className="font-bold text-xl md:text-lg">40%할인된 가격인 6만원으로 책정</span>하였습니다
+                  {/* Benefits Section */}
+                  <div className="space-y-3">
+                    <p className="text-base md:text-sm font-bold text-gray-900">
+                      지금 신청하시면 얻어가는 3가지 혜택
                     </p>
-                    <p className="text-lg md:text-base">
-                      게다가 내 영법 물속 촬영에 강사분께서 직접 피드백까지 하는 보너스까지 꾹꾹 눌러 담아 알차게 구성하였습니다
-                    </p>
-                    <p className="text-sm md:text-xs text-gray-600">
-                      (강습 시간상 쉬는 시간에 촬영해야 하므로 선착순으로 원하시는 분들만 촬영합니다)
-                    </p>
+                    <ol className="space-y-2 text-base md:text-sm list-decimal pl-5">
+                      <li>
+                        <span className="font-bold text-gray-900">1:1 맞춤형 문제 진단</span>{" "}
+                        신청서에 고민을 적어주세요. 그 부분을 집중적으로 교정해 드립니다.
+                      </li>
+                      <li>
+                        <span className="font-bold text-gray-900">수중 촬영 및 정밀 피드백 (선착순)</span>{" "}
+                        강사님이 직접 촬영한 영상을 보며 브레이크 요소를 찾아드립니다.
+                      </li>
+                      <li>
+                        <span className="font-bold text-red-600">오픈 기념 파격 할인가</span>{" "}
+                        정가 100,000원 → <span className="font-bold text-blue-700">60,000원 (40% 즉시 할인)</span>
+                        단, 이번 1기 특강에만 적용됩니다.
+                      </li>
+                    </ol>
                   </div>
 
-                  {/* Call to Action */}
-                  <div>
-                    <p className="text-lg md:text-base">
-                      <span className="font-bold">야심차게 준비한 스윔잇 특강</span>{" "}
-                      <span className="font-bold text-red-600 text-xl md:text-lg">지금 바로 신청하기</span>
-                      <span className="font-bold">를 눌러</span>{" "}
-                      <span className="font-bold">여러분의 문제를 해결해보세요</span>
+                  {/* Urgency Section */}
+                  <div className="space-y-2">
+                    <p className="text-base md:text-sm font-semibold text-gray-900">
+                      마감 주의: 제대로 된 코칭을 위해 <span className="font-bold text-red-600">소수 정예</span>로만 진행합니다.
                     </p>
-                  </div>
-
-                  {/* PS Section */}
-                  <div className="mt-4">
-                    <p className="text-base md:text-sm text-gray-900 font-semibold">
-                      PS. 해당 강습은 가격이 계속 오를 예정이므로 마감이 되었다면{" "}
-                      <span className="font-bold text-xl md:text-lg text-red-600">
-                        다음 일정 예약하기
-                      </span>
-                      를 눌러서 오르지 않는 가격으로 선점하시길 바랍니다
+                    <p className="text-base md:text-sm text-gray-700">
+                      현재 유튜브 홍보 직후라 실시간으로 자리가 차고 있습니다.
+                    </p>
+                    <p className="text-base md:text-sm font-bold text-blue-700">
+                      "다음에 해야지"라고 생각하는 순간, 가격은 오르고 자리는 없습니다.
+                    </p>
+                    <p className="text-base md:text-sm text-gray-900">
+                      가장 저렴한 가격으로 최고의 코칭을 받을 기회,{" "}
+                      <span className="font-bold text-red-600">지금 바로 선점하세요.</span>
                     </p>
                   </div>
                 </div>

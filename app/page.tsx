@@ -609,8 +609,18 @@ export default function SwimmingClassPage() {
               </CardContent>
             </Card>
 
+            {/* Action Button (hidden when showRegistrationForm is true) */}
+            <div className="w-full mt-8">
+              <Button
+                onClick={handleRegistration}
+                className="w-full py-6 text-lg font-semibold"
+                size="lg"
+              >
+                지금 바로 신청하기 →
+              </Button>
+            </div>
             {/* Warning Section */}
-            <Alert className="w-full mb-6 bg-red-50 border-red-200">
+            <Alert className="w-full mt-6 bg-red-50 border-red-200">
               <AlertTriangle className="h-4 w-4 text-red-600" />
               <AlertDescription className="ml-2">
                 <h3 className="font-bold text-red-900 mb-3 text-lg md:text-base">⚠️ 주의사항</h3>
@@ -629,17 +639,6 @@ export default function SwimmingClassPage() {
                 </ul>
               </AlertDescription>
             </Alert>
-
-            {/* Action Button (hidden when showRegistrationForm is true) */}
-            <div className="w-full mt-8">
-              <Button
-                onClick={handleRegistration}
-                className="w-full py-6 text-lg font-semibold"
-                size="lg"
-              >
-                지금 바로 신청하기 →
-              </Button>
-            </div>
             {/* Refund Policy Section */}
             <Alert className="w-full mt-6 bg-yellow-50 border-yellow-200">
               <HelpCircle className="h-4 w-4 text-yellow-600" />

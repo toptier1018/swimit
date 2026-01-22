@@ -611,18 +611,18 @@ export default function SwimmingClassPage() {
                 가장 저렴한 가격으로 최고의 코칭을 받을 기회,{" "}
                 <span className="font-bold text-red-600">지금 바로 선점하세요.</span>
               </p>
+              <div className="mt-4">
+                <Button
+                  onClick={handleRegistration}
+                  className="w-full py-4 text-lg font-semibold"
+                  size="lg"
+                >
+                  지금 바로 신청하고 내 수영 바꾸기 →
+                </Button>
+              </div>
             </div>
 
             {/* Action Button (hidden when showRegistrationForm is true) */}
-            <div className="w-full mt-8">
-              <Button
-                onClick={handleRegistration}
-                className="w-full py-6 text-lg font-semibold"
-                size="lg"
-              >
-                지금 바로 신청하고 내 수영 바꾸기 →
-              </Button>
-            </div>
             {/* Warning Section */}
             <Alert className="w-full mt-6 bg-red-50 border-red-200">
               <AlertTriangle className="h-4 w-4 text-red-600" />

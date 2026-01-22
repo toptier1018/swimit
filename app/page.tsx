@@ -603,7 +603,9 @@ export default function SwimmingClassPage() {
                 "다음에 해야지"라고 생각하는 순간, 가격은 오르고 자리는 없습니다.
               </p>
               <p className="text-base md:text-sm text-gray-900 mt-1">
-                가장 저렴한 가격으로 최고의 코칭을 받을 기회,{" "}
+                가장 저렴한 가격으로 최고의 코칭을 받을 기회,
+              </p>
+              <p className="text-base md:text-sm text-gray-900">
                 <span className="font-bold text-red-600">지금 바로 선점하세요.</span>
               </p>
               <div className="mt-4">

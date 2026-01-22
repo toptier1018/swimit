@@ -627,9 +627,11 @@ export default function SwimmingClassPage() {
                 <h3 className="font-bold text-red-900 mb-3 text-lg md:text-base">⚠️ 주의사항</h3>
                 <ul className="space-y-3 md:space-y-2 text-base md:text-sm text-gray-700">
                   <li>
-                    • 본 특강은 마법이 아닌 '정확한 기술'을 전수합니다. 단 한 번으로 국가대표가
-                    될 수는 없지만, 무엇이 문제인지 확실히 깨닫고 교정할 수 있는 '방향키'를
-                    쥐여드립니다.
+                    • 본 특강은 마법이 아닌 '정확한 기술'을 전수합니다.
+                  </li>
+                  <li>
+                    단 한 번으로 국가대표가 될 수는 없지만, 무엇이 문제인지 확실히 깨닫고
+                    교정할 수 있는 '방향키'를 쥐여드립니다.
                   </li>
                   <li>
                     • 디테일한 교정을 위해 평소 운동량보다 대기 시간이 있을 수 있습니다.

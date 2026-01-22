@@ -616,7 +616,7 @@ export default function SwimmingClassPage() {
                 className="w-full py-6 text-lg font-semibold"
                 size="lg"
               >
-                지금 바로 신청하기 →
+                지금 바로 신청하고 내 수영 바꾸기 →
               </Button>
             </div>
             {/* Warning Section */}

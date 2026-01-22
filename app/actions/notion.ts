@@ -10,6 +10,7 @@ export async function submitToNotion(formData: {
   location: string
   email: string
   painAreas: string[]
+  swimmingExperience: string
   message: string
 }) {
   try {
@@ -83,6 +84,16 @@ export async function submitToNotion(formData: {
               {
                 text: {
                   content: formData.location,
+                },
+              },
+            ],
+          },
+          // 수영을 배우신 지 얼마나 되셨나요? (Rich Text 속성)
+          "수영을 배우신 지 얼마나 되셨나요?": {
+            rich_text: [
+              {
+                text: {
+                  content: formData.swimmingExperience || "미응답",
                 },
               },
             ],

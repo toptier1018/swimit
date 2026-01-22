@@ -73,6 +73,7 @@ export default function SwimmingClassPage() {
     location: "", // Changed from 'residence' to 'location' for clarity
     email: "",
     painAreas: [] as string[],
+    swimmingExperience: "",
     message: "",
   });
   const [agreeAll, setAgreeAll] = useState(false);
@@ -891,6 +892,38 @@ export default function SwimmingClassPage() {
                           setFormData({ ...formData, email: e.target.value });
                         }}
                       />
+                    </div>
+
+                    {/* Swimming Experience Survey */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-semibold flex items-center gap-1">
+                        수영을 배우신 지 얼마나 되셨나요?
+                      </Label>
+                      <RadioGroup
+                        value={formData.swimmingExperience}
+                        onValueChange={(value) => {
+                          console.log("[설문] 수영 경력 선택:", value);
+                          setFormData({ ...formData, swimmingExperience: value });
+                        }}
+                        className="space-y-2"
+                      >
+                        {[
+                          "3개월 미만",
+                          "6개월~1년",
+                          "1년~3년",
+                          "3년 이상",
+                        ].map((option) => (
+                          <div key={option} className="flex items-center space-x-2">
+                            <RadioGroupItem value={option} id={`exp-${option}`} />
+                            <Label
+                              htmlFor={`exp-${option}`}
+                              className="font-normal cursor-pointer"
+                            >
+                              {option}
+                            </Label>
+                          </div>
+                        ))}
+                      </RadioGroup>
                     </div>
 
                     {/* Pain Area Survey */}
@@ -3416,6 +3449,7 @@ export default function SwimmingClassPage() {
                 location: "",
                 email: "",
                 painAreas: [],
+                swimmingExperience: "",
                 message: "",
               });
               setAgreeAll(false);

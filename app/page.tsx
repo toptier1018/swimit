@@ -627,7 +627,7 @@ export default function SwimmingClassPage() {
                   className="w-full py-4 text-lg font-semibold"
                   size="lg"
                 >
-                  지금 바로 신청하고 내 수영 바꾸기 →
+                  오늘만 40% 할인받고 내 수영 분석받기 →
                 </Button>
               </div>
             </div>

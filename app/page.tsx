@@ -234,6 +234,14 @@ export default function SwimmingClassPage() {
     })();
   }, []);
 
+  // 단계 변경 시 항상 상단으로 스크롤
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      console.log("[스크롤] 단계 변경 상단 이동:", step);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [step]);
+
   const getApplicantKey = () => {
     const name = formData.name.trim();
     const phone = formData.phone.trim();
@@ -1239,6 +1247,15 @@ export default function SwimmingClassPage() {
                   <Button
                     className="flex-1"
                     onClick={async () => {
+                      if (!agreeAll) {
+                        console.log("[약관] 전체 동의 미체크 - 다음 단계 이동 차단");
+                        toast({
+                          title: "약관 동의 필요",
+                          description: "모든 약관에 동의해야 다음으로 진행할 수 있습니다.",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
                       // Validate form data and all agreements
                       const isKorean = /^[가-힣]+$/.test(formData.name);
                       const isPhone010 = formData.phone.startsWith("010");

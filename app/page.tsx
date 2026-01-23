@@ -37,7 +37,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { submitToNotion, updatePaymentInNotion, checkPaymentStatus } from "@/app/actions/notion";
+import { submitToNotion, updatePaymentInNotion, checkPaymentStatus, getClassEnrollmentCounts } from "@/app/actions/notion";
 
 const classes = [
   {
@@ -168,6 +168,26 @@ export default function SwimmingClassPage() {
     console.log("[카운터] 로컬 카운터 없음 - 기본값 사용");
   };
 
+  const syncClassEnrollmentFromNotion = async () => {
+    try {
+      console.log("[카운터] Notion 카운터 동기화 시작");
+      const result = await getClassEnrollmentCounts();
+      if (result.success && result.counts) {
+        setClassEnrollment(result.counts);
+        try {
+          localStorage.setItem("class_enrollment_counts", JSON.stringify(result.counts));
+        } catch (error) {
+          console.log("[카운터] 로컬 저장 실패:", error);
+        }
+        console.log("[카운터] Notion 카운터 동기화 완료:", result.counts);
+      } else {
+        console.warn("[카운터] Notion 카운터 조회 실패:", result.error);
+      }
+    } catch (error) {
+      console.error("[카운터] Notion 카운터 동기화 오류:", error);
+    }
+  };
+
   const resetFunnelCounts = async () => {
     try {
       const response = await fetch("/api/funnel", {
@@ -247,6 +267,13 @@ export default function SwimmingClassPage() {
   useEffect(() => {
     loadClassEnrollment();
   }, []);
+
+  // 개발자 모드에서만 Notion 카운터 동기화
+  useEffect(() => {
+    if (showDebug) {
+      void syncClassEnrollmentFromNotion();
+    }
+  }, [showDebug]);
 
   // 컴포넌트 마운트 시 퍼널 카운트 로드 (서버 기준)
   useEffect(() => {

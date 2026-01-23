@@ -143,9 +143,29 @@ export default function SwimmingClassPage() {
       "평영 B (중급)": 0,
     };
     setClassEnrollment(resetCounts);
+    try {
+      localStorage.setItem("class_enrollment_counts", JSON.stringify(resetCounts));
+    } catch (error) {
+      console.log("[카운터] 로컬 저장 실패:", error);
+    }
     submittedApplicantsRef.current.clear();
     console.log("[카운터] 수영 클래스 선택 카운터 초기화:", resetCounts);
     console.log("[중복방지] 신청자 중복 방지 데이터 초기화 완료");
+  };
+
+  const loadClassEnrollment = () => {
+    try {
+      const stored = localStorage.getItem("class_enrollment_counts");
+      if (stored) {
+        const parsed = JSON.parse(stored) as Record<string, number>;
+        setClassEnrollment(parsed);
+        console.log("[카운터] 로컬 카운터 불러오기:", parsed);
+        return;
+      }
+    } catch (error) {
+      console.log("[카운터] 로컬 불러오기 실패:", error);
+    }
+    console.log("[카운터] 로컬 카운터 없음 - 기본값 사용");
   };
 
   const resetFunnelCounts = async () => {
@@ -158,6 +178,11 @@ export default function SwimmingClassPage() {
       const data = await response.json();
       if (data?.totals) {
         setFunnelCounts(data.totals);
+        try {
+          localStorage.setItem("funnel_totals", JSON.stringify(data.totals));
+        } catch (error) {
+          console.log("[퍼널] 로컬 저장 실패:", error);
+        }
       }
       console.log("[퍼널] 단계 카운트 초기화 완료:", data?.totals);
     } catch (error) {
@@ -203,6 +228,11 @@ export default function SwimmingClassPage() {
         const data = await response.json();
         if (data?.totals) {
           setFunnelCounts(data.totals);
+          try {
+            localStorage.setItem("funnel_totals", JSON.stringify(data.totals));
+          } catch (error) {
+            console.log("[퍼널] 로컬 저장 실패:", error);
+          }
         }
         console.log(
           `[퍼널] 카운트 ${data?.counted ? "증가" : "차단"}: step=${stepNumber}, reason=${reason}`
@@ -213,19 +243,34 @@ export default function SwimmingClassPage() {
     })();
   };
 
-  // 컴포넌트 마운트 시 클래스별 신청 인원 초기화
+  // 컴포넌트 마운트 시 클래스별 신청 인원 로드
   useEffect(() => {
-    resetClassEnrollment();
+    loadClassEnrollment();
   }, []);
 
   // 컴포넌트 마운트 시 퍼널 카운트 로드 (서버 기준)
   useEffect(() => {
+    try {
+      const localTotals = localStorage.getItem("funnel_totals");
+      if (localTotals) {
+        const parsed = JSON.parse(localTotals) as Record<number, number>;
+        setFunnelCounts(parsed as Record<number, number>);
+        console.log("[퍼널] 로컬 카운트 불러오기:", parsed);
+      }
+    } catch (error) {
+      console.log("[퍼널] 로컬 카운트 불러오기 실패:", error);
+    }
     void (async () => {
       try {
         const response = await fetch("/api/funnel", { cache: "no-store" });
         const data = await response.json();
         if (data?.totals) {
           setFunnelCounts(data.totals);
+          try {
+            localStorage.setItem("funnel_totals", JSON.stringify(data.totals));
+          } catch (error) {
+            console.log("[퍼널] 로컬 저장 실패:", error);
+          }
           console.log("[퍼널] 서버 카운트 불러오기:", data.totals);
         }
       } catch (error) {
@@ -1990,10 +2035,18 @@ export default function SwimmingClassPage() {
                                 });
 
                                 // 신청 인원 증가
-                                setClassEnrollment((prev) => ({
-                                  ...prev,
-                                  [selectedTimeSlot.name]: (prev[selectedTimeSlot.name] || 0) + 1,
-                                }));
+                                setClassEnrollment((prev) => {
+                                  const next = {
+                                    ...prev,
+                                    [selectedTimeSlot.name]: (prev[selectedTimeSlot.name] || 0) + 1,
+                                  };
+                                  try {
+                                    localStorage.setItem("class_enrollment_counts", JSON.stringify(next));
+                                  } catch (error) {
+                                    console.log("[카운터] 로컬 저장 실패:", error);
+                                  }
+                                  return next;
+                                });
                                 if (applicantKey) {
                                   submittedApplicantsRef.current.add(applicantKey);
                                   console.log("[중복방지] 신청자 정보 저장:", applicantKey);
@@ -2053,10 +2106,18 @@ export default function SwimmingClassPage() {
                                 });
 
                                 // 신청 인원 증가
-                                setClassEnrollment((prev) => ({
-                                  ...prev,
-                                  [selectedTimeSlot.name]: (prev[selectedTimeSlot.name] || 0) + 1,
-                                }));
+                                setClassEnrollment((prev) => {
+                                  const next = {
+                                    ...prev,
+                                    [selectedTimeSlot.name]: (prev[selectedTimeSlot.name] || 0) + 1,
+                                  };
+                                  try {
+                                    localStorage.setItem("class_enrollment_counts", JSON.stringify(next));
+                                  } catch (error) {
+                                    console.log("[카운터] 로컬 저장 실패:", error);
+                                  }
+                                  return next;
+                                });
                                 if (applicantKey) {
                                   submittedApplicantsRef.current.add(applicantKey);
                                   console.log("[중복방지] 신청자 정보 저장:", applicantKey);

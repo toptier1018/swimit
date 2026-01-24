@@ -262,6 +262,128 @@ export async function upsertFunnelCount(data: {
 }
 
 /**
+ * 퍼널 카운트 조회 (날짜/단계 단일)
+ */
+export async function getFunnelCountByDateStep(data: {
+  date: string
+  step: string
+}) {
+  try {
+    const notionApiKey = process.env.NOTION_API_KEY
+    const databaseId = process.env.NOTION_FUNNEL_DATABASE_ID
+
+    if (!notionApiKey || !databaseId) {
+      console.error("[퍼널 Notion] 환경 변수가 설정되지 않았습니다")
+      return { success: false, count: 0 }
+    }
+
+    const query = await fetch(
+      `https://api.notion.com/v1/databases/${databaseId}/query`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${notionApiKey}`,
+          "Content-Type": "application/json",
+          "Notion-Version": "2022-06-28",
+        },
+        body: JSON.stringify({
+          filter: {
+            and: [
+              { property: "날짜", date: { equals: data.date } },
+              { property: "단계", select: { equals: data.step } },
+            ],
+          },
+          page_size: 1,
+        }),
+      }
+    )
+
+    const result = await query.json()
+    const existing = result?.results?.[0]
+    const count = existing?.properties?.카운트?.number ?? 0
+    return { success: true, count }
+  } catch (error) {
+    console.error("[퍼널 Notion] 조회 예외:", error)
+    return { success: false, count: 0 }
+  }
+}
+
+/**
+ * 퍼널 카운트 조회 (날짜별 전체)
+ */
+export async function getFunnelCountsByDate(date: string) {
+  try {
+    const notionApiKey = process.env.NOTION_API_KEY
+    const databaseId = process.env.NOTION_FUNNEL_DATABASE_ID
+
+    if (!notionApiKey || !databaseId) {
+      console.error("[퍼널 Notion] 환경 변수가 설정되지 않았습니다")
+      return { success: false, totals: { 1: 0, 2: 0, 3: 0, 4: 0 } }
+    }
+
+    const totals: Record<1 | 2 | 3 | 4, number> = {
+      1: 0,
+      2: 0,
+      3: 0,
+      4: 0,
+    }
+    const stepMap: Record<string, 1 | 2 | 3 | 4> = {
+      "선택": 1,
+      "개인 정보 입력": 2,
+      "결제": 3,
+      "완료": 4,
+    }
+
+    let nextCursor: string | null = null
+    do {
+      const response = await fetch(
+        `https://api.notion.com/v1/databases/${databaseId}/query`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${notionApiKey}`,
+            "Content-Type": "application/json",
+            "Notion-Version": "2022-06-28",
+          },
+          body: JSON.stringify({
+            filter: {
+              property: "날짜",
+              date: { equals: date },
+            },
+            page_size: 100,
+            start_cursor: nextCursor || undefined,
+          }),
+        }
+      )
+
+      if (!response.ok) {
+        console.error("[퍼널 Notion] 날짜별 조회 실패:", response.status)
+        break
+      }
+
+      const result = await response.json()
+      const pages = result?.results || []
+      pages.forEach((page: any) => {
+        const stepName = page.properties?.["단계"]?.select?.name || ""
+        const count = page.properties?.["카운트"]?.number ?? 0
+        const stepNumber = stepMap[stepName]
+        if (stepNumber) {
+          totals[stepNumber] = count
+        }
+      })
+
+      nextCursor = result?.next_cursor || null
+    } while (nextCursor)
+
+    console.log("[퍼널 Notion] 날짜별 카운트:", { date, totals })
+    return { success: true, totals }
+  } catch (error) {
+    console.error("[퍼널 Notion] 날짜별 조회 예외:", error)
+    return { success: false, totals: { 1: 0, 2: 0, 3: 0, 4: 0 } }
+  }
+}
+
+/**
  * 결제 완료 단계에서 가상계좌 및 주문 정보를 업데이트하는 서버 액션
  * 같은 Notion 데이터베이스의 추가 컬럼(가상계좌 입금 정보, 주문번호, 선택된 클래스, 시간대)에 값을 채웁니다.
  */

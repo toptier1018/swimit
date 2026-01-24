@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { upsertFunnelCount } from "@/app/actions/notion";
+import {
+  getFunnelCountByDateStep,
+  getFunnelCountsByDate,
+  upsertFunnelCount,
+} from "@/app/actions/notion";
 
 type FunnelTotals = Record<1 | 2 | 3 | 4, number>;
 
@@ -36,6 +40,11 @@ const getClientIp = (req: NextRequest) => {
 };
 
 export async function GET() {
+  const dateKey = getKoreanDateString();
+  const result = await getFunnelCountsByDate(dateKey);
+  if (result.success) {
+    return NextResponse.json({ totals: result.totals });
+  }
   const store = getStore();
   return NextResponse.json({ totals: store.totals });
 }
@@ -77,31 +86,40 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  store.ipDaily.add(ipKey);
-  store.totals[step] = (store.totals[step] || 0) + 1;
-  console.log("[퍼널 API] 카운트 증가:", {
-    step,
-    ip,
-    dateKey,
-    reason,
-    total: store.totals[step],
-  });
-
   const stepLabelMap: Record<number, string> = {
     1: "선택",
     2: "개인 정보 입력",
     3: "결제",
     4: "완료",
   };
+  const stepLabel = stepLabelMap[step];
+  const current = await getFunnelCountByDateStep({
+    date: dateKey,
+    step: stepLabel,
+  });
+  const nextCount = (current?.count || 0) + 1;
+
+  store.ipDaily.add(ipKey);
+  store.totals[step] = nextCount;
+  console.log("[퍼널 API] 카운트 증가:", {
+    step,
+    ip,
+    dateKey,
+    reason,
+    total: nextCount,
+  });
+
   await upsertFunnelCount({
     date: dateKey,
-    step: stepLabelMap[step],
-    count: store.totals[step],
+    step: stepLabel,
+    count: nextCount,
   });
+
+  const totalsResult = await getFunnelCountsByDate(dateKey);
 
   return NextResponse.json({
     counted: true,
-    totals: store.totals,
+    totals: totalsResult.success ? totalsResult.totals : store.totals,
   });
 }
 

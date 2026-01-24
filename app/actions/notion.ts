@@ -283,6 +283,48 @@ export async function upsertFunnelCount(data: {
 /**
  * 퍼널 카운트 조회 (날짜 기준, 컬럼형)
  */
+const getFunnelDatabaseSchema = async () => {
+  const notionApiKey = process.env.NOTION_API_KEY
+  const databaseId = process.env.NOTION_FUNNEL_DATABASE_ID?.trim()
+
+  if (!notionApiKey || !databaseId) {
+    console.error("[퍼널 Notion] 환경 변수가 설정되지 않았습니다")
+    return { success: false, titleName: "", dateType: "" }
+  }
+
+  const response = await fetch(
+    `https://api.notion.com/v1/databases/${databaseId}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${notionApiKey}`,
+        "Content-Type": "application/json",
+        "Notion-Version": "2022-06-28",
+      },
+    }
+  )
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}))
+    console.error("[퍼널 Notion] 스키마 조회 실패:", {
+      status: response.status,
+      error: errorData,
+    })
+    return { success: false, titleName: "", dateType: "" }
+  }
+
+  const schema = await response.json()
+  const properties = schema?.properties || {}
+  const titleName = Object.keys(properties).find(
+    (key) => properties[key]?.type === "title"
+  ) || ""
+  const dateType = properties["기준 날짜"]?.type || ""
+
+  console.log("[퍼널 Notion] 스키마 확인:", { titleName, dateType })
+
+  return { success: true, titleName, dateType }
+}
+
 export async function getFunnelDailyTotals(date: string) {
   try {
     const notionApiKey = process.env.NOTION_API_KEY
@@ -292,6 +334,16 @@ export async function getFunnelDailyTotals(date: string) {
       console.error("[퍼널 Notion] 환경 변수가 설정되지 않았습니다")
       return { success: false, totals: { 1: 0, 2: 0, 3: 0, 4: 0 } }
     }
+
+    const schema = await getFunnelDatabaseSchema()
+    const dateFilter =
+      schema.dateType === "date"
+        ? { property: "기준 날짜", date: { equals: date } }
+        : schema.dateType === "title"
+        ? { property: "기준 날짜", title: { equals: date } }
+        : schema.dateType === "rich_text"
+        ? { property: "기준 날짜", rich_text: { equals: date } }
+        : null
 
     const response = await fetch(
       `https://api.notion.com/v1/databases/${databaseId}/query`,
@@ -303,10 +355,7 @@ export async function getFunnelDailyTotals(date: string) {
           "Notion-Version": "2022-06-28",
         },
         body: JSON.stringify({
-          filter: {
-            property: "기준 날짜",
-            date: { equals: date },
-          },
+          filter: dateFilter || undefined,
           page_size: 1,
         }),
       }
@@ -352,6 +401,17 @@ export async function upsertFunnelDailyTotals(data: {
       return { success: false, error: "환경 변수 누락" }
     }
 
+    const schema = await getFunnelDatabaseSchema()
+    const titleName = schema.titleName || "제목"
+    const datePayload =
+      schema.dateType === "date"
+        ? { "기준 날짜": { date: { start: data.date } } }
+        : schema.dateType === "rich_text"
+        ? { "기준 날짜": { rich_text: [{ text: { content: data.date } }] } }
+        : schema.dateType === "title"
+        ? {}
+        : {}
+
     const existing = await getFunnelDailyTotals(data.date)
     if (existing.success && existing.pageId) {
       const update = await fetch(
@@ -365,6 +425,10 @@ export async function upsertFunnelDailyTotals(data: {
           },
           body: JSON.stringify({
             properties: {
+              [titleName]: {
+                title: [{ text: { content: data.date } }],
+              },
+              ...datePayload,
               "1. 선택": { number: data.totals[1] },
               "2. 개인 정보 입력": { number: data.totals[2] },
               "3. 결제": { number: data.totals[3] },
@@ -396,7 +460,10 @@ export async function upsertFunnelDailyTotals(data: {
       body: JSON.stringify({
         parent: { database_id: databaseId },
         properties: {
-          "기준 날짜": { date: { start: data.date } },
+          [titleName]: {
+            title: [{ text: { content: data.date } }],
+          },
+          ...datePayload,
           "1. 선택": { number: data.totals[1] },
           "2. 개인 정보 입력": { number: data.totals[2] },
           "3. 결제": { number: data.totals[3] },

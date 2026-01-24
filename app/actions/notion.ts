@@ -171,7 +171,7 @@ export async function upsertFunnelCount(data: {
 }) {
   try {
     const notionApiKey = process.env.NOTION_API_KEY
-    const databaseId = process.env.NOTION_FUNNEL_DATABASE_ID
+    const databaseId = process.env.NOTION_FUNNEL_DATABASE_ID?.trim()
 
     if (!notionApiKey || !databaseId) {
       console.error("[퍼널 Notion] 환경 변수가 설정되지 않았습니다")
@@ -205,6 +205,15 @@ export async function upsertFunnelCount(data: {
       }
     )
 
+    if (!query.ok) {
+      const errorData = await query.json().catch(() => ({}))
+      console.error("[퍼널 Notion] 조회 실패:", {
+        status: query.status,
+        error: errorData,
+      })
+      return { success: false, error: "조회 실패" }
+    }
+
     const queryResult = await query.json()
     const existing = queryResult?.results?.[0]
 
@@ -227,6 +236,11 @@ export async function upsertFunnelCount(data: {
       )
 
       if (!update.ok) {
+        const errorData = await update.json().catch(() => ({}))
+        console.error("[퍼널 Notion] 업데이트 실패:", {
+          status: update.status,
+          error: errorData,
+        })
         return { success: false, error: "업데이트 실패" }
       }
 
@@ -251,6 +265,11 @@ export async function upsertFunnelCount(data: {
     })
 
     if (!create.ok) {
+      const errorData = await create.json().catch(() => ({}))
+      console.error("[퍼널 Notion] 생성 실패:", {
+        status: create.status,
+        error: errorData,
+      })
       return { success: false, error: "생성 실패" }
     }
 
@@ -270,7 +289,7 @@ export async function getFunnelCountByDateStep(data: {
 }) {
   try {
     const notionApiKey = process.env.NOTION_API_KEY
-    const databaseId = process.env.NOTION_FUNNEL_DATABASE_ID
+    const databaseId = process.env.NOTION_FUNNEL_DATABASE_ID?.trim()
 
     if (!notionApiKey || !databaseId) {
       console.error("[퍼널 Notion] 환경 변수가 설정되지 않았습니다")
@@ -298,6 +317,15 @@ export async function getFunnelCountByDateStep(data: {
       }
     )
 
+    if (!query.ok) {
+      const errorData = await query.json().catch(() => ({}))
+      console.error("[퍼널 Notion] 조회 실패:", {
+        status: query.status,
+        error: errorData,
+      })
+      return { success: false, count: 0 }
+    }
+
     const result = await query.json()
     const existing = result?.results?.[0]
     const count = existing?.properties?.카운트?.number ?? 0
@@ -314,7 +342,7 @@ export async function getFunnelCountByDateStep(data: {
 export async function getFunnelCountsByDate(date: string) {
   try {
     const notionApiKey = process.env.NOTION_API_KEY
-    const databaseId = process.env.NOTION_FUNNEL_DATABASE_ID
+    const databaseId = process.env.NOTION_FUNNEL_DATABASE_ID?.trim()
 
     if (!notionApiKey || !databaseId) {
       console.error("[퍼널 Notion] 환경 변수가 설정되지 않았습니다")
@@ -357,7 +385,11 @@ export async function getFunnelCountsByDate(date: string) {
       )
 
       if (!response.ok) {
-        console.error("[퍼널 Notion] 날짜별 조회 실패:", response.status)
+        const errorData = await response.json().catch(() => ({}))
+        console.error("[퍼널 Notion] 날짜별 조회 실패:", {
+          status: response.status,
+          error: errorData,
+        })
         break
       }
 

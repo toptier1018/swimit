@@ -322,6 +322,11 @@ export default function SwimmingClassPage() {
     return `${name}|${gender}|${phone}`;
   };
 
+  const todayKst = new Intl.DateTimeFormat("ko-KR", {
+    timeZone: "Asia/Seoul",
+    dateStyle: "medium",
+  }).format(new Date());
+
   const togglePainArea = (area: string) => {
     setFormData((prev) => {
       const hasArea = prev.painAreas.includes(area);
@@ -524,6 +529,9 @@ export default function SwimmingClassPage() {
         {showDebug && (
           <div className="fixed top-4 right-4 bg-black/90 text-white p-3 rounded-lg text-xs z-50 shadow-lg border-2 border-yellow-500">
             <div className="font-bold text-yellow-400 mb-2">🔧 개발자 모드</div>
+                <div className="text-[11px] text-gray-300 mb-2">
+                  기준 날짜: {todayKst}
+                </div>
             <div className="space-y-1">
               {Object.entries(classEnrollment).map(([className, count]) => (
                 <div key={className} className="flex justify-between gap-4">

@@ -161,6 +161,107 @@ export async function submitToNotion(formData: {
 }
 
 /**
+ * 퍼널 카운트 (날짜/단계/카운트) 업서트
+ * 동일 날짜/단계가 있으면 카운트만 업데이트
+ */
+export async function upsertFunnelCount(data: {
+  date: string
+  step: string
+  count: number
+}) {
+  try {
+    const notionApiKey = process.env.NOTION_API_KEY
+    const databaseId = process.env.NOTION_FUNNEL_DATABASE_ID
+
+    if (!notionApiKey || !databaseId) {
+      console.error("[퍼널 Notion] 환경 변수가 설정되지 않았습니다")
+      return { success: false, error: "환경 변수 누락" }
+    }
+
+    const query = await fetch(
+      `https://api.notion.com/v1/databases/${databaseId}/query`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${notionApiKey}`,
+          "Content-Type": "application/json",
+          "Notion-Version": "2022-06-28",
+        },
+        body: JSON.stringify({
+          filter: {
+            and: [
+              {
+                property: "날짜",
+                date: { equals: data.date },
+              },
+              {
+                property: "단계",
+                select: { equals: data.step },
+              },
+            ],
+          },
+          page_size: 1,
+        }),
+      }
+    )
+
+    const queryResult = await query.json()
+    const existing = queryResult?.results?.[0]
+
+    if (existing?.id) {
+      const update = await fetch(
+        `https://api.notion.com/v1/pages/${existing.id}`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${notionApiKey}`,
+            "Content-Type": "application/json",
+            "Notion-Version": "2022-06-28",
+          },
+          body: JSON.stringify({
+            properties: {
+              카운트: { number: data.count },
+            },
+          }),
+        }
+      )
+
+      if (!update.ok) {
+        return { success: false, error: "업데이트 실패" }
+      }
+
+      return { success: true, mode: "update" }
+    }
+
+    const create = await fetch("https://api.notion.com/v1/pages", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${notionApiKey}`,
+        "Content-Type": "application/json",
+        "Notion-Version": "2022-06-28",
+      },
+      body: JSON.stringify({
+        parent: { database_id: databaseId },
+        properties: {
+          날짜: { date: { start: data.date } },
+          단계: { select: { name: data.step } },
+          카운트: { number: data.count },
+        },
+      }),
+    })
+
+    if (!create.ok) {
+      return { success: false, error: "생성 실패" }
+    }
+
+    return { success: true, mode: "create" }
+  } catch (error) {
+    console.error("[퍼널 Notion] 예외:", error)
+    return { success: false, error: "예외 발생" }
+  }
+}
+
+/**
  * 결제 완료 단계에서 가상계좌 및 주문 정보를 업데이트하는 서버 액션
  * 같은 Notion 데이터베이스의 추가 컬럼(가상계좌 입금 정보, 주문번호, 선택된 클래스, 시간대)에 값을 채웁니다.
  */

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { upsertFunnelCount } from "@/app/actions/notion";
 
 type FunnelTotals = Record<1 | 2 | 3 | 4, number>;
 
@@ -84,6 +85,18 @@ export async function POST(req: NextRequest) {
     dateKey,
     reason,
     total: store.totals[step],
+  });
+
+  const stepLabelMap: Record<number, string> = {
+    1: "선택",
+    2: "개인 정보 입력",
+    3: "결제",
+    4: "완료",
+  };
+  await upsertFunnelCount({
+    date: dateKey,
+    step: stepLabelMap[step],
+    count: store.totals[step],
   });
 
   return NextResponse.json({

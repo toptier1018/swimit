@@ -257,6 +257,11 @@ export default function SwimmingClassPage() {
           } catch (error) {
             console.log("[퍼널] 로컬 저장 실패:", error);
           }
+        } else if (data?.counted && typeof data?.step === "number" && typeof data?.count === "number") {
+          setFunnelCounts((curr) => ({
+            ...curr,
+            [data.step]: data.count,
+          }));
         }
         console.log(
           `[퍼널] 카운트 ${data?.counted ? "증가" : "차단"}: step=${stepNumber}, reason=${reason}`

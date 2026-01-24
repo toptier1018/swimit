@@ -101,7 +101,11 @@ export async function POST(req: NextRequest) {
     date: dateKey,
     step: stepLabel,
   });
-  const nextCount = (current?.count || 0) + 1;
+  if (!current.success) {
+    console.warn("[퍼널 API] Notion 현재 카운트 조회 실패 - 로컬 카운트 사용");
+  }
+  const currentCount = current.success ? current.count : (store.totals[step] || 0);
+  const nextCount = currentCount + 1;
 
   store.ipDaily.add(ipKey);
   store.totals[step] = nextCount;
@@ -120,10 +124,15 @@ export async function POST(req: NextRequest) {
   });
 
   const totalsResult = await getFunnelCountsByDate(dateKey);
+  if (!totalsResult.success) {
+    console.warn("[퍼널 API] Notion 날짜별 카운트 조회 실패 - 로컬 카운트 반환");
+  }
 
   return NextResponse.json({
     counted: true,
     totals: totalsResult.success ? totalsResult.totals : store.totals,
+    step,
+    count: nextCount,
   });
 }
 

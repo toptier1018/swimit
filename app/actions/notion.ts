@@ -281,6 +281,147 @@ export async function upsertFunnelCount(data: {
 }
 
 /**
+ * 퍼널 카운트 조회 (날짜 기준, 컬럼형)
+ */
+export async function getFunnelDailyTotals(date: string) {
+  try {
+    const notionApiKey = process.env.NOTION_API_KEY
+    const databaseId = process.env.NOTION_FUNNEL_DATABASE_ID?.trim()
+
+    if (!notionApiKey || !databaseId) {
+      console.error("[퍼널 Notion] 환경 변수가 설정되지 않았습니다")
+      return { success: false, totals: { 1: 0, 2: 0, 3: 0, 4: 0 } }
+    }
+
+    const response = await fetch(
+      `https://api.notion.com/v1/databases/${databaseId}/query`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${notionApiKey}`,
+          "Content-Type": "application/json",
+          "Notion-Version": "2022-06-28",
+        },
+        body: JSON.stringify({
+          filter: {
+            property: "기준 날짜",
+            date: { equals: date },
+          },
+          page_size: 1,
+        }),
+      }
+    )
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      console.error("[퍼널 Notion] 날짜별 조회 실패:", {
+        status: response.status,
+        error: errorData,
+      })
+      return { success: false, totals: { 1: 0, 2: 0, 3: 0, 4: 0 } }
+    }
+
+    const result = await response.json()
+    const page = result?.results?.[0]
+    const totals: Record<1 | 2 | 3 | 4, number> = {
+      1: page?.properties?.["1. 선택"]?.number ?? 0,
+      2: page?.properties?.["2. 개인 정보 입력"]?.number ?? 0,
+      3: page?.properties?.["3. 결제"]?.number ?? 0,
+      4: page?.properties?.["4. 완료"]?.number ?? 0,
+    }
+    return { success: true, totals, pageId: page?.id || null }
+  } catch (error) {
+    console.error("[퍼널 Notion] 날짜별 조회 예외:", error)
+    return { success: false, totals: { 1: 0, 2: 0, 3: 0, 4: 0 } }
+  }
+}
+
+/**
+ * 퍼널 카운트 업서트 (날짜 기준, 컬럼형)
+ */
+export async function upsertFunnelDailyTotals(data: {
+  date: string
+  totals: Record<1 | 2 | 3 | 4, number>
+}) {
+  try {
+    const notionApiKey = process.env.NOTION_API_KEY
+    const databaseId = process.env.NOTION_FUNNEL_DATABASE_ID?.trim()
+
+    if (!notionApiKey || !databaseId) {
+      console.error("[퍼널 Notion] 환경 변수가 설정되지 않았습니다")
+      return { success: false, error: "환경 변수 누락" }
+    }
+
+    const existing = await getFunnelDailyTotals(data.date)
+    if (existing.success && existing.pageId) {
+      const update = await fetch(
+        `https://api.notion.com/v1/pages/${existing.pageId}`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${notionApiKey}`,
+            "Content-Type": "application/json",
+            "Notion-Version": "2022-06-28",
+          },
+          body: JSON.stringify({
+            properties: {
+              "1. 선택": { number: data.totals[1] },
+              "2. 개인 정보 입력": { number: data.totals[2] },
+              "3. 결제": { number: data.totals[3] },
+              "4. 완료": { number: data.totals[4] },
+            },
+          }),
+        }
+      )
+
+      if (!update.ok) {
+        const errorData = await update.json().catch(() => ({}))
+        console.error("[퍼널 Notion] 업데이트 실패:", {
+          status: update.status,
+          error: errorData,
+        })
+        return { success: false, error: "업데이트 실패" }
+      }
+
+      return { success: true, mode: "update" }
+    }
+
+    const create = await fetch("https://api.notion.com/v1/pages", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${notionApiKey}`,
+        "Content-Type": "application/json",
+        "Notion-Version": "2022-06-28",
+      },
+      body: JSON.stringify({
+        parent: { database_id: databaseId },
+        properties: {
+          "기준 날짜": { date: { start: data.date } },
+          "1. 선택": { number: data.totals[1] },
+          "2. 개인 정보 입력": { number: data.totals[2] },
+          "3. 결제": { number: data.totals[3] },
+          "4. 완료": { number: data.totals[4] },
+        },
+      }),
+    })
+
+    if (!create.ok) {
+      const errorData = await create.json().catch(() => ({}))
+      console.error("[퍼널 Notion] 생성 실패:", {
+        status: create.status,
+        error: errorData,
+      })
+      return { success: false, error: "생성 실패" }
+    }
+
+    return { success: true, mode: "create" }
+  } catch (error) {
+    console.error("[퍼널 Notion] 업서트 예외:", error)
+    return { success: false, error: "예외 발생" }
+  }
+}
+
+/**
  * 퍼널 카운트 조회 (날짜/단계 단일)
  */
 export async function getFunnelCountByDateStep(data: {

@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  getFunnelCountByDateStep,
-  getFunnelCountsByDate,
-  upsertFunnelCount,
+  getFunnelDailyTotals,
+  upsertFunnelDailyTotals,
 } from "@/app/actions/notion";
 
 type FunnelTotals = Record<1 | 2 | 3 | 4, number>;
@@ -41,7 +40,7 @@ const getClientIp = (req: NextRequest) => {
 
 export async function GET() {
   const dateKey = getKoreanDateString();
-  const result = await getFunnelCountsByDate(dateKey);
+  const result = await getFunnelDailyTotals(dateKey);
   if (result.success) {
     return NextResponse.json({ totals: result.totals });
   }
@@ -90,22 +89,19 @@ export async function POST(req: NextRequest) {
     console.log("[퍼널 API] 개발자 모드 - IP 중복 차단 해제");
   }
 
-  const stepLabelMap: Record<number, string> = {
-    1: "선택",
-    2: "개인 정보 입력",
-    3: "결제",
-    4: "완료",
-  };
-  const stepLabel = stepLabelMap[step];
-  const current = await getFunnelCountByDateStep({
-    date: dateKey,
-    step: stepLabel,
-  });
+  const current = await getFunnelDailyTotals(dateKey);
   if (!current.success) {
     console.warn("[퍼널 API] Notion 현재 카운트 조회 실패 - 로컬 카운트 사용");
   }
-  const currentCount = current.success ? current.count : (store.totals[step] || 0);
-  const nextCount = currentCount + 1;
+  const currentTotals = current.success ? current.totals : store.totals;
+  const nextCount = (currentTotals[step] || 0) + 1;
+  const nextTotals = {
+    1: currentTotals[1] || 0,
+    2: currentTotals[2] || 0,
+    3: currentTotals[3] || 0,
+    4: currentTotals[4] || 0,
+  };
+  nextTotals[step] = nextCount;
 
   store.ipDaily.add(ipKey);
   store.totals[step] = nextCount;
@@ -117,20 +113,19 @@ export async function POST(req: NextRequest) {
     total: nextCount,
   });
 
-  await upsertFunnelCount({
+  await upsertFunnelDailyTotals({
     date: dateKey,
-    step: stepLabel,
-    count: nextCount,
+    totals: nextTotals,
   });
 
-  const totalsResult = await getFunnelCountsByDate(dateKey);
+  const totalsResult = await getFunnelDailyTotals(dateKey);
   if (!totalsResult.success) {
     console.warn("[퍼널 API] Notion 날짜별 카운트 조회 실패 - 로컬 카운트 반환");
   }
 
   return NextResponse.json({
     counted: true,
-    totals: totalsResult.success ? totalsResult.totals : store.totals,
+    totals: totalsResult.success ? totalsResult.totals : nextTotals,
     step,
     count: nextCount,
   });

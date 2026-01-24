@@ -69,11 +69,12 @@ export async function POST(req: NextRequest) {
   }
 
   const reason = String(body?.reason || "");
+  const isDebug = Boolean(body?.debug);
   const dateKey = getKoreanDateString();
   const ip = getClientIp(req);
   const ipKey = `${dateKey}|${step}|${ip}`;
 
-  if (store.ipDaily.has(ipKey)) {
+  if (!isDebug && store.ipDaily.has(ipKey)) {
     console.log("[퍼널 API] 중복 IP 카운트 차단:", {
       step,
       ip,
@@ -84,6 +85,9 @@ export async function POST(req: NextRequest) {
       counted: false,
       totals: store.totals,
     });
+  }
+  if (isDebug) {
+    console.log("[퍼널 API] 개발자 모드 - IP 중복 차단 해제");
   }
 
   const stepLabelMap: Record<number, string> = {

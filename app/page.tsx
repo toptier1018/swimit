@@ -243,7 +243,11 @@ export default function SwimmingClassPage() {
         const response = await fetch("/api/funnel", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ step: stepNumber, reason }),
+          body: JSON.stringify({
+            step: stepNumber,
+            reason,
+            debug: showDebug,
+          }),
         });
         const data = await response.json();
         if (data?.totals) {

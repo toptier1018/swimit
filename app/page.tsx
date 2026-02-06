@@ -37,7 +37,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { submitToNotion, updatePaymentInNotion, checkPaymentStatus, getClassEnrollmentCounts } from "@/app/actions/notion";
+import { submitToNotion, submitPaidToNotion, updatePaymentInNotion, checkPaymentStatus, checkPendingPayment, getClassEnrollmentCounts, findOrCreateApplicant } from "@/app/actions/notion";
 
 const classes = [
   {
@@ -58,6 +58,7 @@ export default function SwimmingClassPage() {
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
   const [regionError, setRegionError] = useState(false);
+  const [isTossPaymentsLoaded, setIsTossPaymentsLoaded] = useState(false);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<{
     name: string;
     time: string;
@@ -101,7 +102,8 @@ export default function SwimmingClassPage() {
   const [finalAgree, setFinalAgree] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentDate, setPaymentDate] = useState<Date | null>(null);
-  const [notionPageId, setNotionPageId] = useState<string | null>(null);
+  const [applicantPageId, setApplicantPageId] = useState<string | null>(null);
+  const [paidPageId, setPaidPageId] = useState<string | null>(null);
   const [orderNumber, setOrderNumber] = useState<string>("");
   const [paymentStatus, setPaymentStatus] = useState<"입금대기" | "입금완료" | "예약대기">("입금대기");
   const [funnelCounts, setFunnelCounts] = useState<Record<number, number>>({
@@ -121,9 +123,11 @@ export default function SwimmingClassPage() {
     "자유형 B (중급)": 0,
     "평영 B (중급)": 0,
   });
+  const manualWaitlistClasses = new Set<string>(["평영 A (초급)"]);
   const { toast } = useToast();
   const submittedApplicantsRef = useRef<Set<string>>(new Set());
   const lastFunnelActionRef = useRef<{ action: string; ts: number } | null>(null);
+  const waitlistThresholdsRef = useRef<Record<string, number>>({});
 
   // 개발자 모드 (URL 파라미터로 활성화)
   const [showDebug, setShowDebug] = useState(false);
@@ -132,7 +136,119 @@ export default function SwimmingClassPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     setShowDebug(params.get('debug') === 'true');
+    
+    // 결제 성공 후 리디렉션된 경우 4단계로 이동
+    const paymentStatus = params.get('payment');
+    const targetStep = params.get('step');
+    
+    if (paymentStatus === 'success' && targetStep === '4') {
+      console.log('[결제] 결제 성공 - 4단계로 이동');
+      setStep(4);
+      setPaymentStatus("입금완료");
+      
+      // URL에서 파라미터 제거
+      window.history.replaceState({}, '', '/');
+      
+      toast({
+        title: "결제 완료",
+        description: "결제가 성공적으로 완료되었습니다!",
+      });
+    }
+  }, [toast]);
+
+  // 토스페이먼츠 SDK 로드
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://js.tosspayments.com/v2/standard';
+    script.async = true;
+    script.onload = () => {
+      console.log('[토스페이먼츠] SDK 로드 완료');
+      setIsTossPaymentsLoaded(true);
+    };
+    script.onerror = () => {
+      console.error('[토스페이먼츠] SDK 로드 실패');
+    };
+    document.head.appendChild(script);
+
+    return () => {
+      // cleanup: 컴포넌트 언마운트 시 스크립트 제거
+      const existingScript = document.querySelector('script[src="https://js.tosspayments.com/v2/standard"]');
+      if (existingScript) {
+        document.head.removeChild(existingScript);
+      }
+    };
   }, []);
+
+  /**
+   * 토스페이먼츠 결제 요청 함수
+   * 결제창을 열고 결제 프로세스를 시작합니다.
+   */
+  const requestTossPayment = async (pageId: string, selectedRegion: string) => {
+    try {
+      if (!isTossPaymentsLoaded) {
+        console.error('[토스페이먼츠] SDK가 아직 로드되지 않았습니다.');
+        toast({
+          title: "결제 시스템 오류",
+          description: "결제 시스템을 로딩 중입니다. 잠시 후 다시 시도해주세요.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // 주문번호 생성
+      const newOrderNumber = generateOrderNumber();
+      setOrderNumber(newOrderNumber);
+      console.log('[토스페이먼츠] 주문번호 생성:', newOrderNumber);
+
+      // 결제 금액
+      const amount = 60000;
+
+      // 고객 정보
+      const customerKey = `customer_${formData.phone.replace(/-/g, '')}_${Date.now()}`;
+
+      // 토스페이먼츠 초기화
+      const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY || 'test_ck_AQ92ymxN341kq4lBQ16gVajRKXvd';
+      console.log('[토스페이먼츠] 클라이언트 키:', clientKey);
+
+      // @ts-ignore - TossPayments는 스크립트로 로드됨
+      const tossPayments = window.TossPayments(clientKey);
+      const payment = tossPayments.payment({ customerKey });
+
+      console.log('[토스페이먼츠] 결제 요청 시작:', {
+        orderId: newOrderNumber,
+        orderName: `수영 특강 - ${selectedTimeSlot?.name}`,
+        amount,
+        customerName: formData.name,
+        customerEmail: formData.email,
+      });
+
+      // 결제 요청
+      await payment.requestPayment({
+        method: 'CARD',
+        amount: {
+          currency: 'KRW',
+          value: amount,
+        },
+        orderId: newOrderNumber,
+        orderName: `수영 특강 - ${selectedTimeSlot?.name}`,
+        successUrl: `${window.location.origin}/payment/success?pageId=${pageId}&region=${encodeURIComponent(selectedRegion)}&className=${encodeURIComponent(selectedTimeSlot?.name || '')}&timeSlot=${encodeURIComponent(selectedTimeSlot?.time || '')}`,
+        failUrl: `${window.location.origin}/payment/fail`,
+        customerEmail: formData.email,
+        customerName: formData.name,
+        customerMobilePhone: formData.phone.replace(/-/g, ''),
+      });
+
+      return true;
+    } catch (error) {
+      console.error('[토스페이먼츠] 결제 요청 중 오류:', error);
+      toast({
+        title: "결제 요청 실패",
+        description: "결제 요청 중 오류가 발생했습니다. 다시 시도해주세요.",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
 
   const resetClassEnrollment = () => {
     const resetCounts = {
@@ -143,6 +259,7 @@ export default function SwimmingClassPage() {
       "평영 B (중급)": 0,
     };
     setClassEnrollment(resetCounts);
+    waitlistThresholdsRef.current = {};
     try {
       localStorage.setItem("class_enrollment_counts", JSON.stringify(resetCounts));
     } catch (error) {
@@ -167,6 +284,18 @@ export default function SwimmingClassPage() {
     }
     console.log("[카운터] 로컬 카운터 없음 - 기본값 사용");
   };
+
+  // 평영 B (중급): 예약대기 기준 8명
+  useEffect(() => {
+    const className = "평영 B (중급)";
+    if (waitlistThresholdsRef.current[className] === undefined) {
+      waitlistThresholdsRef.current[className] = 8;
+      console.log("[예약대기] 평영 B 임계값 설정:", {
+        className,
+        threshold: waitlistThresholdsRef.current[className],
+      });
+    }
+  }, [classEnrollment]);
 
   const syncClassEnrollmentFromNotion = async () => {
     try {
@@ -272,16 +401,45 @@ export default function SwimmingClassPage() {
     })();
   };
 
-  // 컴포넌트 마운트 시 클래스별 신청 인원 로드
+  const markFunnelStep = (stepNumber: 1 | 2 | 3 | 4) => {
+    try {
+      sessionStorage.setItem(`funnel_step_${stepNumber}`, "1");
+    } catch (error) {
+      console.log("[퍼널] 세션 저장 실패:", error);
+    }
+  };
+
+  const hasFunnelStep = (stepNumber: 1 | 2 | 3 | 4) => {
+    try {
+      return sessionStorage.getItem(`funnel_step_${stepNumber}`) === "1";
+    } catch (error) {
+      console.log("[퍼널] 세션 조회 실패:", error);
+      return false;
+    }
+  };
+
+  // 컴포넌트 마운트 시 클래스별 신청 인원 로드 + Notion 동기화
   useEffect(() => {
     loadClassEnrollment();
+    void syncClassEnrollmentFromNotion();
   }, []);
 
-  // 개발자 모드에서만 Notion 카운터 동기화
+  // 개발자 모드에서 주기적 동기화 (미입금 체크 반영용)
   useEffect(() => {
-    if (showDebug) {
+    if (!showDebug) return;
+    const intervalId = window.setInterval(() => {
       void syncClassEnrollmentFromNotion();
-    }
+    }, 15000);
+    return () => window.clearInterval(intervalId);
+  }, [showDebug]);
+
+  // 개발자 모드에서 주기적 동기화 (미입금 체크 반영용)
+  useEffect(() => {
+    if (!showDebug) return;
+    const intervalId = window.setInterval(() => {
+      void syncClassEnrollmentFromNotion();
+    }, 15000);
+    return () => window.clearInterval(intervalId);
   }, [showDebug]);
 
   // 컴포넌트 마운트 시 퍼널 카운트 로드 (서버 기준)
@@ -323,11 +481,14 @@ export default function SwimmingClassPage() {
     }
   }, [step]);
 
-  const getApplicantKey = () => {
+  const getApplicantKey = (className?: string) => {
     const name = formData.name.trim();
     const phone = formData.phone.trim();
     const gender = formData.gender.trim();
     if (!name || !phone || !gender) return "";
+    if (className) {
+      return `${name}|${gender}|${phone}|${className}`;
+    }
     return `${name}|${gender}|${phone}`;
   };
 
@@ -347,14 +508,24 @@ export default function SwimmingClassPage() {
     });
   };
 
-  // 클래스별 신청 가능 여부 확인 (10명일 때 다음 클릭이 11번째이므로 정원 초과)
+  // 클래스별 신청 가능 여부 확인 (10명 이상이면 정원 초과)
   const isClassFull = (className: string) => {
-    return (classEnrollment[className] || 0) === 10;
+    if (manualWaitlistClasses.has(className)) return true;
+    const threshold = waitlistThresholdsRef.current[className];
+    if (threshold !== undefined) {
+      return (classEnrollment[className] || 0) >= threshold;
+    }
+    return (classEnrollment[className] || 0) >= 10;
   };
 
-  // 클래스별 결제 여부 확인 (10명일 때 다음 클릭이 11번째이므로 예약대기)
+  // 클래스별 결제 여부 확인 (10명 이상이면 예약대기)
   const hasEnrollment = (className: string) => {
-    return (classEnrollment[className] || 0) === 10;
+    if (manualWaitlistClasses.has(className)) return true;
+    const threshold = waitlistThresholdsRef.current[className];
+    if (threshold !== undefined) {
+      return (classEnrollment[className] || 0) >= threshold;
+    }
+    return (classEnrollment[className] || 0) >= 10;
   };
 
   // 주문번호 생성 함수 (겹치지 않도록)
@@ -502,6 +673,7 @@ export default function SwimmingClassPage() {
 
   const handleRegistration = () => {
     incrementFunnelCount(1, "지금 바로 신청하기 클릭");
+    markFunnelStep(1);
     lastFunnelActionRef.current = { action: "step1_click", ts: Date.now() };
     setShowRegistrationForm(true);
     setStep(2); // Move to step 2 after selecting a class
@@ -541,16 +713,68 @@ export default function SwimmingClassPage() {
                 <div className="text-[11px] text-gray-300 mb-2">
                   기준 날짜: {todayKst}
                 </div>
-            <div className="space-y-1">
-              {Object.entries(classEnrollment).map(([className, count]) => (
-                <div key={className} className="flex justify-between gap-4">
-                  <span className="text-gray-300">{className}:</span>
-                  <span className="font-bold">
-                    {count}명 / 다음: {count + 1}번째
-                  </span>
-                </div>
-              ))}
-            </div>
+                      <div className="space-y-1">
+                        {Object.entries(classEnrollment).map(([className, count]) => {
+                          const threshold =
+                            manualWaitlistClasses.has(className)
+                              ? "강제예약"
+                              : waitlistThresholdsRef.current[className];
+                          const isWaitlist = isClassFull(className);
+                          return (
+                            <div key={className} className="flex flex-col gap-1">
+                              <div className="flex justify-between gap-2">
+                                <div className="flex-1">
+                                  <div className="text-gray-300">{className}:</div>
+                                  <div className="font-bold text-sm">
+                                    {count}명 / 다음: {count + 1}번째
+                                  </div>
+                                  <div className="text-[11px] text-gray-400">
+                                    예약대기 기준:{" "}
+                                    {threshold === undefined ? 10 : String(threshold)}
+                                  </div>
+                                </div>
+                                <Button
+                                  size="sm"
+                                  className={`text-[10px] px-2 py-1 h-auto ${
+                                    isWaitlist
+                                      ? "bg-gray-600 hover:bg-gray-500"
+                                      : "bg-orange-600 hover:bg-orange-500"
+                                  }`}
+                                  onClick={() => {
+                                    if (isWaitlist) {
+                                      // 예약대기 해제
+                                      manualWaitlistClasses.delete(className);
+                                      delete waitlistThresholdsRef.current[className];
+                                      setClassEnrollment((prev) => ({
+                                        ...prev,
+                                        [className]: Math.min(prev[className] || 0, 9),
+                                      }));
+                                      console.log("[개발자] 예약대기 해제:", className);
+                                    } else {
+                                      // 예약대기 전환
+                                      manualWaitlistClasses.add(className);
+                                      console.log("[개발자] 예약대기 전환:", className);
+                                    }
+                                    // 강제 리렌더링
+                                    setClassEnrollment((prev) => ({ ...prev }));
+                                  }}
+                                >
+                                  {isWaitlist ? "대기해제" : "예약대기"}
+                                </Button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                <Button
+                  size="sm"
+                  className="mt-2 w-full bg-gray-800 hover:bg-gray-700 text-white text-xs"
+                  onClick={() => {
+                    void syncClassEnrollmentFromNotion();
+                  }}
+                >
+                  카운터 새로고침
+                </Button>
             <div className="mt-3 pt-2 border-t border-gray-600">
               <div className="text-yellow-400 font-semibold mb-1">퍼널 카운트</div>
               <div className="grid grid-cols-1 gap-2">
@@ -664,7 +888,7 @@ export default function SwimmingClassPage() {
                     </p>
                     <p className="text-base md:text-sm text-gray-700">
                       국가대표급 선수와{" "}
-                      <span className="font-bold text-gray-900">10년 차 이상 베테랑 강사</span>들이
+                      <span className="font-bold text-gray-900">15년 차 이상 베테랑 강사</span>들이
                       여러분의 영법을 정밀 진단합니다.
                     </p>
                     <p className="text-base md:text-sm text-gray-700">
@@ -726,6 +950,197 @@ export default function SwimmingClassPage() {
                 >
                   오늘만 40% 할인받고 내 수영 분석받기 →
                 </Button>
+              </div>
+            </div>
+
+            {/* Schedule & Region Notice (Step 1) */}
+            <div className="w-full mt-6">
+              <div className="mb-3">
+                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  📌 수강 일정 · 지역 안내
+                </h3>
+              </div>
+              <div className="grid md:grid-cols-[300px_1fr] gap-6 pointer-events-none opacity-90">
+                {/* Left: Calendar */}
+                <div>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="mb-4">
+                        <div className="flex items-center justify-between mb-1">
+                          <h3 className="text-sm font-semibold text-primary">
+                            📅 수강 일정 달력
+                          </h3>
+                        </div>
+                      </div>
+
+                      {/* Calendar Header */}
+                      <div className="flex items-center justify-between mb-4">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => {
+                            const newMonth =
+                              calendarMonth > 1 ? calendarMonth - 1 : 12;
+                            setCalendarMonth(newMonth);
+                            console.log(`[v0] 달력 월 변경: ${newMonth}월`);
+                          }}
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <span className="font-semibold">
+                          {calendarYear}년 {monthNames[calendarMonth - 1]}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => {
+                            const newMonth =
+                              calendarMonth < 12 ? calendarMonth + 1 : 1;
+                            setCalendarMonth(newMonth);
+                            console.log(`[v0] 달력 월 변경: ${newMonth}월`);
+                          }}
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </div>
+
+                      {/* Weekday Headers */}
+                      <div className="grid grid-cols-7 gap-1 mb-2">
+                        {weekDays.map((day, i) => (
+                          <div
+                            key={day}
+                            className={`text-center text-xs font-medium py-1 ${
+                              i === 0
+                                ? "text-red-500"
+                                : i === 6
+                                ? "text-blue-500"
+                                : "text-muted-foreground"
+                            }`}
+                          >
+                            {day}
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Calendar Days */}
+                      <div className="grid grid-cols-7 gap-1">
+                        {calendarDays.map((day, index) => {
+                          const isHighlighted =
+                            day && highlightedDates.includes(day);
+                          const dayOfWeek = index % 7;
+                          const isToday =
+                            day &&
+                            calendarYear === today.year &&
+                            calendarMonth === today.month &&
+                            day === today.day;
+
+                          return (
+                            <div
+                              key={index}
+                              className="aspect-square flex items-center justify-center"
+                            >
+                              {day ? (
+                                <button
+                                  className={`w-full h-full flex items-center justify-center text-sm rounded-lg transition-colors ${
+                                    isHighlighted
+                                      ? "bg-primary text-primary-foreground font-semibold shadow-sm"
+                                      : isToday
+                                      ? "bg-gray-300 text-gray-700 font-medium"
+                                      : dayOfWeek === 0
+                                      ? "text-red-500 hover:bg-muted"
+                                      : dayOfWeek === 6
+                                      ? "text-blue-500 hover:bg-muted"
+                                      : "text-foreground hover:bg-muted"
+                                  }`}
+                                >
+                                  {day}
+                                </button>
+                              ) : (
+                                <div />
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Legend */}
+                      <div className="mt-4 pt-4 border-t flex items-center justify-center gap-4 text-xs text-muted-foreground flex-wrap">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-3 h-3 rounded-full bg-primary" />
+                          <span>특강 일정</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-3 h-3 rounded bg-gray-300" />
+                          <span>오늘</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Right: Region Notice */}
+                <div>
+                  <div className="mb-4">
+                    <h3 className="text-lg font-semibold text-primary">
+                      📍 지역 안내
+                    </h3>
+                  </div>
+                  <div className="space-y-3">
+                    {classes.map((classItem) => (
+                      <Card key={classItem.id} className="transition-all">
+                        <CardContent className="p-4">
+                          <div className="mb-3 flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <MapPin className="h-5 w-5 text-blue-500 fill-blue-500/10" />
+                              <span className="font-bold text-lg">
+                                {classItem.location} ({classItem.locationCode})
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="bg-blue-50 rounded-lg p-4 mb-4 border border-blue-100">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Calendar className="h-5 w-5 text-blue-600" />
+                              <span className="font-bold text-lg text-blue-900">
+                                {classItem.date}
+                              </span>
+                            </div>
+                            <p className="text-sm text-blue-600 font-medium ml-7">
+                              수영 특강 일정
+                            </p>
+                          </div>
+
+                          <div className="space-y-3">
+                            <div className="flex items-start gap-4">
+                              <span className="text-sm font-bold text-gray-900 min-w-[45px]">
+                                수영장
+                              </span>
+                              <span className="text-sm text-gray-600">
+                                {classItem.venue}
+                              </span>
+                            </div>
+                            <div className="flex items-start gap-4">
+                              <span className="text-sm font-bold text-gray-900 min-w-[45px]">
+                                주소
+                              </span>
+                              <span className="text-sm text-gray-600 leading-relaxed">
+                                {classItem.address}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 pt-2">
+                              <Clock className="h-4 w-4 text-green-600" />
+                              <span className="text-sm font-bold text-green-600">
+                                예약 가능
+                              </span>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -958,7 +1373,7 @@ export default function SwimmingClassPage() {
                         className="text-sm font-semibold flex items-center gap-1"
                       >
                         <MapPinned className="h-4 w-4" />
-                        거주 지역 <span className="text-red-500">*</span>
+                        거주지역 <span className="text-red-500">*</span>
                       </Label>
                       <Input
                         id="location"
@@ -1382,9 +1797,39 @@ export default function SwimmingClassPage() {
                         formData.location &&
                         agreeAll
                       ) {
-                        // 개인정보 입력 단계에서는 노션에 저장하지 않고 바로 3단계로 이동
-                        incrementFunnelCount(2, "클래스 신청하기 클릭");
-                        setStep(3);
+                        // 개인정보 입력 단계: Notion 조회 후 있으면 재사용, 없으면 신규 생성
+                        try {
+                          setIsSubmitting(true);
+                          
+                          const notionResult = await findOrCreateApplicant(formData);
+                          if (notionResult.success && notionResult.pageId) {
+                            setApplicantPageId(notionResult.pageId);
+                            if (notionResult.isNew) {
+                              console.log("[개인정보] 신규 저장 성공:", notionResult.pageId);
+                            } else {
+                              console.log("[개인정보] 기존 데이터 재사용:", notionResult.pageId);
+                            }
+                            incrementFunnelCount(2, "클래스 신청하기 클릭");
+                            markFunnelStep(2);
+                            setStep(3);
+                          } else {
+                            console.error("[개인정보] 저장 실패:", notionResult.error);
+                            toast({
+                              title: "저장 실패",
+                              description: notionResult.error || "개인정보 저장 중 오류가 발생했습니다.",
+                              variant: "destructive",
+                            });
+                          }
+                        } catch (error) {
+                          console.error("[개인정보] 저장 중 오류 발생:", error);
+                          toast({
+                            title: "오류 발생",
+                            description: "개인정보 저장 중 예기치 않은 오류가 발생했습니다. 다시 시도해주세요.",
+                            variant: "destructive",
+                          });
+                        } finally {
+                          setIsSubmitting(false);
+                        }
                       }
                     }}
                     disabled={
@@ -1848,18 +2293,33 @@ export default function SwimmingClassPage() {
                                   <div className="text-base md:text-sm font-bold text-gray-800 break-words leading-tight">
                                     {slot.name}
                                   </div>
-                                  <div className="flex justify-end mt-2 sm:mt-2">
-                                    {isFull ? (
-                                      <span className="bg-orange-500 text-white text-sm md:text-[11px] px-3 md:px-2 py-1.5 md:py-1 rounded font-bold">
-                                        예약하기
-                                      </span>
-                                    ) : hasPayment ? (
+                                  <div className="flex justify-end gap-2 mt-2 sm:mt-2 flex-wrap">
+                                    {(() => {
+                                      const remainingBadge: Record<string, string> = {
+                                        "자유형 A (초급)": "1자리 남음",
+                                        "평영 A (초급)": "마감임박",
+                                        "접영 A (초급)": "2자리 남음",
+                                        "자유형 B (중급)": "마감임박",
+                                        "평영 B (중급)": "1자리 남음",
+                                      };
+                                      const label =
+                                        isFull || hasPayment
+                                          ? "마감"
+                                          : remainingBadge[slot.name];
+                                      if (!label) return null;
+                                      return (
+                                        <span className="bg-white border border-red-200 text-red-600 text-sm md:text-[11px] px-3 md:px-2 py-1.5 md:py-1 rounded font-bold">
+                                          {label}
+                                        </span>
+                                      );
+                                    })()}
+                                    {isFull || hasPayment ? (
                                       <span className="bg-orange-500 text-white text-sm md:text-[11px] px-3 md:px-2 py-1.5 md:py-1 rounded font-bold">
                                         예약대기
                                       </span>
                                     ) : (
                                       <span className="bg-[#10B981] text-white text-sm md:text-[11px] px-3 md:px-2 py-1.5 md:py-1 rounded font-bold">
-                                        신청가능
+                                        결제가능
                                       </span>
                                     )}
                                   </div>
@@ -2023,18 +2483,40 @@ export default function SwimmingClassPage() {
                         setRegionError(false);
 
                         incrementFunnelCount(3, "결제하기 버튼 클릭");
+                        markFunnelStep(3);
 
                         // 결제 처리 시작 - 버튼 비활성화
                         setIsSubmitting(true);
                         console.log("[결제] 결제 처리 시작 - 버튼 비활성화");
 
                         if (selectedTimeSlot) {
-                          const applicantKey = getApplicantKey();
+                          const paymentStartedAt = new Date();
+                          setPaymentDate(paymentStartedAt);
+                          
+                          // 먼저 입금대기 중인 클래스가 있는지 확인
+                          const pendingCheck = await checkPendingPayment({
+                            name: formData.name,
+                            phone: formData.phone,
+                            gender: formData.gender,
+                          });
+                          
+                          if (pendingCheck.success && pendingCheck.hasPending) {
+                            console.log("[중복방지] 이미 입금대기 중인 클래스 존재:", pendingCheck.pendingClasses);
+                            toast({
+                              title: "입금대기 중인 클래스 있음",
+                              description: `현재 ${pendingCheck.pendingClasses?.join(", ")}가 입금대기 중입니다. 해당 클래스가 예약대기/취소로 변경된 후 신청 가능합니다.`,
+                              variant: "destructive",
+                            });
+                            setIsSubmitting(false);
+                            return;
+                          }
+                          
+                          const applicantKey = getApplicantKey(selectedTimeSlot.name);
                           if (applicantKey && submittedApplicantsRef.current.has(applicantKey)) {
-                            console.log("[중복방지] 동일 정보로 중복 결제 시도 차단:", applicantKey);
+                            console.log("[중복방지] 동일 클래스 중복 결제 시도 차단:", applicantKey);
                             toast({
                               title: "중복 신청 방지",
-                              description: "같은 이름/성별/전화번호로 이미 신청이 진행되었습니다.",
+                              description: `같은 정보로 이미 ${selectedTimeSlot.name}를 신청하셨습니다. 다른 클래스는 신청 가능합니다.`,
                               variant: "destructive",
                             });
                             setIsSubmitting(false);
@@ -2051,14 +2533,26 @@ export default function SwimmingClassPage() {
                             console.log(`[예약대기] 예약 처리 시작 - 중복 클릭 방지 활성화`);
                             
                             try {
-                              // 먼저 노션에 개인정보 저장
-                              const notionResult = await submitToNotion(formData);
-                              if (notionResult.success && notionResult.pageId) {
-                                setNotionPageId(notionResult.pageId);
+                              // 노션 페이지가 없으면 개인정보 저장
+                              let pageId = paidPageId;
+                              if (!pageId) {
+                                const notionResult = await submitPaidToNotion(formData);
+                                if (!notionResult.success || !notionResult.pageId) {
+                                  setIsSubmitting(false);
+                                  console.error("[예약대기] Notion 저장 실패:", notionResult.error);
+                                  toast({
+                                    title: "저장 실패",
+                                    description: notionResult.error || "데이터 저장 중 오류가 발생했습니다.",
+                                    variant: "destructive",
+                                  });
+                                  return;
+                                }
+                                pageId = notionResult.pageId;
+                                setPaidPageId(pageId);
+                              }
+                              if (pageId) {
                                 
-                                const now = new Date();
                                 const newOrderNumber = generateOrderNumber();
-                                setPaymentDate(now);
                                 setOrderNumber(newOrderNumber); // 주문번호 저장
                                 setPaymentStatus("예약대기"); // 예약대기 상태 설정
                                 const selectedRegion =
@@ -2069,13 +2563,14 @@ export default function SwimmingClassPage() {
 
                                 // Notion 결제 정보 업데이트
                                 await updatePaymentInNotion({
-                                  pageId: notionResult.pageId,
+                                  pageId,
                                   // 노션 표의 '가상계좌 입금 정보' 컬럼에는 상태 값만 저장 (예: 예약대기)
                                   virtualAccountInfo: "예약대기",
                                   orderNumber: newOrderNumber,
                                   selectedClass: selectedTimeSlot.name,
                                   timeSlot: `1번특강 (${selectedTimeSlot.time})`,
                                   region: selectedRegion,
+                                  paymentStartedAt: paymentStartedAt.toISOString(),
                                 });
 
                                 // 신청 인원 증가
@@ -2095,17 +2590,14 @@ export default function SwimmingClassPage() {
                                   submittedApplicantsRef.current.add(applicantKey);
                                   console.log("[중복방지] 신청자 정보 저장:", applicantKey);
                                 }
-                                incrementFunnelCount(4, "예약완료/가상계좌 발급");
+                                if (hasFunnelStep(3)) {
+                                  incrementFunnelCount(4, "예약완료/가상계좌 발급");
+                                  markFunnelStep(4);
+                                } else {
+                                  console.log("[퍼널] 3단계 미기록 - 4단계 카운트 건너뜀");
+                                }
                                 console.log("[예약대기] 예약 처리 완료 - 4단계로 이동");
                                 setStep(4);
-                              } else {
-                                setIsSubmitting(false); // 에러 발생 시 버튼 다시 활성화
-                                console.error("[예약대기] Notion 저장 실패:", notionResult.error);
-                                toast({
-                                  title: "저장 실패",
-                                  description: notionResult.error || "데이터 저장 중 오류가 발생했습니다.",
-                                  variant: "destructive",
-                                });
                               }
                             } catch (error) {
                               setIsSubmitting(false); // 에러 발생 시 버튼 다시 활성화
@@ -2117,66 +2609,47 @@ export default function SwimmingClassPage() {
                               });
                             }
                           } else {
-                            // 결제하기 모드
+                            // 결제하기 모드 - 토스페이먼츠 결제창 호출
                             console.log(`[결제] 일반 결제 모드 - ${selectedTimeSlot.name} 클래스의 ${currentEnrollment + 1}번째 신청자`);
-                            console.log(`[결제] 결제 처리 시작 - 중복 클릭 방지 활성화`);
+                            console.log(`[결제] 토스페이먼츠 결제 시작 - 중복 클릭 방지 활성화`);
                             
                             try {
-                              // 먼저 노션에 개인정보 저장
-                              const notionResult = await submitToNotion(formData);
-                              if (notionResult.success && notionResult.pageId) {
-                                setNotionPageId(notionResult.pageId);
-                                
-                                const now = new Date();
-                                const newOrderNumber = generateOrderNumber();
-                                setPaymentDate(now);
-                                setOrderNumber(newOrderNumber); // 주문번호 저장
-                                setPaymentStatus("입금대기"); // 입금대기 상태 설정
+                              // 노션 페이지가 없으면 개인정보 저장
+                              let pageId = paidPageId;
+                              if (!pageId) {
+                                const notionResult = await submitPaidToNotion(formData);
+                                if (!notionResult.success || !notionResult.pageId) {
+                                  setIsSubmitting(false);
+                                  console.error("[결제] Notion 저장 실패:", notionResult.error);
+                                  toast({
+                                    title: "저장 실패",
+                                    description: notionResult.error || "데이터 저장 중 오류가 발생했습니다.",
+                                    variant: "destructive",
+                                  });
+                                  return;
+                                }
+                                pageId = notionResult.pageId;
+                                setPaidPageId(pageId);
+                              }
+                              
+                              if (pageId) {
                                 const selectedRegion =
                                   classes.find(
                                     (c) => String(c.id) === selectedClass
                                   )?.location || "정보 없음";
-                                console.log("[결제] 지역 정보 저장:", selectedRegion);
+                                console.log("[결제] 지역 정보:", selectedRegion);
+                                console.log("[결제] 토스페이먼츠 결제창 호출");
 
-                                // Notion 결제 정보 업데이트
-                                await updatePaymentInNotion({
-                                  pageId: notionResult.pageId,
-                                  // 노션 표의 '가상계좌 입금 정보' 컬럼에는 상태 값만 저장 (예: 입금대기)
-                                  virtualAccountInfo: "입금대기",
-                                  orderNumber: newOrderNumber,
-                                  selectedClass: selectedTimeSlot.name,
-                                  timeSlot: `1번특강 (${selectedTimeSlot.time})`,
-                                  region: selectedRegion,
-                                });
-
-                                // 신청 인원 증가
-                                setClassEnrollment((prev) => {
-                                  const next = {
-                                    ...prev,
-                                    [selectedTimeSlot.name]: (prev[selectedTimeSlot.name] || 0) + 1,
-                                  };
-                                  try {
-                                    localStorage.setItem("class_enrollment_counts", JSON.stringify(next));
-                                  } catch (error) {
-                                    console.log("[카운터] 로컬 저장 실패:", error);
-                                  }
-                                  return next;
-                                });
-                                if (applicantKey) {
-                                  submittedApplicantsRef.current.add(applicantKey);
-                                  console.log("[중복방지] 신청자 정보 저장:", applicantKey);
+                                // 토스페이먼츠 결제창 호출
+                                const paymentSuccess = await requestTossPayment(pageId, selectedRegion);
+                                
+                                if (!paymentSuccess) {
+                                  // 결제 요청 실패 시 버튼 다시 활성화
+                                  setIsSubmitting(false);
+                                  console.error("[결제] 토스페이먼츠 결제 요청 실패");
                                 }
-                                incrementFunnelCount(4, "가상계좌 발급");
-                                console.log("[결제] 결제 처리 완료 - 4단계로 이동");
-                                setStep(4);
-                              } else {
-                                setIsSubmitting(false); // 에러 발생 시 버튼 다시 활성화
-                                console.error("[결제] Notion 저장 실패:", notionResult.error);
-                                toast({
-                                  title: "저장 실패",
-                                  description: notionResult.error || "데이터 저장 중 오류가 발생했습니다.",
-                                  variant: "destructive",
-                                });
+                                // 결제창이 열리면 isSubmitting 상태는 유지
+                                // 결제 완료 후 successUrl에서 처리됨
                               }
                             } catch (error) {
                               setIsSubmitting(false); // 에러 발생 시 버튼 다시 활성화
@@ -3584,6 +4057,8 @@ export default function SwimmingClassPage() {
               setFinalAgree(false);
               setPaymentMethod("card");
               setIsSubmitting(false);
+              setApplicantPageId(null);
+              setPaidPageId(null);
 
               // 모든 모달 상태 초기화
               setShowSafetyModal(false);
@@ -3646,6 +4121,28 @@ export default function SwimmingClassPage() {
                     <span className="text-white">toptier1018@gmail.com</span>
                   </p>
                 </div>
+              </div>
+              <div className="mt-4 space-y-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full bg-transparent border-white/20 text-white hover:bg-white/10 hover:text-white"
+                  onClick={() =>
+                    window.open("https://open.kakao.com/o/pk7VePci", "_blank")
+                  }
+                >
+                  💬 스윔잇 수영 수다방 멤버십 라운지
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full bg-transparent border-white/20 text-white hover:bg-white/10 hover:text-white"
+                  onClick={() =>
+                    window.open("https://cafe.naver.com/swimit", "_blank")
+                  }
+                >
+                  ☕ 스윔잇 수영 저항 제로 카페
+                </Button>
               </div>
             </div>
           </div>

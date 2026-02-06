@@ -22,7 +22,7 @@ export async function submitToNotion(formData: {
 
     // 환경 변수 확인
     const notionApiKey = process.env.NOTION_API_KEY
-    const databaseId = process.env.NOTION_DATABASE_ID
+    const databaseId = process.env.NOTION_APPLICANT_DATABASE_ID
 
     if (!notionApiKey || !databaseId) {
       console.error("[Notion 액션] 환경 변수가 설정되지 않았습니다")
@@ -98,9 +98,15 @@ export async function submitToNotion(formData: {
               },
             ],
           },
-          // 이메일 (특강/ 수영 제품 할인 정보를 제공합니다) (Email 속성)
+          // 이메일 (특강/ 수영 제품 할인 정보를 제공합니다) (Rich Text 속성)
           "이메일 (특강/ 수영 제품 할인 정보를 제공합니다)": {
-            email: formData.email || null,
+            rich_text: [
+              {
+                text: {
+                  content: formData.email || "",
+                },
+              },
+            ],
           },
           // 수영 후 통증이 느껴지거나 불편한 부위가 있나요? (중복 선택 가능) (Rich Text 속성)
           "수영 후 통증이 느껴지거나 불편한 부위가 있나요? (중복 선택 가능)": {
@@ -146,6 +152,119 @@ export async function submitToNotion(formData: {
 
     const result = await response.json()
     console.log("[Notion 액션] 데이터 저장 성공:", result.id)
+
+    return {
+      success: true,
+      pageId: result.id,
+    }
+  } catch (error) {
+    console.error("[Notion 액션] 예외 발생:", error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다",
+    }
+  }
+}
+
+/**
+ * 결제 단계에서 수강자 표에 저장하는 서버 액션
+ */
+export async function submitPaidToNotion(formData: {
+  name: string
+  phone: string
+  gender: string
+  location: string
+  email: string
+  painAreas: string[]
+  swimmingExperience: string
+  message: string
+}) {
+  try {
+    console.log("[Notion 액션] 결제 데이터 제출 시작:", {
+      name: formData.name,
+      phone: formData.phone,
+      email: formData.email,
+    })
+
+    const notionApiKey = process.env.NOTION_API_KEY
+    const databaseId = process.env.NOTION_DATABASE_ID
+
+    if (!notionApiKey || !databaseId) {
+      console.error("[Notion 액션] 환경 변수가 설정되지 않았습니다")
+      return {
+        success: false,
+        error: "서버 설정 오류: 환경 변수가 설정되지 않았습니다",
+      }
+    }
+
+    const genderText = formData.gender === "male" ? "남성" : "여성"
+
+    const response = await fetch(`https://api.notion.com/v1/pages`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${notionApiKey}`,
+        "Content-Type": "application/json",
+        "Notion-Version": "2022-06-28",
+      },
+      body: JSON.stringify({
+        parent: {
+          database_id: databaseId,
+        },
+        properties: {
+          이름: {
+            title: [{ text: { content: formData.name } }],
+          },
+          전화번호: {
+            rich_text: [{ text: { content: formData.phone } }],
+          },
+          성별: {
+            rich_text: [{ text: { content: genderText } }],
+          },
+          거주지역: {
+            rich_text: [{ text: { content: formData.location } }],
+          },
+          "수영을 배우신 지 얼마나 되셨나요?": {
+            rich_text: [{ text: { content: formData.swimmingExperience || "미응답" } }],
+          },
+          "이메일 (특강/ 수영 제품 할인 정보를 제공합니다)": {
+            rich_text: [{ text: { content: formData.email || "" } }],
+          },
+          "수영 후 통증이 느껴지거나 불편한 부위가 있나요? (중복 선택 가능)": {
+            rich_text: [
+              {
+                text: {
+                  content: formData.painAreas.length
+                    ? formData.painAreas.join(", ")
+                    : "없음",
+                },
+              },
+            ],
+          },
+          "이번 특강을 통해 가장 해결하고 싶은 단 하나는 무엇인가요?": {
+            rich_text: [{ text: { content: formData.message || "" } }],
+          },
+        },
+      }),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      const errorMessage = errorData.message || errorData.code || response.statusText
+      console.error("[Notion 액션] API 오류:", {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorData,
+        fullError: JSON.stringify(errorData, null, 2),
+      })
+      return {
+        success: false,
+        error: `데이터 저장 실패: ${errorMessage}`,
+        details: errorData,
+      }
+    }
+
+    const result = await response.json()
+    console.log("[Notion 액션] 결제 데이터 저장 성공:", result.id)
 
     return {
       success: true,
@@ -634,6 +753,7 @@ export async function updatePaymentInNotion(data: {
   selectedClass: string
   timeSlot: string
   region: string
+  paymentStartedAt?: string
 }) {
   try {
     const notionApiKey = process.env.NOTION_API_KEY
@@ -697,6 +817,14 @@ export async function updatePaymentInNotion(data: {
                 },
               ],
             },
+            // 결제 진행 시간 (Date)
+            "결제 진행 시간": data.paymentStartedAt
+              ? {
+                  date: {
+                    start: data.paymentStartedAt,
+                  },
+                }
+              : undefined,
             // 지역 (Rich Text)
             지역: {
               rich_text: [
@@ -820,14 +948,24 @@ export async function getClassEnrollmentCounts() {
 
     // 각 페이지를 순회하면서 "선택된 클래스" 필드 확인
     pages.forEach((page: any) => {
-      const selectedClass = page.properties["선택된 클래스"]?.rich_text?.[0]?.plain_text || ""
-      const virtualAccountInfo = page.properties["가상계좌 입금 정보"]?.rich_text?.[0]?.plain_text || ""
-      
-      // 결제가 완료된 경우 (입금완료 또는 예약대기 상태)만 카운트
-      // 가상계좌 입금 정보가 "입금대기", "입금완료", "예약대기" 중 하나인 경우 카운트
-      if (selectedClass && (virtualAccountInfo === "입금대기" || virtualAccountInfo === "입금완료" || virtualAccountInfo === "예약대기")) {
-        if (counts.hasOwnProperty(selectedClass)) {
-          counts[selectedClass]++
+      const selectedClass =
+        page.properties["선택된 클래스"]?.rich_text?.[0]?.plain_text ||
+        page.properties["선택된 클래스"]?.select?.name ||
+        ""
+      const virtualAccountInfo =
+        page.properties["가상계좌 입금 정보"]?.rich_text?.[0]?.plain_text ||
+        page.properties["가상계좌 입금 정보"]?.select?.name ||
+        ""
+      // 가상계좌 입금 정보 기준으로 카운트 (미입금 제외)
+      const normalizedClass = selectedClass.trim()
+      const normalizedStatus = virtualAccountInfo.trim()
+      if (
+        normalizedClass &&
+        (normalizedStatus === "입금대기" ||
+          normalizedStatus === "입금완료")
+      ) {
+        if (counts.hasOwnProperty(normalizedClass)) {
+          counts[normalizedClass]++
         }
       }
     })
@@ -860,12 +998,23 @@ export async function getClassEnrollmentCounts() {
       const nextPages = nextResult.results || []
 
       nextPages.forEach((page: any) => {
-        const selectedClass = page.properties["선택된 클래스"]?.rich_text?.[0]?.plain_text || ""
-        const virtualAccountInfo = page.properties["가상계좌 입금 정보"]?.rich_text?.[0]?.plain_text || ""
-        
-        if (selectedClass && (virtualAccountInfo === "입금대기" || virtualAccountInfo === "입금완료" || virtualAccountInfo === "예약대기")) {
-          if (counts.hasOwnProperty(selectedClass)) {
-            counts[selectedClass]++
+        const selectedClass =
+          page.properties["선택된 클래스"]?.rich_text?.[0]?.plain_text ||
+          page.properties["선택된 클래스"]?.select?.name ||
+          ""
+        const virtualAccountInfo =
+          page.properties["가상계좌 입금 정보"]?.rich_text?.[0]?.plain_text ||
+          page.properties["가상계좌 입금 정보"]?.select?.name ||
+          ""
+        const normalizedClass = selectedClass.trim()
+        const normalizedStatus = virtualAccountInfo.trim()
+        if (
+          normalizedClass &&
+          (normalizedStatus === "입금대기" ||
+            normalizedStatus === "입금완료")
+        ) {
+          if (counts.hasOwnProperty(normalizedClass)) {
+            counts[normalizedClass]++
           }
         }
       })
@@ -1029,6 +1178,181 @@ export async function checkPaymentStatus(data: {
     return {
       success: false,
       error: error instanceof Error ? error.message : "알 수 없는 오류",
+    }
+  }
+}
+
+/**
+ * 같은 사람의 기존 개인정보 페이지 찾기 또는 신규 생성
+ */
+export async function findOrCreateApplicant(formData: {
+  name: string
+  phone: string
+  gender: string
+  location: string
+  email: string
+  painAreas: string[]
+  swimmingExperience: string
+  message: string
+}) {
+  try {
+    const notionApiKey = process.env.NOTION_API_KEY
+    const databaseId = process.env.NOTION_APPLICANT_DATABASE_ID
+
+    if (!notionApiKey || !databaseId) {
+      console.error("[Notion 조회/생성] 환경 변수가 설정되지 않았습니다")
+      return {
+        success: false,
+        error: "서버 설정 오류: 환경 변수가 설정되지 않았습니다",
+      }
+    }
+
+    const genderText = formData.gender === "male" ? "남성" : "여성"
+
+    // 먼저 같은 사람이 있는지 조회
+    const queryResponse = await fetch(
+      `https://api.notion.com/v1/databases/${databaseId}/query`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${notionApiKey}`,
+          "Content-Type": "application/json",
+          "Notion-Version": "2022-06-28",
+        },
+        body: JSON.stringify({
+          filter: {
+            and: [
+              { property: "이름", title: { equals: formData.name } },
+              { property: "전화번호", rich_text: { equals: formData.phone } },
+              { property: "성별", rich_text: { equals: genderText } },
+            ],
+          },
+          page_size: 1,
+        }),
+      }
+    )
+
+    if (queryResponse.ok) {
+      const queryResult = await queryResponse.json()
+      const existing = queryResult.results?.[0]
+      if (existing?.id) {
+        console.log("[Notion 조회/생성] 기존 데이터 재사용:", existing.id)
+        return {
+          success: true,
+          pageId: existing.id,
+          isNew: false,
+        }
+      }
+    }
+
+    // 없으면 새로 생성
+    console.log("[Notion 조회/생성] 신규 데이터 생성 시작")
+    const createResult = await submitToNotion(formData)
+    return {
+      ...createResult,
+      isNew: true,
+    }
+  } catch (error) {
+    console.error("[Notion 조회/생성] 예외 발생:", error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다",
+    }
+  }
+}
+
+/**
+ * 같은 사람이 이미 "입금대기" 상태인 클래스가 있는지 확인
+ */
+export async function checkPendingPayment(data: {
+  name: string
+  phone: string
+  gender: string
+}) {
+  try {
+    const notionApiKey = process.env.NOTION_API_KEY
+    const databaseId = process.env.NOTION_DATABASE_ID
+
+    if (!notionApiKey || !databaseId) {
+      return {
+        success: false,
+        error: "서버 설정 오류: 환경 변수가 설정되지 않았습니다",
+      }
+    }
+
+    const genderText = data.gender === "male" ? "남성" : "여성"
+
+    const response = await fetch(
+      `https://api.notion.com/v1/databases/${databaseId}/query`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${notionApiKey}`,
+          "Content-Type": "application/json",
+          "Notion-Version": "2022-06-28",
+        },
+        body: JSON.stringify({
+          filter: {
+            and: [
+              {
+                property: "이름",
+                title: { equals: data.name },
+              },
+              {
+                property: "전화번호",
+                rich_text: { equals: data.phone },
+              },
+              {
+                property: "성별",
+                rich_text: { equals: genderText },
+              },
+            ],
+          },
+          page_size: 100,
+        }),
+      }
+    )
+
+    if (!response.ok) {
+      console.error("[Notion 입금대기 조회] API 오류:", response.status)
+      return {
+        success: false,
+        error: "조회 실패",
+        hasPending: false,
+      }
+    }
+
+    const result = await response.json()
+    const pages = result.results || []
+
+    // "입금대기" 상태인 클래스 찾기
+    const pendingClasses: string[] = []
+    pages.forEach((page: any) => {
+      const virtualAccountInfo =
+        page.properties["가상계좌 입금 정보"]?.rich_text?.[0]?.plain_text ||
+        page.properties["가상계좌 입금 정보"]?.select?.name ||
+        ""
+      const selectedClass =
+        page.properties["선택된 클래스"]?.rich_text?.[0]?.plain_text ||
+        page.properties["선택된 클래스"]?.select?.name ||
+        ""
+      
+      if (virtualAccountInfo.trim() === "입금대기" && selectedClass) {
+        pendingClasses.push(selectedClass.trim())
+      }
+    })
+
+    return {
+      success: true,
+      hasPending: pendingClasses.length > 0,
+      pendingClasses,
+    }
+  } catch (error) {
+    console.error("[Notion 입금대기 조회] 예외 발생:", error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "알 수 없는 오류",
+      hasPending: false,
     }
   }
 }

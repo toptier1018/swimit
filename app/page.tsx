@@ -58,7 +58,6 @@ export default function SwimmingClassPage() {
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
   const [regionError, setRegionError] = useState(false);
-  const [isTossPaymentsLoaded, setIsTossPaymentsLoaded] = useState(false);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<{
     name: string;
     time: string;
@@ -136,119 +135,7 @@ export default function SwimmingClassPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     setShowDebug(params.get('debug') === 'true');
-    
-    // 결제 성공 후 리디렉션된 경우 4단계로 이동
-    const paymentStatus = params.get('payment');
-    const targetStep = params.get('step');
-    
-    if (paymentStatus === 'success' && targetStep === '4') {
-      console.log('[결제] 결제 성공 - 4단계로 이동');
-      setStep(4);
-      setPaymentStatus("입금완료");
-      
-      // URL에서 파라미터 제거
-      window.history.replaceState({}, '', '/');
-      
-      toast({
-        title: "결제 완료",
-        description: "결제가 성공적으로 완료되었습니다!",
-      });
-    }
-  }, [toast]);
-
-  // 토스페이먼츠 SDK 로드
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://js.tosspayments.com/v2/standard';
-    script.async = true;
-    script.onload = () => {
-      console.log('[토스페이먼츠] SDK 로드 완료');
-      setIsTossPaymentsLoaded(true);
-    };
-    script.onerror = () => {
-      console.error('[토스페이먼츠] SDK 로드 실패');
-    };
-    document.head.appendChild(script);
-
-    return () => {
-      // cleanup: 컴포넌트 언마운트 시 스크립트 제거
-      const existingScript = document.querySelector('script[src="https://js.tosspayments.com/v2/standard"]');
-      if (existingScript) {
-        document.head.removeChild(existingScript);
-      }
-    };
   }, []);
-
-  /**
-   * 토스페이먼츠 결제 요청 함수
-   * 결제창을 열고 결제 프로세스를 시작합니다.
-   */
-  const requestTossPayment = async (pageId: string, selectedRegion: string) => {
-    try {
-      if (!isTossPaymentsLoaded) {
-        console.error('[토스페이먼츠] SDK가 아직 로드되지 않았습니다.');
-        toast({
-          title: "결제 시스템 오류",
-          description: "결제 시스템을 로딩 중입니다. 잠시 후 다시 시도해주세요.",
-          variant: "destructive",
-        });
-        return false;
-      }
-
-      // 주문번호 생성
-      const newOrderNumber = generateOrderNumber();
-      setOrderNumber(newOrderNumber);
-      console.log('[토스페이먼츠] 주문번호 생성:', newOrderNumber);
-
-      // 결제 금액
-      const amount = 60000;
-
-      // 고객 정보
-      const customerKey = `customer_${formData.phone.replace(/-/g, '')}_${Date.now()}`;
-
-      // 토스페이먼츠 초기화
-      const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY || 'test_ck_AQ92ymxN341kq4lBQ16gVajRKXvd';
-      console.log('[토스페이먼츠] 클라이언트 키:', clientKey);
-
-      // @ts-ignore - TossPayments는 스크립트로 로드됨
-      const tossPayments = window.TossPayments(clientKey);
-      const payment = tossPayments.payment({ customerKey });
-
-      console.log('[토스페이먼츠] 결제 요청 시작:', {
-        orderId: newOrderNumber,
-        orderName: `수영 특강 - ${selectedTimeSlot?.name}`,
-        amount,
-        customerName: formData.name,
-        customerEmail: formData.email,
-      });
-
-      // 결제 요청
-      await payment.requestPayment({
-        method: 'CARD',
-        amount: {
-          currency: 'KRW',
-          value: amount,
-        },
-        orderId: newOrderNumber,
-        orderName: `수영 특강 - ${selectedTimeSlot?.name}`,
-        successUrl: `${window.location.origin}/payment/success?pageId=${pageId}&region=${encodeURIComponent(selectedRegion)}&className=${encodeURIComponent(selectedTimeSlot?.name || '')}&timeSlot=${encodeURIComponent(selectedTimeSlot?.time || '')}`,
-        failUrl: `${window.location.origin}/payment/fail`,
-        customerEmail: formData.email,
-        customerName: formData.name,
-        customerMobilePhone: formData.phone.replace(/-/g, ''),
-      });
-
-      return true;
-    } catch (error) {
-      console.error('[토스페이먼츠] 결제 요청 중 오류:', error);
-      toast({
-        title: "결제 요청 실패",
-        description: "결제 요청 중 오류가 발생했습니다. 다시 시도해주세요.",
-        variant: "destructive",
-      });
-      return false;
-    }
-  };
 
   const resetClassEnrollment = () => {
     const resetCounts = {
@@ -2609,9 +2496,9 @@ export default function SwimmingClassPage() {
                               });
                             }
                           } else {
-                            // 결제하기 모드 - 토스페이먼츠 결제창 호출
+                            // 결제하기 모드
                             console.log(`[결제] 일반 결제 모드 - ${selectedTimeSlot.name} 클래스의 ${currentEnrollment + 1}번째 신청자`);
-                            console.log(`[결제] 토스페이먼츠 결제 시작 - 중복 클릭 방지 활성화`);
+                            console.log(`[결제] 결제 처리 시작 - 중복 클릭 방지 활성화`);
                             
                             try {
                               // 노션 페이지가 없으면 개인정보 저장
@@ -2631,25 +2518,54 @@ export default function SwimmingClassPage() {
                                 pageId = notionResult.pageId;
                                 setPaidPageId(pageId);
                               }
-                              
                               if (pageId) {
+                                
+                                const newOrderNumber = generateOrderNumber();
+                                setOrderNumber(newOrderNumber); // 주문번호 저장
+                                setPaymentStatus("입금대기"); // 입금대기 상태 설정
                                 const selectedRegion =
                                   classes.find(
                                     (c) => String(c.id) === selectedClass
                                   )?.location || "정보 없음";
-                                console.log("[결제] 지역 정보:", selectedRegion);
-                                console.log("[결제] 토스페이먼츠 결제창 호출");
+                                console.log("[결제] 지역 정보 저장:", selectedRegion);
 
-                                // 토스페이먼츠 결제창 호출
-                                const paymentSuccess = await requestTossPayment(pageId, selectedRegion);
-                                
-                                if (!paymentSuccess) {
-                                  // 결제 요청 실패 시 버튼 다시 활성화
-                                  setIsSubmitting(false);
-                                  console.error("[결제] 토스페이먼츠 결제 요청 실패");
+                                // Notion 결제 정보 업데이트
+                                await updatePaymentInNotion({
+                                  pageId,
+                                  // 노션 표의 '가상계좌 입금 정보' 컬럼에는 상태 값만 저장 (예: 입금대기)
+                                  virtualAccountInfo: "입금대기",
+                                  orderNumber: newOrderNumber,
+                                  selectedClass: selectedTimeSlot.name,
+                                  timeSlot: `1번특강 (${selectedTimeSlot.time})`,
+                                  region: selectedRegion,
+                                  paymentStartedAt: paymentStartedAt.toISOString(),
+                                });
+
+                                // 신청 인원 증가
+                                setClassEnrollment((prev) => {
+                                  const next = {
+                                    ...prev,
+                                    [selectedTimeSlot.name]: (prev[selectedTimeSlot.name] || 0) + 1,
+                                  };
+                                  try {
+                                    localStorage.setItem("class_enrollment_counts", JSON.stringify(next));
+                                  } catch (error) {
+                                    console.log("[카운터] 로컬 저장 실패:", error);
+                                  }
+                                  return next;
+                                });
+                                if (applicantKey) {
+                                  submittedApplicantsRef.current.add(applicantKey);
+                                  console.log("[중복방지] 신청자 정보 저장:", applicantKey);
                                 }
-                                // 결제창이 열리면 isSubmitting 상태는 유지
-                                // 결제 완료 후 successUrl에서 처리됨
+                                if (hasFunnelStep(3)) {
+                                  incrementFunnelCount(4, "가상계좌 발급");
+                                  markFunnelStep(4);
+                                } else {
+                                  console.log("[퍼널] 3단계 미기록 - 4단계 카운트 건너뜀");
+                                }
+                                console.log("[결제] 결제 처리 완료 - 4단계로 이동");
+                                setStep(4);
                               }
                             } catch (error) {
                               setIsSubmitting(false); // 에러 발생 시 버튼 다시 활성화

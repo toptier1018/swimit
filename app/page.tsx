@@ -122,7 +122,9 @@ export default function SwimmingClassPage() {
     "자유형 B (중급)": 0,
     "평영 B (중급)": 0,
   });
-  const manualWaitlistClasses = new Set<string>(["평영 A (초급)"]);
+  const [manualWaitlistClasses, setManualWaitlistClasses] = useState<Set<string>>(
+    new Set<string>(["평영 A (초급)"])
+  );
   const { toast } = useToast();
   const submittedApplicantsRef = useRef<Set<string>>(new Set());
   const lastFunnelActionRef = useRef<{ action: string; ts: number } | null>(null);
@@ -630,7 +632,11 @@ export default function SwimmingClassPage() {
                                   onClick={() => {
                                     if (isWaitlist) {
                                       // 예약대기 해제
-                                      manualWaitlistClasses.delete(className);
+                                      setManualWaitlistClasses((prev) => {
+                                        const next = new Set(prev);
+                                        next.delete(className);
+                                        return next;
+                                      });
                                       delete waitlistThresholdsRef.current[className];
                                       setClassEnrollment((prev) => ({
                                         ...prev,
@@ -639,11 +645,13 @@ export default function SwimmingClassPage() {
                                       console.log("[개발자] 예약대기 해제:", className);
                                     } else {
                                       // 예약대기 전환
-                                      manualWaitlistClasses.add(className);
+                                      setManualWaitlistClasses((prev) => {
+                                        const next = new Set(prev);
+                                        next.add(className);
+                                        return next;
+                                      });
                                       console.log("[개발자] 예약대기 전환:", className);
                                     }
-                                    // 강제 리렌더링
-                                    setClassEnrollment((prev) => ({ ...prev }));
                                   }}
                                 >
                                   {isWaitlist ? "대기해제" : "예약대기"}

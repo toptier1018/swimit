@@ -95,15 +95,25 @@ export async function POST(request: NextRequest) {
     );
 
     const result = await response.text();
-    console.log("[알리고 알림톡] API 응답:", result);
+    console.log("[알리고 알림톡] API 응답 (원본):", result);
 
     // 알리고 API는 JSON 또는 텍스트로 응답할 수 있음
     let parsedResult;
     try {
       parsedResult = JSON.parse(result);
+      console.log("[알리고 알림톡] API 응답 (파싱):", JSON.stringify(parsedResult, null, 2));
     } catch {
       parsedResult = { raw: result };
+      console.log("[알리고 알림톡] JSON 파싱 실패, 원본 사용");
     }
+    
+    // 전송한 데이터 로그 (디버깅용)
+    console.log("[알리고 알림톡] 전송한 데이터:", {
+      subject: formData.get("subject_1"),
+      message_preview: formData.get("message_1")?.substring(0, 100) + "...",
+      emtitle_1: formData.get("emtitle_1"),
+      receiver: formData.get("receiver_1"),
+    });
 
     // 성공 여부 확인
     // 알리고는 result_code: 1 또는 message에 "성공" 포함 시 성공

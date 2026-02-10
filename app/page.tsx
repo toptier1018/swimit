@@ -2549,6 +2549,33 @@ export default function SwimmingClassPage() {
                                   paymentStartedAt: paymentStartedAt.toISOString(),
                                 });
 
+                                // 알리고 알림톡 자동 발송
+                                console.log("[알림톡] 자동 발송 시작");
+                                try {
+                                  const alimtalkResponse = await fetch("/api/aligo/send-alimtalk", {
+                                    method: "POST",
+                                    headers: {
+                                      "Content-Type": "application/json",
+                                    },
+                                    body: JSON.stringify({
+                                      customerName: formData.name,
+                                      customerPhone: formData.phone,
+                                      className: selectedTimeSlot.name,
+                                    }),
+                                  });
+
+                                  const alimtalkResult = await alimtalkResponse.json();
+                                  
+                                  if (alimtalkResult.success) {
+                                    console.log("[알림톡] 발송 성공:", formData.name);
+                                  } else {
+                                    console.error("[알림톡] 발송 실패:", alimtalkResult.error);
+                                  }
+                                } catch (alimtalkError) {
+                                  // 알림톡 실패해도 결제는 계속 진행
+                                  console.error("[알림톡] 발송 중 오류:", alimtalkError);
+                                }
+
                                 // 신청 인원 증가
                                 setClassEnrollment((prev) => {
                                   const next = {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -398,24 +398,24 @@ export default function SwimmingClassPage() {
   };
 
   // 클래스별 신청 가능 여부 확인 (10명 이상이면 정원 초과)
-  const isClassFull = (className: string) => {
+  const isClassFull = useCallback((className: string) => {
     if (manualWaitlistClasses.has(className)) return true;
     const threshold = waitlistThresholdsRef.current[className];
     if (threshold !== undefined) {
       return (classEnrollment[className] || 0) >= threshold;
     }
     return (classEnrollment[className] || 0) >= 10;
-  };
+  }, [manualWaitlistClasses, classEnrollment]);
 
   // 클래스별 결제 여부 확인 (10명 이상이면 예약대기)
-  const hasEnrollment = (className: string) => {
+  const hasEnrollment = useCallback((className: string) => {
     if (manualWaitlistClasses.has(className)) return true;
     const threshold = waitlistThresholdsRef.current[className];
     if (threshold !== undefined) {
       return (classEnrollment[className] || 0) >= threshold;
     }
     return (classEnrollment[className] || 0) >= 10;
-  };
+  }, [manualWaitlistClasses, classEnrollment]);
 
   // 주문번호 생성 함수 (겹치지 않도록)
   const generateOrderNumber = () => {

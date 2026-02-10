@@ -50,6 +50,9 @@ export async function POST(request: NextRequest) {
     formData.append("sender", senderPhone);
     formData.append("receiver_1", receiverPhone);
     
+    // 템플릿 제목
+    formData.append("subject_1", "입금 안내");
+    
     // 템플릿 전체 내용 (변수 포함)
     formData.append("message_1", `안녕하세요, 스윔잇입니다 😊  
 #{고객명} 회원님 특강 신청해 주셔서 감사합니다.

@@ -149,8 +149,10 @@ export default function SwimmingClassPage() {
     };
     setClassEnrollment(resetCounts);
     waitlistThresholdsRef.current = {};
+    setManualWaitlistClasses(new Set<string>(["평영 A (초급)"])); // 예약대기 초기화
     try {
       localStorage.setItem("class_enrollment_counts", JSON.stringify(resetCounts));
+      localStorage.setItem("manual_waitlist_classes", JSON.stringify(["평영 A (초급)"]));
     } catch (error) {
       console.log("[카운터] 로컬 저장 실패:", error);
     }
@@ -166,12 +168,19 @@ export default function SwimmingClassPage() {
         const parsed = JSON.parse(stored) as Record<string, number>;
         setClassEnrollment(parsed);
         console.log("[카운터] 로컬 카운터 불러오기:", parsed);
-        return;
+      }
+      
+      // 예약대기 클래스 목록 불러오기
+      const storedWaitlist = localStorage.getItem("manual_waitlist_classes");
+      if (storedWaitlist) {
+        const parsedWaitlist = JSON.parse(storedWaitlist) as string[];
+        setManualWaitlistClasses(new Set(parsedWaitlist));
+        console.log("[카운터] 예약대기 클래스 불러오기:", parsedWaitlist);
       }
     } catch (error) {
       console.log("[카운터] 로컬 불러오기 실패:", error);
     }
-    console.log("[카운터] 로컬 카운터 없음 - 기본값 사용");
+    console.log("[카운터] 로컬 카운터 불러오기 완료");
   };
 
   // 평영 B (중급): 예약대기 기준 8명
@@ -635,6 +644,12 @@ export default function SwimmingClassPage() {
                                       setManualWaitlistClasses((prev) => {
                                         const next = new Set(prev);
                                         next.delete(className);
+                                        // localStorage에 저장
+                                        try {
+                                          localStorage.setItem("manual_waitlist_classes", JSON.stringify(Array.from(next)));
+                                        } catch (error) {
+                                          console.log("[카운터] 예약대기 저장 실패:", error);
+                                        }
                                         return next;
                                       });
                                       delete waitlistThresholdsRef.current[className];
@@ -648,6 +663,12 @@ export default function SwimmingClassPage() {
                                       setManualWaitlistClasses((prev) => {
                                         const next = new Set(prev);
                                         next.add(className);
+                                        // localStorage에 저장
+                                        try {
+                                          localStorage.setItem("manual_waitlist_classes", JSON.stringify(Array.from(next)));
+                                        } catch (error) {
+                                          console.log("[카운터] 예약대기 저장 실패:", error);
+                                        }
                                         return next;
                                       });
                                       console.log("[개발자] 예약대기 전환:", className);

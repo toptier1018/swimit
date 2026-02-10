@@ -50,7 +50,26 @@ export async function POST(request: NextRequest) {
     formData.append("sender", senderPhone);
     formData.append("receiver_1", receiverPhone);
     
-    // 템플릿 변수 (#{고객명}만 사용)
+    // 템플릿 전체 내용 (변수 포함)
+    formData.append("message_1", `안녕하세요, 스윔잇입니다 😊  
+#{고객명} 회원님 특강 신청해 주셔서 감사합니다.
+
+스윔잇 특강은 결제하기 이후 
+**실입금 완료 시 예약이 확정**
+되는 방식이라 헛갈리실까 봐 
+미리 안내드렸어요.
+
+아래 계좌로 입금해 주시면  
+**익일 오후 2시**
+예약 확정과 함께 상세 안내를 
+도와드리겠습니다.
+
+놓치지 않도록  
+저희가 잘 챙기고 있을게요 🙂
+
+👉 농협 302-1710-5277-51 장연성`);
+    
+    // 템플릿 변수 값 (#{고객명})
     formData.append("emtitle_1", customerName); // #{고객명}
     
     // 채널추가 버튼 (템플릿에 정의된 버튼)

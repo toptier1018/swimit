@@ -46,16 +46,21 @@ export async function POST(request: NextRequest) {
     formData.append("apikey", apiKey);
     formData.append("userid", userId);
     formData.append("senderkey", senderKey);
-    formData.append("tpl_code", templateCode);
+    formData.append("tpl_code", templateCode); // UF_4507
     formData.append("sender", senderPhone);
     formData.append("receiver_1", receiverPhone);
-    formData.append("subject_1", "스윔잇 특강 신청 안내");
-    formData.append("message_1", `안녕하세요, ${customerName}님!`); // 실제 템플릿 메시지는 알리고에서 관리
-    formData.append("button_1", JSON.stringify({
-      button: []
-    }));
-    // 템플릿 변수
+    
+    // 템플릿 변수 (#{고객명}, #{강의명})
     formData.append("emtitle_1", customerName); // #{고객명}
+    formData.append("emtitle_2", className || "수영 특강"); // #{강의명}
+    
+    // 채널추가 버튼 (템플릿에 정의된 버튼)
+    formData.append("button_1", JSON.stringify({
+      button: [{
+        name: "채널추가",
+        type: "AC"
+      }]
+    }));
 
     const response = await fetch(
       "https://kakaoapi.aligo.in/akv10/alimtalk/send/",
@@ -79,9 +84,18 @@ export async function POST(request: NextRequest) {
       parsedResult = { raw: result };
     }
 
-    // 성공 여부 확인 (알리고는 result_code: 1이면 성공)
-    if (parsedResult.result_code === 1 || parsedResult.code === "0") {
-      console.log("[알리고 알림톡] 발송 성공:", customerName);
+    // 성공 여부 확인
+    // 알리고는 result_code: 1 또는 message에 "성공" 포함 시 성공
+    const isSuccess = 
+      parsedResult.result_code === 1 || 
+      parsedResult.code === "0" ||
+      parsedResult.code === 0 ||
+      (typeof parsedResult.message === 'string' && 
+       (parsedResult.message.includes("성공") || 
+        parsedResult.message.includes("전송요청")));
+
+    if (isSuccess) {
+      console.log("[알리고 알림톡] 발송 성공:", customerName, "-", parsedResult.message);
       return NextResponse.json({
         success: true,
         message: "알림톡이 성공적으로 발송되었습니다.",

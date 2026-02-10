@@ -50,9 +50,8 @@ export async function POST(request: NextRequest) {
     formData.append("sender", senderPhone);
     formData.append("receiver_1", receiverPhone);
     
-    // 템플릿 변수 (#{고객명}, #{강의명})
+    // 템플릿 변수 (#{고객명}만 사용)
     formData.append("emtitle_1", customerName); // #{고객명}
-    formData.append("emtitle_2", className || "수영 특강"); // #{강의명}
     
     // 채널추가 버튼 (템플릿에 정의된 버튼)
     formData.append("button_1", JSON.stringify({

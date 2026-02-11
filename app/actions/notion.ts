@@ -1445,3 +1445,91 @@ export async function getPendingPaymentUsers() {
     }
   }
 }
+
+/**
+ * Notion에 알림톡 발송 상태 업데이트
+ */
+export async function updateAlimtalkStatus(data: {
+  pageId: string;
+  status: "발송 성공" | "발송 실패";
+  failureReason?: string;
+  smsSent?: boolean;
+}) {
+  try {
+    const notionApiKey = process.env.NOTION_API_KEY;
+
+    if (!notionApiKey) {
+      console.error("[Notion 알림톡 상태] API 키 없음");
+      return {
+        success: false,
+        error: "Notion API 키가 설정되지 않았습니다",
+      };
+    }
+
+    console.log("[Notion 알림톡 상태] 업데이트 시작:", data);
+
+    const properties: any = {
+      "알림톡 발송": {
+        select: {
+          name: data.status
+        }
+      },
+      "발송 시간": {
+        date: {
+          start: new Date().toISOString()
+        }
+      }
+    };
+
+    // 실패 사유가 있으면 추가
+    if (data.failureReason) {
+      properties["발송 실패 사유"] = {
+        rich_text: [{
+          text: {
+            content: data.failureReason
+          }
+        }]
+      };
+    }
+
+    // SMS 대체 발송 여부
+    if (data.smsSent !== undefined) {
+      properties["SMS 대체 발송"] = {
+        checkbox: data.smsSent
+      };
+    }
+
+    const response = await fetch(
+      `https://api.notion.com/v1/pages/${data.pageId}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Authorization": `Bearer ${notionApiKey}`,
+          "Content-Type": "application/json",
+          "Notion-Version": "2022-06-28",
+        },
+        body: JSON.stringify({ properties }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("[Notion 알림톡 상태] 업데이트 실패:", errorText);
+      return {
+        success: false,
+        error: "Notion 업데이트 실패",
+      };
+    }
+
+    console.log("[Notion 알림톡 상태] 업데이트 완료");
+    return {
+      success: true,
+    };
+  } catch (error) {
+    console.error("[Notion 알림톡 상태] 예외 발생:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "알 수 없는 오류",
+    };
+  }
+}

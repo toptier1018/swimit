@@ -175,18 +175,8 @@ export default function SwimmingClassPage() {
     console.log("[카운터] 로컬 카운터 불러오기 완료");
   };
 
-  // 평영 B (중급): 예약대기 기준 8명
-  useEffect(() => {
-    const className = "평영 B (중급)";
-    if (waitlistThresholdsRef.current[className] === undefined) {
-      waitlistThresholdsRef.current[className] = 8;
-      console.log("[예약대기] 평영 B 임계값 설정:", {
-        className,
-        threshold: waitlistThresholdsRef.current[className],
-      });
-    }
-  }, [classEnrollment]);
-
+  // 모든 클래스 예약대기 기준: 10명 (통일)
+  
   const syncClassEnrollmentFromNotion = async () => {
     try {
       console.log("[카운터] Notion 카운터 동기화 시작");

@@ -53,9 +53,10 @@ export async function POST(request: NextRequest) {
     // 템플릿 제목
     formData.append("subject_1", "입금 안내");
     
-    // 템플릿 전체 내용 (변수 포함, 이모티콘 제거)
+    // 템플릿 전체 내용 (변수를 실제 값으로 치환)
+    // 기본형 템플릿이므로 emtitle 사용하지 않고 직접 치환
     formData.append("message_1", `안녕하세요, 스윔잇입니다 
-#{고객명} 회원님 #{클래스명}
+${customerName} 회원님 ${className}
 특강 신청해 주셔서 감사합니다.
 
 스윔잇 특강은 결제하기 이후 
@@ -73,9 +74,7 @@ export async function POST(request: NextRequest) {
 
  농협 302-1710-5277-51 장연성`);
     
-    // 템플릿 변수 값 (#{고객명}, #{클래스명})
-    formData.append("emtitle_1", customerName); // #{고객명}
-    formData.append("emtitle_2", className);    // #{클래스명}
+    // 기본형 템플릿이므로 emtitle 사용 안 함
     
     // 채널추가 버튼 (템플릿에 정의된 버튼)
     formData.append("button_1", JSON.stringify({

@@ -149,10 +149,9 @@ export default function SwimmingClassPage() {
     };
     setClassEnrollment(resetCounts);
     waitlistThresholdsRef.current = {};
-    setManualWaitlistClasses(new Set<string>(["평영 A (초급)"])); // 예약대기 초기화
+    // 예약대기는 서버에서 관리하므로 여기서는 초기화하지 않음
     try {
       localStorage.setItem("class_enrollment_counts", JSON.stringify(resetCounts));
-      localStorage.setItem("manual_waitlist_classes", JSON.stringify(["평영 A (초급)"]));
     } catch (error) {
       console.log("[카운터] 로컬 저장 실패:", error);
     }
@@ -169,14 +168,7 @@ export default function SwimmingClassPage() {
         setClassEnrollment(parsed);
         console.log("[카운터] 로컬 카운터 불러오기:", parsed);
       }
-      
-      // 예약대기 클래스 목록 불러오기
-      const storedWaitlist = localStorage.getItem("manual_waitlist_classes");
-      if (storedWaitlist) {
-        const parsedWaitlist = JSON.parse(storedWaitlist) as string[];
-        setManualWaitlistClasses(new Set(parsedWaitlist));
-        console.log("[카운터] 예약대기 클래스 불러오기:", parsedWaitlist);
-      }
+      // 예약대기 클래스는 서버에서만 가져옴 (syncManualWaitlistFromServer)
     } catch (error) {
       console.log("[카운터] 로컬 불러오기 실패:", error);
     }
@@ -316,10 +308,25 @@ export default function SwimmingClassPage() {
     }
   };
 
-  // 컴포넌트 마운트 시 클래스별 신청 인원 로드 + Notion 동기화
+  // 서버에서 수동 예약대기 클래스 목록 가져오기
+  const syncManualWaitlistFromServer = async () => {
+    try {
+      const response = await fetch("/api/admin/set-waitlist");
+      const data = await response.json();
+      if (data.success && data.manualWaitlistClasses) {
+        setManualWaitlistClasses(new Set(data.manualWaitlistClasses));
+        console.log("[서버 동기화] 수동 예약대기 클래스:", data.manualWaitlistClasses);
+      }
+    } catch (error) {
+      console.error("[서버 동기화] 예약대기 클래스 조회 실패:", error);
+    }
+  };
+
+  // 컴포넌트 마운트 시 클래스별 신청 인원 로드 + Notion 동기화 + 서버 예약대기 설정 동기화
   useEffect(() => {
     loadClassEnrollment();
     void syncClassEnrollmentFromNotion();
+    void syncManualWaitlistFromServer();
   }, []);
 
   // 개발자 모드에서 주기적 동기화 (미입금 체크 반영용)
@@ -638,40 +645,58 @@ export default function SwimmingClassPage() {
                                       ? "bg-gray-600 hover:bg-gray-500"
                                       : "bg-orange-600 hover:bg-orange-500"
                                   }`}
-                                  onClick={() => {
+                                  onClick={async () => {
                                     if (isWaitlist) {
                                       // 예약대기 해제
-                                      setManualWaitlistClasses((prev) => {
-                                        const next = new Set(prev);
-                                        next.delete(className);
-                                        // localStorage에 저장
-                                        try {
-                                          localStorage.setItem("manual_waitlist_classes", JSON.stringify(Array.from(next)));
-                                        } catch (error) {
-                                          console.log("[카운터] 예약대기 저장 실패:", error);
+                                      console.log("[개발자] 예약대기 해제 요청:", className);
+                                      
+                                      // 서버 API 호출 (모든 사용자에게 적용)
+                                      try {
+                                        const response = await fetch("/api/admin/set-waitlist", {
+                                          method: "POST",
+                                          headers: { "Content-Type": "application/json" },
+                                          body: JSON.stringify({
+                                            className,
+                                            action: "remove",
+                                          }),
+                                        });
+                                        const data = await response.json();
+                                        if (data.success) {
+                                          setManualWaitlistClasses(new Set(data.manualWaitlistClasses));
                                         }
-                                        return next;
-                                      });
+                                      } catch (error) {
+                                        console.error("[개발자] 서버 API 호출 실패:", error);
+                                      }
+                                      
                                       delete waitlistThresholdsRef.current[className];
                                       setClassEnrollment((prev) => ({
                                         ...prev,
                                         [className]: Math.min(prev[className] || 0, 9),
                                       }));
-                                      console.log("[개발자] 예약대기 해제:", className);
+                                      console.log("[개발자] 예약대기 해제 완료:", className);
                                     } else {
                                       // 예약대기 전환
-                                      setManualWaitlistClasses((prev) => {
-                                        const next = new Set(prev);
-                                        next.add(className);
-                                        // localStorage에 저장
-                                        try {
-                                          localStorage.setItem("manual_waitlist_classes", JSON.stringify(Array.from(next)));
-                                        } catch (error) {
-                                          console.log("[카운터] 예약대기 저장 실패:", error);
+                                      console.log("[개발자] 예약대기 전환 요청:", className);
+                                      
+                                      // 서버 API 호출 (모든 사용자에게 적용)
+                                      try {
+                                        const response = await fetch("/api/admin/set-waitlist", {
+                                          method: "POST",
+                                          headers: { "Content-Type": "application/json" },
+                                          body: JSON.stringify({
+                                            className,
+                                            action: "add",
+                                          }),
+                                        });
+                                        const data = await response.json();
+                                        if (data.success) {
+                                          setManualWaitlistClasses(new Set(data.manualWaitlistClasses));
                                         }
-                                        return next;
-                                      });
-                                      console.log("[개발자] 예약대기 전환:", className);
+                                      } catch (error) {
+                                        console.error("[개발자] 서버 API 호출 실패:", error);
+                                      }
+                                      
+                                      console.log("[개발자] 예약대기 전환 완료:", className);
                                     }
                                   }}
                                 >

@@ -37,7 +37,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { submitToNotion, submitPaidToNotion, updatePaymentInNotion, checkPaymentStatus, checkPendingPayment, getClassEnrollmentCounts, findOrCreateApplicant, updateAlimtalkStatus } from "@/app/actions/notion";
+import { submitToNotion, submitPaidToNotion, updatePaymentInNotion, checkPaymentStatus, checkPendingPayment, getClassEnrollmentCounts, findOrCreateApplicant } from "@/app/actions/notion";
 
 const classes = [
   {
@@ -2585,11 +2585,8 @@ export default function SwimmingClassPage() {
                                   paymentStartedAt: paymentStartedAt.toISOString(),
                                 });
 
-                                // 알리고 알림톡 자동 발송 (Notion 기록 및 SMS 대체 발송)
+                                // 알리고 알림톡 자동 발송
                                 console.log("[알림톡] 자동 발송 시작");
-                                let alimtalkSuccess = false;
-                                let failureReason = "";
-                                
                                 try {
                                   const alimtalkResponse = await fetch("/api/aligo/send-alimtalk", {
                                     method: "POST",
@@ -2600,7 +2597,6 @@ export default function SwimmingClassPage() {
                                       customerName: formData.name,
                                       customerPhone: formData.phone,
                                       className: selectedTimeSlot.name,
-                                      pageId: pageId, // Notion 업데이트용
                                     }),
                                   });
 
@@ -2608,101 +2604,12 @@ export default function SwimmingClassPage() {
                                   
                                   if (alimtalkResult.success) {
                                     console.log("[알림톡] 발송 성공:", formData.name);
-                                    alimtalkSuccess = true;
-                                    
-                                    // Notion에 발송 성공 기록
-                                    await updateAlimtalkStatus({
-                                      pageId,
-                                      status: "발송 성공",
-                                    });
                                   } else {
                                     console.error("[알림톡] 발송 실패:", alimtalkResult.error);
-                                    failureReason = alimtalkResult.error || "알 수 없는 오류";
-                                    
-                                    // Notion에 발송 실패 기록
-                                    await updateAlimtalkStatus({
-                                      pageId,
-                                      status: "발송 실패",
-                                      failureReason: failureReason,
-                                    });
-                                    
-                                    // SMS 대체 발송
-                                    console.log("[SMS] 대체 발송 시작");
-                                    try {
-                                      const smsResponse = await fetch("/api/aligo/send-sms", {
-                                        method: "POST",
-                                        headers: {
-                                          "Content-Type": "application/json",
-                                        },
-                                        body: JSON.stringify({
-                                          customerName: formData.name,
-                                          customerPhone: formData.phone,
-                                          className: selectedTimeSlot.name,
-                                        }),
-                                      });
-
-                                      const smsResult = await smsResponse.json();
-                                      
-                                      if (smsResult.success) {
-                                        console.log("[SMS] 대체 발송 성공:", formData.name);
-                                        
-                                        // Notion에 SMS 발송 기록
-                                        await updateAlimtalkStatus({
-                                          pageId,
-                                          status: "발송 실패",
-                                          failureReason: failureReason,
-                                          smsSent: true,
-                                        });
-                                      } else {
-                                        console.error("[SMS] 대체 발송 실패:", smsResult.error);
-                                      }
-                                    } catch (smsError) {
-                                      console.error("[SMS] 대체 발송 중 오류:", smsError);
-                                    }
                                   }
                                 } catch (alimtalkError) {
-                                  // 알림톡 발송 중 예외 발생
+                                  // 알림톡 실패해도 결제는 계속 진행
                                   console.error("[알림톡] 발송 중 오류:", alimtalkError);
-                                  failureReason = alimtalkError instanceof Error ? alimtalkError.message : "알 수 없는 오류";
-                                  
-                                  // Notion에 오류 기록
-                                  await updateAlimtalkStatus({
-                                    pageId,
-                                    status: "발송 실패",
-                                    failureReason: failureReason,
-                                  });
-                                  
-                                  // SMS 대체 발송
-                                  console.log("[SMS] 대체 발송 시작 (예외 발생으로 인한)");
-                                  try {
-                                    const smsResponse = await fetch("/api/aligo/send-sms", {
-                                      method: "POST",
-                                      headers: {
-                                        "Content-Type": "application/json",
-                                      },
-                                      body: JSON.stringify({
-                                        customerName: formData.name,
-                                        customerPhone: formData.phone,
-                                        className: selectedTimeSlot.name,
-                                      }),
-                                    });
-
-                                    const smsResult = await smsResponse.json();
-                                    
-                                    if (smsResult.success) {
-                                      console.log("[SMS] 대체 발송 성공:", formData.name);
-                                      
-                                      // Notion에 SMS 발송 기록
-                                      await updateAlimtalkStatus({
-                                        pageId,
-                                        status: "발송 실패",
-                                        failureReason: failureReason,
-                                        smsSent: true,
-                                      });
-                                    }
-                                  } catch (smsError) {
-                                    console.error("[SMS] 대체 발송 중 오류:", smsError);
-                                  }
                                 }
 
                                 // 신청 인원 증가

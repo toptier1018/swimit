@@ -3542,8 +3542,9 @@ export default function SwimmingClassPage() {
       <Dialog open={showRefundModal} onOpenChange={setShowRefundModal}>
         <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
           <DialogHeader className="relative">
-            <DialogTitle className="text-lg font-semibold">
-              취소 및 환불 안내
+            <DialogTitle className="text-base md:text-lg font-bold flex items-center gap-2">
+              <span className="text-blue-600">🏊</span>
+              스윔잇 수영 특강 환불 및 참가 규정
             </DialogTitle>
             <Button
               variant="ghost"
@@ -3555,134 +3556,274 @@ export default function SwimmingClassPage() {
             </Button>
           </DialogHeader>
 
-          <div className="space-y-6 text-sm">
-            <div>
-              <h3 className="font-bold text-base mb-2">1. 환불 정책 개요</h3>
-              <p className="text-gray-600 leading-relaxed">
-                본 정책은 모든 수영 특강 예약 서비스에 적용되며, 특강일 기준으로
-                환불 가능 여부가 결정됩니다.
+          <div className="space-y-4 text-sm">
+            {/* 1. 개요 */}
+            <div className="bg-blue-50 p-3 md:p-4 rounded-lg border border-blue-200">
+              <h3 className="font-bold text-sm md:text-base mb-2 text-blue-900">1. 환불 정책 개요</h3>
+              <p className="text-xs md:text-sm text-gray-700 leading-relaxed">
+                본 규정은 스윔잇이 운영하는 모든 수영 특강 예약 서비스에 적용됩니다.
+                환불 가능 여부는 <span className="font-bold">특강일을 기준으로 역산</span>하여 산정됩니다.
               </p>
             </div>
 
+            {/* 2. 환불 규정 */}
             <div>
-              <h3 className="font-bold text-base mb-2">2. 환불 규정</h3>
-              <div className="space-y-4">
-                <div className="bg-green-50 p-4 rounded-lg border border-green-100">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Check className="h-5 w-5 text-green-600" />
-                    <p className="font-bold text-green-900">
-                      특강일 14일 이전까지
-                    </p>
+              <h3 className="font-bold text-sm md:text-base mb-2">2. 환불 규정</h3>
+              <div className="space-y-2 md:space-y-3">
+                <div className="bg-green-50 p-3 rounded-lg border-2 border-green-200">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <Calendar className="h-4 w-4 md:h-5 md:w-5 text-green-600 flex-shrink-0" />
+                    <p className="font-bold text-xs md:text-sm text-green-900">📅 특강일 14일 전까지 (D-14 이전)</p>
                   </div>
-                  <p className="text-sm font-bold text-green-700 mb-2">
-                    100% 전액 환불
+                  <p className="text-sm md:text-base font-bold text-green-700 mb-1.5">
+                    ✅ 결제 금액의 100% 전액 환불
                   </p>
-                  <p className="text-xs text-green-600 leading-relaxed">
-                    취소 신청 시 등록하신 계좌로 환불 처리됩니다.
+                  <p className="text-xs md:text-sm text-green-700 leading-relaxed">
+                    취소 신청 시 등록한 계좌로 환불 처리
                   </p>
                 </div>
 
-                <div className="bg-red-50 p-4 rounded-lg border border-red-100">
-                  <div className="flex items-center gap-2 mb-2">
-                    <X className="h-5 w-5 text-red-600" />
-                    <p className="font-bold text-red-900">특강일 14일 이후</p>
+                <div className="bg-red-50 p-3 rounded-lg border-2 border-red-200">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <AlertTriangle className="h-4 w-4 md:h-5 md:w-5 text-red-600 flex-shrink-0" />
+                    <p className="font-bold text-xs md:text-sm text-red-900">📅 특강일 14일 이내 (D-14 포함)</p>
                   </div>
-                  <p className="text-sm font-bold text-red-700 mb-2">
-                    환불이 불가합니다.
+                  <p className="text-sm md:text-base font-bold text-red-700 mb-1.5">
+                    ❌ 환불 불가
                   </p>
-                  <p className="text-xs text-red-600 leading-relaxed">
-                    수영장 대관비 및 강사료 확정으로 환불 불가
+                  <p className="text-xs md:text-sm text-red-700 leading-relaxed">
+                    특강 준비를 위한 수영장 대관비 및 강사료가 확정되어 환불이 불가합니다.
                   </p>
                 </div>
               </div>
             </div>
 
-            <div>
-              <h3 className="font-bold text-base mb-2">3. 참석 자격</h3>
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                <div className="flex items-center gap-2 mb-2">
-                  <User className="h-5 w-5 text-blue-600" />
-                  <p className="font-bold text-blue-900">본인 참석 원칙</p>
+            {/* 3. 일정 변경 및 대기자 배정 */}
+            <div className="border-t pt-3">
+              <h3 className="font-bold text-sm md:text-base mb-2">3. 일정 변경(이월) 및 대기자 배정 운영 원칙</h3>
+              <p className="text-xs text-gray-600 mb-2">환불 불가 기간 내 취소 요청 시, 아래 기준에 따라 운영됩니다.</p>
+              
+              <div className="space-y-2">
+                {/* D-7 이전 */}
+                <div className="bg-blue-50 p-2.5 md:p-3 rounded-lg border border-blue-200">
+                  <p className="font-bold text-xs md:text-sm text-blue-900 mb-1.5">① 특강일 7일 전까지 (D-7 이전)</p>
+                  <ul className="space-y-1 text-xs text-gray-700">
+                    <li className="flex items-start gap-1.5">
+                      <span className="text-blue-600 mt-0.5">•</span>
+                      <span><span className="font-semibold">1회에 한해</span> 다음 기수로 일정 변경(이월) 가능</span>
+                    </li>
+                    <li className="flex items-start gap-1.5">
+                      <span className="text-blue-600 mt-0.5">•</span>
+                      <span>재이월 불가</span>
+                    </li>
+                    <li className="flex items-start gap-1.5">
+                      <span className="text-blue-600 mt-0.5">•</span>
+                      <span>차기 특강 일정이 확정되지 않은 경우, 해당 기수 우선 등록권 부여</span>
+                    </li>
+                  </ul>
                 </div>
-                <p className="text-sm text-blue-800 font-semibold mb-2">
-                  결제자 본인만 참여 가능
+
+                {/* D-3 이전 */}
+                <div className="bg-orange-50 p-2.5 md:p-3 rounded-lg border border-orange-200">
+                  <p className="font-bold text-xs md:text-sm text-orange-900 mb-1.5">② 특강일 3일 전까지 (D-3 이전)</p>
+                  <ul className="space-y-1 text-xs text-gray-700">
+                    <li className="flex items-start gap-1.5">
+                      <span className="text-orange-600 mt-0.5">•</span>
+                      <span className="font-semibold">환불은 불가</span>
+                    </li>
+                    <li className="flex items-start gap-1.5">
+                      <span className="text-orange-600 mt-0.5">•</span>
+                      <span>대기자가 있는 경우 운영자가 자동으로 대기자에게 배정</span>
+                    </li>
+                    <li className="flex items-start gap-1.5">
+                      <span className="text-orange-600 mt-0.5">•</span>
+                      <span>기존 참가자는 환불 없이 일정 변경 처리</span>
+                    </li>
+                  </ul>
+                  <p className="text-xs text-orange-700 mt-2 bg-white p-2 rounded">
+                    ※ 개인 간 직접 양도는 불가하며, 반드시 운영자를 통해 진행됩니다.
+                  </p>
+                </div>
+
+                {/* D-3 이내 */}
+                <div className="bg-red-50 p-2.5 md:p-3 rounded-lg border border-red-200">
+                  <p className="font-bold text-xs md:text-sm text-red-900 mb-1.5">③ 특강일 3일 이내 (D-3 포함)</p>
+                  <ul className="space-y-1 text-xs text-gray-700 mb-2">
+                    <li className="flex items-start gap-1.5">
+                      <span className="text-red-600 mt-0.5">•</span>
+                      <span className="font-semibold">환불 및 일정 변경 불가</span>
+                    </li>
+                    <li className="flex items-start gap-1.5">
+                      <span className="text-red-600 mt-0.5">•</span>
+                      <span>단, 아래 긴급 상황에 해당하는 경우 증빙 제출 시 1회에 한해 일정 변경 가능</span>
+                    </li>
+                  </ul>
+                  
+                  <div className="bg-white p-2 md:p-2.5 rounded border border-red-100">
+                    <p className="font-bold text-xs text-red-800 mb-1.5">🔹 인정 가능한 긴급 상황 예시</p>
+                    <ul className="space-y-1 text-xs text-gray-600">
+                      <li className="flex items-start gap-1">
+                        <span className="mt-0.5">·</span>
+                        <span>본인의 입원 또는 응급 치료가 필요한 사고</span>
+                      </li>
+                      <li className="flex items-start gap-1">
+                        <span className="mt-0.5">·</span>
+                        <span>법정 감염병 확진(격리 통지서 제출 가능 시)</span>
+                      </li>
+                      <li className="flex items-start gap-1">
+                        <span className="mt-0.5">·</span>
+                        <span>직계가족(부모, 배우자, 자녀)의 사망 또는 중대한 사고</span>
+                      </li>
+                      <li className="flex items-start gap-1">
+                        <span className="mt-0.5">·</span>
+                        <span>천재지변, 항공/열차 결항 등으로 이동이 물리적으로 불가능한 경우</span>
+                      </li>
+                    </ul>
+                    <div className="mt-2 pt-2 border-t border-red-100 space-y-0.5 text-xs text-gray-500 leading-relaxed">
+                      <p>※ 단순 개인 일정 변경, 업무 일정 충돌, 단순 컨디션 난조 등은 인정되지 않습니다.</p>
+                      <p>※ 증빙 자료는 문자, 이메일, 카카오톡 등을 통해 제출해야 합니다.</p>
+                      <p>※ 허위 사유 제출 시 향후 특강 참여가 제한될 수 있습니다.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 4. 참가 원칙 */}
+            <div className="border-t pt-3">
+              <h3 className="font-bold text-sm md:text-base mb-2">4. 참가 원칙</h3>
+              <div className="bg-gray-50 p-2.5 md:p-3 rounded-lg">
+                <ul className="space-y-1.5 text-xs md:text-sm text-gray-700">
+                  <li className="flex items-start gap-2">
+                    <User className="h-4 w-4 text-gray-600 mt-0.5 flex-shrink-0" />
+                    <span><span className="font-semibold">결제자 본인 참석 원칙</span></span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <X className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
+                    <span>양도 및 대리 참석 불가</span>
+                  </li>
+                </ul>
+                <p className="text-xs text-gray-500 mt-2">
+                  ※ 단, 제3항에 따른 운영자 승인 절차를 거친 경우에 한해 처리됩니다.
                 </p>
-                <ul className="text-xs text-blue-600 space-y-1">
-                  <li>• 양도 불가</li>
-                  <li>• 대리 참석 불가</li>
-                </ul>
               </div>
             </div>
 
-            <div>
-              <h3 className="font-bold text-base mb-2">4. 환불 처리 기간</h3>
-              <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+            {/* 5. 환불 처리 */}
+            <div className="border-t pt-3">
+              <h3 className="font-bold text-sm md:text-base mb-2">5. 환불 처리</h3>
+              <div className="bg-gray-50 p-2.5 md:p-3 rounded-lg space-y-2">
                 <div className="flex items-center gap-2">
-                  <CreditCard className="h-5 w-5 text-gray-700" />
-                  <p className="font-bold text-gray-900">환불 처리 절차</p>
+                  <CreditCard className="h-4 w-4 text-gray-700" />
+                  <p className="font-semibold text-xs md:text-sm text-gray-900">처리 절차</p>
                 </div>
-                <ul className="list-disc pl-5 space-y-1 text-gray-600">
-                  <li>취소 신청 후 3-5 영업일 내 환불 처리</li>
-                  <li>환불 계좌는 취소 신청 시 등록</li>
-                  <li>이체 수수료는 주최자 측에서 부담</li>
+                <ul className="space-y-1 text-xs text-gray-600 ml-6">
+                  <li>• 취소 접수일 기준 3~5 영업일 이내 환불 처리</li>
+                  <li>• 환불 계좌는 취소 신청 시 등록</li>
+                  <li>• 이체 수수료는 주최 측 부담</li>
                 </ul>
+                <p className="text-xs text-gray-500 mt-1.5">
+                  ※ 카드 결제의 경우 카드사 정책에 따라 반영 시점이 상이할 수 있습니다.
+                </p>
               </div>
             </div>
 
-            <div>
-              <h3 className="font-bold text-base mb-2">5. 환불 불가 사유</h3>
-              <p className="text-gray-600 mb-2">
-                다음의 경우 환불이 불가능합니다:
-              </p>
-              <ul className="list-disc pl-5 space-y-2 text-gray-600">
-                <li>
-                  특강일 3일 이내 - 수영장 대관비 및 강사료 확정으로 환불 불가
+            {/* 6. 환불 불가 사유 */}
+            <div className="border-t pt-3">
+              <h3 className="font-bold text-sm md:text-base mb-2">6. 환불 불가 사유</h3>
+              <p className="text-xs md:text-sm text-gray-600 mb-2">다음의 경우 환불이 불가합니다:</p>
+              <ul className="space-y-1 text-xs md:text-sm text-gray-700 ml-4">
+                <li className="flex items-start gap-2">
+                  <span className="text-red-600 mt-0.5">•</span>
+                  <span>특강일 14일 이내 취소</span>
                 </li>
-                <li>참가자의 무단 불참 (No-show)</li>
-                <li>참가자의 개인 사유로 인한 서비스 이용 불가</li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-bold text-base mb-2">6. 환불 관련 문의</h3>
-              <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-100 space-y-3">
-                <p className="font-bold text-yellow-900">취소 및 환불 문의처</p>
-                <ul className="space-y-2 text-sm text-yellow-800">
-                  <li className="flex items-center gap-2">
-                    • 특강 주최자에게 직접 연락
-                  </li>
-                  <li className="flex items-center gap-2">
-                    • 카카오톡 단체 채팅방
-                  </li>
-                  <li className="flex items-center gap-2">• 커뮤니티 카페</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="bg-gray-100 p-4 rounded-lg">
-              <p className="font-bold text-gray-900 mb-2">⚠️ 중요 안내</p>
-              <ul className="text-xs text-gray-700 space-y-1.5">
-                <li>• 특강일 3일 전까지: 100% 환불 가능</li>
-                <li>• 양도 및 대리 참석 불가 - 결제자 본인만 참여 가능</li>
-                <li>
-                  • 해당 내용은 결제페이지 및 신청 안내문에도 동일하게
-                  안내됩니다
+                <li className="flex items-start gap-2">
+                  <span className="text-red-600 mt-0.5">•</span>
+                  <span>참가자의 무단 불참(No-show)</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-red-600 mt-0.5">•</span>
+                  <span>개인 사정(건강, 일정 변경 등)에 따른 불참</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-red-600 mt-0.5">•</span>
+                  <span>당일 지각 또는 중도 퇴장</span>
                 </li>
               </ul>
             </div>
 
-            <div className="text-xs text-gray-500 leading-relaxed border-t pt-4">
-              <p className="font-bold mb-1">[참고사항]</p>
-              <p>
-                본 환불 정책은 수영 특강 운영의 특성을 고려하여 수립되었습니다.
-                특강 준비를 위한 수영장 대관비 및 강사료는 특강일 3일 전에
-                확정되므로, 이후에는 환불이 불가능한 점 양해 부탁드립니다.
+            {/* 7. 문의 안내 */}
+            <div className="border-t pt-3">
+              <h3 className="font-bold text-sm md:text-base mb-2">7. 문의 안내</h3>
+              <div className="bg-yellow-50 p-2.5 md:p-3 rounded-lg border border-yellow-200">
+                <p className="text-xs md:text-sm text-gray-700 mb-2">취소 및 환불 문의는 아래 채널을 통해 접수해 주시기 바랍니다.</p>
+                <ul className="space-y-1 text-xs md:text-sm text-gray-700">
+                  <li className="flex items-center gap-2">
+                    <MessageCircle className="h-3.5 w-3.5 md:h-4 md:w-4 text-yellow-600 flex-shrink-0" />
+                    <span>스윔잇 카카오톡 채팅방</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <MessageSquare className="h-3.5 w-3.5 md:h-4 md:w-4 text-yellow-600 flex-shrink-0" />
+                    <span>스윔잇 커뮤니티 카페</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Phone className="h-3.5 w-3.5 md:h-4 md:w-4 text-yellow-600 flex-shrink-0" />
+                    <span>특강 주최자 개별 연락</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            {/* 중요 안내 박스 */}
+            <div className="bg-gradient-to-r from-yellow-50 to-orange-50 p-3 md:p-4 rounded-lg border-2 border-yellow-300">
+              <p className="font-bold text-sm md:text-base text-gray-900 mb-2 flex items-center gap-2">
+                <span>⚠️</span>
+                <span>중요 안내</span>
+              </p>
+              <ul className="space-y-1.5 md:space-y-2 text-xs md:text-sm text-gray-800">
+                <li className="flex items-start gap-2 leading-relaxed">
+                  <Check className="h-3.5 w-3.5 md:h-4 md:w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                  <span><span className="font-bold">특강일 14일 전까지:</span> 100% 환불 가능</span>
+                </li>
+                <li className="flex items-start gap-2 leading-relaxed">
+                  <X className="h-3.5 w-3.5 md:h-4 md:w-4 text-red-600 mt-0.5 flex-shrink-0" />
+                  <span><span className="font-bold">특강일 14일 이내:</span> 환불 불가</span>
+                </li>
+                <li className="flex items-start gap-2 leading-relaxed">
+                  <RefreshCw className="h-3.5 w-3.5 md:h-4 md:w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <span><span className="font-bold">7일 전까지</span> 1회 이월 가능</span>
+                </li>
+                <li className="flex items-start gap-2 leading-relaxed">
+                  <Users className="h-3.5 w-3.5 md:h-4 md:w-4 text-orange-600 mt-0.5 flex-shrink-0" />
+                  <span><span className="font-bold">3일 전까지</span> 대기자 자동 배정 가능</span>
+                </li>
+                <li className="flex items-start gap-2 leading-relaxed">
+                  <AlertTriangle className="h-3.5 w-3.5 md:h-4 md:w-4 text-red-600 mt-0.5 flex-shrink-0" />
+                  <span><span className="font-bold">3일 이내</span> 환불·이월 불가 (긴급 상황 제외)</span>
+                </li>
+                <li className="flex items-start gap-2 leading-relaxed">
+                  <User className="h-3.5 w-3.5 md:h-4 md:w-4 text-gray-600 mt-0.5 flex-shrink-0" />
+                  <span><span className="font-bold">결제자 본인만</span> 참석 가능</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* 참고 사항 */}
+            <div className="text-xs leading-relaxed bg-gray-50 p-2.5 md:p-3 rounded border border-gray-200">
+              <p className="font-bold mb-1.5 text-gray-700">[참고 사항]</p>
+              <p className="mb-1.5 text-gray-600">
+                스윔잇 수영 특강은 소수 정원으로 운영되며,
+                수영장 대관비 및 강사료는 <span className="font-semibold">특강일 기준 14일 전 최종 확정</span>됩니다.
+              </p>
+              <p className="text-gray-600">
+                이에 따라 준비 비용이 확정된 이후에는 환불이 제한되는 점 양해 부탁드립니다.
               </p>
             </div>
 
-            <div className="pt-2 text-xs text-gray-500">
-              <p className="font-bold">부칙</p>
-              <p>본 정책은 2026년 1월 1일부터 시행됩니다.</p>
+            {/* 부칙 */}
+            <div className="text-xs text-gray-500 border-t pt-2">
+              <p className="font-bold text-gray-700 mb-1">부칙</p>
+              <p>본 규정은 2026년 1월 1일부터 시행됩니다.</p>
             </div>
           </div>
 

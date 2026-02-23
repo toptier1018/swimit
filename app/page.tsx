@@ -113,7 +113,7 @@ export default function SwimmingClassPage() {
   });
   // 각 클래스별 신청 인원 추적 (클래스 이름을 키로 사용)
   // 모든 클래스는 0부터 시작하여 신청가능 일반 모드로 시작
-  // 1~10번째 클릭: 일반 결제 모드 (₩60,000 결제하기)
+  // 1~10번째 클릭: 일반 결제 모드 (₩70,000 결제하기)
   // 11번째 클릭: 예약대기 모드 (예약하기 버튼으로 변경)
   const [classEnrollment, setClassEnrollment] = useState<Record<string, number>>({
     "자유형 A (초급)": 0,
@@ -843,8 +843,8 @@ export default function SwimmingClassPage() {
                       </li>
                       <li>
                         <span className="font-bold text-red-600">오픈 기념 파격 할인가</span>{" "}
-                        정가 100,000원 → <span className="font-bold text-red-600">60,000원 (40% 즉시 할인)</span>
-                        단, 이번 1기 특강에만 적용됩니다.
+                        정가 100,000원 → <span className="font-bold text-red-600">70,000원 (30% 즉시 할인)</span>
+                        단, 이번 2기 특강에만 적용됩니다.
                       </li>
                     </ol>
                   </div>
@@ -879,7 +879,7 @@ export default function SwimmingClassPage() {
                   className="w-full py-3 sm:py-4 text-base sm:text-lg font-semibold leading-tight"
                   size="lg"
                 >
-                  오늘만 40% 할인받고 내 수영 분석받기 →
+                  오늘만 30% 할인받고 내 수영 분석받기 →
                 </Button>
               </div>
             </div>
@@ -2352,7 +2352,7 @@ export default function SwimmingClassPage() {
                         <div className="flex items-center justify-between mb-3">
                           <h3 className="text-lg font-bold">총 결제 금액</h3>
                           <span className="text-2xl font-bold text-primary">
-                            ₩60,000
+                            ₩70,000
                           </span>
                         </div>
 
@@ -2656,7 +2656,7 @@ export default function SwimmingClassPage() {
                         : selectedTimeSlot && 
                           (isClassFull(selectedTimeSlot.name) || hasEnrollment(selectedTimeSlot.name))
                           ? "예약하기"
-                          : "₩60,000 결제하기"}
+                          : "₩70,000 결제하기"}
                     </Button>
                   </div>
                 </div>
@@ -4017,7 +4017,7 @@ export default function SwimmingClassPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">입금금액</span>
-                  <span className="font-bold text-lg">₩60,000</span>
+                  <span className="font-bold text-lg">₩70,000</span>
                 </div>
                 <div className="flex justify-between pt-2 border-t">
                   <span className="text-gray-600">입금기한</span>
@@ -4081,7 +4081,7 @@ export default function SwimmingClassPage() {
               </div>
               <div className="flex justify-between font-bold text-base pt-2 border-t">
                 <span>결제 금액</span>
-                <span className="text-cyan-600">₩60,000</span>
+                <span className="text-cyan-600">₩70,000</span>
               </div>
             </div>
           </div>

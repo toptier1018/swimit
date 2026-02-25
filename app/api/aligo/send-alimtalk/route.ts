@@ -1,31 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
 
 /**
- * 알리고 알림톡 발송 API
+ * NHN Cloud 알림톡 발송 API
  * 
  * 입금대기 상태인 고객에게 알림톡을 자동으로 발송합니다.
+ * IP 제한이 없어 Vercel 같은 서버리스 환경에 최적화되어 있습니다.
  */
 export async function POST(request: NextRequest) {
   try {
     const { customerName, customerPhone, className } = await request.json();
 
-    console.log("[알리고 알림톡] 발송 요청:", {
+    console.log("[NHN Cloud 알림톡] 발송 요청:", {
       customerName,
       customerPhone,
       className,
     });
 
     // 환경 변수 확인
-    const apiKey = process.env.ALIGO_API_KEY;
-    const userId = process.env.ALIGO_USER_ID;
-    const senderKey = process.env.ALIGO_SENDER_KEY;
-    const senderPhone = process.env.ALIGO_SENDER_PHONE;
-    const templateCode = process.env.ALIGO_TEMPLATE_CODE;
+    const appKey = process.env.NHN_APPKEY;
+    const secretKey = process.env.NHN_SECRET_KEY;
+    const senderKey = process.env.NHN_SENDER_KEY;
+    const templateCode = process.env.NHN_TEMPLATE_CODE;
 
-    if (!apiKey || !userId || !senderKey || !senderPhone || !templateCode) {
-      console.error("[알리고 알림톡] 환경 변수가 설정되지 않았습니다");
+    if (!appKey || !secretKey || !senderKey || !templateCode) {
+      console.error("[NHN Cloud 알림톡] 환경 변수가 설정되지 않았습니다");
       return NextResponse.json(
-        { success: false, error: "알리고 API 설정이 올바르지 않습니다." },
+        { success: false, error: "NHN Cloud API 설정이 올바르지 않습니다." },
         { status: 500 }
       );
     }
@@ -33,29 +33,22 @@ export async function POST(request: NextRequest) {
     // 전화번호 형식 정리 (하이픈 제거)
     const receiverPhone = customerPhone.replace(/-/g, "");
 
-    console.log("[알리고 알림톡] API 호출 준비:", {
-      apiKey: apiKey.substring(0, 10) + "...",
-      userId,
+    console.log("[NHN Cloud 알림톡] API 호출 준비:", {
+      appKey: appKey.substring(0, 10) + "...",
+      secretKey: secretKey.substring(0, 10) + "...",
       senderKey: senderKey.substring(0, 10) + "...",
       templateCode,
       receiver: receiverPhone,
     });
 
-    // 알리고 알림톡 API 호출
-    const formData = new URLSearchParams();
-    formData.append("apikey", apiKey);
-    formData.append("userid", userId);
-    formData.append("senderkey", senderKey);
-    formData.append("tpl_code", templateCode); // UF_4507
-    formData.append("sender", senderPhone);
-    formData.append("receiver_1", receiverPhone);
-    
-    // 템플릿 제목
-    formData.append("subject_1", "입금 안내");
-    
-    // 템플릿 전체 내용 (변수를 실제 값으로 치환)
-    // 기본형 템플릿이므로 emtitle 사용하지 않고 직접 치환
-    formData.append("message_1", `안녕하세요, 스윔잇입니다 
+    // NHN Cloud 알림톡 API 호출
+    const requestBody = {
+      plusFriendId: "@스윔잇",
+      templateCode: templateCode,
+      recipientList: [
+        {
+          recipientNo: receiverPhone,
+          content: `안녕하세요, 스윔잇입니다 
 ${customerName} 회원님 ${className}
 특강 신청해 주셔서 감사합니다.
 
@@ -72,80 +65,65 @@ ${customerName} 회원님 ${className}
 놓치지 않도록  
 저희가 잘 챙기고 있을게요 
 
- 농협 302-1710-5277-51 장연성`);
-    
-    // 기본형 템플릿이므로 emtitle 사용 안 함
-    
-    // 채널추가 버튼 (템플릿에 정의된 버튼)
-    formData.append("button_1", JSON.stringify({
-      button: [{
-        name: "채널추가",
-        type: "AC"
-      }]
-    }));
+ 농협 302-1710-5277-51 장연성`,
+          templateParameter: {
+            "고객명": customerName,
+            "클래스명": className
+          },
+          buttons: [
+            {
+              name: "채널추가",
+              type: "AC"
+            }
+          ]
+        }
+      ]
+    };
+
+    console.log("[NHN Cloud 알림톡] 요청 본문:", {
+      plusFriendId: "@스윔잇",
+      templateCode,
+      recipient: receiverPhone,
+      parameters: requestBody.recipientList[0].templateParameter,
+    });
 
     const response = await fetch(
-      "https://kakaoapi.aligo.in/akv10/alimtalk/send/",
+      `https://api-alimtalk.cloud.toast.com/alimtalk/v2.3/appkeys/${appKey}/messages`,
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
+          "Content-Type": "application/json",
+          "X-Secret-Key": secretKey,
         },
-        body: formData.toString(),
+        body: JSON.stringify(requestBody),
       }
     );
 
-    const result = await response.text();
-    console.log("[알리고 알림톡] API 응답 (원본):", result);
-
-    // 알리고 API는 JSON 또는 텍스트로 응답할 수 있음
-    let parsedResult;
-    try {
-      parsedResult = JSON.parse(result);
-      console.log("[알리고 알림톡] API 응답 (파싱):", JSON.stringify(parsedResult, null, 2));
-    } catch {
-      parsedResult = { raw: result };
-      console.log("[알리고 알림톡] JSON 파싱 실패, 원본 사용");
-    }
-    
-    // 전송한 데이터 로그 (디버깅용)
-    console.log("[알리고 알림톡] 전송한 데이터:", {
-      subject: formData.get("subject_1"),
-      message_preview: formData.get("message_1")?.substring(0, 100) + "...",
-      emtitle_1: formData.get("emtitle_1"),
-      receiver: formData.get("receiver_1"),
-    });
+    const result = await response.json();
+    console.log("[NHN Cloud 알림톡] API 응답:", JSON.stringify(result, null, 2));
 
     // 성공 여부 확인
-    // 알리고는 result_code: 1 또는 message에 "성공" 포함 시 성공
-    const isSuccess = 
-      parsedResult.result_code === 1 || 
-      parsedResult.code === "0" ||
-      parsedResult.code === 0 ||
-      (typeof parsedResult.message === 'string' && 
-       (parsedResult.message.includes("성공") || 
-        parsedResult.message.includes("전송요청")));
-
-    if (isSuccess) {
-      console.log("[알리고 알림톡] 발송 성공:", customerName, "-", parsedResult.message);
+    // NHN Cloud는 header.isSuccessful === true이면 성공
+    if (result.header?.isSuccessful) {
+      console.log("[NHN Cloud 알림톡] 발송 성공:", customerName);
       return NextResponse.json({
         success: true,
         message: "알림톡이 성공적으로 발송되었습니다.",
-        data: parsedResult,
+        data: result,
       });
     } else {
-      console.error("[알리고 알림톡] 발송 실패:", parsedResult);
+      console.error("[NHN Cloud 알림톡] 발송 실패:", result);
       return NextResponse.json(
         {
           success: false,
-          error: parsedResult.message || "알림톡 발송에 실패했습니다.",
-          data: parsedResult,
+          error: result.header?.resultMessage || result.message || "알림톡 발송에 실패했습니다.",
+          data: result,
         },
         { status: 400 }
       );
     }
   } catch (error) {
-    console.error("[알리고 알림톡] 예외 발생:", error);
+    console.error("[NHN Cloud 알림톡] 예외 발생:", error);
     return NextResponse.json(
       {
         success: false,

@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       recipientList: [
         {
           recipientNo: receiverPhone,
-          content: `안녕하세요, 스윔잇입니다 
+          content: `안녕하세요, 스윔잇입니다 😊  
 ${customerName} 회원님 ${className}
 특강 신청해 주셔서 감사합니다.
 
@@ -64,9 +64,9 @@ ${customerName} 회원님 ${className}
 도와드리겠습니다.
 
 놓치지 않도록  
-저희가 잘 챙기고 있을게요 
+저희가 잘 챙기고 있을게요 🙂
 
- 농협 302-1710-5277-51 장연성`,
+👉 농협 302-1710-5277-51 장연성`,
           templateParameter: {
             "고객명": customerName,
             "클래스명": className

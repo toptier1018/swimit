@@ -44,6 +44,7 @@ export async function POST(request: NextRequest) {
     // NHN Cloud 알림톡 API 호출
     const requestBody = {
       plusFriendId: "@스윔잇",
+      senderKey: senderKey,
       templateCode: templateCode,
       recipientList: [
         {

@@ -2588,7 +2588,7 @@ export default function SwimmingClassPage() {
                                 // 알리고 알림톡 자동 발송
                                 console.log("[알림톡] 자동 발송 시작");
                                 try {
-                                  const alimtalkResponse = await fetch("/api/aligo/send-alimtalk", {
+                                  const alimtalkResponse = await fetch("/api/nhn/send-alimtalk", {
                                     method: "POST",
                                     headers: {
                                       "Content-Type": "application/json",

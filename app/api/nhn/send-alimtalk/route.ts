@@ -41,48 +41,24 @@ export async function POST(request: NextRequest) {
       receiver: receiverPhone,
     });
 
-    // NHN Cloud 알림톡 API 호출
+    // NHN Cloud 알림톡 API 호출 (/messages: 템플릿 치환 발송)
+    // - 템플릿 본문/버튼은 NHN 콘솔에 등록된 "v1" 템플릿 그대로 사용
+    // - 여기서는 templateParameter(가변 인자)만 전달해야 합니다.
     const requestBody = {
-      plusFriendId: "@스윔잇",
-      senderKey: senderKey,
-      templateCode: templateCode,
+      senderKey,
+      templateCode,
       recipientList: [
         {
           recipientNo: receiverPhone,
-          content: `안녕하세요, 스윔잇입니다 😊  
-${customerName} 회원님 ${className}
-특강 신청해 주셔서 감사합니다.
-
-스윔잇 특강은 결제하기 이후 
-**실입금 완료 시 예약이 확정**
-되는 방식이라 헛갈리실까 봐 
-미리 안내드렸어요.
-
-아래 계좌로 입금해 주시면  
-**익일 오후 2시**
-예약 확정과 함께 상세 안내를 
-도와드리겠습니다.
-
-놓치지 않도록  
-저희가 잘 챙기고 있을게요 🙂
-
-👉 농협 302-1710-5277-51 장연성`,
           templateParameter: {
-            "고객명": customerName,
-            "클래스명": className
+            고객명: customerName,
+            클래스명: className,
           },
-          buttons: [
-            {
-              name: "채널추가",
-              type: "AC"
-            }
-          ]
-        }
-      ]
+        },
+      ],
     };
 
     console.log("[NHN Cloud 알림톡] 요청 본문:", {
-      plusFriendId: "@스윔잇",
       templateCode,
       recipient: receiverPhone,
       parameters: requestBody.recipientList[0].templateParameter,

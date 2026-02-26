@@ -56,6 +56,50 @@ const classes = [
 // 오픈 전 임시 설정: 전체 클래스를 '예약대기'로 강제 표시
 const FORCE_ALL_WAITLIST = true;
 
+type TimetableRow = {
+  session: string;
+  time: string;
+  lanes: Array<{
+    lane: string;
+    title: string;
+    price: number;
+  }>;
+};
+
+const TIMETABLE: TimetableRow[] = [
+  {
+    session: "1부 특강",
+    time: "13:00 ~ 15:00",
+    lanes: [
+      { lane: "1레인", title: "평영 A (초급)", price: 70000 },
+      { lane: "2레인", title: "접영 A (초급)", price: 70000 },
+      { lane: "3레인", title: "자유형 A (초급)", price: 70000 },
+      { lane: "4레인", title: "접영 A-1 (초급)", price: 70000 },
+      { lane: "5레인", title: "자유형 B (중급)", price: 70000 },
+    ],
+  },
+  {
+    session: "2부 특강",
+    time: "15:00 ~ 17:00",
+    lanes: [
+      { lane: "1레인", title: "평영 B (중급)", price: 70000 },
+      { lane: "2레인", title: "접영 A (초급)", price: 70000 },
+      { lane: "3레인", title: "자유형 B (중급)", price: 70000 },
+      { lane: "4레인", title: "접영 B (중급)", price: 70000 },
+      { lane: "5레인", title: "평영 B (중급)", price: 70000 },
+    ],
+  },
+];
+
+const makeClassKey = (session: string, lane: string, title: string) =>
+  `${session} ${lane} ${title}`;
+
+const INITIAL_ENROLLMENT: Record<string, number> = Object.fromEntries(
+  TIMETABLE.flatMap((row) =>
+    row.lanes.map((l) => [makeClassKey(row.session, l.lane, l.title), 0])
+  )
+) as Record<string, number>;
+
 export default function SwimmingClassPage() {
   const [step, setStep] = useState(1);
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
@@ -64,6 +108,8 @@ export default function SwimmingClassPage() {
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<{
     name: string;
     session: string;
+    lane: string;
+    title: string;
     time: string;
     price: number;
     isWaitlist: boolean;
@@ -119,19 +165,8 @@ export default function SwimmingClassPage() {
   // 모든 클래스는 0부터 시작하여 신청가능 일반 모드로 시작
   // 1~10번째 클릭: 일반 결제 모드 (₩70,000 결제하기)
   // 11번째 클릭: 예약대기 모드 (예약하기 버튼으로 변경)
-  const [classEnrollment, setClassEnrollment] = useState<Record<string, number>>({
-    // 1부 특강 (13:00 ~ 15:00)
-    "1레인 평영 A (초급)": 0,
-    "2레인 접영 A (초급)": 0,
-    "3레인 자유형 A (초급)": 0,
-    "4레인 접영 A-1 (초급)": 0,
-    "5레인 자유형 B (중급)": 0,
-    // 2부 특강 (15:00 ~ 17:00)
-    "1레인 평영 B (중급)": 0,
-    "3레인 자유형 B (중급)": 0,
-    "4레인 접영 B (중급)": 0,
-    "5레인 평영 B (중급)": 0,
-  });
+  const [classEnrollment, setClassEnrollment] =
+    useState<Record<string, number>>(INITIAL_ENROLLMENT);
   const [manualWaitlistClasses, setManualWaitlistClasses] = useState<Set<string>>(
     new Set<string>()
   );
@@ -150,19 +185,7 @@ export default function SwimmingClassPage() {
   }, []);
 
   const resetClassEnrollment = () => {
-    const resetCounts = {
-      // 1부 특강 (13:00 ~ 15:00)
-      "1레인 평영 A (초급)": 0,
-      "2레인 접영 A (초급)": 0,
-      "3레인 자유형 A (초급)": 0,
-      "4레인 접영 A-1 (초급)": 0,
-      "5레인 자유형 B (중급)": 0,
-      // 2부 특강 (15:00 ~ 17:00)
-      "1레인 평영 B (중급)": 0,
-      "3레인 자유형 B (중급)": 0,
-      "4레인 접영 B (중급)": 0,
-      "5레인 평영 B (중급)": 0,
-    };
+    const resetCounts = { ...INITIAL_ENROLLMENT };
     setClassEnrollment(resetCounts);
     waitlistThresholdsRef.current = {};
     // 예약대기는 서버에서 관리하므로 여기서는 초기화하지 않음
@@ -181,8 +204,9 @@ export default function SwimmingClassPage() {
       const stored = localStorage.getItem("class_enrollment_counts");
       if (stored) {
         const parsed = JSON.parse(stored) as Record<string, number>;
-        setClassEnrollment(parsed);
-        console.log("[카운터] 로컬 카운터 불러오기:", parsed);
+        const merged = { ...INITIAL_ENROLLMENT, ...parsed };
+        setClassEnrollment(merged);
+        console.log("[카운터] 로컬 카운터 불러오기:", merged);
       }
       // 예약대기 클래스는 서버에서만 가져옴 (syncManualWaitlistFromServer)
     } catch (error) {
@@ -198,13 +222,14 @@ export default function SwimmingClassPage() {
       console.log("[카운터] Notion 카운터 동기화 시작");
       const result = await getClassEnrollmentCounts();
       if (result.success && result.counts) {
-        setClassEnrollment(result.counts);
+        const merged = { ...INITIAL_ENROLLMENT, ...result.counts };
+        setClassEnrollment(merged);
         try {
-          localStorage.setItem("class_enrollment_counts", JSON.stringify(result.counts));
+          localStorage.setItem("class_enrollment_counts", JSON.stringify(merged));
         } catch (error) {
           console.log("[카운터] 로컬 저장 실패:", error);
         }
-        console.log("[카운터] Notion 카운터 동기화 완료:", result.counts);
+        console.log("[카운터] Notion 카운터 동기화 완료:", merged);
       } else {
         console.warn("[카운터] Notion 카운터 조회 실패:", result.error);
       }
@@ -2175,32 +2200,22 @@ export default function SwimmingClassPage() {
                     </div>
                     <CardContent className="p-0">
                       <div className="flex flex-col w-full overflow-x-auto">
-                        {[
-                          {
-                            session: "1부 특강",
-                            time: "13:00 ~ 15:00",
-                            colsClass: "md:grid-cols-5",
-                            slots: [
-                              { name: "1레인 평영 A (초급)", price: 70000 },
-                              { name: "2레인 접영 A (초급)", price: 70000 },
-                              { name: "3레인 자유형 A (초급)", price: 70000 },
-                              { name: "4레인 접영 A-1 (초급)", price: 70000 },
-                              { name: "5레인 자유형 B (중급)", price: 70000 },
-                            ],
-                          },
-                          {
-                            session: "2부 특강",
-                            time: "15:00 ~ 17:00",
-                            colsClass: "md:grid-cols-5",
-                            slots: [
-                              { name: "1레인 평영 B (중급)", price: 70000 },
-                              { name: "2레인 접영 A (초급)", price: 70000 },
-                              { name: "3레인 자유형 B (중급)", price: 70000 },
-                              { name: "4레인 접영 B (중급)", price: 70000 },
-                              { name: "5레인 평영 B (중급)", price: 70000 },
-                            ],
-                          },
-                        ].map((row) => (
+                        {/* 레인 헤더 (PC/태블릿에서만 표시) */}
+                        <div className="hidden md:flex border-b">
+                          <div className="w-[180px] bg-[#F8FAFC] border-r border-gray-100 shrink-0" />
+                          <div className="flex-1 bg-white grid grid-cols-5 gap-3 p-3">
+                            {["1레인", "2레인", "3레인", "4레인", "5레인"].map((lane) => (
+                              <div
+                                key={lane}
+                                className="text-sm font-bold text-gray-700 text-center py-1 rounded bg-gray-50 border border-gray-100"
+                              >
+                                {lane}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {TIMETABLE.map((row) => (
                           <div key={row.session} className="flex flex-col sm:flex-row border-b last:border-b-0">
                             {/* Time Label */}
                             <div className="flex flex-row sm:flex-col justify-center sm:justify-center items-center sm:items-start px-4 sm:px-6 py-4 sm:py-6 bg-[#F8FAFC] w-full sm:w-[180px] sm:border-r border-gray-100 shrink-0">
@@ -2212,10 +2227,11 @@ export default function SwimmingClassPage() {
                               </div>
                             </div>
                             {/* Class Grid */}
-                            <div className={`flex-1 p-3 sm:p-3 bg-white grid grid-cols-1 sm:grid-cols-2 ${row.colsClass} gap-3 sm:gap-3`}>
-                              {row.slots.map((slot, index) => {
-                                const isFull = isClassFull(slot.name);
-                                const hasPayment = hasEnrollment(slot.name);
+                            <div className="flex-1 p-3 sm:p-3 bg-white grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 sm:gap-3">
+                              {row.lanes.map((slot, index) => {
+                                const classKey = makeClassKey(row.session, slot.lane, slot.title);
+                                const isFull = isClassFull(classKey);
+                                const hasPayment = hasEnrollment(classKey);
                                 return (
                                   <button
                                     key={`${row.session}-${index}`}
@@ -2224,15 +2240,17 @@ export default function SwimmingClassPage() {
                                         (c) => String(c.id) === selectedClass
                                       );
                                       console.log("[선택] 클래스 선택:", {
-                                        className: slot.name,
+                                        className: classKey,
                                         session: row.session,
                                         time: row.time,
                                         region: regionInfo?.location || "정보 없음",
                                         regionCode: regionInfo?.locationCode || "",
                                       });
                                       setSelectedTimeSlot({
-                                        name: slot.name,
+                                        name: classKey,
                                         session: row.session,
+                                        lane: slot.lane,
+                                        title: slot.title,
                                         time: row.time,
                                         price: slot.price,
                                         isWaitlist: isFull,
@@ -2240,15 +2258,22 @@ export default function SwimmingClassPage() {
                                       });
                                       setStep(3); // 바로 결제 화면으로 이동
                                     }}
-                                    className={`relative border rounded-lg p-4 sm:p-4 flex flex-col justify-between min-h-[100px] sm:min-h-[100px] transition-all ${
-                                      selectedTimeSlot?.name === slot.name &&
+                                    className={`relative border rounded-lg p-3 sm:p-4 flex flex-col justify-between min-h-[96px] sm:min-h-[110px] transition-all ${
+                                      selectedTimeSlot?.name === classKey &&
                                       selectedTimeSlot?.session === row.session
                                         ? "border-primary border-2 ring-2 ring-primary/10 bg-primary/5"
                                         : "border-gray-200 hover:border-primary/50 hover:shadow-sm bg-white"
                                     }`}
                                   >
-                                    <div className="text-base md:text-sm font-bold text-gray-800 break-words leading-tight">
-                                      {slot.name}
+                                    {/* 모바일: 레인 표시를 카드 안으로 (상단 헤더가 좁아서) */}
+                                    <div className="md:hidden mb-1">
+                                      <span className="inline-flex items-center justify-center text-[11px] font-bold text-gray-700 bg-gray-100 border border-gray-200 px-2 py-0.5 rounded">
+                                        {slot.lane}
+                                      </span>
+                                    </div>
+
+                                    <div className="text-base md:text-sm font-bold text-gray-900 break-words leading-tight">
+                                      {slot.title}
                                     </div>
                                     <div className="flex justify-end gap-2 mt-2 sm:mt-2 flex-wrap">
                                       {(() => {

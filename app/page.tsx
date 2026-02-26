@@ -125,6 +125,7 @@ export default function SwimmingClassPage() {
     "2레인 접영 A (초급)": 0,
     "3레인 자유형 A (초급)": 0,
     "4레인 접영 A-1 (초급)": 0,
+    "5레인 자유형 B (중급)": 0,
     // 2부 특강 (15:00 ~ 17:00)
     "1레인 평영 B (중급)": 0,
     "3레인 자유형 B (중급)": 0,
@@ -155,6 +156,7 @@ export default function SwimmingClassPage() {
       "2레인 접영 A (초급)": 0,
       "3레인 자유형 A (초급)": 0,
       "4레인 접영 A-1 (초급)": 0,
+      "5레인 자유형 B (중급)": 0,
       // 2부 특강 (15:00 ~ 17:00)
       "1레인 평영 B (중급)": 0,
       "3레인 자유형 B (중급)": 0,
@@ -2177,12 +2179,13 @@ export default function SwimmingClassPage() {
                           {
                             session: "1부 특강",
                             time: "13:00 ~ 15:00",
-                            colsClass: "md:grid-cols-4",
+                            colsClass: "md:grid-cols-5",
                             slots: [
                               { name: "1레인 평영 A (초급)", price: 70000 },
                               { name: "2레인 접영 A (초급)", price: 70000 },
                               { name: "3레인 자유형 A (초급)", price: 70000 },
                               { name: "4레인 접영 A-1 (초급)", price: 70000 },
+                              { name: "5레인 자유형 B (중급)", price: 70000 },
                             ],
                           },
                           {

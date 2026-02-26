@@ -53,6 +53,9 @@ const classes = [
   },
 ];
 
+// 오픈 전 임시 설정: 전체 클래스를 '예약대기'로 강제 표시
+const FORCE_ALL_WAITLIST = true;
+
 export default function SwimmingClassPage() {
   const [step, setStep] = useState(1);
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
@@ -60,6 +63,7 @@ export default function SwimmingClassPage() {
   const [regionError, setRegionError] = useState(false);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<{
     name: string;
+    session: string;
     time: string;
     price: number;
     isWaitlist: boolean;
@@ -116,14 +120,19 @@ export default function SwimmingClassPage() {
   // 1~10번째 클릭: 일반 결제 모드 (₩70,000 결제하기)
   // 11번째 클릭: 예약대기 모드 (예약하기 버튼으로 변경)
   const [classEnrollment, setClassEnrollment] = useState<Record<string, number>>({
-    "자유형 A (초급)": 0,
-    "평영 A (초급)": 0, // 신청가능 일반 모드 (0부터 시작)
-    "접영 A (초급)": 0,
-    "자유형 B (중급)": 0,
-    "평영 B (중급)": 0,
+    // 1부 특강 (13:00 ~ 15:00)
+    "1레인 평영 A (초급)": 0,
+    "2레인 접영 A (초급)": 0,
+    "3레인 자유형 A (초급)": 0,
+    "4레인 접영 A-1 (초급)": 0,
+    // 2부 특강 (15:00 ~ 17:00)
+    "1레인 평영 B (중급)": 0,
+    "3레인 자유형 B (중급)": 0,
+    "4레인 접영 B (중급)": 0,
+    "5레인 평영 B (중급)": 0,
   });
   const [manualWaitlistClasses, setManualWaitlistClasses] = useState<Set<string>>(
-    new Set<string>(["평영 A (초급)"])
+    new Set<string>()
   );
   const { toast } = useToast();
   const submittedApplicantsRef = useRef<Set<string>>(new Set());
@@ -141,11 +150,16 @@ export default function SwimmingClassPage() {
 
   const resetClassEnrollment = () => {
     const resetCounts = {
-      "자유형 A (초급)": 0,
-      "평영 A (초급)": 0,
-      "접영 A (초급)": 0,
-      "자유형 B (중급)": 0,
-      "평영 B (중급)": 0,
+      // 1부 특강 (13:00 ~ 15:00)
+      "1레인 평영 A (초급)": 0,
+      "2레인 접영 A (초급)": 0,
+      "3레인 자유형 A (초급)": 0,
+      "4레인 접영 A-1 (초급)": 0,
+      // 2부 특강 (15:00 ~ 17:00)
+      "1레인 평영 B (중급)": 0,
+      "3레인 자유형 B (중급)": 0,
+      "4레인 접영 B (중급)": 0,
+      "5레인 평영 B (중급)": 0,
     };
     setClassEnrollment(resetCounts);
     waitlistThresholdsRef.current = {};
@@ -403,8 +417,16 @@ export default function SwimmingClassPage() {
     });
   };
 
+  // 전체 예약대기 강제 모드 로그 (한 번만)
+  useEffect(() => {
+    if (FORCE_ALL_WAITLIST) {
+      console.log("[예약대기] 전체 예약대기 강제 모드 활성화");
+    }
+  }, []);
+
   // 클래스별 신청 가능 여부 확인 (10명 이상이면 정원 초과)
   const isClassFull = useCallback((className: string) => {
+    if (FORCE_ALL_WAITLIST) return true;
     if (manualWaitlistClasses.has(className)) return true;
     const threshold = waitlistThresholdsRef.current[className];
     if (threshold !== undefined) {
@@ -415,6 +437,7 @@ export default function SwimmingClassPage() {
 
   // 클래스별 결제 여부 확인 (10명 이상이면 예약대기)
   const hasEnrollment = useCallback((className: string) => {
+    if (FORCE_ALL_WAITLIST) return true;
     if (manualWaitlistClasses.has(className)) return true;
     const threshold = waitlistThresholdsRef.current[className];
     if (threshold !== undefined) {
@@ -471,7 +494,7 @@ export default function SwimmingClassPage() {
   const getCurrentMonth = () => new Date().getMonth() + 1;
   const getCurrentDay = () => new Date().getDate();
 
-  const [calendarMonth, setCalendarMonth] = useState(2); // 2월로 초기화
+  const [calendarMonth, setCalendarMonth] = useState(3); // 3월로 초기화
   const calendarYear = 2026; // 2026년으로 초기화
 
   // selectedClass가 변경되면 달력 월도 업데이트
@@ -2150,115 +2173,106 @@ export default function SwimmingClassPage() {
                     </div>
                     <CardContent className="p-0">
                       <div className="flex flex-col w-full overflow-x-auto">
-                        {/* 1번특강 Row */}
-                        <div className="flex flex-col sm:flex-row">
-                          {/* Time Label */}
-                          <div className="flex flex-row sm:flex-col justify-center sm:justify-center items-center sm:items-start px-4 sm:px-6 py-4 sm:py-6 bg-[#F8FAFC] w-full sm:w-[180px] border-b sm:border-b-0 sm:border-r border-gray-100 shrink-0">
-                            <div className="text-lg md:text-base font-bold text-gray-900 mr-2 sm:mr-0">
-                              1번특강
+                        {[
+                          {
+                            session: "1부 특강",
+                            time: "13:00 ~ 15:00",
+                            colsClass: "md:grid-cols-4",
+                            slots: [
+                              { name: "1레인 평영 A (초급)", price: 70000 },
+                              { name: "2레인 접영 A (초급)", price: 70000 },
+                              { name: "3레인 자유형 A (초급)", price: 70000 },
+                              { name: "4레인 접영 A-1 (초급)", price: 70000 },
+                            ],
+                          },
+                          {
+                            session: "2부 특강",
+                            time: "15:00 ~ 17:00",
+                            colsClass: "md:grid-cols-5",
+                            slots: [
+                              { name: "1레인 평영 B (중급)", price: 70000 },
+                              { name: "2레인 접영 A (초급)", price: 70000 },
+                              { name: "3레인 자유형 B (중급)", price: 70000 },
+                              { name: "4레인 접영 B (중급)", price: 70000 },
+                              { name: "5레인 평영 B (중급)", price: 70000 },
+                            ],
+                          },
+                        ].map((row) => (
+                          <div key={row.session} className="flex flex-col sm:flex-row border-b last:border-b-0">
+                            {/* Time Label */}
+                            <div className="flex flex-row sm:flex-col justify-center sm:justify-center items-center sm:items-start px-4 sm:px-6 py-4 sm:py-6 bg-[#F8FAFC] w-full sm:w-[180px] sm:border-r border-gray-100 shrink-0">
+                              <div className="text-lg md:text-base font-bold text-gray-900 mr-2 sm:mr-0">
+                                {row.session}
+                              </div>
+                              <div className="text-base md:text-sm text-gray-500 sm:mt-1">
+                                {row.time}
+                              </div>
                             </div>
-                            <div className="text-base md:text-sm text-gray-500 sm:mt-1">
-                              14:00 ~ 16:00
-                            </div>
-                          </div>
-                          {/* Class Grid for Row 1 */}
-                          <div className="flex-1 p-3 sm:p-3 bg-white grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 sm:gap-3">
-                            {[
-                              {
-                                name: "자유형 A (초급)",
-                                available: true,
-                                price: 70000,
-                              },
-                              {
-                                name: "평영 A (초급)",
-                                available: true,
-                                price: 70000,
-                              },
-                              {
-                                name: "접영 A (초급)",
-                                available: true,
-                                price: 70000,
-                              },
-                              {
-                                name: "자유형 B (중급)",
-                                available: true,
-                                price: 70000,
-                              },
-                              {
-                                name: "평영 B (중급)",
-                                available: true,
-                                price: 70000,
-                              },
-                            ].map((slot, index) => {
-                              const isFull = isClassFull(slot.name);
-                              const hasPayment = hasEnrollment(slot.name);
-                              return (
-                                <button
-                                  key={index}
-                                  onClick={() => {
-                                    const regionInfo = classes.find(
-                                      (c) => String(c.id) === selectedClass
-                                    );
-                                    console.log("[선택] 클래스 선택:", {
-                                      className: slot.name,
-                                      time: "14:00 ~ 16:00",
-                                      region: regionInfo?.location || "정보 없음",
-                                      regionCode: regionInfo?.locationCode || "",
-                                    });
-                                    setSelectedTimeSlot({
-                                      name: slot.name,
-                                      time: "14:00 ~ 16:00",
-                                      price: slot.price,
-                                      isWaitlist: isFull,
-                                      available: !isFull,
-                                    });
-                                    setStep(3); // 바로 결제 화면으로 이동
-                                  }}
-                                  className={`relative border rounded-lg p-4 sm:p-4 flex flex-col justify-between min-h-[100px] sm:min-h-[100px] transition-all ${
-                                    selectedTimeSlot?.name === slot.name &&
-                                    selectedTimeSlot?.time === "14:00 ~ 16:00"
-                                      ? "border-primary border-2 ring-2 ring-primary/10 bg-primary/5"
-                                      : "border-gray-200 hover:border-primary/50 hover:shadow-sm bg-white"
-                                  }`}
-                                >
-                                  <div className="text-base md:text-sm font-bold text-gray-800 break-words leading-tight">
-                                    {slot.name}
-                                  </div>
-                                  <div className="flex justify-end gap-2 mt-2 sm:mt-2 flex-wrap">
-                                    {(() => {
-                                      const remainingBadge: Record<string, string> = {
-                                        "자유형 A (초급)": "1자리 남음",
-                                        "평영 A (초급)": "마감임박",
-                                        "접영 A (초급)": "2자리 남음",
-                                        "자유형 B (중급)": "마감임박",
-                                        "평영 B (중급)": "1자리 남음",
-                                      };
-                                      const label =
-                                        isFull || hasPayment
-                                          ? "마감"
-                                          : remainingBadge[slot.name];
-                                      if (!label) return null;
-                                      return (
-                                        <span className="bg-white border border-red-200 text-red-600 text-sm md:text-[11px] px-3 md:px-2 py-1.5 md:py-1 rounded font-bold">
-                                          {label}
-                                        </span>
+                            {/* Class Grid */}
+                            <div className={`flex-1 p-3 sm:p-3 bg-white grid grid-cols-1 sm:grid-cols-2 ${row.colsClass} gap-3 sm:gap-3`}>
+                              {row.slots.map((slot, index) => {
+                                const isFull = isClassFull(slot.name);
+                                const hasPayment = hasEnrollment(slot.name);
+                                return (
+                                  <button
+                                    key={`${row.session}-${index}`}
+                                    onClick={() => {
+                                      const regionInfo = classes.find(
+                                        (c) => String(c.id) === selectedClass
                                       );
-                                    })()}
-                                    {isFull || hasPayment ? (
-                                      <span className="bg-orange-500 text-white text-sm md:text-[11px] px-3 md:px-2 py-1.5 md:py-1 rounded font-bold">
-                                        예약대기
-                                      </span>
-                                    ) : (
-                                      <span className="bg-[#10B981] text-white text-sm md:text-[11px] px-3 md:px-2 py-1.5 md:py-1 rounded font-bold">
-                                        결제가능
-                                      </span>
-                                    )}
-                                  </div>
-                                </button>
-                              );
-                            })}
+                                      console.log("[선택] 클래스 선택:", {
+                                        className: slot.name,
+                                        session: row.session,
+                                        time: row.time,
+                                        region: regionInfo?.location || "정보 없음",
+                                        regionCode: regionInfo?.locationCode || "",
+                                      });
+                                      setSelectedTimeSlot({
+                                        name: slot.name,
+                                        session: row.session,
+                                        time: row.time,
+                                        price: slot.price,
+                                        isWaitlist: isFull,
+                                        available: !isFull,
+                                      });
+                                      setStep(3); // 바로 결제 화면으로 이동
+                                    }}
+                                    className={`relative border rounded-lg p-4 sm:p-4 flex flex-col justify-between min-h-[100px] sm:min-h-[100px] transition-all ${
+                                      selectedTimeSlot?.name === slot.name &&
+                                      selectedTimeSlot?.session === row.session
+                                        ? "border-primary border-2 ring-2 ring-primary/10 bg-primary/5"
+                                        : "border-gray-200 hover:border-primary/50 hover:shadow-sm bg-white"
+                                    }`}
+                                  >
+                                    <div className="text-base md:text-sm font-bold text-gray-800 break-words leading-tight">
+                                      {slot.name}
+                                    </div>
+                                    <div className="flex justify-end gap-2 mt-2 sm:mt-2 flex-wrap">
+                                      {(() => {
+                                        const label = isFull || hasPayment ? "마감" : undefined;
+                                        if (!label) return null;
+                                        return (
+                                          <span className="bg-white border border-red-200 text-red-600 text-sm md:text-[11px] px-3 md:px-2 py-1.5 md:py-1 rounded font-bold">
+                                            {label}
+                                          </span>
+                                        );
+                                      })()}
+                                      {isFull || hasPayment ? (
+                                        <span className="bg-orange-500 text-white text-sm md:text-[11px] px-3 md:px-2 py-1.5 md:py-1 rounded font-bold">
+                                          예약대기
+                                        </span>
+                                      ) : (
+                                        <span className="bg-[#10B981] text-white text-sm md:text-[11px] px-3 md:px-2 py-1.5 md:py-1 rounded font-bold">
+                                          결제가능
+                                        </span>
+                                      )}
+                                    </div>
+                                  </button>
+                                );
+                              })}
+                            </div>
                           </div>
-                        </div>
+                        ))}
                       </div>
                     </CardContent>
                   </Card>
@@ -2320,7 +2334,7 @@ export default function SwimmingClassPage() {
                                 {selectedTimeSlot.name}
                               </p>
                               <p className="text-xs text-gray-500">
-                                시간대: 1번특강 ({selectedTimeSlot.time})
+                                시간대: {selectedTimeSlot.session} ({selectedTimeSlot.time})
                               </p>
                               <p className="text-xs text-gray-500">
                                 지역:{" "}
@@ -2499,7 +2513,7 @@ export default function SwimmingClassPage() {
                                   virtualAccountInfo: "예약대기",
                                   orderNumber: newOrderNumber,
                                   selectedClass: selectedTimeSlot.name,
-                                  timeSlot: `1번특강 (${selectedTimeSlot.time})`,
+                                  timeSlot: `${selectedTimeSlot.session} (${selectedTimeSlot.time})`,
                                   region: selectedRegion,
                                   paymentStartedAt: paymentStartedAt.toISOString(),
                                 });
@@ -2580,7 +2594,7 @@ export default function SwimmingClassPage() {
                                   virtualAccountInfo: "입금대기",
                                   orderNumber: newOrderNumber,
                                   selectedClass: selectedTimeSlot.name,
-                                  timeSlot: `1번특강 (${selectedTimeSlot.time})`,
+                                  timeSlot: `${selectedTimeSlot.session} (${selectedTimeSlot.time})`,
                                   region: selectedRegion,
                                   paymentStartedAt: paymentStartedAt.toISOString(),
                                 });
@@ -4057,7 +4071,7 @@ export default function SwimmingClassPage() {
                 <div className="flex justify-between">
                   <span className="text-gray-600">시간대</span>
                   <span className="text-gray-700">
-                    1번특강 ({selectedTimeSlot.time})
+                    {selectedTimeSlot.session} ({selectedTimeSlot.time})
                   </span>
                 </div>
               )}

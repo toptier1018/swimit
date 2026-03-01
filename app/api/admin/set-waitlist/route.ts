@@ -1,5 +1,37 @@
 import { NextRequest, NextResponse } from "next/server";
 
+function extractPlainTextFromNotionTextArray(arr: any): string {
+  if (!Array.isArray(arr)) return "";
+  return arr
+    .map((t) => String(t?.plain_text || ""))
+    .join("")
+    .trim();
+}
+
+function getClassNameFromPage(page: any): string {
+  const prop = page?.properties?.["클래스명"];
+  const titleText = extractPlainTextFromNotionTextArray(prop?.title);
+  if (titleText) return titleText;
+  const richText = extractPlainTextFromNotionTextArray(prop?.rich_text);
+  return richText;
+}
+
+function getCheckboxProp(page: any, candidates: string[]): boolean | null {
+  for (const key of candidates) {
+    const v = page?.properties?.[key]?.checkbox;
+    if (typeof v === "boolean") return v;
+  }
+  return null;
+}
+
+function getNumberProp(page: any, candidates: string[]): number | null {
+  for (const key of candidates) {
+    const v = page?.properties?.[key]?.number;
+    if (typeof v === "number") return v;
+  }
+  return null;
+}
+
 /**
  * 관리자용 예약대기 설정 API (Notion 기반)
  *
@@ -51,22 +83,19 @@ async function getClassSettingsFromNotion() {
     const pages = result.results || [];
 
     for (const page of pages) {
-      const className: string =
-        page?.properties?.["클래스명"]?.title?.[0]?.plain_text || "";
+      const className: string = getClassNameFromPage(page);
       if (!className) continue;
 
-      const manualWaitlist: boolean =
-        page?.properties?.["수동 예약대기"]?.checkbox === true;
+      const manualWaitlist =
+        getCheckboxProp(page, ["수동 예약대기", "수동예약대기"]) === true;
       if (manualWaitlist) waitlistClasses.push(className);
 
-      const thresholdProp =
-        page?.properties?.["예약대기 기준"] ??
-        page?.properties?.["예약대기 기준 인원"] ??
-        page?.properties?.["기준 인원"];
-      const thresholdVal = thresholdProp?.number;
-      if (typeof thresholdVal === "number") {
-        thresholds[className] = thresholdVal;
-      }
+      const thresholdVal = getNumberProp(page, [
+        "예약대기 기준",
+        "예약대기 기준 인원",
+        "기준 인원",
+      ]);
+      if (typeof thresholdVal === "number") thresholds[className] = thresholdVal;
     }
 
     hasMore = result.has_more === true;
@@ -89,41 +118,51 @@ async function findClassPageIdByName(className: string) {
     throw new Error("Notion 환경 변수가 설정되지 않았습니다");
   }
 
-  console.log("[Notion 조회] 클래스 검색:", className);
-  const queryResponse = await fetch(
-    `https://api.notion.com/v1/databases/${databaseId}/query`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${notionApiKey}`,
-        "Content-Type": "application/json",
-        "Notion-Version": "2022-06-28",
-      },
-      body: JSON.stringify({
-        filter: {
-          property: "클래스명",
-          title: {
-            equals: className,
-          },
+  console.log("[Notion 조회] 클래스 검색(스캔):", className);
+
+  let hasMore = true;
+  let startCursor: string | undefined = undefined;
+
+  while (hasMore) {
+    const queryResponse = await fetch(
+      `https://api.notion.com/v1/databases/${databaseId}/query`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${notionApiKey}`,
+          "Content-Type": "application/json",
+          "Notion-Version": "2022-06-28",
         },
-      }),
+        body: JSON.stringify({
+          page_size: 100,
+          start_cursor: startCursor,
+        }),
+      }
+    );
+
+    if (!queryResponse.ok) {
+      const text = await queryResponse.text().catch(() => "");
+      console.error("[Notion 조회] 클래스 스캔 실패:", queryResponse.status, text);
+      throw new Error("Notion 클래스 검색 실패");
     }
-  );
 
-  if (!queryResponse.ok) {
-    throw new Error("Notion 클래스 검색 실패");
+    const queryResult = await queryResponse.json();
+    const pages = queryResult.results || [];
+
+    for (const page of pages) {
+      const name = getClassNameFromPage(page);
+      if (name && name === className) {
+        const pageId: string = page.id;
+        console.log("[Notion 조회] 클래스 찾음:", { className, pageId });
+        return pageId;
+      }
+    }
+
+    hasMore = queryResult.has_more === true;
+    startCursor = queryResult.next_cursor || undefined;
   }
 
-  const queryResult = await queryResponse.json();
-  const pages = queryResult.results || [];
-
-  if (pages.length === 0) {
-    return null;
-  }
-
-  const pageId: string = pages[0].id;
-  console.log("[Notion 조회] 클래스 찾음:", { className, pageId });
-  return pageId;
+  return null;
 }
 
 /**
@@ -142,41 +181,58 @@ async function ensureClassSettingsPage(className: string) {
 
   console.log("[Notion 생성] 클래스 설정 페이지 생성:", className);
 
-  const createResponse = await fetch("https://api.notion.com/v1/pages", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${notionApiKey}`,
-      "Content-Type": "application/json",
-      "Notion-Version": "2022-06-28",
-    },
-    body: JSON.stringify({
-      parent: { database_id: databaseId },
-      properties: {
-        클래스명: {
-          title: [{ text: { content: className } }],
-        },
-        "수동 예약대기": {
-          checkbox: false,
-        },
-        // 아래 숫자 컬럼이 DB에 없으면 Notion이 400을 줄 수 있습니다.
-        // (그 경우는 catch에서 안내 메시지로 처리)
-        "예약대기 기준": {
-          number: 10,
-        },
-      },
-    }),
-  });
+  const baseHeaders = {
+    Authorization: `Bearer ${notionApiKey}`,
+    "Content-Type": "application/json",
+    "Notion-Version": "2022-06-28",
+  };
 
-  if (!createResponse.ok) {
-    const text = await createResponse.text().catch(() => "");
-    console.error("[Notion 생성] 실패:", createResponse.status, text);
-    throw new Error(
-      "클래스 설정 행을 만들 수 없습니다. Notion DB에 '클래스명'(제목), '수동 예약대기'(체크박스), '예약대기 기준'(숫자) 컬럼이 있는지 확인해주세요."
-    );
+  const tryCreate = async (properties: Record<string, any>) => {
+    const res = await fetch("https://api.notion.com/v1/pages", {
+      method: "POST",
+      headers: baseHeaders,
+      body: JSON.stringify({
+        parent: { database_id: databaseId },
+        properties,
+      }),
+    });
+    const text = await res.text().catch(() => "");
+    return { ok: res.ok, status: res.status, text, json: text ? JSON.parse(text) : null };
+  };
+
+  // 1) 가장 이상적인 케이스: 클래스명(title) + 수동 예약대기 + 예약대기 기준
+  // 2) 예약대기 기준 컬럼이 없으면 1)이 실패할 수 있으므로, 기준 없이 재시도
+  // 3) 클래스명이 title이 아니라 rich_text인 경우도 있어서 그 케이스로 재시도
+  const attempts: Array<Record<string, any>> = [
+    {
+      클래스명: { title: [{ text: { content: className } }] },
+      "수동 예약대기": { checkbox: false },
+      "예약대기 기준": { number: 10 },
+    },
+    {
+      클래스명: { title: [{ text: { content: className } }] },
+      "수동 예약대기": { checkbox: false },
+    },
+    {
+      클래스명: { rich_text: [{ text: { content: className } }] },
+      "수동 예약대기": { checkbox: false },
+      "예약대기 기준": { number: 10 },
+    },
+    {
+      클래스명: { rich_text: [{ text: { content: className } }] },
+      "수동 예약대기": { checkbox: false },
+    },
+  ];
+
+  for (const props of attempts) {
+    const { ok, status, text, json } = await tryCreate(props);
+    if (ok && json?.id) return json.id as string;
+    console.error("[Notion 생성] 시도 실패:", status, text);
   }
 
-  const created = await createResponse.json();
-  return created.id as string;
+  throw new Error(
+    "클래스 설정 행을 만들 수 없습니다. Notion DB에 '클래스명'(제목 또는 텍스트), '수동 예약대기'(체크박스) 컬럼이 있는지 확인해주세요."
+  );
 }
 
 /**

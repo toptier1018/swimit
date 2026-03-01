@@ -171,10 +171,10 @@ export default function SwimmingClassPage() {
   const [manualWaitlistClasses, setManualWaitlistClasses] = useState<Set<string>>(
     new Set<string>()
   );
+  const [waitlistThresholds, setWaitlistThresholds] = useState<Record<string, number>>({});
   const { toast } = useToast();
   const submittedApplicantsRef = useRef<Set<string>>(new Set());
   const lastFunnelActionRef = useRef<{ action: string; ts: number } | null>(null);
-  const waitlistThresholdsRef = useRef<Record<string, number>>({});
 
   // 개발자 모드 (URL 파라미터로 활성화)
   const [showDebug, setShowDebug] = useState(false);
@@ -188,7 +188,6 @@ export default function SwimmingClassPage() {
   const resetClassEnrollment = () => {
     const resetCounts = { ...INITIAL_ENROLLMENT };
     setClassEnrollment(resetCounts);
-    waitlistThresholdsRef.current = {};
     // 예약대기는 서버에서 관리하므로 여기서는 초기화하지 않음
     try {
       localStorage.setItem("class_enrollment_counts", JSON.stringify(resetCounts));
@@ -350,7 +349,7 @@ export default function SwimmingClassPage() {
         console.log("[서버 동기화] 수동 예약대기 클래스:", data.manualWaitlistClasses);
       }
       if (data.success && data.thresholds) {
-        waitlistThresholdsRef.current = data.thresholds;
+        setWaitlistThresholds(data.thresholds);
         console.log("[서버 동기화] 예약대기 기준(thresholds):", data.thresholds);
       }
     } catch (error) {
@@ -460,23 +459,23 @@ export default function SwimmingClassPage() {
   const isClassFull = useCallback((className: string) => {
     if (FORCE_ALL_WAITLIST) return true;
     if (manualWaitlistClasses.has(className)) return true;
-    const threshold = waitlistThresholdsRef.current[className];
+    const threshold = waitlistThresholds[className];
     if (threshold !== undefined) {
       return (classEnrollment[className] || 0) >= threshold;
     }
     return (classEnrollment[className] || 0) >= 10;
-  }, [manualWaitlistClasses, classEnrollment]);
+  }, [manualWaitlistClasses, classEnrollment, waitlistThresholds]);
 
   // 클래스별 결제 여부 확인 (10명 이상이면 예약대기)
   const hasEnrollment = useCallback((className: string) => {
     if (FORCE_ALL_WAITLIST) return true;
     if (manualWaitlistClasses.has(className)) return true;
-    const threshold = waitlistThresholdsRef.current[className];
+    const threshold = waitlistThresholds[className];
     if (threshold !== undefined) {
       return (classEnrollment[className] || 0) >= threshold;
     }
     return (classEnrollment[className] || 0) >= 10;
-  }, [manualWaitlistClasses, classEnrollment]);
+  }, [manualWaitlistClasses, classEnrollment, waitlistThresholds]);
 
   // 주문번호 생성 함수 (겹치지 않도록)
   const generateOrderNumber = () => {
@@ -668,7 +667,7 @@ export default function SwimmingClassPage() {
                           const threshold =
                             manualWaitlistClasses.has(className)
                               ? "강제예약"
-                              : waitlistThresholdsRef.current[className];
+                              : waitlistThresholds[className];
                           const isWaitlist = isClassFull(className);
                           const effectiveThreshold =
                             typeof threshold === "number" ? threshold : 10;
@@ -710,14 +709,32 @@ export default function SwimmingClassPage() {
                                             }),
                                           });
                                           const data = await response.json();
-                                          if (data.success && data.thresholds) {
-                                            waitlistThresholdsRef.current = data.thresholds;
-                                            console.log("[개발자] 기준 변경 완료:", data.thresholds[className]);
+                                          if (response.ok && data.success && data.thresholds) {
+                                            setWaitlistThresholds(data.thresholds);
+                                            console.log(
+                                              "[개발자] 기준 변경 완료:",
+                                              data.thresholds[className]
+                                            );
                                           } else {
-                                            console.error("[개발자] 기준 변경 실패:", data.error);
+                                            console.error(
+                                              "[개발자] 기준 변경 실패:",
+                                              data?.error || response.status
+                                            );
+                                            toast({
+                                              title: "기준 변경 실패",
+                                              description:
+                                                data?.error ||
+                                                "서버에서 기준 인원을 저장하지 못했습니다.",
+                                              variant: "destructive",
+                                            });
                                           }
                                         } catch (error) {
                                           console.error("[개발자] 기준 변경 API 호출 실패:", error);
+                                          toast({
+                                            title: "기준 변경 오류",
+                                            description: "네트워크 오류가 발생했습니다.",
+                                            variant: "destructive",
+                                          });
                                         }
                                       }}
                                     />
@@ -746,14 +763,28 @@ export default function SwimmingClassPage() {
                                           }),
                                         });
                                         const data = await response.json();
-                                        if (data.success) {
+                                        if (response.ok && data.success) {
                                           setManualWaitlistClasses(new Set(data.manualWaitlistClasses));
                                           if (data.thresholds) {
-                                            waitlistThresholdsRef.current = data.thresholds;
+                                            setWaitlistThresholds(data.thresholds);
                                           }
+                                        } else {
+                                          console.error("[개발자] 대기 해제 실패:", data?.error);
+                                          toast({
+                                            title: "대기 해제 실패",
+                                            description:
+                                              data?.error ||
+                                              "서버에서 예약대기 해제를 처리하지 못했습니다.",
+                                            variant: "destructive",
+                                          });
                                         }
                                       } catch (error) {
                                         console.error("[개발자] 서버 API 호출 실패:", error);
+                                        toast({
+                                          title: "대기 해제 오류",
+                                          description: "네트워크 오류가 발생했습니다.",
+                                          variant: "destructive",
+                                        });
                                       }
                                       
                                       setClassEnrollment((prev) => ({
@@ -779,14 +810,28 @@ export default function SwimmingClassPage() {
                                           }),
                                         });
                                         const data = await response.json();
-                                        if (data.success) {
+                                        if (response.ok && data.success) {
                                           setManualWaitlistClasses(new Set(data.manualWaitlistClasses));
                                           if (data.thresholds) {
-                                            waitlistThresholdsRef.current = data.thresholds;
+                                            setWaitlistThresholds(data.thresholds);
                                           }
+                                        } else {
+                                          console.error("[개발자] 예약대기 설정 실패:", data?.error);
+                                          toast({
+                                            title: "예약대기 설정 실패",
+                                            description:
+                                              data?.error ||
+                                              "서버에서 예약대기 설정을 처리하지 못했습니다.",
+                                            variant: "destructive",
+                                          });
                                         }
                                       } catch (error) {
                                         console.error("[개발자] 서버 API 호출 실패:", error);
+                                        toast({
+                                          title: "예약대기 설정 오류",
+                                          description: "네트워크 오류가 발생했습니다.",
+                                          variant: "destructive",
+                                        });
                                       }
                                       
                                       console.log("[개발자] 예약대기 전환 완료:", className);
@@ -817,17 +862,27 @@ export default function SwimmingClassPage() {
                           }),
                         });
                         const data = await response.json();
-                        if (data.success) {
+                        if (response.ok && data.success) {
                           setManualWaitlistClasses(new Set(data.manualWaitlistClasses || []));
                           if (data.thresholds) {
-                            waitlistThresholdsRef.current = data.thresholds;
+                            setWaitlistThresholds(data.thresholds);
                           }
                           console.log("[개발자] Notion 설정 행 자동 생성 완료");
                         } else {
                           console.error("[개발자] Notion 설정 행 자동 생성 실패:", data.error);
+                          toast({
+                            title: "Notion 설정행 생성 실패",
+                            description: data?.error || "서버 처리 실패",
+                            variant: "destructive",
+                          });
                         }
                       } catch (error) {
                         console.error("[개발자] ensure API 호출 실패:", error);
+                        toast({
+                          title: "Notion 설정행 생성 오류",
+                          description: "네트워크 오류가 발생했습니다.",
+                          variant: "destructive",
+                        });
                       }
                     }}
                   >
@@ -850,14 +905,24 @@ export default function SwimmingClassPage() {
                             }),
                           });
                           const data = await response.json();
-                          if (data.success) {
+                          if (response.ok && data.success) {
                             setManualWaitlistClasses(new Set(data.manualWaitlistClasses || []));
-                            if (data.thresholds) waitlistThresholdsRef.current = data.thresholds;
+                            if (data.thresholds) setWaitlistThresholds(data.thresholds);
                           } else {
                             console.error("[개발자] 전체 예약대기 ON 실패:", data.error);
+                            toast({
+                              title: "전체 예약대기 실패",
+                              description: data?.error || "서버 처리 실패",
+                              variant: "destructive",
+                            });
                           }
                         } catch (error) {
                           console.error("[개발자] bulkAdd API 호출 실패:", error);
+                          toast({
+                            title: "전체 예약대기 오류",
+                            description: "네트워크 오류가 발생했습니다.",
+                            variant: "destructive",
+                          });
                         }
                       }}
                     >
@@ -879,14 +944,24 @@ export default function SwimmingClassPage() {
                             }),
                           });
                           const data = await response.json();
-                          if (data.success) {
+                          if (response.ok && data.success) {
                             setManualWaitlistClasses(new Set(data.manualWaitlistClasses || []));
-                            if (data.thresholds) waitlistThresholdsRef.current = data.thresholds;
+                            if (data.thresholds) setWaitlistThresholds(data.thresholds);
                           } else {
                             console.error("[개발자] 전체 예약대기 OFF 실패:", data.error);
+                            toast({
+                              title: "전체 해제 실패",
+                              description: data?.error || "서버 처리 실패",
+                              variant: "destructive",
+                            });
                           }
                         } catch (error) {
                           console.error("[개발자] bulkRemove API 호출 실패:", error);
+                          toast({
+                            title: "전체 해제 오류",
+                            description: "네트워크 오류가 발생했습니다.",
+                            variant: "destructive",
+                          });
                         }
                       }}
                     >

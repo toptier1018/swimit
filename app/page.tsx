@@ -2541,7 +2541,15 @@ export default function SwimmingClassPage() {
                                     </div>
                                     <div className="flex justify-end gap-2 mt-2 sm:mt-2 flex-wrap">
                                       {(() => {
-                                        const label = isFull || hasPayment ? "마감" : undefined;
+                                        const laneBadge: Record<string, string> = {
+                                          "1레인": "1자리 남음",
+                                          "2레인": "마감임박",
+                                          "3레인": "2자리 남음",
+                                          "4레인": "마감임박",
+                                          "5레인": "1자리 남음",
+                                        };
+                                        const label =
+                                          isFull || hasPayment ? "마감" : laneBadge[slot.lane];
                                         if (!label) return null;
                                         return (
                                           <span className="bg-white border border-red-200 text-red-600 text-sm md:text-[11px] px-3 md:px-2 py-1.5 md:py-1 rounded font-bold">

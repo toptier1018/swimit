@@ -2347,74 +2347,144 @@ export default function SwimmingClassPage() {
                       <span>📋</span> 클래스 상세 안내
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-5">
+                    <div className="text-sm sm:text-base font-semibold text-gray-900">
+                      📋 클래스 상세 안내
+                    </div>
+
                     {/* 자유형 클래스 */}
-                    <div>
-                      <h4 className="font-semibold flex items-center gap-2 mb-2">
-                        <span>🏊</span> 자유형 클래스
+                    <div className="rounded-lg border bg-white p-4">
+                      <h4 className="font-bold text-gray-900 flex items-center gap-2">
+                        <span aria-hidden>🏊</span> 자유형 클래스
                       </h4>
-                      <div className="space-y-1 text-sm ml-6">
+                      <div className="mt-3 space-y-2 text-sm sm:text-[15px]">
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>자유형 A: 자유형 25m 이상 가능하신 분</span>
+                          <div className="leading-relaxed">
+                            <span className="font-semibold">자유형 A (초급)</span>
+                            <span className="text-gray-600"> : </span>
+                            <span>자유형 25m 이상 가능하신 분</span>
+                          </div>
                         </div>
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>
-                            자유형 B: 자유형 50m 가능 / 수영 경력 6개월 이상
-                          </span>
+                          <div className="leading-relaxed">
+                            <span className="font-semibold">자유형 B (중급)</span>
+                            <span className="text-gray-600"> : </span>
+                            <span>자유형 50m 가능</span>
+                            <span className="text-gray-500"> / </span>
+                            <span>수영 경력 6개월 이상</span>
+                          </div>
                         </div>
-                        <p className="text-xs text-red-500 mt-2 ml-6">
+                        <div className="pt-2 text-xs sm:text-sm text-red-600 font-semibold">
                           ※ 연속 수강 시 개인 실력에 맞춰 단계별로 지도합니다.
-                        </p>
+                        </div>
                       </div>
                     </div>
 
                     {/* 평영 클래스 */}
-                    <div>
-                      <h4 className="font-semibold flex items-center gap-2 mb-2">
-                        <span>🐸</span> 평영 클래스
+                    <div className="rounded-lg border bg-white p-4">
+                      <h4 className="font-bold text-gray-900 flex items-center gap-2">
+                        <span aria-hidden>🐸</span> 평영 클래스
                       </h4>
-                      <div className="space-y-1 text-sm ml-6">
+                      <div className="mt-3 space-y-2 text-sm sm:text-[15px]">
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>평영 A: 평영으로 50m 이상 가능하신 분</span>
+                          <div className="leading-relaxed">
+                            <span className="font-semibold">평영 A (초급)</span>
+                            <span className="text-gray-600"> : </span>
+                            <span>평영으로 50m 이상 가능하신 분</span>
+                          </div>
                         </div>
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>
-                            평영 B: 평영 100m 가능 / 수영 경력 1년 이상
-                          </span>
+                          <div className="leading-relaxed">
+                            <span className="font-semibold">평영 B (중급)</span>
+                            <span className="text-gray-600"> : </span>
+                            <span>평영 100m 가능</span>
+                            <span className="text-gray-500"> / </span>
+                            <span>수영 경력 1년 이상</span>
+                          </div>
                         </div>
-                        <p className="text-xs text-red-500 mt-2 ml-6">
+                        <div className="pt-2 text-xs sm:text-sm text-red-600 font-semibold">
                           ※ 연속 수강 시 개인 실력에 맞춰 단계별로 지도합니다.
-                        </p>
+                        </div>
                       </div>
                     </div>
 
                     {/* 접영 클래스 */}
-                    <div>
-                      <h4 className="font-semibold flex items-center gap-2 mb-2">
-                        <span>🦋</span> 접영 클래스
+                    <div className="rounded-lg border bg-white p-4">
+                      <h4 className="font-bold text-gray-900 flex items-center gap-2">
+                        <span aria-hidden>🦋</span> 접영 클래스
                       </h4>
-                      <div className="space-y-1 text-sm ml-6">
+                      <div className="mt-3 space-y-2 text-sm sm:text-[15px]">
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>
-                            접영 A: 접영·배영·평영·자유형을 모두 배워보았으나
+                          <div className="leading-relaxed">
+                            <span className="font-semibold">접영 A (초급)</span>
+                            <span className="text-gray-600"> : </span>
+                            <span>접영·배영·평영·자유형을 모두 배워보았으나</span>
                             <br />
-                            &emsp;&emsp;접영 동작이 아직 어려우신 분
-                          </span>
+                            <span>접영 동작이 아직 어려우신 분</span>
+                          </div>
                         </div>
                         <div className="flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span>
-                            접영 B: 접영 50m 가능 / 수영 경력 1년 이상
-                          </span>
+                          <div className="leading-relaxed">
+                            <span className="font-semibold">접영 B (중급)</span>
+                            <span className="text-gray-600"> : </span>
+                            <span>접영 50m 가능</span>
+                            <span className="text-gray-500"> / </span>
+                            <span>수영 경력 1년 이상</span>
+                          </div>
                         </div>
-                        <p className="text-xs text-red-500 mt-2 ml-6">
+                        <div className="pt-2 text-xs sm:text-sm text-red-600 font-semibold">
                           ※ 연속 수강 시 개인 실력에 맞춰 단계별로 지도합니다.
-                        </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 레벨 안내 */}
+                    <div className="rounded-lg border bg-blue-50 p-4">
+                      <h4 className="font-bold text-gray-900 mb-2">레벨 안내</h4>
+
+                      <div className="space-y-3 text-sm sm:text-[15px]">
+                        <div>
+                          <div className="font-semibold text-gray-900">
+                            🔹 초급 A
+                          </div>
+                          <div className="mt-1 text-gray-700 leading-relaxed">
+                            호흡 · 수평 유지 · 팔 동작 연결 등
+                            <br />
+                            수영의 기본 구조를 다시 정리하는 수업입니다.
+                            <br />
+                            고수분들도 기본기가 흔들리면 초급을 다시 듣습니다.
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="font-semibold text-gray-900">
+                            🔹 중급 B
+                          </div>
+                          <div className="mt-1 text-gray-700 leading-relaxed">
+                            스트로크 디테일 · 캐치 감각 · 추진 효율 · 호흡 타이밍 미세 조정 등
+                            <br />
+                            전체적인 완성도를 다루는 단계입니다.
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 space-y-1 text-sm sm:text-[15px] font-semibold">
+                        <div className="text-gray-900">
+                          👉 자세 안정감 기본기가 부족하다 느끼시면 <span className="text-blue-700">초급</span>
+                        </div>
+                        <div className="text-gray-900">
+                          👉 기록 단축·효율 개선이 목표라면 <span className="text-blue-700">중급</span>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 text-sm sm:text-[15px] text-gray-800 font-semibold">
+                        본인 상태에 맞게 선택해 주세요 😊🏊
                       </div>
                     </div>
 

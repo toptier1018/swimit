@@ -117,6 +117,8 @@ export default function SwimmingClassPage() {
     available?: boolean; // Added for consistency with updates
   } | null>(null);
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
+  const [debugCollapsed, setDebugCollapsed] = useState(false);
+  const [debugFilter, setDebugFilter] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -657,13 +659,51 @@ export default function SwimmingClassPage() {
       <main className="container mx-auto py-8 px-4 max-w-4xl">
         {/* 개발자 모드: 카운터 표시 (모든 단계에서 표시) */}
         {showDebug && (
-          <div className="fixed top-4 right-4 bg-black/90 text-white p-3 rounded-lg text-xs z-50 shadow-lg border-2 border-yellow-500">
-            <div className="font-bold text-yellow-400 mb-2">🔧 개발자 모드</div>
-                <div className="text-[11px] text-gray-300 mb-2">
-                  기준 날짜: {todayKst}
+          <div className="fixed top-4 right-4 bg-black/90 text-white rounded-lg text-xs z-50 shadow-2xl border-2 border-yellow-500 w-[340px] sm:w-[420px] lg:w-[560px] max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col">
+            <div className="px-3 py-2 border-b border-yellow-500/40 bg-black/95 sticky top-0">
+              <div className="flex items-center justify-between gap-2">
+                <div className="font-bold text-yellow-400 text-sm">🔧 개발자 모드</div>
+                <button
+                  type="button"
+                  className="text-[11px] px-2 py-1 rounded bg-white/10 hover:bg-white/15 border border-white/10"
+                  onClick={() => {
+                    setDebugCollapsed((v) => !v);
+                    console.log("[개발자] 패널 토글:", !debugCollapsed ? "접기" : "펼치기");
+                  }}
+                >
+                  {debugCollapsed ? "펼치기" : "접기"}
+                </button>
+              </div>
+              <div className="mt-1 flex items-center justify-between gap-2">
+                <div className="text-[11px] text-gray-300">
+                  기준 날짜: <span className="font-mono">{todayKst}</span>
                 </div>
-                      <div className="space-y-1">
-                        {Object.entries(classEnrollment).map(([className, count]) => {
+                <div className="text-[11px] text-gray-400 font-mono">
+                  classes: {Object.keys(classEnrollment).length}
+                </div>
+              </div>
+              {!debugCollapsed && (
+                <div className="mt-2 flex items-center gap-2">
+                  <input
+                    value={debugFilter}
+                    onChange={(e) => setDebugFilter(e.target.value)}
+                    placeholder="클래스 검색 (예: 1부, 3레인, 접영)"
+                    className="w-full rounded bg-black/60 border border-gray-700 px-2 py-1 text-white text-[12px] placeholder:text-gray-500"
+                  />
+                </div>
+              )}
+            </div>
+
+            {!debugCollapsed && (
+              <div className="p-3 overflow-auto">
+                <div className="space-y-1">
+                  {Object.entries(classEnrollment)
+                    .filter(([className]) => {
+                      const q = debugFilter.trim();
+                      if (!q) return true;
+                      return className.toLowerCase().includes(q.toLowerCase());
+                    })
+                    .map(([className, count]) => {
                           const threshold =
                             manualWaitlistClasses.has(className)
                               ? "강제예약"
@@ -675,7 +715,7 @@ export default function SwimmingClassPage() {
                             <div key={className} className="flex flex-col gap-1">
                               <div className="flex justify-between gap-2">
                                 <div className="flex-1">
-                                  <div className="text-gray-300">{className}:</div>
+                                  <div className="text-gray-300 font-mono break-words">{className}</div>
                                   <div className="font-bold text-sm">
                                     {count}명 / 다음: {count + 1}번째
                                   </div>
@@ -844,7 +884,7 @@ export default function SwimmingClassPage() {
                             </div>
                           );
                         })}
-                      </div>
+                </div>
                 <div className="mt-2 grid grid-cols-1 gap-2">
                   <Button
                     size="sm"
@@ -1029,6 +1069,8 @@ export default function SwimmingClassPage() {
                 <div className="text-white">
                   {selectedTimeSlot.name} - 현재: {classEnrollment[selectedTimeSlot.name] || 0}명
                 </div>
+              </div>
+            )}
               </div>
             )}
           </div>

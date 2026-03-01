@@ -54,7 +54,8 @@ const classes = [
 ];
 
 // 오픈 전 임시 설정: 전체 클래스를 '예약대기'로 강제 표시
-const FORCE_ALL_WAITLIST = true;
+// 개발자 모드에서 대기 해제/기준 변경이 필요하므로 기본은 false로 둡니다.
+const FORCE_ALL_WAITLIST = false;
 
 type TimetableRow = {
   session: string;
@@ -347,6 +348,10 @@ export default function SwimmingClassPage() {
       if (data.success && data.manualWaitlistClasses) {
         setManualWaitlistClasses(new Set(data.manualWaitlistClasses));
         console.log("[서버 동기화] 수동 예약대기 클래스:", data.manualWaitlistClasses);
+      }
+      if (data.success && data.thresholds) {
+        waitlistThresholdsRef.current = data.thresholds;
+        console.log("[서버 동기화] 예약대기 기준(thresholds):", data.thresholds);
       }
     } catch (error) {
       console.error("[서버 동기화] 예약대기 클래스 조회 실패:", error);
@@ -665,6 +670,8 @@ export default function SwimmingClassPage() {
                               ? "강제예약"
                               : waitlistThresholdsRef.current[className];
                           const isWaitlist = isClassFull(className);
+                          const effectiveThreshold =
+                            typeof threshold === "number" ? threshold : 10;
                           return (
                             <div key={className} className="flex flex-col gap-1">
                               <div className="flex justify-between gap-2">
@@ -676,6 +683,44 @@ export default function SwimmingClassPage() {
                                   <div className="text-[11px] text-gray-400">
                                     예약대기 기준:{" "}
                                     {threshold === undefined ? 10 : String(threshold)}
+                                  </div>
+                                  <div className="mt-1 flex items-center gap-2">
+                                    <div className="text-[11px] text-gray-400">기준 변경:</div>
+                                    <input
+                                      type="number"
+                                      min={0}
+                                      max={999}
+                                      defaultValue={effectiveThreshold}
+                                      className="w-16 rounded bg-black/60 border border-gray-600 px-2 py-1 text-white text-[11px]"
+                                      onBlur={async (e) => {
+                                        const next = Number(e.currentTarget.value);
+                                        if (!Number.isFinite(next) || next < 0) return;
+                                        console.log("[개발자] 기준 변경 요청:", {
+                                          className,
+                                          threshold: next,
+                                        });
+                                        try {
+                                          const response = await fetch("/api/admin/set-waitlist", {
+                                            method: "POST",
+                                            headers: { "Content-Type": "application/json" },
+                                            body: JSON.stringify({
+                                              action: "setThreshold",
+                                              className,
+                                              threshold: next,
+                                            }),
+                                          });
+                                          const data = await response.json();
+                                          if (data.success && data.thresholds) {
+                                            waitlistThresholdsRef.current = data.thresholds;
+                                            console.log("[개발자] 기준 변경 완료:", data.thresholds[className]);
+                                          } else {
+                                            console.error("[개발자] 기준 변경 실패:", data.error);
+                                          }
+                                        } catch (error) {
+                                          console.error("[개발자] 기준 변경 API 호출 실패:", error);
+                                        }
+                                      }}
+                                    />
                                   </div>
                                 </div>
                                 <Button
@@ -703,15 +748,20 @@ export default function SwimmingClassPage() {
                                         const data = await response.json();
                                         if (data.success) {
                                           setManualWaitlistClasses(new Set(data.manualWaitlistClasses));
+                                          if (data.thresholds) {
+                                            waitlistThresholdsRef.current = data.thresholds;
+                                          }
                                         }
                                       } catch (error) {
                                         console.error("[개발자] 서버 API 호출 실패:", error);
                                       }
                                       
-                                      delete waitlistThresholdsRef.current[className];
                                       setClassEnrollment((prev) => ({
                                         ...prev,
-                                        [className]: Math.min(prev[className] || 0, 9),
+                                        [className]: Math.min(
+                                          prev[className] || 0,
+                                          Math.max(0, effectiveThreshold - 1)
+                                        ),
                                       }));
                                       console.log("[개발자] 예약대기 해제 완료:", className);
                                     } else {
@@ -731,6 +781,9 @@ export default function SwimmingClassPage() {
                                         const data = await response.json();
                                         if (data.success) {
                                           setManualWaitlistClasses(new Set(data.manualWaitlistClasses));
+                                          if (data.thresholds) {
+                                            waitlistThresholdsRef.current = data.thresholds;
+                                          }
                                         }
                                       } catch (error) {
                                         console.error("[개발자] 서버 API 호출 실패:", error);
@@ -747,6 +800,100 @@ export default function SwimmingClassPage() {
                           );
                         })}
                       </div>
+                <div className="mt-2 grid grid-cols-1 gap-2">
+                  <Button
+                    size="sm"
+                    className="w-full bg-yellow-600 hover:bg-yellow-500 text-black text-xs"
+                    onClick={async () => {
+                      const classNames = Object.keys(classEnrollment);
+                      console.log("[개발자] Notion 설정 행 자동 생성 요청:", { count: classNames.length });
+                      try {
+                        const response = await fetch("/api/admin/set-waitlist", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            action: "ensure",
+                            classNames,
+                          }),
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                          setManualWaitlistClasses(new Set(data.manualWaitlistClasses || []));
+                          if (data.thresholds) {
+                            waitlistThresholdsRef.current = data.thresholds;
+                          }
+                          console.log("[개발자] Notion 설정 행 자동 생성 완료");
+                        } else {
+                          console.error("[개발자] Notion 설정 행 자동 생성 실패:", data.error);
+                        }
+                      } catch (error) {
+                        console.error("[개발자] ensure API 호출 실패:", error);
+                      }
+                    }}
+                  >
+                    Notion 설정행 자동 생성
+                  </Button>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      size="sm"
+                      className="w-full bg-orange-600 hover:bg-orange-500 text-white text-xs"
+                      onClick={async () => {
+                        const classNames = Object.keys(classEnrollment);
+                        console.log("[개발자] 전체 예약대기 ON:", { count: classNames.length });
+                        try {
+                          const response = await fetch("/api/admin/set-waitlist", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              action: "bulkAdd",
+                              classNames,
+                            }),
+                          });
+                          const data = await response.json();
+                          if (data.success) {
+                            setManualWaitlistClasses(new Set(data.manualWaitlistClasses || []));
+                            if (data.thresholds) waitlistThresholdsRef.current = data.thresholds;
+                          } else {
+                            console.error("[개발자] 전체 예약대기 ON 실패:", data.error);
+                          }
+                        } catch (error) {
+                          console.error("[개발자] bulkAdd API 호출 실패:", error);
+                        }
+                      }}
+                    >
+                      전체 예약대기
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="w-full bg-gray-500 hover:bg-gray-400 text-white text-xs"
+                      onClick={async () => {
+                        const classNames = Object.keys(classEnrollment);
+                        console.log("[개발자] 전체 예약대기 OFF:", { count: classNames.length });
+                        try {
+                          const response = await fetch("/api/admin/set-waitlist", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              action: "bulkRemove",
+                              classNames,
+                            }),
+                          });
+                          const data = await response.json();
+                          if (data.success) {
+                            setManualWaitlistClasses(new Set(data.manualWaitlistClasses || []));
+                            if (data.thresholds) waitlistThresholdsRef.current = data.thresholds;
+                          } else {
+                            console.error("[개발자] 전체 예약대기 OFF 실패:", data.error);
+                          }
+                        } catch (error) {
+                          console.error("[개발자] bulkRemove API 호출 실패:", error);
+                        }
+                      }}
+                    >
+                      전체 해제
+                    </Button>
+                  </div>
+                </div>
                 <Button
                   size="sm"
                   className="mt-2 w-full bg-gray-800 hover:bg-gray-700 text-white text-xs"

@@ -1,5 +1,53 @@
 import { NextRequest, NextResponse } from "next/server";
 
+async function updateAlimtalkLogInNotion(params: {
+  pageId: string;
+  alimtalkSent: boolean;
+  failureReason?: string;
+}) {
+  const notionApiKey = process.env.NOTION_API_KEY;
+  if (!notionApiKey) {
+    throw new Error("Notion 환경 변수가 설정되지 않았습니다");
+  }
+
+  const nowIso = new Date().toISOString();
+  const safeReason =
+    params.failureReason && params.failureReason.length > 1800
+      ? params.failureReason.slice(0, 1800) + "…"
+      : params.failureReason;
+
+  const properties: Record<string, any> = {
+    "알림톡 발송": { checkbox: params.alimtalkSent },
+    "발송 시간": { date: { start: nowIso } },
+    "SMS 대체 발송": { checkbox: false },
+  };
+
+  if (params.alimtalkSent) {
+    properties["발송 실패 사유"] = { rich_text: [] };
+  } else {
+    properties["발송 실패 사유"] = {
+      rich_text: safeReason
+        ? [{ text: { content: safeReason } }]
+        : [{ text: { content: "알림톡 발송 실패" } }],
+    };
+  }
+
+  const response = await fetch(`https://api.notion.com/v1/pages/${params.pageId}`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${notionApiKey}`,
+      "Content-Type": "application/json",
+      "Notion-Version": "2022-06-28",
+    },
+    body: JSON.stringify({ properties }),
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => "");
+    throw new Error(`Notion 알림톡 기록 실패 (${response.status}): ${text}`);
+  }
+}
+
 /**
  * NHN Cloud 알림톡 발송 API
  * 
@@ -8,12 +56,13 @@ import { NextRequest, NextResponse } from "next/server";
  */
 export async function POST(request: NextRequest) {
   try {
-    const { customerName, customerPhone, className } = await request.json();
+    const { customerName, customerPhone, className, pageId } = await request.json();
 
     console.log("[NHN Cloud 알림톡] 발송 요청:", {
       customerName,
       customerPhone,
       className,
+      pageId,
     });
 
     // 환경 변수 확인
@@ -83,6 +132,17 @@ export async function POST(request: NextRequest) {
     // NHN Cloud는 header.isSuccessful === true이면 성공
     if (result.header?.isSuccessful) {
       console.log("[NHN Cloud 알림톡] 발송 성공:", customerName);
+      if (pageId) {
+        try {
+          console.log("[NHN Cloud 알림톡] Notion 기록 시작(성공):", pageId);
+          await updateAlimtalkLogInNotion({ pageId, alimtalkSent: true });
+          console.log("[NHN Cloud 알림톡] Notion 기록 완료(성공):", pageId);
+        } catch (e) {
+          console.error("[NHN Cloud 알림톡] Notion 기록 실패(성공 케이스):", e);
+        }
+      } else {
+        console.log("[NHN Cloud 알림톡] pageId 없음 - Notion 기록 생략");
+      }
       return NextResponse.json({
         success: true,
         message: "알림톡이 성공적으로 발송되었습니다.",
@@ -90,6 +150,26 @@ export async function POST(request: NextRequest) {
       });
     } else {
       console.error("[NHN Cloud 알림톡] 발송 실패:", result);
+      if (pageId) {
+        const reason =
+          result.header?.resultMessage || result.message || "알림톡 발송에 실패했습니다.";
+        try {
+          console.log("[NHN Cloud 알림톡] Notion 기록 시작(실패):", {
+            pageId,
+            reason,
+          });
+          await updateAlimtalkLogInNotion({
+            pageId,
+            alimtalkSent: false,
+            failureReason: reason,
+          });
+          console.log("[NHN Cloud 알림톡] Notion 기록 완료(실패):", pageId);
+        } catch (e) {
+          console.error("[NHN Cloud 알림톡] Notion 기록 실패(실패 케이스):", e);
+        }
+      } else {
+        console.log("[NHN Cloud 알림톡] pageId 없음 - Notion 기록 생략");
+      }
       return NextResponse.json(
         {
           success: false,

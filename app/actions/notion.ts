@@ -878,22 +878,31 @@ export async function updatePaymentInNotion(data: {
  * Notion 데이터베이스에서 클래스별 결제 완료된 건수를 조회하는 서버 액션
  * 배포 후에도 실제 결제 건수를 카운터로 표시하기 위해 사용
  */
-export async function getClassEnrollmentCounts() {
+export async function getClassEnrollmentCounts(classNames?: string[]) {
   try {
     const notionApiKey = process.env.NOTION_API_KEY
     const databaseId = process.env.NOTION_DATABASE_ID
+
+    const baseClassNames =
+      Array.isArray(classNames) && classNames.length > 0
+        ? classNames
+        : [
+            "자유형 A (초급)",
+            "평영 A (초급)",
+            "접영 A (초급)",
+            "자유형 B (중급)",
+            "평영 B (중급)",
+          ]
+
+    const emptyCounts: Record<string, number> = Object.fromEntries(
+      baseClassNames.map((name) => [name, 0])
+    ) as Record<string, number>
 
     if (!notionApiKey || !databaseId) {
       console.warn("[Notion 카운터 조회] 환경 변수가 설정되지 않았습니다. 기본값 0을 반환합니다.")
       return {
         success: true,
-        counts: {
-          "자유형 A (초급)": 0,
-          "평영 A (초급)": 0,
-          "접영 A (초급)": 0,
-          "자유형 B (중급)": 0,
-          "평영 B (중급)": 0,
-        },
+        counts: emptyCounts,
       }
     }
 
@@ -924,13 +933,7 @@ export async function getClassEnrollmentCounts() {
       return {
         success: false,
         error: `조회 실패: ${errorData.message || response.statusText}`,
-        counts: {
-          "자유형 A (초급)": 0,
-          "평영 A (초급)": 0,
-          "접영 A (초급)": 0,
-          "자유형 B (중급)": 0,
-          "평영 B (중급)": 0,
-        },
+        counts: emptyCounts,
       }
     }
 
@@ -938,37 +941,34 @@ export async function getClassEnrollmentCounts() {
     const pages = result.results || []
 
     // 클래스별 카운트 초기화
-    const counts: Record<string, number> = {
-      "자유형 A (초급)": 0,
-      "평영 A (초급)": 0,
-      "접영 A (초급)": 0,
-      "자유형 B (중급)": 0,
-      "평영 B (중급)": 0,
+    const counts: Record<string, number> = { ...emptyCounts }
+
+    const countPages = (inputPages: any[]) => {
+      inputPages.forEach((page: any) => {
+        const selectedClass =
+          page.properties["선택된 클래스"]?.rich_text?.[0]?.plain_text ||
+          page.properties["선택된 클래스"]?.select?.name ||
+          ""
+        const virtualAccountInfo =
+          page.properties["가상계좌 입금 정보"]?.rich_text?.[0]?.plain_text ||
+          page.properties["가상계좌 입금 정보"]?.select?.name ||
+          ""
+        // 가상계좌 입금 정보 기준으로 카운트 (미입금 제외)
+        const normalizedClass = String(selectedClass).trim()
+        const normalizedStatus = String(virtualAccountInfo).trim()
+        if (
+          normalizedClass &&
+          (normalizedStatus === "입금대기" || normalizedStatus === "입금완료")
+        ) {
+          if (counts.hasOwnProperty(normalizedClass)) {
+            counts[normalizedClass]++
+          }
+        }
+      })
     }
 
-    // 각 페이지를 순회하면서 "선택된 클래스" 필드 확인
-    pages.forEach((page: any) => {
-      const selectedClass =
-        page.properties["선택된 클래스"]?.rich_text?.[0]?.plain_text ||
-        page.properties["선택된 클래스"]?.select?.name ||
-        ""
-      const virtualAccountInfo =
-        page.properties["가상계좌 입금 정보"]?.rich_text?.[0]?.plain_text ||
-        page.properties["가상계좌 입금 정보"]?.select?.name ||
-        ""
-      // 가상계좌 입금 정보 기준으로 카운트 (미입금 제외)
-      const normalizedClass = selectedClass.trim()
-      const normalizedStatus = virtualAccountInfo.trim()
-      if (
-        normalizedClass &&
-        (normalizedStatus === "입금대기" ||
-          normalizedStatus === "입금완료")
-      ) {
-        if (counts.hasOwnProperty(normalizedClass)) {
-          counts[normalizedClass]++
-        }
-      }
-    })
+    // 첫 페이지 카운트
+    countPages(pages)
 
     // 페이지네이션 처리: 더 많은 페이지가 있는 경우 계속 조회
     let nextCursor = result.next_cursor
@@ -997,27 +997,7 @@ export async function getClassEnrollmentCounts() {
       const nextResult = await nextResponse.json()
       const nextPages = nextResult.results || []
 
-      nextPages.forEach((page: any) => {
-        const selectedClass =
-          page.properties["선택된 클래스"]?.rich_text?.[0]?.plain_text ||
-          page.properties["선택된 클래스"]?.select?.name ||
-          ""
-        const virtualAccountInfo =
-          page.properties["가상계좌 입금 정보"]?.rich_text?.[0]?.plain_text ||
-          page.properties["가상계좌 입금 정보"]?.select?.name ||
-          ""
-        const normalizedClass = selectedClass.trim()
-        const normalizedStatus = virtualAccountInfo.trim()
-        if (
-          normalizedClass &&
-          (normalizedStatus === "입금대기" ||
-            normalizedStatus === "입금완료")
-        ) {
-          if (counts.hasOwnProperty(normalizedClass)) {
-            counts[normalizedClass]++
-          }
-        }
-      })
+      countPages(nextPages)
 
       nextCursor = nextResult.next_cursor
     }
@@ -1033,13 +1013,7 @@ export async function getClassEnrollmentCounts() {
     return {
       success: false,
       error: error instanceof Error ? error.message : "알 수 없는 오류",
-      counts: {
-        "자유형 A (초급)": 0,
-        "평영 A (초급)": 0,
-        "접영 A (초급)": 0,
-        "자유형 B (중급)": 0,
-        "평영 B (중급)": 0,
-      },
+      counts: emptyCounts,
     }
   }
 }

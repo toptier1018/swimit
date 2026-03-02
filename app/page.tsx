@@ -222,7 +222,7 @@ export default function SwimmingClassPage() {
   const syncClassEnrollmentFromNotion = async () => {
     try {
       console.log("[카운터] Notion 카운터 동기화 시작");
-      const result = await getClassEnrollmentCounts();
+      const result = await getClassEnrollmentCounts(Object.keys(INITIAL_ENROLLMENT));
       if (result.success && result.counts) {
         const merged = { ...INITIAL_ENROLLMENT, ...result.counts };
         setClassEnrollment(merged);

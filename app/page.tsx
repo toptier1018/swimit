@@ -37,7 +37,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { submitToNotion, submitPaidToNotion, updatePaymentInNotion, checkPaymentStatus, checkPendingPayment, getClassEnrollmentCounts, findOrCreateApplicant } from "@/app/actions/notion";
+import { submitToNotion, submitPaidToNotion, updatePaymentInNotion, checkPaymentStatus, checkDuplicateForSameClass, getClassEnrollmentCounts, findOrCreateApplicant } from "@/app/actions/notion";
 
 const classes = [
   {
@@ -426,12 +426,11 @@ export default function SwimmingClassPage() {
   const getApplicantKey = (className?: string) => {
     const name = formData.name.trim();
     const phone = formData.phone.trim();
-    const gender = formData.gender.trim();
-    if (!name || !phone || !gender) return "";
+    if (!name || !phone) return "";
     if (className) {
-      return `${name}|${gender}|${phone}|${className}`;
+      return `${name}|${phone}|${className}`;
     }
-    return `${name}|${gender}|${phone}`;
+    return `${name}|${phone}`;
   };
 
   const todayKst = new Intl.DateTimeFormat("ko-KR", {
@@ -2808,18 +2807,20 @@ export default function SwimmingClassPage() {
                           const paymentStartedAt = new Date();
                           setPaymentDate(paymentStartedAt);
                           
-                          // 먼저 입금대기 중인 클래스가 있는지 확인
-                          const pendingCheck = await checkPendingPayment({
+                          // 같은 클래스 중복 신청 방지 (옵션1: 입금대기/예약대기만 차단)
+                          const duplicateCheck = await checkDuplicateForSameClass({
                             name: formData.name,
                             phone: formData.phone,
-                            gender: formData.gender,
+                            selectedClass: selectedTimeSlot.name,
                           });
-                          
-                          if (pendingCheck.success && pendingCheck.hasPending) {
-                            console.log("[중복방지] 이미 입금대기 중인 클래스 존재:", pendingCheck.pendingClasses);
+                          if (duplicateCheck.success && duplicateCheck.hasDuplicate) {
+                            console.log("[중복방지] 동일 클래스 중복(입금대기/예약대기) 차단:", {
+                              className: selectedTimeSlot.name,
+                              statuses: duplicateCheck.matchedStatuses,
+                            });
                             toast({
-                              title: "입금대기 중인 클래스 있음",
-                              description: `현재 ${pendingCheck.pendingClasses?.join(", ")}가 입금대기 중입니다. 해당 클래스가 예약대기/취소로 변경된 후 신청 가능합니다.`,
+                              title: "중복 신청 방지",
+                              description: `같은 성함/연락처로 이미 ${selectedTimeSlot.name}를 신청하셨습니다. 다른 클래스는 신청 가능합니다.`,
                               variant: "destructive",
                             });
                             setIsSubmitting(false);

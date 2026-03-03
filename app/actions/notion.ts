@@ -1332,6 +1332,117 @@ export async function checkPendingPayment(data: {
 }
 
 /**
+ * 같은 사람(이름+전화번호)이 같은 클래스에 이미 신청했는지 확인
+ * - 옵션1: "입금대기" 또는 "예약대기"만 중복으로 판단
+ * - 다른 클래스는 신청 가능
+ */
+export async function checkDuplicateForSameClass(data: {
+  name: string
+  phone: string
+  selectedClass: string
+}) {
+  try {
+    const notionApiKey = process.env.NOTION_API_KEY
+    const databaseId = process.env.NOTION_DATABASE_ID
+
+    if (!notionApiKey || !databaseId) {
+      return {
+        success: false,
+        error: "서버 설정 오류: 환경 변수가 설정되지 않았습니다",
+        hasDuplicate: false,
+      }
+    }
+
+    console.log("[Notion 중복확인] 같은 클래스 중복 확인:", {
+      name: data.name,
+      phone: data.phone,
+      selectedClass: data.selectedClass,
+    })
+
+    const response = await fetch(
+      `https://api.notion.com/v1/databases/${databaseId}/query`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${notionApiKey}`,
+          "Content-Type": "application/json",
+          "Notion-Version": "2022-06-28",
+        },
+        body: JSON.stringify({
+          filter: {
+            and: [
+              {
+                property: "이름",
+                title: { equals: data.name },
+              },
+              {
+                property: "전화번호",
+                rich_text: { equals: data.phone },
+              },
+            ],
+          },
+          page_size: 100,
+        }),
+      }
+    )
+
+    if (!response.ok) {
+      const text = await response.text().catch(() => "")
+      console.error("[Notion 중복확인] API 오류:", response.status, text)
+      return {
+        success: false,
+        error: "조회 실패",
+        hasDuplicate: false,
+      }
+    }
+
+    const result = await response.json()
+    const pages = result.results || []
+
+    let hasDuplicate = false
+    const matchedStatuses: string[] = []
+
+    pages.forEach((page: any) => {
+      const selectedClass =
+        page.properties["선택된 클래스"]?.rich_text?.[0]?.plain_text ||
+        page.properties["선택된 클래스"]?.select?.name ||
+        ""
+      const virtualAccountInfo =
+        page.properties["가상계좌 입금 정보"]?.rich_text?.[0]?.plain_text ||
+        page.properties["가상계좌 입금 정보"]?.select?.name ||
+        ""
+      const status = String(virtualAccountInfo).trim()
+
+      if (String(selectedClass).trim() !== data.selectedClass.trim()) return
+
+      if (status === "입금대기" || status === "예약대기") {
+        hasDuplicate = true
+        matchedStatuses.push(status)
+      }
+    })
+
+    console.log("[Notion 중복확인] 결과:", {
+      hasDuplicate,
+      matchedStatuses,
+      matchedCount: pages.length,
+    })
+
+    return {
+      success: true,
+      hasDuplicate,
+      matchedStatuses,
+    }
+  } catch (error) {
+    console.error("[Notion 중복확인] 예외 발생:", error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "알 수 없는 오류",
+      hasDuplicate: false,
+    }
+  }
+}
+
+/**
  * 입금대기 상태인 사용자 목록 조회 (알림톡 발송용)
  */
 export async function getPendingPaymentUsers() {

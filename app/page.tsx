@@ -2993,6 +2993,22 @@ export default function SwimmingClassPage() {
                                   } else {
                                     console.error("[알림톡] 발송 실패:", alimtalkResult.error);
                                   }
+
+                                  if (alimtalkResult?.notionLog?.attempted) {
+                                    if (alimtalkResult.notionLog.success) {
+                                      console.log("[알림톡] Notion 기록 성공");
+                                    } else {
+                                      console.error("[알림톡] Notion 기록 실패:", alimtalkResult.notionLog.error);
+                                      toast({
+                                        title: "노션 표시 실패",
+                                        description:
+                                          "알림톡은 처리됐지만 노션에 체크/시간 기록을 저장하지 못했습니다. 노션 컬럼명/타입(알림톡 발송, 발송 시간, 발송 실패 사유, SMS 대체 발송)을 확인해주세요.",
+                                        variant: "destructive",
+                                      });
+                                    }
+                                  } else {
+                                    console.log("[알림톡] Notion 기록 미시도(pageId 없음)");
+                                  }
                                 } catch (alimtalkError) {
                                   // 알림톡 실패해도 결제는 계속 진행
                                   console.error("[알림톡] 발송 중 오류:", alimtalkError);

@@ -44,8 +44,13 @@ async function updateAlimtalkLogInNotion(params: {
 
   if (!response.ok) {
     const text = await response.text().catch(() => "");
-    throw new Error(`Notion 알림톡 기록 실패 (${response.status}): ${text}`);
+    return {
+      success: false as const,
+      error: `Notion 알림톡 기록 실패 (${response.status}): ${text}`,
+    };
   }
+
+  return { success: true as const };
 }
 
 /**
@@ -130,15 +135,31 @@ export async function POST(request: NextRequest) {
 
     // 성공 여부 확인
     // NHN Cloud는 header.isSuccessful === true이면 성공
+    let notionLog:
+      | { attempted: false }
+      | { attempted: true; success: true }
+      | { attempted: true; success: false; error: string } = { attempted: false };
+
     if (result.header?.isSuccessful) {
       console.log("[NHN Cloud 알림톡] 발송 성공:", customerName);
       if (pageId) {
         try {
           console.log("[NHN Cloud 알림톡] Notion 기록 시작(성공):", pageId);
-          await updateAlimtalkLogInNotion({ pageId, alimtalkSent: true });
-          console.log("[NHN Cloud 알림톡] Notion 기록 완료(성공):", pageId);
+          const notionResult = await updateAlimtalkLogInNotion({ pageId, alimtalkSent: true });
+          if (notionResult.success) {
+            notionLog = { attempted: true, success: true };
+            console.log("[NHN Cloud 알림톡] Notion 기록 완료(성공):", pageId);
+          } else {
+            notionLog = { attempted: true, success: false, error: notionResult.error };
+            console.error("[NHN Cloud 알림톡] Notion 기록 실패(성공 케이스):", notionResult.error);
+          }
         } catch (e) {
           console.error("[NHN Cloud 알림톡] Notion 기록 실패(성공 케이스):", e);
+          notionLog = {
+            attempted: true,
+            success: false,
+            error: e instanceof Error ? e.message : "Notion 기록 중 알 수 없는 오류",
+          };
         }
       } else {
         console.log("[NHN Cloud 알림톡] pageId 없음 - Notion 기록 생략");
@@ -147,6 +168,7 @@ export async function POST(request: NextRequest) {
         success: true,
         message: "알림톡이 성공적으로 발송되었습니다.",
         data: result,
+        notionLog,
       });
     } else {
       console.error("[NHN Cloud 알림톡] 발송 실패:", result);
@@ -158,14 +180,25 @@ export async function POST(request: NextRequest) {
             pageId,
             reason,
           });
-          await updateAlimtalkLogInNotion({
+          const notionResult = await updateAlimtalkLogInNotion({
             pageId,
             alimtalkSent: false,
             failureReason: reason,
           });
-          console.log("[NHN Cloud 알림톡] Notion 기록 완료(실패):", pageId);
+          if (notionResult.success) {
+            notionLog = { attempted: true, success: true };
+            console.log("[NHN Cloud 알림톡] Notion 기록 완료(실패):", pageId);
+          } else {
+            notionLog = { attempted: true, success: false, error: notionResult.error };
+            console.error("[NHN Cloud 알림톡] Notion 기록 실패(실패 케이스):", notionResult.error);
+          }
         } catch (e) {
           console.error("[NHN Cloud 알림톡] Notion 기록 실패(실패 케이스):", e);
+          notionLog = {
+            attempted: true,
+            success: false,
+            error: e instanceof Error ? e.message : "Notion 기록 중 알 수 없는 오류",
+          };
         }
       } else {
         console.log("[NHN Cloud 알림톡] pageId 없음 - Notion 기록 생략");
@@ -175,6 +208,7 @@ export async function POST(request: NextRequest) {
           success: false,
           error: result.header?.resultMessage || result.message || "알림톡 발송에 실패했습니다.",
           data: result,
+          notionLog,
         },
         { status: 400 }
       );

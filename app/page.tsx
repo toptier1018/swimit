@@ -908,8 +908,8 @@ export default function SwimmingClassPage() {
                           }
                           console.log("[개발자] Notion 설정 행 자동 생성 완료");
                           toast({
-                            title: "생성 완료",
-                            description: "Notion 표에 설정 행이 정상적으로 저장되었습니다.",
+                            title: "Notion 설정행 생성 완료",
+                            description: "모든 클래스의 설정행이 Notion에 정상 저장·동기화되었습니다.",
                           });
                         } else {
                           console.error("[개발자] Notion 설정 행 자동 생성 실패:", data.error);

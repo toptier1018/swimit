@@ -749,10 +749,19 @@ export default function SwimmingClassPage() {
                                           });
                                           const data = await response.json();
                                           if (response.ok && data.success && data.thresholds) {
-                                            setWaitlistThresholds(data.thresholds);
+                                            // 서버 값 기준으로 동기화하되,
+                                            // 혹시 Notion에서 클래스명이 살짝 다르더라도
+                                            // 현재 화면의 클래스는 next 값으로 확실히 반영
+                                            setWaitlistThresholds((prev) => ({
+                                              ...prev,
+                                              ...data.thresholds,
+                                              [className]: next,
+                                            }));
                                             console.log(
                                               "[개발자] 기준 변경 완료:",
-                                              data.thresholds[className]
+                                              data.thresholds[className],
+                                              "로컬 적용:",
+                                              next
                                             );
                                           } else {
                                             console.error(

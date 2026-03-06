@@ -907,6 +907,10 @@ export default function SwimmingClassPage() {
                             setWaitlistThresholds(data.thresholds);
                           }
                           console.log("[개발자] Notion 설정 행 자동 생성 완료");
+                          toast({
+                            title: "생성 완료",
+                            description: "Notion 표에 설정 행이 정상적으로 저장되었습니다.",
+                          });
                         } else {
                           console.error("[개발자] Notion 설정 행 자동 생성 실패:", data.error);
                           toast({

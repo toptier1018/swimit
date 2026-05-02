@@ -63,7 +63,7 @@ type ClassItem = {
 
 const classes: ClassItem[] = [
   {
-    id: 2,
+    id: 3,
     year: 2026,
     location: "서울 서초 인근",
     locationCode: "5.31",
@@ -76,7 +76,7 @@ const classes: ClassItem[] = [
     scheduleSummaryLines: ["1부 14:00~16:00"],
   },
   {
-    id: 3,
+    id: 4,
     year: 2026,
     location: "김포 아스타스포츠센터",
     locationCode: "6.14",
@@ -151,8 +151,8 @@ const TIMETABLE_KIMPO: TimetableRow[] = [
 ];
 
 const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
-  2: TIMETABLE_SEOCHO,
-  3: TIMETABLE_KIMPO,
+  3: TIMETABLE_SEOCHO,
+  4: TIMETABLE_KIMPO,
 };
 
 const getKoreanTodayParts = () => {

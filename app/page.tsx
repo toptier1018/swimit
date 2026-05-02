@@ -509,16 +509,7 @@ export default function SwimmingClassPage() {
     void syncManualWaitlistFromServer();
   }, []);
 
-  // 개발자 모드에서 주기적 동기화 (미입금 체크 반영용)
-  useEffect(() => {
-    if (!showDebug) return;
-    const intervalId = window.setInterval(() => {
-      void syncClassEnrollmentFromNotion();
-    }, 15000);
-    return () => window.clearInterval(intervalId);
-  }, [showDebug]);
-
-  // 개발자 모드에서 주기적 동기화 (미입금 체크 반영용)
+  // 개발자 모드(?debug=true): 서초·김포 포함 전 레인 키가 동일 규칙으로 표시·Notion 동기화됨
   useEffect(() => {
     if (!showDebug) return;
     const intervalId = window.setInterval(() => {

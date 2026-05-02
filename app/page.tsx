@@ -47,7 +47,34 @@ import {
   findOrCreateApplicant,
 } from "@/app/actions/notion";
 
-const classes = [
+type ClassItem = {
+  id: number;
+  year: number;
+  location: string;
+  locationCode: string;
+  date: string;
+  dateNum: number;
+  month: number;
+  venue: string;
+  address: string;
+  spots: string;
+  scheduleSummaryLines: string[];
+};
+
+const classes: ClassItem[] = [
+  {
+    id: 2,
+    year: 2026,
+    location: "서울 서초 인근",
+    locationCode: "5.31",
+    date: "5월 31일 (일)",
+    dateNum: 31,
+    month: 5,
+    venue: "특강 신청 후 제공됩니다.",
+    address: "특강 신청 후 제공됩니다.",
+    spots: "3명 모집 중",
+    scheduleSummaryLines: ["1부 14:00~16:00"],
+  },
   {
     id: 3,
     year: 2026,
@@ -59,6 +86,10 @@ const classes = [
     venue: "아스타스포츠센터",
     address: "김포한강9로76번길 63 4층 407호, 408호, 409호",
     spots: "3명 모집 중",
+    scheduleSummaryLines: [
+      "1부 15:00~17:00 · 도착 권장 14:30까지",
+      "2부 16:00~18:00 · 도착 권장 15:30까지",
+    ],
   },
 ];
 
@@ -78,7 +109,23 @@ type TimetableRow = {
   }>;
 };
 
-const TIMETABLE: TimetableRow[] = [
+/** 서울 서초 5/31 특강 */
+const TIMETABLE_SEOCHO: TimetableRow[] = [
+  {
+    session: "1부 특강",
+    time: "14:00 ~ 16:00",
+    lanes: [
+      { lane: "1레인", title: "평영 A (초급)", price: 70000 },
+      { lane: "2레인", title: "접영 A (초급)", price: 70000 },
+      { lane: "3레인", title: "자유형 A (초급)", price: 70000 },
+      { lane: "4레인", title: "접영 B (중급)", price: 70000 },
+      { lane: "5레인", title: "자유형 B (중급)", price: 70000 },
+    ],
+  },
+];
+
+/** 김포 아스타 6/14 특강 */
+const TIMETABLE_KIMPO: TimetableRow[] = [
   {
     session: "1부 특강",
     time: "15:00 ~ 17:00",
@@ -103,6 +150,11 @@ const TIMETABLE: TimetableRow[] = [
   },
 ];
 
+const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
+  2: TIMETABLE_SEOCHO,
+  3: TIMETABLE_KIMPO,
+};
+
 const getKoreanTodayParts = () => {
   const formatter = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Seoul",
@@ -119,15 +171,25 @@ const getKoreanTodayParts = () => {
   return { year, month, day };
 };
 
-const makeClassKey = (session: string, lane: string, title: string) =>
-  `${session} ${lane} ${title}`;
+const makeClassKey = (
+  classId: number,
+  session: string,
+  lane: string,
+  title: string,
+) => `[cid:${classId}] ${session} ${lane} ${title}`;
 
 const INITIAL_ENROLLMENT: Record<string, number> = Object.fromEntries(
-  TIMETABLE.flatMap((row) =>
-    row.lanes
-      .filter((l) => !l.closed && l.title)
-      .map((l) => [makeClassKey(row.session, l.lane, l.title), 0]),
-  ),
+  Object.entries(TIMETABLE_BY_CLASS_ID).flatMap(([idStr, rows]) => {
+    const classId = Number(idStr);
+    return rows.flatMap((row) =>
+      row.lanes
+        .filter((l) => !l.closed && l.title)
+        .map((l) => [
+          makeClassKey(classId, row.session, l.lane, l.title),
+          0,
+        ]),
+    );
+  }),
 ) as Record<string, number>;
 
 export default function SwimmingClassPage() {
@@ -231,9 +293,8 @@ export default function SwimmingClassPage() {
   }, []);
 
   useEffect(() => {
-    console.log("[특강일정] 2026-06-14 김포 아스타 반영", {
-      venue: classes[0]?.venue,
-      timetableRows: TIMETABLE.map((r) => r.session),
+    console.log("[특강일정] 서초·김포 특강 병행", {
+      classIds: classes.map((c) => c.id),
       enrollmentKeys: Object.keys(INITIAL_ENROLLMENT).length,
     });
   }, []);
@@ -670,11 +731,12 @@ export default function SwimmingClassPage() {
   );
   const [today, setToday] = useState(getKoreanTodayParts());
 
-  /** 지역 안내 카드·신청 화면 상단에 동일하게 쓰는 일정 문구 */
-  const scheduleSummaryLines = [
-    "1부 15:00~17:00 · 도착 권장 14:30까지",
-    "2부 16:00~18:00 · 도착 권장 15:30까지",
-  ];
+  const selectedClassIdNum = selectedClass ? Number(selectedClass) : NaN;
+  const activeTimetable =
+    Number.isFinite(selectedClassIdNum) &&
+    TIMETABLE_BY_CLASS_ID[selectedClassIdNum]
+      ? TIMETABLE_BY_CLASS_ID[selectedClassIdNum]
+      : [];
 
   // selectedClass가 변경되면 달력 월도 업데이트
   useEffect(() => {
@@ -1773,7 +1835,7 @@ export default function SwimmingClassPage() {
                                 수영 특강 일정
                               </p>
                               <div className="ml-7 mt-1 space-y-0.5 text-[13px] sm:text-sm font-medium leading-5 text-blue-600">
-                                {scheduleSummaryLines.map((line) => (
+                                {classItem.scheduleSummaryLines.map((line) => (
                                   <p key={line}>{line}</p>
                                 ))}
                               </div>
@@ -2756,7 +2818,7 @@ export default function SwimmingClassPage() {
                                 수영 특강 일정
                               </p>
                               <div className="ml-7 mt-1 space-y-0.5 text-[13px] font-medium leading-5 text-blue-600">
-                                {scheduleSummaryLines.map((line) => (
+                                {classItem.scheduleSummaryLines.map((line) => (
                                   <p key={line}>{line}</p>
                                 ))}
                               </div>
@@ -3033,9 +3095,15 @@ export default function SwimmingClassPage() {
                           </div>
                         </div>
 
-                        {TIMETABLE.map((row) => (
+                        {activeTimetable.length === 0 ? (
+                          <div className="p-8 text-center text-sm text-gray-600 bg-white">
+                            위에서 특강 지역을 먼저 선택하면 해당 일정의 시간표가
+                            표시됩니다.
+                          </div>
+                        ) : (
+                          activeTimetable.map((row) => (
                           <div
-                            key={row.session}
+                            key={`${selectedClassIdNum}-${row.session}-${row.time}`}
                             className="flex flex-col sm:flex-row border-b last:border-b-0"
                           >
                             {/* Time Label */}
@@ -3068,6 +3136,7 @@ export default function SwimmingClassPage() {
                                   );
                                 }
                                 const classKey = makeClassKey(
+                                  selectedClassIdNum,
                                   row.session,
                                   slot.lane,
                                   slot.title,
@@ -3158,7 +3227,8 @@ export default function SwimmingClassPage() {
                               })}
                             </div>
                           </div>
-                        ))}
+                          ))
+                        )}
                       </div>
                     </CardContent>
                   </Card>

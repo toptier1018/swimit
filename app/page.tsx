@@ -1504,6 +1504,19 @@ export default function SwimmingClassPage() {
                       <p className="text-lg sm:text-xl font-bold text-red-600 leading-tight">
                         단 하루, 당신의 수영 인생이 바뀝니다.
                       </p>
+
+                      {/* 비포/애프터 영상 */}
+                      <div className="w-full rounded-xl overflow-hidden shadow-md aspect-video">
+                        <iframe
+                          src="https://www.youtube.com/embed/7Nv-idMB2ak"
+                          title="스윔잇 특강 전후 비교 영상"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                          className="w-full h-full"
+                          loading="lazy"
+                        />
+                      </div>
+
                       <p className="text-sm sm:text-[15px] text-gray-700 leading-6 sm:leading-7">
                         믿기 힘드시겠지만,
                         <br />

@@ -1506,13 +1506,13 @@ export default function SwimmingClassPage() {
                       </p>
 
                       {/* 비포/애프터 영상 */}
-                      <div className="w-full rounded-xl overflow-hidden shadow-md aspect-video">
+                      <div className="w-full rounded-xl overflow-hidden shadow-md relative" style={{ paddingBottom: "56.25%" }}>
                         <iframe
                           src="https://www.youtube.com/embed/WwNq2mqwM_U?autoplay=1&mute=1&loop=1&playlist=WwNq2mqwM_U&playsinline=1&rel=0"
                           title="스윔잇 특강 전후 비교 영상"
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                           allowFullScreen
-                          className="w-full h-full"
+                          className="absolute inset-0 w-full h-full"
                         />
                       </div>
 

@@ -402,13 +402,23 @@ export async function upsertFunnelCount(data: {
 /**
  * 퍼널 카운트 조회 (날짜 기준, 컬럼형)
  */
+type FunnelTotals = Record<0 | 1 | 2 | 3 | 4, number>
+
+const EMPTY_FUNNEL_TOTALS: FunnelTotals = {
+  0: 0,
+  1: 0,
+  2: 0,
+  3: 0,
+  4: 0,
+}
+
 const getFunnelDatabaseSchema = async () => {
   const notionApiKey = process.env.NOTION_API_KEY
   const databaseId = process.env.NOTION_FUNNEL_DATABASE_ID?.trim()
 
   if (!notionApiKey || !databaseId) {
     console.error("[퍼널 Notion] 환경 변수가 설정되지 않았습니다")
-    return { success: false, titleName: "", dateType: "" }
+    return { success: false, titleName: "", dateType: "", videoType: "" }
   }
 
   const response = await fetch(
@@ -429,7 +439,7 @@ const getFunnelDatabaseSchema = async () => {
       status: response.status,
       error: errorData,
     })
-    return { success: false, titleName: "", dateType: "" }
+    return { success: false, titleName: "", dateType: "", videoType: "" }
   }
 
   const schema = await response.json()
@@ -438,20 +448,61 @@ const getFunnelDatabaseSchema = async () => {
     (key) => properties[key]?.type === "title"
   ) || ""
   const dateType = properties["기준 날짜"]?.type || ""
+  const videoType = properties["video"]?.type || ""
 
-  console.log("[퍼널 Notion] 스키마 확인:", { titleName, dateType })
+  console.log("[퍼널 Notion] 스키마 확인:", {
+    titleName,
+    dateType,
+    videoType,
+  })
 
-  return { success: true, titleName, dateType }
+  return { success: true, titleName, dateType, videoType }
 }
 
-export async function getFunnelDailyTotals(date: string) {
+const buildFunnelVideoFilter = (video: string, videoType: string) => {
+  if (!video) return null
+
+  if (videoType === "select") {
+    return { property: "video", select: { equals: video } }
+  }
+
+  if (videoType === "rich_text") {
+    return { property: "video", rich_text: { equals: video } }
+  }
+
+  if (videoType === "title") {
+    return { property: "video", title: { equals: video } }
+  }
+
+  return null
+}
+
+const buildFunnelVideoPayload = (video: string, videoType: string) => {
+  if (!video) return {}
+
+  if (videoType === "select") {
+    return { video: { select: { name: video } } }
+  }
+
+  if (videoType === "rich_text") {
+    return { video: { rich_text: [{ text: { content: video } }] } }
+  }
+
+  if (videoType === "title") {
+    return { video: { title: [{ text: { content: video } }] } }
+  }
+
+  return {}
+}
+
+export async function getFunnelDailyTotals(date: string, video = "") {
   try {
     const notionApiKey = process.env.NOTION_API_KEY
     const databaseId = process.env.NOTION_FUNNEL_DATABASE_ID?.trim()
 
     if (!notionApiKey || !databaseId) {
       console.error("[퍼널 Notion] 환경 변수가 설정되지 않았습니다")
-      return { success: false, totals: { 1: 0, 2: 0, 3: 0, 4: 0 } }
+      return { success: false, totals: EMPTY_FUNNEL_TOTALS }
     }
 
     const schema = await getFunnelDatabaseSchema()
@@ -463,6 +514,25 @@ export async function getFunnelDailyTotals(date: string) {
         : schema.dateType === "rich_text"
         ? { property: "기준 날짜", rich_text: { equals: date } }
         : null
+    const videoFilter = buildFunnelVideoFilter(video, schema.videoType)
+    const legacyTitleFilter =
+      video && schema.titleName
+        ? {
+            property: schema.titleName,
+            title: { equals: `${date} ${video}` },
+          }
+        : null
+    const filter =
+      dateFilter && videoFilter
+        ? {
+            or: [
+              {
+                and: [dateFilter, videoFilter],
+              },
+              ...(legacyTitleFilter ? [legacyTitleFilter] : []),
+            ],
+          }
+        : dateFilter || legacyTitleFilter || undefined
 
     const response = await fetch(
       `https://api.notion.com/v1/databases/${databaseId}/query`,
@@ -474,7 +544,7 @@ export async function getFunnelDailyTotals(date: string) {
           "Notion-Version": "2022-06-28",
         },
         body: JSON.stringify({
-          filter: dateFilter || undefined,
+          filter,
           page_size: 1,
         }),
       }
@@ -486,12 +556,13 @@ export async function getFunnelDailyTotals(date: string) {
         status: response.status,
         error: errorData,
       })
-      return { success: false, totals: { 1: 0, 2: 0, 3: 0, 4: 0 } }
+      return { success: false, totals: EMPTY_FUNNEL_TOTALS }
     }
 
     const result = await response.json()
     const page = result?.results?.[0]
-    const totals: Record<1 | 2 | 3 | 4, number> = {
+    const totals: FunnelTotals = {
+      0: page?.properties?.["0. 유입"]?.number ?? 0,
       1: page?.properties?.["1. 선택"]?.number ?? 0,
       2: page?.properties?.["2. 개인 정보 입력"]?.number ?? 0,
       3: page?.properties?.["3. 결제"]?.number ?? 0,
@@ -500,7 +571,7 @@ export async function getFunnelDailyTotals(date: string) {
     return { success: true, totals, pageId: page?.id || null }
   } catch (error) {
     console.error("[퍼널 Notion] 날짜별 조회 예외:", error)
-    return { success: false, totals: { 1: 0, 2: 0, 3: 0, 4: 0 } }
+    return { success: false, totals: EMPTY_FUNNEL_TOTALS }
   }
 }
 
@@ -509,7 +580,8 @@ export async function getFunnelDailyTotals(date: string) {
  */
 export async function upsertFunnelDailyTotals(data: {
   date: string
-  totals: Record<1 | 2 | 3 | 4, number>
+  video?: string
+  totals: FunnelTotals
 }) {
   try {
     const notionApiKey = process.env.NOTION_API_KEY
@@ -522,6 +594,7 @@ export async function upsertFunnelDailyTotals(data: {
 
     const schema = await getFunnelDatabaseSchema()
     const titleName = schema.titleName || "제목"
+    const videoPayload = buildFunnelVideoPayload(data.video || "", schema.videoType)
     const datePayload =
       schema.dateType === "date"
         ? { "기준 날짜": { date: { start: data.date } } }
@@ -531,7 +604,7 @@ export async function upsertFunnelDailyTotals(data: {
         ? {}
         : {}
 
-    const existing = await getFunnelDailyTotals(data.date)
+    const existing = await getFunnelDailyTotals(data.date, data.video || "")
     if (existing.success && existing.pageId) {
       const update = await fetch(
         `https://api.notion.com/v1/pages/${existing.pageId}`,
@@ -548,6 +621,8 @@ export async function upsertFunnelDailyTotals(data: {
                 title: [{ text: { content: data.date } }],
               },
               ...datePayload,
+              ...videoPayload,
+              "0. 유입": { number: data.totals[0] },
               "1. 선택": { number: data.totals[1] },
               "2. 개인 정보 입력": { number: data.totals[2] },
               "3. 결제": { number: data.totals[3] },
@@ -583,6 +658,8 @@ export async function upsertFunnelDailyTotals(data: {
             title: [{ text: { content: data.date } }],
           },
           ...datePayload,
+          ...videoPayload,
+          "0. 유입": { number: data.totals[0] },
           "1. 선택": { number: data.totals[1] },
           "2. 개인 정보 입력": { number: data.totals[2] },
           "3. 결제": { number: data.totals[3] },

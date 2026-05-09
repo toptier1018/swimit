@@ -383,7 +383,7 @@ export default function SwimmingClassPage() {
     console.log("[카운터] 로컬 카운터 불러오기 완료");
   };
 
-  // 모든 클래스 예약대기 기준: 10명 (통일)
+  // 모든 클래스 예약대기 기준: 8명 (통일)
 
   const syncClassEnrollmentFromNotion = async () => {
     try {
@@ -667,7 +667,7 @@ export default function SwimmingClassPage() {
     }
   }, []);
 
-  // 클래스별 신청 가능 여부 확인 (10명 이상이면 정원 초과)
+  // 클래스별 신청 가능 여부 확인 (8명 이상이면 정원 초과)
   const isClassFull = useCallback(
     (className: string) => {
       if (FORCE_ALL_WAITLIST) return true;
@@ -676,12 +676,12 @@ export default function SwimmingClassPage() {
       if (threshold !== undefined) {
         return (classEnrollment[className] || 0) >= threshold;
       }
-      return (classEnrollment[className] || 0) >= 10;
+      return (classEnrollment[className] || 0) >= 8;
     },
     [manualWaitlistClasses, classEnrollment, waitlistThresholds],
   );
 
-  // 클래스별 결제 여부 확인 (10명 이상이면 예약대기)
+  // 클래스별 결제 여부 확인 (8명 이상이면 예약대기)
   const hasEnrollment = useCallback(
     (className: string) => {
       if (FORCE_ALL_WAITLIST) return true;
@@ -690,7 +690,7 @@ export default function SwimmingClassPage() {
       if (threshold !== undefined) {
         return (classEnrollment[className] || 0) >= threshold;
       }
-      return (classEnrollment[className] || 0) >= 10;
+      return (classEnrollment[className] || 0) >= 8;
     },
     [manualWaitlistClasses, classEnrollment, waitlistThresholds],
   );
@@ -1013,7 +1013,7 @@ export default function SwimmingClassPage() {
                         : waitlistThresholds[className];
                       const isWaitlist = isClassFull(className);
                       const effectiveThreshold =
-                        typeof threshold === "number" ? threshold : 10;
+                        typeof threshold === "number" ? threshold : 8;
                       return (
                         <div key={className} className="flex flex-col gap-1">
                           <div className="flex justify-between gap-2">

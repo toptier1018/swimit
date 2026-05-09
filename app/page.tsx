@@ -873,10 +873,14 @@ export default function SwimmingClassPage() {
     calendarDays.push(i);
   }
 
-  // 현재 달력 월의 모든 특강 날짜를 highlightedDates에 포함
-  const highlightedDates = classes
-    .filter((c) => c.month === calendarMonth)
-    .map((c) => c.dateNum);
+  // 지역 선택 시 해당 지역 날짜만, 미선택 시 해당 월 전체 날짜 표시
+  const highlightedDates = selectedClass
+    ? classes
+        .filter((c) => String(c.id) === selectedClass && c.month === calendarMonth)
+        .map((c) => c.dateNum)
+    : classes
+        .filter((c) => c.month === calendarMonth)
+        .map((c) => c.dateNum);
 
   const handleRegistration = () => {
     incrementFunnelCount(1, "지금 바로 신청하기 클릭");
@@ -2886,6 +2890,9 @@ export default function SwimmingClassPage() {
                           onClick={() => {
                             setSelectedClass(String(classItem.id));
                             setRegionError(false); // 에러 초기화
+                            // 선택한 지역의 달력 월로 자동 이동
+                            setCalendarMonth(classItem.month);
+                            setCalendarYear(classItem.year);
                           }}
                         >
                           <CardContent className="p-4">

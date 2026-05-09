@@ -141,10 +141,10 @@ const TIMETABLE_MOKDONG: TimetableRow[] = [
     time: "14:00 ~ 16:00",
     lanes: [
       { lane: "1레인", title: "평영 A (초급)", price: 70000 },
-      { lane: "2레인", title: "접영 A (초급)", price: 70000 },
-      { lane: "3레인", title: "자유형 A (초급)", price: 70000 },
-      { lane: "4레인", title: "평영 B (중급)", price: 70000 },
-      { lane: "5레인", title: "접영 B (중급)", price: 70000 },
+      { lane: "2레인", title: "평영 B (중급)", price: 70000 },
+      { lane: "3레인", title: "접영 A (초급)", price: 70000 },
+      { lane: "4레인", title: "접영 B (중급)", price: 70000 },
+      { lane: "5레인", title: "자유형 A (초급)", price: 70000 },
       { lane: "6레인", title: "자유형 B (중급)", price: 70000 },
     ],
   },
@@ -3302,7 +3302,7 @@ export default function SwimmingClassPage() {
                                           isFull || hasPayment
                                             ? "마감"
                                             : (laneBadge[slot.lane] ??
-                                              "접수중");
+                                              "마감임박");
                                         if (!label) return null;
                                         return (
                                           <span className="bg-white border border-red-200 text-red-600 text-sm md:text-[11px] px-3 md:px-2 py-1.5 md:py-1 rounded font-bold">

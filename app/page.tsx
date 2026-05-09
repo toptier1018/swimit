@@ -97,7 +97,7 @@ const classes: ClassItem[] = [
     dateNum: 28,
     month: 6,
     venue: "목동스포츠센터",
-    address: "서울특별시 양천구 목동동로 309",
+    address: "서울 양천구 목동서로 130",
     spots: "3명 모집 중",
     scheduleSummaryLines: ["1부 14:00~16:00"],
   },

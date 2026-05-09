@@ -88,6 +88,19 @@ const classes: ClassItem[] = [
     spots: "3명 모집 중",
     scheduleSummaryLines: ["1부 15:00~17:00", "2부 16:00~18:00"],
   },
+  {
+    id: 5,
+    year: 2026,
+    location: "서울 목동스포츠센터",
+    locationCode: "목동",
+    date: "6월 28일 (일)",
+    dateNum: 28,
+    month: 6,
+    venue: "목동스포츠센터",
+    address: "서울특별시 양천구 목동동로 309",
+    spots: "3명 모집 중",
+    scheduleSummaryLines: ["1부 14:00~16:00"],
+  },
 ];
 
 // 오픈 전 임시 설정: 전체 클래스를 '예약대기'로 강제 표시
@@ -121,6 +134,22 @@ const TIMETABLE_SEOCHO: TimetableRow[] = [
   },
 ];
 
+/** 서울 목동스포츠센터 6/28 특강 */
+const TIMETABLE_MOKDONG: TimetableRow[] = [
+  {
+    session: "1부 특강",
+    time: "14:00 ~ 16:00",
+    lanes: [
+      { lane: "1레인", title: "평영 A (초급)", price: 70000 },
+      { lane: "2레인", title: "접영 A (초급)", price: 70000 },
+      { lane: "3레인", title: "자유형 A (초급)", price: 70000 },
+      { lane: "4레인", title: "평영 B (중급)", price: 70000 },
+      { lane: "5레인", title: "접영 B (중급)", price: 70000 },
+      { lane: "6레인", title: "자유형 B (중급)", price: 70000 },
+    ],
+  },
+];
+
 /** 김포 아스타 6/14 특강 */
 const TIMETABLE_KIMPO: TimetableRow[] = [
   {
@@ -150,6 +179,7 @@ const TIMETABLE_KIMPO: TimetableRow[] = [
 const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   3: TIMETABLE_SEOCHO,
   4: TIMETABLE_KIMPO,
+  5: TIMETABLE_MOKDONG,
 };
 
 const getKoreanTodayParts = () => {

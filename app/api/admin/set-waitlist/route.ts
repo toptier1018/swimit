@@ -207,7 +207,7 @@ async function ensureClassSettingsPage(className: string) {
     {
       클래스명: { title: [{ text: { content: className } }] },
       "수동 예약대기": { checkbox: false },
-      "예약대기 기준": { number: 10 },
+      "예약대기 기준": { number: 8 },
     },
     {
       클래스명: { title: [{ text: { content: className } }] },
@@ -216,7 +216,7 @@ async function ensureClassSettingsPage(className: string) {
     {
       클래스명: { rich_text: [{ text: { content: className } }] },
       "수동 예약대기": { checkbox: false },
-      "예약대기 기준": { number: 10 },
+      "예약대기 기준": { number: 8 },
     },
     {
       클래스명: { rich_text: [{ text: { content: className } }] },

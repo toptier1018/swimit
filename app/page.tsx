@@ -3173,21 +3173,25 @@ export default function SwimmingClassPage() {
                     <CardContent className="p-0">
                       <div className="flex flex-col w-full overflow-x-auto">
                         {/* 레인 헤더 (PC/태블릿에서만 표시) */}
-                        <div className="hidden md:flex border-b">
-                          <div className="w-[180px] bg-[#F8FAFC] border-r border-gray-100 shrink-0" />
-                          <div className="flex-1 bg-white grid grid-cols-5 gap-3 p-3">
-                            {["1레인", "2레인", "3레인", "4레인", "5레인"].map(
-                              (lane) => (
-                                <div
-                                  key={lane}
-                                  className="text-sm font-bold text-gray-700 text-center py-1 rounded bg-gray-50 border border-gray-100"
-                                >
-                                  {lane}
-                                </div>
-                              ),
-                            )}
-                          </div>
-                        </div>
+                        {activeTimetable.length > 0 && (() => {
+                          const laneCount = activeTimetable[0].lanes.length;
+                          const colClass = laneCount === 6 ? "grid-cols-6" : laneCount === 4 ? "grid-cols-4" : "grid-cols-5";
+                          return (
+                            <div className="hidden md:flex border-b">
+                              <div className="w-[180px] bg-[#F8FAFC] border-r border-gray-100 shrink-0" />
+                              <div className={`flex-1 bg-white grid ${colClass} gap-3 p-3`}>
+                                {activeTimetable[0].lanes.map((l) => (
+                                  <div
+                                    key={l.lane}
+                                    className="text-sm font-bold text-gray-700 text-center py-1 rounded bg-gray-50 border border-gray-100"
+                                  >
+                                    {l.lane}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })()}
 
                         {activeTimetable.length === 0 ? (
                           <div className="p-8 text-center text-sm text-gray-600 bg-white">
@@ -3210,7 +3214,7 @@ export default function SwimmingClassPage() {
                               </div>
                             </div>
                             {/* Class Grid */}
-                            <div className="flex-1 p-3 sm:p-3 bg-white grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 sm:gap-3">
+                            <div className={`flex-1 p-3 sm:p-3 bg-white grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-3 ${row.lanes.length === 6 ? "md:grid-cols-6" : row.lanes.length === 4 ? "md:grid-cols-4" : "md:grid-cols-5"}`}>
                               {row.lanes.map((slot, index) => {
                                 if (slot.closed) {
                                   return (

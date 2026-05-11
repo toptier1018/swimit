@@ -5729,12 +5729,24 @@ export default function SwimmingClassPage() {
               <h3 className="text-white text-xl font-bold">블루마인드주식회사</h3>
               <div className="text-sm space-y-1">
                 <p>
+                  대표자:{" "}
+                  <span className="text-gray-300">장연성</span>
+                </p>
+                <p>
                   사업자등록번호:{" "}
                   <span className="text-gray-300">462-86-02893</span>
                 </p>
                 <p>
                   통신판매업 신고번호:{" "}
                   <span className="text-gray-300">2023-화성봉담-0317</span>
+                </p>
+                <p>
+                  사업장 주소:{" "}
+                  <span className="text-gray-300">경기도 화성시 봉담읍 독정길 45-8, A동 2층 202호</span>
+                </p>
+                <p>
+                  전화:{" "}
+                  <span className="text-gray-300">010-3904-1018</span>
                 </p>
               </div>
             </div>

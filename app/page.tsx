@@ -160,19 +160,8 @@ const TIMETABLE_KIMPO: TimetableRow[] = [
     lanes: [
       { lane: "1레인", title: "평영 A (초급)", price: 70000 },
       { lane: "2레인", title: "접영 A (초급)", price: 70000 },
-      { lane: "3레인", title: "평영 B (중급)", price: 70000 },
+      { lane: "3레인", title: "자유형 B (중급)", price: 70000, premium: true },
       { lane: "4레인", title: "자유형 A (초급)", price: 70000 },
-      { lane: "5레인", title: "", price: 0, closed: true },
-    ],
-  },
-  {
-    session: "2부 특강",
-    time: "16:00 ~ 18:00",
-    lanes: [
-      { lane: "1레인", title: "", price: 0, closed: true },
-      { lane: "2레인", title: "자유형 B (중급)", price: 70000, premium: true },
-      { lane: "3레인", title: "접영 B (중급)", price: 70000, premium: true },
-      { lane: "4레인", title: "", price: 0, closed: true },
       { lane: "5레인", title: "", price: 0, closed: true },
     ],
   },

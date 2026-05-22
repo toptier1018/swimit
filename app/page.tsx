@@ -116,6 +116,8 @@ type TimetableRow = {
     price: number;
     /** 2부 등 일부 레인만 운영할 때 빈 칸 */
     closed?: boolean;
+    /** 프리미엄반 (지상+수중, 2레인 단독) */
+    premium?: boolean;
   }>;
 };
 
@@ -168,8 +170,8 @@ const TIMETABLE_KIMPO: TimetableRow[] = [
     time: "16:00 ~ 18:00",
     lanes: [
       { lane: "1레인", title: "", price: 0, closed: true },
-      { lane: "2레인", title: "자유형 B (중급)", price: 70000 },
-      { lane: "3레인", title: "접영 B (중급)", price: 70000 },
+      { lane: "2레인", title: "자유형 B (중급)", price: 70000, premium: true },
+      { lane: "3레인", title: "접영 B (중급)", price: 70000, premium: true },
       { lane: "4레인", title: "", price: 0, closed: true },
       { lane: "5레인", title: "", price: 0, closed: true },
     ],
@@ -3280,9 +3282,20 @@ export default function SwimmingClassPage() {
                                       selectedTimeSlot?.name === classKey &&
                                       selectedTimeSlot?.session === row.session
                                         ? "border-primary border-2 ring-2 ring-primary/10 bg-primary/5"
-                                        : "border-gray-200 hover:border-primary/50 hover:shadow-sm bg-white"
+                                        : slot.premium
+                                          ? "border-amber-400 border-2 bg-amber-50/60 hover:border-amber-500 hover:shadow-md"
+                                          : "border-gray-200 hover:border-primary/50 hover:shadow-sm bg-white"
                                     }`}
                                   >
+                                    {/* 프리미엄 배지 */}
+                                    {slot.premium && (
+                                      <div className="absolute -top-2.5 left-2">
+                                        <span className="inline-flex items-center gap-0.5 bg-amber-400 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+                                          ✨ 프리미엄
+                                        </span>
+                                      </div>
+                                    )}
+
                                     {/* 모바일: 레인 표시를 카드 안으로 (상단 헤더가 좁아서) */}
                                     <div className="md:hidden mb-1">
                                       <span className="inline-flex items-center justify-center text-[11px] font-bold text-gray-700 bg-gray-100 border border-gray-200 px-2 py-0.5 rounded">
@@ -3293,6 +3306,11 @@ export default function SwimmingClassPage() {
                                     <div className="text-base md:text-sm font-bold text-gray-900 break-words leading-tight">
                                       {slot.title}
                                     </div>
+                                    {slot.premium && (
+                                      <div className="text-[10px] text-amber-700 font-medium mt-0.5 leading-tight">
+                                        지상 1h + 수중 1h · 2레인 단독
+                                      </div>
+                                    )}
                                     <div className="flex justify-end gap-2 mt-2 sm:mt-2 flex-wrap">
                                       {(() => {
                                         const laneBadge: Record<

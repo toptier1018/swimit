@@ -3308,7 +3308,7 @@ export default function SwimmingClassPage() {
                                     </div>
                                     {slot.premium && (
                                       <div className="text-[10px] text-amber-700 font-medium mt-0.5 leading-tight">
-                                        지상 1h + 수중 1h · 2레인 단독
+                                        지상 1h + 수중 1h · 레인 당 4명 사용 코칭
                                       </div>
                                     )}
                                     <div className="flex justify-end gap-2 mt-2 sm:mt-2 flex-wrap">

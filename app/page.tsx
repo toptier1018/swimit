@@ -3289,26 +3289,31 @@ export default function SwimmingClassPage() {
                                   >
                                     {/* 프리미엄 배지 */}
                                     {slot.premium && (
-                                      <div className="absolute -top-2.5 left-2">
-                                        <span className="inline-flex items-center gap-0.5 bg-amber-400 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+                                      <div className="absolute -top-3 left-2">
+                                        <span className="inline-flex items-center gap-1 bg-amber-400 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
                                           ✨ 프리미엄
                                         </span>
                                       </div>
                                     )}
 
                                     {/* 모바일: 레인 표시를 카드 안으로 (상단 헤더가 좁아서) */}
-                                    <div className="md:hidden mb-1">
+                                    <div className={`md:hidden ${slot.premium ? "mt-2" : ""} mb-1`}>
                                       <span className="inline-flex items-center justify-center text-[11px] font-bold text-gray-700 bg-gray-100 border border-gray-200 px-2 py-0.5 rounded">
                                         {slot.lane}
                                       </span>
                                     </div>
 
-                                    <div className="text-base md:text-sm font-bold text-gray-900 break-words leading-tight">
+                                    <div className="text-base md:text-sm font-bold text-gray-900 break-words leading-snug">
                                       {slot.title}
                                     </div>
                                     {slot.premium && (
-                                      <div className="text-[10px] text-amber-700 font-medium mt-0.5 leading-tight">
-                                        지상 1h + 수중 1h · 레인 당 4명 사용 코칭
+                                      <div className="mt-1 flex flex-wrap gap-1">
+                                        <span className="inline-block bg-amber-100 text-amber-800 text-[11px] font-semibold px-2 py-0.5 rounded">
+                                          지상 1h + 수중 1h
+                                        </span>
+                                        <span className="inline-block bg-amber-100 text-amber-800 text-[11px] font-semibold px-2 py-0.5 rounded">
+                                          레인 당 4명 코칭
+                                        </span>
                                       </div>
                                     )}
                                     <div className="flex justify-end gap-2 mt-2 sm:mt-2 flex-wrap">

@@ -1687,12 +1687,18 @@ export default function SwimmingClassPage() {
                       <ol className="space-y-3 text-sm sm:text-[15px] list-decimal pl-5 marker:font-semibold">
                         <li className="rounded-lg border border-slate-200 bg-slate-50 p-3 pr-2">
                           <span className="font-bold text-red-600">
-                            오픈 기념 30% 할인
+                            오픈 기념 할인
                           </span>
                           <br />
                           정가 100,000원 →{" "}
                           <span className="font-bold text-red-600">
-                            70,000원
+                            {(() => {
+                              const selectedClassObj = classes.find((c) => String(c.id) === selectedClass);
+                              const price = selectedClassObj
+                                ? (TIMETABLE_BY_CLASS_ID[selectedClassObj.id]?.[0]?.lanes?.find(l => !l.closed && l.price > 0)?.price ?? 70000)
+                                : 70000;
+                              return `${price.toLocaleString()}원`;
+                            })()}
                           </span>
                           <br />
                           <span className="text-gray-700">
@@ -3481,7 +3487,7 @@ export default function SwimmingClassPage() {
                         <div className="flex items-center justify-between mb-3">
                           <h3 className="text-lg font-bold">총 결제 금액</h3>
                           <span className="text-2xl font-bold text-primary">
-                            ₩70,000
+                            ₩{(selectedTimeSlot?.price ?? 0).toLocaleString()}
                           </span>
                         </div>
 
@@ -4064,7 +4070,7 @@ export default function SwimmingClassPage() {
                             (isClassFull(selectedTimeSlot.name) ||
                               hasEnrollment(selectedTimeSlot.name))
                           ? "예약하기"
-                          : "₩70,000 결제하기"}
+                          : `₩${(selectedTimeSlot?.price ?? 0).toLocaleString()} 결제하기`}
                     </Button>
                   </div>
                 </div>
@@ -5538,7 +5544,7 @@ export default function SwimmingClassPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">입금금액</span>
-                  <span className="font-bold text-lg">₩70,000</span>
+                  <span className="font-bold text-lg">₩{(selectedTimeSlot?.price ?? 0).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between pt-2 border-t">
                   <span className="text-gray-600">입금기한</span>
@@ -5591,17 +5597,9 @@ export default function SwimmingClassPage() {
                   </span>
                 </div>
               )}
-              <div className="flex justify-between pt-2 border-t">
-                <span className="text-gray-600">상품 금액</span>
-                <span>₩100,000</span>
-              </div>
-              <div className="flex justify-between text-green-600">
-                <span>할인 금액</span>
-                <span>-₩40,000</span>
-              </div>
               <div className="flex justify-between font-bold text-base pt-2 border-t">
                 <span>결제 금액</span>
-                <span className="text-cyan-600">₩70,000</span>
+                <span className="text-cyan-600">₩{(selectedTimeSlot?.price ?? 0).toLocaleString()}</span>
               </div>
             </div>
           </div>

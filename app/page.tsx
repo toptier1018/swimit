@@ -101,6 +101,19 @@ const classes: ClassItem[] = [
     spots: "3명 모집 중",
     scheduleSummaryLines: ["1부 14:00~16:00"],
   },
+  {
+    id: 6,
+    year: 2026,
+    location: "수원 화성 와이풀앤와이에스씨",
+    locationCode: "화성",
+    date: "6월 21일 (일)",
+    dateNum: 21,
+    month: 6,
+    venue: "와이풀앤와이에스씨",
+    address: "경기도 화성시 반정동 153번길 9-10",
+    spots: "한 레인에 7명 모집",
+    scheduleSummaryLines: ["1부 14:00~16:00"],
+  },
 ];
 
 // 오픈 전 임시 설정: 전체 클래스를 '예약대기'로 강제 표시
@@ -178,10 +191,27 @@ const TIMETABLE_KIMPO: TimetableRow[] = [
   },
 ];
 
+/** 수원 화성 와이풀앤와이에스씨 6/21 특강 */
+const TIMETABLE_HWASEONG: TimetableRow[] = [
+  {
+    session: "1부 특강",
+    time: "14:00 ~ 16:00",
+    lanes: [
+      { lane: "1레인", title: "", price: 0, closed: true },
+      { lane: "2레인", title: "자유형 A (초급)", price: 80000 },
+      { lane: "3레인", title: "평영 A (초급)", price: 80000 },
+      { lane: "4레인", title: "접영 A (초급)", price: 80000 },
+      { lane: "5레인", title: "접영 B (중급)", price: 80000 },
+      { lane: "6레인", title: "자유형 B (중급)", price: 80000 },
+    ],
+  },
+];
+
 const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   3: TIMETABLE_SEOCHO,
   4: TIMETABLE_KIMPO,
   5: TIMETABLE_MOKDONG,
+  6: TIMETABLE_HWASEONG,
 };
 
 const getKoreanTodayParts = () => {

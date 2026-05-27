@@ -155,12 +155,12 @@ const TIMETABLE_MOKDONG: TimetableRow[] = [
     session: "1부 특강",
     time: "14:00 ~ 16:00",
     lanes: [
-      { lane: "1레인", title: "평영 A (초급)", price: 70000 },
-      { lane: "2레인", title: "평영 B (중급)", price: 70000 },
-      { lane: "3레인", title: "접영 A (초급)", price: 70000 },
-      { lane: "4레인", title: "접영 B (중급)", price: 70000 },
-      { lane: "5레인", title: "자유형 A (초급)", price: 70000 },
-      { lane: "6레인", title: "자유형 B (중급)", price: 70000 },
+      { lane: "1레인", title: "평영 A (초급)", price: 80000 },
+      { lane: "2레인", title: "평영 B (중급)", price: 80000 },
+      { lane: "3레인", title: "접영 A (초급)", price: 80000 },
+      { lane: "4레인", title: "접영 B (중급)", price: 80000 },
+      { lane: "5레인", title: "자유형 A (초급)", price: 80000 },
+      { lane: "6레인", title: "자유형 B (중급)", price: 80000 },
     ],
   },
 ];
@@ -171,10 +171,10 @@ const TIMETABLE_KIMPO: TimetableRow[] = [
     session: "1부 특강",
     time: "15:00 ~ 17:00",
     lanes: [
-      { lane: "1레인", title: "평영 A (초급)", price: 70000 },
-      { lane: "2레인", title: "접영 A (초급)", price: 70000 },
-      { lane: "3레인", title: "평영 B (중급)", price: 70000 },
-      { lane: "4레인", title: "자유형 A (초급)", price: 70000 },
+      { lane: "1레인", title: "평영 A (초급)", price: 80000 },
+      { lane: "2레인", title: "접영 A (초급)", price: 80000 },
+      { lane: "3레인", title: "평영 B (중급)", price: 80000 },
+      { lane: "4레인", title: "자유형 A (초급)", price: 80000 },
       { lane: "5레인", title: "", price: 0, closed: true },
     ],
   },
@@ -183,8 +183,8 @@ const TIMETABLE_KIMPO: TimetableRow[] = [
     time: "16:00 ~ 18:00",
     lanes: [
       { lane: "1레인", title: "", price: 0, closed: true },
-      { lane: "2레인", title: "자유형 B (중급)", price: 70000, premium: true },
-      { lane: "3레인", title: "접영 B (중급)", price: 70000, premium: true },
+      { lane: "2레인", title: "자유형 B (중급)", price: 80000, premium: true },
+      { lane: "3레인", title: "접영 B (중급)", price: 80000, premium: true },
       { lane: "4레인", title: "", price: 0, closed: true },
       { lane: "5레인", title: "", price: 0, closed: true },
     ],
@@ -708,12 +708,12 @@ export default function SwimmingClassPage() {
       if (threshold !== undefined) {
         return (classEnrollment[className] || 0) >= threshold;
       }
-      return (classEnrollment[className] || 0) >= 8;
+      return (classEnrollment[className] || 0) >= 7;
     },
     [manualWaitlistClasses, classEnrollment, waitlistThresholds],
   );
 
-  // 클래스별 결제 여부 확인 (8명 이상이면 예약대기)
+  // 클래스별 결제 여부 확인 (7명 이상이면 예약대기)
   const hasEnrollment = useCallback(
     (className: string) => {
       if (FORCE_ALL_WAITLIST) return true;
@@ -722,7 +722,7 @@ export default function SwimmingClassPage() {
       if (threshold !== undefined) {
         return (classEnrollment[className] || 0) >= threshold;
       }
-      return (classEnrollment[className] || 0) >= 8;
+      return (classEnrollment[className] || 0) >= 7;
     },
     [manualWaitlistClasses, classEnrollment, waitlistThresholds],
   );
@@ -1049,7 +1049,7 @@ export default function SwimmingClassPage() {
                         : waitlistThresholds[className];
                       const isWaitlist = isClassFull(className);
                       const effectiveThreshold =
-                        typeof threshold === "number" ? threshold : 8;
+                        typeof threshold === "number" ? threshold : 7;
                       return (
                         <div key={className} className="flex flex-col gap-1">
                           <div className="flex justify-between gap-2">

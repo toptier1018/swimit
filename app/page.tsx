@@ -1602,7 +1602,7 @@ export default function SwimmingClassPage() {
                           물과 싸우지 않는 수영 시작하기 →
                         </Button>
                         <p className="mt-2.5 text-xs sm:text-sm font-medium text-gray-600 leading-5">
-                          ※ 선착순 40명 / 레인별 8명 제한
+                          ※ 선착순 마감 / 레인별 7명 제한
                         </p>
                       </div>
                     </div>
@@ -2030,7 +2030,7 @@ export default function SwimmingClassPage() {
                     </Button>
                   </div>
                   <div className="mt-3 space-y-1 text-xs sm:text-sm text-gray-700 leading-5">
-                    <p>※ 선착순 마감 / 레인별 8명 제한</p>
+                    <p>※ 선착순 마감 / 레인별 7명 제한</p>
                     <p>※ 신청 후 상세 위치 안내됩니다</p>
                   </div>
                 </div>

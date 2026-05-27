@@ -208,10 +208,10 @@ const TIMETABLE_HWASEONG: TimetableRow[] = [
 ];
 
 const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
-  3: TIMETABLE_SEOCHO,
-  4: TIMETABLE_KIMPO,
-  5: TIMETABLE_MOKDONG,
-  6: TIMETABLE_HWASEONG,
+  3: TIMETABLE_SEOCHO,   // 5/31 서초
+  4: TIMETABLE_KIMPO,    // 6/14 김포
+  6: TIMETABLE_HWASEONG, // 6/21 화성
+  5: TIMETABLE_MOKDONG,  // 6/28 목동
 };
 
 const getKoreanTodayParts = () => {

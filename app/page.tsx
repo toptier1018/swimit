@@ -1686,24 +1686,30 @@ export default function SwimmingClassPage() {
                       </p>
                       <ol className="space-y-3 text-sm sm:text-[15px] list-decimal pl-5 marker:font-semibold">
                         <li className="rounded-lg border border-slate-200 bg-slate-50 p-3 pr-2">
-                          <span className="font-bold text-red-600">
-                            오픈 기념 할인
-                          </span>
-                          <br />
-                          정가 100,000원 →{" "}
-                          <span className="font-bold text-red-600">
-                            {(() => {
-                              const selectedClassObj = classes.find((c) => String(c.id) === selectedClass);
-                              const price = selectedClassObj
-                                ? (TIMETABLE_BY_CLASS_ID[selectedClassObj.id]?.[0]?.lanes?.find(l => !l.closed && l.price > 0)?.price ?? 70000)
-                                : 70000;
-                              return `${price.toLocaleString()}원`;
-                            })()}
-                          </span>
-                          <br />
-                          <span className="text-gray-700">
-                            ※ 이번 2기 특강 한정
-                          </span>
+                          {(() => {
+                            const selectedClassObj = classes.find((c) => String(c.id) === selectedClass);
+                            const price = selectedClassObj
+                              ? (TIMETABLE_BY_CLASS_ID[selectedClassObj.id]?.[0]?.lanes?.find(l => !l.closed && l.price > 0)?.price ?? 70000)
+                              : 70000;
+                            const originalPrice = 200000;
+                            const discountRate = Math.round((1 - price / originalPrice) * 100);
+                            return (
+                              <>
+                                <span className="font-bold text-red-600">
+                                  오픈 기념 {discountRate}% 할인
+                                </span>
+                                <br />
+                                정가 {originalPrice.toLocaleString()}원 →{" "}
+                                <span className="font-bold text-red-600">
+                                  {price.toLocaleString()}원
+                                </span>
+                                <br />
+                                <span className="text-gray-700">
+                                  ※ 이번 2기 특강 한정
+                                </span>
+                              </>
+                            );
+                          })()}
                         </li>
                         <li className="rounded-lg border border-slate-200 bg-slate-50 p-3 pr-2">
                           <span className="font-bold text-gray-900">

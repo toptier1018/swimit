@@ -1688,9 +1688,9 @@ export default function SwimmingClassPage() {
                         <li className="rounded-lg border border-slate-200 bg-slate-50 p-3 pr-2">
                           {(() => {
                             const selectedClassObj = classes.find((c) => String(c.id) === selectedClass);
-                            const price = selectedClassObj
-                              ? (TIMETABLE_BY_CLASS_ID[selectedClassObj.id]?.[0]?.lanes?.find(l => !l.closed && l.price > 0)?.price ?? 70000)
-                              : 70000;
+                              const price = selectedClassObj
+                              ? (TIMETABLE_BY_CLASS_ID[selectedClassObj.id]?.[0]?.lanes?.find(l => !l.closed && l.price > 0)?.price ?? 80000)
+                              : 80000;
                             const originalPrice = 200000;
                             const discountRate = Math.round((1 - price / originalPrice) * 100);
                             return (
@@ -1702,10 +1702,6 @@ export default function SwimmingClassPage() {
                                 정가 {originalPrice.toLocaleString()}원 →{" "}
                                 <span className="font-bold text-red-600">
                                   {price.toLocaleString()}원
-                                </span>
-                                <br />
-                                <span className="text-gray-700">
-                                  ※ 이번 2기 특강 한정
                                 </span>
                               </>
                             );

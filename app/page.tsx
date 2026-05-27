@@ -3499,11 +3499,11 @@ export default function SwimmingClassPage() {
                             <div className="mb-3 space-y-1">
                               <div className="flex justify-between text-sm text-gray-600">
                                 <span>원가</span>
-                                <span className="line-through">₩100,000</span>
+                                <span className="line-through">₩200,000</span>
                               </div>
                               <div className="flex justify-between text-sm text-red-600 font-semibold">
                                 <span>할인</span>
-                                <span>-₩40,000</span>
+                                <span>-₩{(200000 - (selectedTimeSlot?.price ?? 80000)).toLocaleString()}</span>
                               </div>
                             </div>
                           )}

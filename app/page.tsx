@@ -86,7 +86,7 @@ const classes: ClassItem[] = [
     venue: "아스타스포츠센터",
     address: "김포한강9로76번길 63 4층 407호, 408호, 409호",
     spots: "3명 모집 중",
-    scheduleSummaryLines: ["1부 15:00~17:00", "2부 16:00~18:00"],
+    scheduleSummaryLines: ["1부 15:00~17:00"],
   },
   {
     id: 6,
@@ -175,17 +175,6 @@ const TIMETABLE_KIMPO: TimetableRow[] = [
       { lane: "2레인", title: "접영 A (초급)", price: 80000 },
       { lane: "3레인", title: "접영 B (중급)", price: 80000 },
       { lane: "4레인", title: "자유형 A (초급)", price: 80000 },
-      { lane: "5레인", title: "", price: 0, closed: true },
-    ],
-  },
-  {
-    session: "2부 특강",
-    time: "16:00 ~ 18:00",
-    lanes: [
-      { lane: "1레인", title: "", price: 0, closed: true },
-      { lane: "2레인", title: "자유형 B (중급)", price: 80000, premium: true },
-      { lane: "3레인", title: "", price: 0, closed: true },
-      { lane: "4레인", title: "", price: 0, closed: true },
       { lane: "5레인", title: "", price: 0, closed: true },
     ],
   },

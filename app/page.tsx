@@ -222,6 +222,28 @@ const getKoreanTodayParts = () => {
 const getClassRegionLabel = (classId: number) =>
   classes.find((c) => c.id === classId)?.locationCode || String(classId);
 
+/** 당일 오전 8시(한국 시간) 이후 지난 특강은 목록에서 제외 */
+const getActiveClasses = (): ClassItem[] => {
+  const { year, month, day } = getKoreanTodayParts();
+  const now = new Date();
+  const kstOffset = 9 * 60; // UTC+9
+  const kstNow = new Date(now.getTime() + kstOffset * 60 * 1000);
+  const kstHour = kstNow.getUTCHours();
+
+  return classes.filter((c) => {
+    // 특강일이 오늘보다 미래면 표시
+    if (c.year > year) return true;
+    if (c.year === year && c.month > month) return true;
+    if (c.year === year && c.month === month && c.dateNum > day) return true;
+    // 특강일이 오늘이면 오전 8시 이전에만 표시
+    if (c.year === year && c.month === month && c.dateNum === day) {
+      return kstHour < 8;
+    }
+    // 특강일이 지났으면 숨김
+    return false;
+  });
+};
+
 const makeClassKey = (
   classId: number,
   session: string,
@@ -894,12 +916,12 @@ export default function SwimmingClassPage() {
     calendarDays.push(i);
   }
 
-  // 지역 선택 시 해당 지역 날짜만, 미선택 시 해당 월 전체 날짜 표시
+  // 지역 선택 시 해당 지역 날짜만, 미선택 시 해당 월 전체 날짜 표시 (지난 특강 제외)
   const highlightedDates = selectedClass
-    ? classes
+    ? getActiveClasses()
         .filter((c) => String(c.id) === selectedClass && c.month === calendarMonth)
         .map((c) => c.dateNum)
-    : classes
+    : getActiveClasses()
         .filter((c) => c.month === calendarMonth)
         .map((c) => c.dateNum);
 
@@ -1941,7 +1963,7 @@ export default function SwimmingClassPage() {
                       </h3>
                     </div>
                     <div className="space-y-3">
-                      {classes.map((classItem) => (
+                      {getActiveClasses().map((classItem) => (
                         <Card key={classItem.id} className="transition-all shadow-sm">
                           <CardContent className="p-4 sm:p-5">
                             <div className="mb-3 flex items-center justify-between">
@@ -2906,7 +2928,7 @@ export default function SwimmingClassPage() {
                       </h3>
                     </div>
                     <div className="space-y-3">
-                      {classes.map((classItem) => (
+                      {getActiveClasses().map((classItem) => (
                         <Card
                           key={classItem.id}
                           className={`cursor-pointer transition-all ${

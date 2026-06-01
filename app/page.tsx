@@ -374,6 +374,17 @@ export default function SwimmingClassPage() {
   // 개발자 모드 (URL 파라미터로 활성화)
   const [showDebug, setShowDebug] = useState(false);
 
+  // 현재 활성 특강의 클래스 키 목록 (지난 특강 제거용)
+  const activeClassKeys = new Set(
+    getActiveClasses().flatMap((c) =>
+      (TIMETABLE_BY_CLASS_ID[c.id] ?? []).flatMap((row) =>
+        row.lanes
+          .filter((l) => !l.closed && l.title)
+          .map((l) => makeClassKey(c.id, row.session, l.lane, l.title)),
+      ),
+    ),
+  );
+
   // URL 파라미터 확인
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -1050,6 +1061,8 @@ export default function SwimmingClassPage() {
                 <div className="space-y-1">
                   {Object.entries(classEnrollment)
                     .filter(([className]) => {
+                      // 지난 특강 클래스는 개발자 모드에서도 제외
+                      if (!activeClassKeys.has(className)) return false;
                       const q = debugFilter.trim();
                       if (!q) return true;
                       return className.toLowerCase().includes(q.toLowerCase());

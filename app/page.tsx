@@ -5791,7 +5791,7 @@ export default function SwimmingClassPage() {
                 onClick={handleAntifogPurchase}
                 disabled={isAntifogLoading}
               >
-                {isAntifogLoading ? "결제창 여는 중..." : "안티포그 구매하기"}
+                {isAntifogLoading ? "결제창 여는 중..." : "안티포그 8900원 구매"}
               </Button>
               <p className="mt-2 text-[11px] text-gray-400">토스페이먼츠 안전 결제</p>
             </div>

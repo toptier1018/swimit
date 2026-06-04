@@ -373,6 +373,9 @@ export default function SwimmingClassPage() {
 
   // 개발자 모드 (URL 파라미터로 활성화)
   const [showDebug, setShowDebug] = useState(false);
+  // PG 심사용 토스 테스트 결제창 (?pgtest=1)
+  const [showPgTest, setShowPgTest] = useState(false);
+  const [isClassPgTestLoading, setIsClassPgTestLoading] = useState(false);
 
   // 현재 활성 특강의 클래스 키 목록 (지난 특강 제거용)
   const activeClassKeys = new Set(
@@ -389,10 +392,13 @@ export default function SwimmingClassPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     setShowDebug(params.get("debug") === "true");
+    const pgTestOn = params.get("pgtest") === "1";
+    setShowPgTest(pgTestOn);
     const nextVideoCode = params.get("video")?.trim() || "";
     setVideoCode(nextVideoCode);
     console.log("[퍼널] URL 파라미터 확인:", {
       debug: params.get("debug") === "true",
+      pgtest: pgTestOn,
       video: nextVideoCode,
     });
   }, []);
@@ -969,6 +975,71 @@ export default function SwimmingClassPage() {
   };
 
   const [isAntifogLoading, setIsAntifogLoading] = useState(false);
+
+  const handleClassPgTestPayment = async () => {
+    if (isClassPgTestLoading || !selectedTimeSlot) return;
+    const amount = selectedTimeSlot.price;
+    if (!amount || amount <= 0) {
+      toast({
+        title: "테스트 결제 불가",
+        description: "선택한 클래스에 결제 금액이 없습니다.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsClassPgTestLoading(true);
+    console.log("[PG테스트] 특강 테스트 결제 시작:", {
+      className: selectedTimeSlot.name,
+      amount,
+    });
+
+    try {
+      const orderRes = await fetch("/api/toss/create-class-test-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount,
+          orderName: selectedTimeSlot.name,
+        }),
+      });
+      const orderData = await orderRes.json();
+
+      if (!orderData.success) {
+        console.error("[PG테스트] 주문 생성 실패:", orderData.error);
+        toast({
+          title: "테스트 주문 실패",
+          description: orderData.error,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { loadTossPayments } = await import("@tosspayments/tosspayments-sdk");
+      const tossPayments = await loadTossPayments(orderData.clientKey);
+      const payment = tossPayments.payment({ customerKey: "ANONYMOUS" });
+
+      console.log("[PG테스트] 토스 결제창 호출:", orderData.orderId);
+
+      await payment.requestPayment({
+        method: "CARD",
+        amount: { currency: "KRW", value: orderData.amount },
+        orderId: orderData.orderId,
+        orderName: orderData.orderName,
+        successUrl: `${window.location.origin}/class-pg-test/success`,
+        failUrl: `${window.location.origin}/class-pg-test/fail`,
+      });
+    } catch (error) {
+      console.error("[PG테스트] 결제 오류:", error);
+      toast({
+        title: "테스트 결제 오류",
+        description: "결제 처리 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsClassPgTestLoading(false);
+    }
+  };
 
   const handleAntifogPurchase = async () => {
     if (isAntifogLoading) return;
@@ -3543,7 +3614,8 @@ export default function SwimmingClassPage() {
                       </p>
                     </div>
                   )}
-                  <div className="flex gap-3 pt-4">
+                  <div className="space-y-3 pt-4">
+                    <div className="flex gap-3">
                     <Button
                       variant="outline"
                       className="px-8 border-gray-300 text-gray-700 bg-transparent"
@@ -4096,8 +4168,28 @@ export default function SwimmingClassPage() {
                             (isClassFull(selectedTimeSlot.name) ||
                               hasEnrollment(selectedTimeSlot.name))
                           ? "예약하기"
-                          : `₩${(selectedTimeSlot?.price ?? 0).toLocaleString()} 결제하기`}
+                          : `₩${(selectedTimeSlot?.price ?? 0).toLocaleString()} 무통장 입금 신청`}
                     </Button>
+                    </div>
+                    {showPgTest && selectedTimeSlot && (
+                      <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 space-y-2">
+                        <p className="text-[11px] text-amber-900 leading-snug">
+                          PG 심사용 · 테스트 키 결제 (실제 출금 없음). 특강
+                          신청·무통장 입금·Notion 반영과 무관합니다.
+                        </p>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-full border-amber-500 text-amber-900 bg-white hover:bg-amber-100 font-semibold"
+                          disabled={isClassPgTestLoading}
+                          onClick={() => void handleClassPgTestPayment()}
+                        >
+                          {isClassPgTestLoading
+                            ? "테스트 결제창 여는 중..."
+                            : "토스페이먼츠 테스트 결제창 (카드)"}
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </>

@@ -4,7 +4,11 @@ export async function POST(req: NextRequest) {
   try {
     const { paymentKey, orderId, amount } = await req.json();
 
-    console.log("[안티포그] 결제 승인 요청:", { paymentKey, orderId, amount });
+    const isPgTestClass = String(orderId).startsWith("CLASS-TEST-");
+    console.log(
+      isPgTestClass ? "[PG테스트] 결제 승인 요청:" : "[안티포그] 결제 승인 요청:",
+      { paymentKey, orderId, amount },
+    );
 
     if (!paymentKey || !orderId || !amount) {
       console.error("[안티포그] 결제 승인 파라미터 누락:", {
@@ -55,12 +59,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    console.log("[안티포그] 결제 승인 성공:", {
-      orderId: tossData.orderId,
-      status: tossData.status,
-      method: tossData.method,
-      totalAmount: tossData.totalAmount,
-    });
+    console.log(
+      isPgTestClass ? "[PG테스트] 결제 승인 성공:" : "[안티포그] 결제 승인 성공:",
+      {
+        orderId: tossData.orderId,
+        status: tossData.status,
+        method: tossData.method,
+        totalAmount: tossData.totalAmount,
+      },
+    );
 
     return NextResponse.json({ success: true, payment: tossData });
   } catch (error) {

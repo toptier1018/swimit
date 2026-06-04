@@ -4,7 +4,7 @@ import { randomUUID } from "crypto";
 // 안티포그 상품 정보 (추후 DB로 이동 가능)
 const ANTIFOG_PRODUCT = {
   name: "스윔잇 안티포그",
-  amount: 15000, // 원 단위, 실제 금액으로 수정하세요
+  amount: 8900, // 원 단위, 실제 금액으로 수정하세요
 };
 
 export async function POST() {

@@ -373,8 +373,9 @@ export default function SwimmingClassPage() {
 
   // 개발자 모드 (URL 파라미터로 활성화)
   const [showDebug, setShowDebug] = useState(false);
-  // PG 심사용 토스 테스트 결제창 (?pgtest=1)
-  const [showPgTest, setShowPgTest] = useState(false);
+  // PG 심사용 토스 테스트 결제창 (NEXT_PUBLIC_PG_REVIEW=true 또는 ?pgtest=1)
+  const pgReviewFromEnv = process.env.NEXT_PUBLIC_PG_REVIEW === "true";
+  const [showPgTest, setShowPgTest] = useState(pgReviewFromEnv);
   const [isClassPgTestLoading, setIsClassPgTestLoading] = useState(false);
 
   // 현재 활성 특강의 클래스 키 목록 (지난 특강 제거용)
@@ -393,15 +394,23 @@ export default function SwimmingClassPage() {
     const params = new URLSearchParams(window.location.search);
     setShowDebug(params.get("debug") === "true");
     const pgTestOn = params.get("pgtest") === "1";
-    setShowPgTest(pgTestOn);
+    setShowPgTest(pgReviewFromEnv || pgTestOn);
     const nextVideoCode = params.get("video")?.trim() || "";
     setVideoCode(nextVideoCode);
     console.log("[퍼널] URL 파라미터 확인:", {
       debug: params.get("debug") === "true",
+      pgReview: pgReviewFromEnv,
       pgtest: pgTestOn,
+      showPgTest: pgReviewFromEnv || pgTestOn,
       video: nextVideoCode,
     });
-  }, []);
+  }, [pgReviewFromEnv]);
+
+  useEffect(() => {
+    if (pgReviewFromEnv) {
+      console.log("[PG테스트] 심사 모드 ON — 메인 URL에서 테스트 결제창 표시");
+    }
+  }, [pgReviewFromEnv]);
 
   useEffect(() => {
     console.log("[특강일정] 서초·김포 특강 병행", {
@@ -4172,15 +4181,19 @@ export default function SwimmingClassPage() {
                     </Button>
                     </div>
                     {showPgTest && selectedTimeSlot && (
-                      <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 space-y-2">
-                        <p className="text-[11px] text-amber-900 leading-snug">
-                          PG 심사용 · 테스트 키 결제 (실제 출금 없음). 특강
-                          신청·무통장 입금·Notion 반영과 무관합니다.
+                      <div className="rounded-xl border-2 border-amber-400 bg-amber-50 p-4 sm:p-5 space-y-3 shadow-sm">
+                        <p className="text-base sm:text-lg font-extrabold text-amber-950 text-center leading-snug">
+                          PG·카드사 심사용 · 실제 특강 신청 아님 · 테스트 키
+                        </p>
+                        <p className="text-xs sm:text-sm text-amber-900 text-center leading-relaxed">
+                          위 「결제하기」는 무통장 입금 신청입니다. 아래 버튼만
+                          토스 테스트 카드 결제(실제 출금 없음)이며 Notion·정원에
+                          반영되지 않습니다.
                         </p>
                         <Button
                           type="button"
                           variant="outline"
-                          className="w-full border-amber-500 text-amber-900 bg-white hover:bg-amber-100 font-semibold"
+                          className="w-full py-3 text-sm sm:text-base border-2 border-amber-600 text-amber-950 bg-white hover:bg-amber-100 font-bold"
                           disabled={isClassPgTestLoading}
                           onClick={() => void handleClassPgTestPayment()}
                         >

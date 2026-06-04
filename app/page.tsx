@@ -4168,7 +4168,7 @@ export default function SwimmingClassPage() {
                             (isClassFull(selectedTimeSlot.name) ||
                               hasEnrollment(selectedTimeSlot.name))
                           ? "예약하기"
-                          : `₩${(selectedTimeSlot?.price ?? 0).toLocaleString()} 무통장 입금 신청`}
+                          : `₩${(selectedTimeSlot?.price ?? 0).toLocaleString()} 결제하기`}
                     </Button>
                     </div>
                     {showPgTest && selectedTimeSlot && (

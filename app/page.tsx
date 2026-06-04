@@ -4181,26 +4181,67 @@ export default function SwimmingClassPage() {
                     </Button>
                     </div>
                     {showPgTest && selectedTimeSlot && (
-                      <div className="rounded-xl border-2 border-amber-400 bg-amber-50 p-4 sm:p-5 space-y-3 shadow-sm">
-                        <p className="text-base sm:text-lg font-extrabold text-amber-950 text-center leading-snug">
-                          PG·카드사 심사용 · 실제 특강 신청 아님 · 테스트 키
-                        </p>
-                        <p className="text-xs sm:text-sm text-amber-900 text-center leading-relaxed">
-                          위 「결제하기」는 무통장 입금 신청입니다. 아래 버튼만
-                          토스 테스트 카드 결제(실제 출금 없음)이며 Notion·정원에
-                          반영되지 않습니다.
-                        </p>
-                        <Button
+                      <div
+                        className="rounded-xl border-2 p-4 sm:p-5 space-y-4 shadow-sm"
+                        style={{
+                          backgroundColor: "#FEF2F2",
+                          borderColor: "#EF4444",
+                        }}
+                        role="alert"
+                        aria-label="PG 심사용 테스트 안내"
+                      >
+                        <div className="flex items-start gap-2 sm:gap-3">
+                          <AlertTriangle
+                            className="h-6 w-6 sm:h-7 sm:w-7 shrink-0 text-red-600 mt-0.5"
+                            aria-hidden
+                          />
+                          <div className="flex-1 space-y-2 sm:space-y-3 min-w-0">
+                            <p className="text-base sm:text-lg font-extrabold text-red-800 leading-snug">
+                              ⚠️ 실제 결제 버튼이 아닙니다
+                            </p>
+                            <p className="text-sm sm:text-[15px] text-red-900/90 leading-relaxed">
+                              아래 버튼은 PG·카드사 심사를 위한 테스트 결제
+                              버튼입니다.
+                              <br />
+                              실제 특강 신청, 예약 확정, 결제 진행이 되지
+                              않습니다.
+                              <br />
+                              <span className="font-semibold text-red-800">
+                                고객님은 누르지 않으셔도 됩니다.
+                              </span>
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2">
+                          {["심사용", "테스트 전용", "실제 결제 불가"].map(
+                            (label) => (
+                              <span
+                                key={label}
+                                className="inline-flex items-center rounded-md bg-red-600 px-2.5 py-1 text-[11px] sm:text-xs font-bold text-white"
+                              >
+                                {label}
+                              </span>
+                            ),
+                          )}
+                        </div>
+
+                        <button
                           type="button"
-                          variant="outline"
-                          className="w-full py-3 text-sm sm:text-base border-2 border-amber-600 text-amber-950 bg-white hover:bg-amber-100 font-bold"
                           disabled={isClassPgTestLoading}
                           onClick={() => void handleClassPgTestPayment()}
+                          className="w-full rounded-lg border border-gray-300 bg-gray-200 py-3 px-3 text-center cursor-not-allowed hover:bg-gray-200 hover:opacity-100 disabled:opacity-60"
+                          aria-label="PG 심사용 테스트 버튼, 실제 결제 아님"
                         >
-                          {isClassPgTestLoading
-                            ? "테스트 결제창 여는 중..."
-                            : "토스페이먼츠 테스트 결제창 (카드)"}
-                        </Button>
+                          <span className="block text-sm sm:text-base font-bold text-gray-600">
+                            {isClassPgTestLoading
+                              ? "테스트 결제창 여는 중..."
+                              : "PG 심사용 테스트 버튼"}
+                          </span>
+                          <span className="block mt-1 text-xs sm:text-sm text-gray-500">
+                            실제 결제 아님
+                          </span>
+                        </button>
                       </div>
                     )}
                   </div>

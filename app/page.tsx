@@ -3845,6 +3845,12 @@ export default function SwimmingClassPage() {
                                       "[구글시트] 예약대기 행 추가 실패:",
                                       sheetResult?.error || sheetResponse.status,
                                     );
+                                    toast({
+                                      title: "구글 시트 저장 실패",
+                                      description:
+                                        "신청은 완료됐지만 시트 연동에 실패했습니다. 고객센터(@스윔잇)로 연락해 주세요.",
+                                      variant: "destructive",
+                                    });
                                   } else {
                                     console.log(
                                       "[구글시트] 예약대기 행 추가 완료:",
@@ -3856,6 +3862,12 @@ export default function SwimmingClassPage() {
                                     "[구글시트] 예약대기 행 추가 중 예외:",
                                     sheetError,
                                   );
+                                  toast({
+                                    title: "구글 시트 저장 오류",
+                                    description:
+                                      "신청은 완료됐지만 시트 연동 중 오류가 발생했습니다.",
+                                    variant: "destructive",
+                                  });
                                 }
 
                                 // 신청 인원 증가
@@ -4037,6 +4049,12 @@ export default function SwimmingClassPage() {
                                       "[구글시트] 입금대기 행 추가 실패:",
                                       sheetResult?.error || sheetResponse.status,
                                     );
+                                    toast({
+                                      title: "구글 시트 저장 실패",
+                                      description:
+                                        "신청은 완료됐지만 시트 연동에 실패했습니다. 고객센터(@스윔잇)로 연락해 주세요.",
+                                      variant: "destructive",
+                                    });
                                   } else {
                                     console.log(
                                       "[구글시트] 입금대기 행 추가 완료:",
@@ -4048,6 +4066,12 @@ export default function SwimmingClassPage() {
                                     "[구글시트] 입금대기 행 추가 중 예외:",
                                     sheetError,
                                   );
+                                  toast({
+                                    title: "구글 시트 저장 오류",
+                                    description:
+                                      "신청은 완료됐지만 시트 연동 중 오류가 발생했습니다.",
+                                    variant: "destructive",
+                                  });
                                 }
 
                                 // 알리고 알림톡 자동 발송

@@ -61,6 +61,44 @@ export type GoogleSheetRowInput = {
   예약상태: string;
 };
 
+/** 시트 B열(신청번호) 목록 — 중복 복구 방지 */
+export async function getSheetOrderNumbers(): Promise<{
+  success: true;
+  orderNumbers: Set<string>;
+} | { success: false; error: string }> {
+  try {
+    if (!env.spreadsheetId || !env.sheetName) {
+      return {
+        success: false,
+        error:
+          "GOOGLE_SHEETS_SPREADSHEET_ID and GOOGLE_SHEETS_SHEET_NAME must be set.",
+      };
+    }
+
+    const auth = getAuthClient();
+    const sheets = google.sheets({ version: "v4", auth });
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId: env.spreadsheetId,
+      range: `'${env.sheetName}'!B:B`,
+    });
+
+    const rows = res.data.values ?? [];
+    const orderNumbers = new Set<string>();
+    for (let i = 1; i < rows.length; i++) {
+      const cell = String(rows[i]?.[0] ?? "").trim();
+      if (cell) orderNumbers.add(cell);
+    }
+
+    console.log("[Google Sheets] 기존 신청번호 개수:", orderNumbers.size);
+    return { success: true, orderNumbers };
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "Failed to read sheet.";
+    console.error("[Google Sheets] read error:", message);
+    return { success: false, error: message };
+  }
+}
+
 export async function appendRowToGoogleSheet(
   row: GoogleSheetRowInput,
 ): Promise<{ success: true } | { success: false; error: string }> {

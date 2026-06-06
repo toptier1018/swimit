@@ -828,19 +828,13 @@ export default function SwimmingClassPage() {
     return `${year}년 ${month}월 ${day}일 ${ampm} ${displayHours}시 ${displayMinutes}분`;
   };
 
-  // 달력 월 상태 추가 (선택된 클래스의 월로 초기화)
-  const getCurrentYear = () => new Date().getFullYear();
-  const getCurrentMonth = () => new Date().getMonth() + 1;
-  const getCurrentDay = () => new Date().getDate();
-
-  const defaultClassInfo = classes[0];
-  const [calendarMonth, setCalendarMonth] = useState(
-    defaultClassInfo?.month ?? getCurrentMonth(),
-  );
-  const [calendarYear, setCalendarYear] = useState(
-    defaultClassInfo?.year ?? getCurrentYear(),
-  );
-  const [today, setToday] = useState(getKoreanTodayParts());
+  // 달력: 한국 시간(KST) 기준 현재 연·월로 초기화
+  const kstTodayInit = getKoreanTodayParts();
+  const [calendarMonth, setCalendarMonth] = useState(kstTodayInit.month);
+  const [calendarYear, setCalendarYear] = useState(kstTodayInit.year);
+  const [today, setToday] = useState(kstTodayInit);
+  const selectedClassRef = useRef<string | null>(null);
+  selectedClassRef.current = selectedClass;
 
   const selectedClassIdNum = selectedClass ? Number(selectedClass) : NaN;
   const activeTimetable =
@@ -849,19 +843,24 @@ export default function SwimmingClassPage() {
       ? TIMETABLE_BY_CLASS_ID[selectedClassIdNum]
       : [];
 
-  // selectedClass가 변경되면 달력 월도 업데이트
+  // selectedClass 변경 시 해당 특강 월로 이동, 미선택 시 KST 현재 월
   useEffect(() => {
+    const kst = getKoreanTodayParts();
     if (selectedClass) {
       const selectedClassData = classes.find(
         (c) => c.id === Number(selectedClass),
       );
       if (selectedClassData) {
         setCalendarMonth(selectedClassData.month);
-        setCalendarYear(selectedClassData.year ?? getCurrentYear());
+        setCalendarYear(selectedClassData.year ?? kst.year);
         console.log(
-          `[v0] 선택된 클래스 변경: ${selectedClassData.location}, 연/월: ${selectedClassData.year ?? getCurrentYear()}-${selectedClassData.month}`,
+          `[달력] 선택 지역 연/월: ${selectedClassData.year ?? kst.year}-${selectedClassData.month}`,
         );
       }
+    } else {
+      setCalendarMonth(kst.month);
+      setCalendarYear(kst.year);
+      console.log(`[달력] KST 현재 월로 복귀: ${kst.year}-${kst.month}`);
     }
   }, [selectedClass]);
 
@@ -869,7 +868,11 @@ export default function SwimmingClassPage() {
     const syncToday = () => {
       const nextToday = getKoreanTodayParts();
       setToday(nextToday);
-      console.log("[달력] 오늘 날짜 동기화:", nextToday);
+      if (!selectedClassRef.current) {
+        setCalendarMonth(nextToday.month);
+        setCalendarYear(nextToday.year);
+        console.log("[달력] KST 오늘·현재 월 동기화:", nextToday);
+      }
     };
 
     syncToday();
@@ -1948,10 +1951,13 @@ export default function SwimmingClassPage() {
                             size="icon"
                             className="h-8 w-8"
                             onClick={() => {
-                              const newMonth =
-                                calendarMonth > 1 ? calendarMonth - 1 : 12;
-                              setCalendarMonth(newMonth);
-                              console.log(`[v0] 달력 월 변경: ${newMonth}월`);
+                              if (calendarMonth > 1) {
+                                setCalendarMonth(calendarMonth - 1);
+                              } else {
+                                setCalendarMonth(12);
+                                setCalendarYear(calendarYear - 1);
+                              }
+                              console.log(`[달력] 이전 월`);
                             }}
                           >
                             <ChevronLeft className="h-4 w-4" />
@@ -1964,10 +1970,13 @@ export default function SwimmingClassPage() {
                             size="icon"
                             className="h-8 w-8"
                             onClick={() => {
-                              const newMonth =
-                                calendarMonth < 12 ? calendarMonth + 1 : 1;
-                              setCalendarMonth(newMonth);
-                              console.log(`[v0] 달력 월 변경: ${newMonth}월`);
+                              if (calendarMonth < 12) {
+                                setCalendarMonth(calendarMonth + 1);
+                              } else {
+                                setCalendarMonth(1);
+                                setCalendarYear(calendarYear + 1);
+                              }
+                              console.log(`[달력] 다음 월`);
                             }}
                           >
                             <ChevronRight className="h-4 w-4" />
@@ -2912,10 +2921,13 @@ export default function SwimmingClassPage() {
                             size="icon"
                             className="h-8 w-8"
                             onClick={() => {
-                              const newMonth =
-                                calendarMonth > 1 ? calendarMonth - 1 : 12;
-                              setCalendarMonth(newMonth);
-                              console.log(`[v0] 달력 월 변경: ${newMonth}월`);
+                              if (calendarMonth > 1) {
+                                setCalendarMonth(calendarMonth - 1);
+                              } else {
+                                setCalendarMonth(12);
+                                setCalendarYear(calendarYear - 1);
+                              }
+                              console.log(`[달력] 이전 월`);
                             }}
                           >
                             <ChevronLeft className="h-4 w-4" />
@@ -2928,10 +2940,13 @@ export default function SwimmingClassPage() {
                             size="icon"
                             className="h-8 w-8"
                             onClick={() => {
-                              const newMonth =
-                                calendarMonth < 12 ? calendarMonth + 1 : 1;
-                              setCalendarMonth(newMonth);
-                              console.log(`[v0] 달력 월 변경: ${newMonth}월`);
+                              if (calendarMonth < 12) {
+                                setCalendarMonth(calendarMonth + 1);
+                              } else {
+                                setCalendarMonth(1);
+                                setCalendarYear(calendarYear + 1);
+                              }
+                              console.log(`[달력] 다음 월`);
                             }}
                           >
                             <ChevronRight className="h-4 w-4" />

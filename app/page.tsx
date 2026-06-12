@@ -114,6 +114,19 @@ const classes: ClassItem[] = [
     spots: "3명 모집 중",
     scheduleSummaryLines: ["1부 14:00~16:00"],
   },
+  {
+    id: 7,
+    year: 2026,
+    location: "삼정스포츠 수영장",
+    locationCode: "은평",
+    date: "7월 5일 (일)",
+    dateNum: 5,
+    month: 7,
+    venue: "삼정스포츠 수영장",
+    address: "서울 은평구 서오릉로 94 삼성타운아파트 지하2층",
+    spots: "레인별 7명 모집",
+    scheduleSummaryLines: ["1부 09:00~11:00"],
+  },
 ];
 
 // 오픈 전 임시 설정: 전체 클래스를 '예약대기'로 강제 표시
@@ -196,11 +209,28 @@ const TIMETABLE_HWASEONG: TimetableRow[] = [
   },
 ];
 
+/** 삼정스포츠 수영장 7/5 특강 (서울 은평) */
+const TIMETABLE_SAMJEONG: TimetableRow[] = [
+  {
+    session: "1부 특강",
+    time: "09:00 ~ 11:00",
+    lanes: [
+      { lane: "1레인", title: "평영 A (초급)", price: 80000 },
+      { lane: "2레인", title: "평영 B (중급)", price: 80000 },
+      { lane: "3레인", title: "접영 A (초급)", price: 80000 },
+      { lane: "4레인", title: "접영 B (중급)", price: 80000 },
+      { lane: "5레인", title: "자유형 A (초급)", price: 80000 },
+      { lane: "6레인", title: "자유형 B (중급)", price: 80000 },
+    ],
+  },
+];
+
 const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   3: TIMETABLE_SEOCHO,   // 5/31 서초
   4: TIMETABLE_KIMPO,    // 6/14 김포
   6: TIMETABLE_HWASEONG, // 6/21 화성
   5: TIMETABLE_MOKDONG,  // 6/28 목동
+  7: TIMETABLE_SAMJEONG, // 7/5 은평
 };
 
 const getKoreanTodayParts = () => {
@@ -413,8 +443,12 @@ export default function SwimmingClassPage() {
   }, [pgReviewFromEnv]);
 
   useEffect(() => {
-    console.log("[특강일정] 서초·김포 특강 병행", {
-      classIds: classes.map((c) => c.id),
+    console.log("[특강일정] 활성 특강 목록", {
+      classIds: getActiveClasses().map((c) => ({
+        id: c.id,
+        location: c.locationCode,
+        date: `${c.month}/${c.dateNum}`,
+      })),
       enrollmentKeys: Object.keys(INITIAL_ENROLLMENT).length,
     });
   }, []);

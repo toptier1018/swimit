@@ -74,6 +74,8 @@ const CLASS_DATES = {
   목동: "2026-06-28",
   은평: "2026-07-05",
   삼정: "2026-07-05",
+  인천: "2026-07-12",
+  청라: "2026-07-12",
 };
 
 function guessClassDate(region, selectedClass) {

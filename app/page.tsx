@@ -127,6 +127,19 @@ const classes: ClassItem[] = [
     spots: "레인별 7명 모집",
     scheduleSummaryLines: ["1부 09:00~11:00"],
   },
+  {
+    id: 8,
+    year: 2026,
+    location: "청라스카이스위밍",
+    locationCode: "인천",
+    date: "7월 12일 (일)",
+    dateNum: 12,
+    month: 7,
+    venue: "청라스카이스위밍",
+    address: "인천 서구 청라한내로 90 MK뷰 8층",
+    spots: "레인당 7명 모집",
+    scheduleSummaryLines: ["1부 10:00~12:00"],
+  },
 ];
 
 // 오픈 전 임시 설정: 전체 클래스를 '예약대기'로 강제 표시
@@ -225,12 +238,28 @@ const TIMETABLE_SAMJEONG: TimetableRow[] = [
   },
 ];
 
+/** 청라스카이스위밍 7/12 특강 (인천) */
+const TIMETABLE_CHEONGNA: TimetableRow[] = [
+  {
+    session: "1부 특강",
+    time: "10:00 ~ 12:00",
+    lanes: [
+      { lane: "1레인", title: "자유형 A (초급)", price: 80000 },
+      { lane: "2레인", title: "평영 A (초급)", price: 80000 },
+      { lane: "3레인", title: "접영 A (초급)", price: 80000 },
+      { lane: "4레인", title: "자유형 B (중급)", price: 80000 },
+      { lane: "5레인", title: "접영 B (중급)", price: 80000 },
+    ],
+  },
+];
+
 const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   3: TIMETABLE_SEOCHO,   // 5/31 서초
   4: TIMETABLE_KIMPO,    // 6/14 김포
   6: TIMETABLE_HWASEONG, // 6/21 화성
   5: TIMETABLE_MOKDONG,  // 6/28 목동
   7: TIMETABLE_SAMJEONG, // 7/5 은평
+  8: TIMETABLE_CHEONGNA, // 7/12 인천
 };
 
 const getKoreanTodayParts = () => {

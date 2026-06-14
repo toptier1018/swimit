@@ -78,6 +78,8 @@ const CLASS_DATES_BY_REGION: Record<string, string> = {
   목동: "2026-06-28",
   은평: "2026-07-05",
   삼정: "2026-07-05",
+  인천: "2026-07-12",
+  청라: "2026-07-12",
 };
 
 function guessClassDate(region: string, selectedClass: string): string {
@@ -90,6 +92,8 @@ function guessClassDate(region: string, selectedClass: string): string {
   if (selectedClass.includes("목동")) return CLASS_DATES_BY_REGION["목동"];
   if (selectedClass.includes("은평") || selectedClass.includes("삼정"))
     return CLASS_DATES_BY_REGION["은평"];
+  if (selectedClass.includes("인천") || selectedClass.includes("청라"))
+    return CLASS_DATES_BY_REGION["인천"];
   return "";
 }
 

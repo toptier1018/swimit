@@ -201,10 +201,10 @@ const TIMETABLE_HWASEONG: TimetableRow[] = [
     lanes: [
       { lane: "1레인", title: "", price: 0, closed: true },
       { lane: "2레인", title: "자유형 A (초급)", price: 80000 },
-      { lane: "3레인", title: "평영 A (초급)", price: 80000 },
-      { lane: "4레인", title: "접영 A (초급)", price: 80000 },
-      { lane: "5레인", title: "접영 B (중급)", price: 80000 },
-      { lane: "6레인", title: "자유형 B (중급)", price: 80000 },
+      { lane: "3레인", title: "", price: 0, closed: true },
+      { lane: "4레인", title: "", price: 0, closed: true },
+      { lane: "5레인", title: "", price: 0, closed: true },
+      { lane: "6레인", title: "", price: 0, closed: true },
     ],
   },
 ];

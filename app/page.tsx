@@ -140,6 +140,19 @@ const classes: ClassItem[] = [
     spots: "레인당 7명 모집",
     scheduleSummaryLines: ["1부 10:00~12:00"],
   },
+  {
+    id: 9,
+    year: 2026,
+    location: "서울 목동스포츠센터",
+    locationCode: "목동",
+    date: "7월 26일 (일)",
+    dateNum: 26,
+    month: 7,
+    venue: "목동스포츠센터",
+    address: "서울 양천구 목동서로 130",
+    spots: "레인당 7명 모집",
+    scheduleSummaryLines: ["1부 14:00~16:00"],
+  },
 ];
 
 // 오픈 전 임시 설정: 전체 클래스를 '예약대기'로 강제 표시
@@ -260,6 +273,7 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   5: TIMETABLE_MOKDONG,  // 6/28 목동
   7: TIMETABLE_SAMJEONG, // 7/5 은평
   8: TIMETABLE_CHEONGNA, // 7/12 인천
+  9: TIMETABLE_MOKDONG,  // 7/26 목동
 };
 
 const getKoreanTodayParts = () => {

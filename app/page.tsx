@@ -393,6 +393,46 @@ const INITIAL_ENROLLMENT: Record<string, number> = Object.fromEntries(
   }),
 ) as Record<string, number>;
 
+/** 특강 날짜 → 부 → 레인 순 (개발자 모드 등 시간 흐름 정렬용) */
+const buildClassKeySortIndex = (): Record<string, number> => {
+  const index: Record<string, number> = {};
+  let order = 0;
+
+  const sortedClasses = [...classes].sort((a, b) => {
+    if (a.year !== b.year) return a.year - b.year;
+    if (a.month !== b.month) return a.month - b.month;
+    if (a.dateNum !== b.dateNum) return a.dateNum - b.dateNum;
+    return a.id - b.id;
+  });
+
+  for (const classItem of sortedClasses) {
+    const rows = TIMETABLE_BY_CLASS_ID[classItem.id] ?? [];
+    for (const row of rows) {
+      for (const lane of row.lanes) {
+        if (lane.closed || !lane.title) continue;
+        const key = makeClassKey(
+          classItem.id,
+          row.session,
+          lane.lane,
+          lane.title,
+        );
+        if (!(key in index)) index[key] = order++;
+      }
+    }
+  }
+
+  return index;
+};
+
+const CLASS_KEY_SORT_INDEX = buildClassKeySortIndex();
+
+const compareClassKeysBySchedule = (a: string, b: string): number => {
+  const ia = CLASS_KEY_SORT_INDEX[a] ?? Number.MAX_SAFE_INTEGER;
+  const ib = CLASS_KEY_SORT_INDEX[b] ?? Number.MAX_SAFE_INTEGER;
+  if (ia !== ib) return ia - ib;
+  return a.localeCompare(b, "ko");
+};
+
 export default function SwimmingClassPage() {
   const [step, setStep] = useState(1);
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
@@ -1263,7 +1303,12 @@ export default function SwimmingClassPage() {
                       if (!q) return true;
                       return className.toLowerCase().includes(q.toLowerCase());
                     })
+                    .sort(([a], [b]) => compareClassKeysBySchedule(a, b))
                     .map(([className, count]) => {
+                      const effectiveCount = getEffectiveEnrollmentCount(
+                        className,
+                        classEnrollment,
+                      );
                       const threshold = manualWaitlistClasses.has(className)
                         ? "강제예약"
                         : waitlistThresholds[className];
@@ -1278,7 +1323,8 @@ export default function SwimmingClassPage() {
                                 {className}
                               </div>
                               <div className="font-bold text-sm">
-                                {count}명 / 다음: {count + 1}번째
+                                {effectiveCount}명 / 다음: {effectiveCount + 1}
+                                번째
                               </div>
                               <div className="text-[11px] text-gray-400">
                                 예약대기 기준:{" "}

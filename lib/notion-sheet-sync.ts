@@ -86,6 +86,13 @@ const CLASS_DATES_BY_REGION: Record<string, string> = {
 };
 
 function guessClassDate(region: string, selectedClass: string): string {
+  const datedClassLabel = selectedClass.match(/^\[[^\]]*?(\d{1,2})\/(\d{1,2})\]/);
+  if (datedClassLabel) {
+    const month = datedClassLabel[1].padStart(2, "0");
+    const day = datedClassLabel[2].padStart(2, "0");
+    return `2026-${month}-${day}`;
+  }
+
   for (const [key, date] of Object.entries(CLASS_DATES_BY_REGION)) {
     if (region.includes(key) || selectedClass.includes(key)) return date;
   }

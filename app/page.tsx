@@ -335,8 +335,32 @@ const getKoreanTodayParts = () => {
   return { year, month, day };
 };
 
+const getClassById = (classId: number) => classes.find((c) => c.id === classId);
+
 const getClassRegionLabel = (classId: number) =>
-  classes.find((c) => c.id === classId)?.locationCode || String(classId);
+  getClassById(classId)?.locationCode || String(classId);
+
+const getClassDateLabel = (classId: number) => {
+  const classItem = getClassById(classId);
+  if (!classItem) return "";
+  return `${classItem.month}/${classItem.dateNum}`;
+};
+
+const getClassKeyLabel = (classId: number) => {
+  const dateLabel = getClassDateLabel(classId);
+  const regionLabel = getClassRegionLabel(classId);
+  return dateLabel ? `${regionLabel} ${dateLabel}` : regionLabel;
+};
+
+const getPrimaryClassIdForLegacyRegion = (regionLabel: string) =>
+  [...classes]
+    .sort((a, b) => {
+      if (a.year !== b.year) return a.year - b.year;
+      if (a.month !== b.month) return a.month - b.month;
+      if (a.dateNum !== b.dateNum) return a.dateNum - b.dateNum;
+      return a.id - b.id;
+    })
+    .find((c) => c.locationCode === regionLabel)?.id;
 
 /** 당일 오전 8시(한국 시간) 이후 지난 특강은 목록에서 제외 */
 const getActiveClasses = (): ClassItem[] => {
@@ -365,22 +389,36 @@ const makeClassKey = (
   session: string,
   lane: string,
   title: string,
-) => `[${getClassRegionLabel(classId)}] ${session} ${lane} ${title}`;
+) => `[${getClassKeyLabel(classId)}] ${session} ${lane} ${title}`;
 
-const migrateLegacyClassKey = (key: string) =>
-  key.replace(/^\[cid:(\d+)\]/, (_, idText) => {
+const migrateLegacyClassKey = (key: string) => {
+  const cidMigrated = key.replace(/^\[cid:(\d+)\]/, (_, idText) => {
     const classId = Number(idText);
-    return `[${getClassRegionLabel(classId)}]`;
+    return `[${getClassKeyLabel(classId)}]`;
   });
+
+  return cidMigrated.replace(/^\[([^\]]+)\]/, (match, regionLabel) => {
+    if (/\d+\/\d+/.test(regionLabel)) return match;
+    const classId = getPrimaryClassIdForLegacyRegion(regionLabel);
+    return classId ? `[${getClassKeyLabel(classId)}]` : match;
+  });
+};
 
 /** 통합 폐강 레인: 구 키 신청 건수를 대상 레인 카운트에 합산 */
 const ENROLLMENT_MERGE_TO: Record<string, string> = {
-  "[화성] 1부 특강 5레인 접영 B (중급)":
-    "[화성] 1부 특강 4레인 접영 A (초급)",
+  "[화성 6/21] 1부 특강 5레인 접영 B (중급)":
+    "[화성 6/21] 1부 특강 4레인 접영 A (초급)",
 };
 
 const resolveEnrollmentTargetKey = (classKey: string) =>
   ENROLLMENT_MERGE_TO[classKey] ?? classKey;
+
+const normalizeManualWaitlistClasses = (classNames: string[] = []) =>
+  new Set(
+    classNames.map((className) =>
+      resolveEnrollmentTargetKey(migrateLegacyClassKey(className)),
+    ),
+  );
 
 const getEffectiveEnrollmentCount = (
   className: string,
@@ -576,6 +614,20 @@ export default function SwimmingClassPage() {
           .map((l) => makeClassKey(c.id, row.session, l.lane, l.title)),
       ),
     ),
+  );
+
+  const activeDeveloperClassEntries = Object.entries(classEnrollment)
+    .filter(([className]) => {
+      // 지난 특강 클래스는 개발자 모드에서도 제외
+      if (!activeClassKeys.has(className)) return false;
+      const q = debugFilter.trim();
+      if (!q) return true;
+      return className.toLowerCase().includes(q.toLowerCase());
+    })
+    .sort(([a], [b]) => compareClassKeysBySchedule(a, b));
+
+  const activeDeveloperClassNames = activeDeveloperClassEntries.map(
+    ([className]) => className,
   );
 
   // URL 파라미터 확인
@@ -797,7 +849,9 @@ export default function SwimmingClassPage() {
       const response = await fetch("/api/admin/set-waitlist");
       const data = await response.json();
       if (data.success && data.manualWaitlistClasses) {
-        setManualWaitlistClasses(new Set(data.manualWaitlistClasses));
+        setManualWaitlistClasses(
+          normalizeManualWaitlistClasses(data.manualWaitlistClasses),
+        );
         console.log(
           "[서버 동기화] 수동 예약대기 클래스:",
           data.manualWaitlistClasses,
@@ -1320,7 +1374,7 @@ export default function SwimmingClassPage() {
                   기준 날짜: <span className="font-mono">{todayKst}</span>
                 </div>
                 <div className="text-[11px] text-gray-400 font-mono">
-                  classes: {Object.keys(classEnrollment).length}
+                  classes: {activeDeveloperClassNames.length}
                 </div>
               </div>
               {!debugCollapsed && (
@@ -1338,16 +1392,7 @@ export default function SwimmingClassPage() {
             {!debugCollapsed && (
               <div className="p-3 overflow-auto">
                 <div className="space-y-1">
-                  {Object.entries(classEnrollment)
-                    .filter(([className]) => {
-                      // 지난 특강 클래스는 개발자 모드에서도 제외
-                      if (!activeClassKeys.has(className)) return false;
-                      const q = debugFilter.trim();
-                      if (!q) return true;
-                      return className.toLowerCase().includes(q.toLowerCase());
-                    })
-                    .sort(([a], [b]) => compareClassKeysBySchedule(a, b))
-                    .map(([className, count]) => {
+                  {activeDeveloperClassEntries.map(([className, count]) => {
                       const effectiveCount = getEffectiveEnrollmentCount(
                         className,
                         classEnrollment,
@@ -1425,7 +1470,9 @@ export default function SwimmingClassPage() {
                                     const data = await response.json();
                                     if (response.ok && data.success) {
                                       setManualWaitlistClasses(
-                                        new Set(data.manualWaitlistClasses),
+                                        normalizeManualWaitlistClasses(
+                                          data.manualWaitlistClasses,
+                                        ),
                                       );
                                       if (data.thresholds) {
                                         setWaitlistThresholds(normalizeWaitlistThresholds(data.thresholds));
@@ -1492,7 +1539,9 @@ export default function SwimmingClassPage() {
                                     const data = await response.json();
                                     if (response.ok && data.success) {
                                       setManualWaitlistClasses(
-                                        new Set(data.manualWaitlistClasses),
+                                        normalizeManualWaitlistClasses(
+                                          data.manualWaitlistClasses,
+                                        ),
                                       );
                                       if (data.thresholds) {
                                         setWaitlistThresholds(normalizeWaitlistThresholds(data.thresholds));
@@ -1542,7 +1591,7 @@ export default function SwimmingClassPage() {
                     size="sm"
                     className="w-full bg-yellow-600 hover:bg-yellow-500 text-black text-xs"
                     onClick={async () => {
-                      const classNames = Object.keys(classEnrollment);
+                      const classNames = activeDeveloperClassNames;
                       console.log("[개발자] Notion 설정 행 자동 생성 요청:", {
                         count: classNames.length,
                       });
@@ -1561,7 +1610,9 @@ export default function SwimmingClassPage() {
                         const data = await response.json();
                         if (response.ok && data.success) {
                           setManualWaitlistClasses(
-                            new Set(data.manualWaitlistClasses || []),
+                            normalizeManualWaitlistClasses(
+                              data.manualWaitlistClasses || [],
+                            ),
                           );
                           if (data.thresholds) {
                             setWaitlistThresholds(normalizeWaitlistThresholds(data.thresholds));
@@ -1600,7 +1651,7 @@ export default function SwimmingClassPage() {
                       size="sm"
                       className="w-full bg-orange-600 hover:bg-orange-500 text-white text-xs"
                       onClick={async () => {
-                        const classNames = Object.keys(classEnrollment);
+                        const classNames = activeDeveloperClassNames;
                         console.log("[개발자] 전체 예약대기 ON:", {
                           count: classNames.length,
                         });
@@ -1619,7 +1670,9 @@ export default function SwimmingClassPage() {
                           const data = await response.json();
                           if (response.ok && data.success) {
                             setManualWaitlistClasses(
-                              new Set(data.manualWaitlistClasses || []),
+                              normalizeManualWaitlistClasses(
+                                data.manualWaitlistClasses || [],
+                              ),
                             );
                             if (data.thresholds)
                               setWaitlistThresholds(normalizeWaitlistThresholds(data.thresholds));
@@ -1653,7 +1706,7 @@ export default function SwimmingClassPage() {
                       size="sm"
                       className="w-full bg-gray-500 hover:bg-gray-400 text-white text-xs"
                       onClick={async () => {
-                        const classNames = Object.keys(classEnrollment);
+                        const classNames = activeDeveloperClassNames;
                         console.log("[개발자] 전체 예약대기 OFF:", {
                           count: classNames.length,
                         });
@@ -1672,7 +1725,9 @@ export default function SwimmingClassPage() {
                           const data = await response.json();
                           if (response.ok && data.success) {
                             setManualWaitlistClasses(
-                              new Set(data.manualWaitlistClasses || []),
+                              normalizeManualWaitlistClasses(
+                                data.manualWaitlistClasses || [],
+                              ),
                             );
                             if (data.thresholds)
                               setWaitlistThresholds(normalizeWaitlistThresholds(data.thresholds));

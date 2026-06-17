@@ -1037,9 +1037,9 @@ export async function getClassEnrollmentCounts(classNames?: string[]) {
           normalizedClass &&
           (normalizedStatus === "입금대기" || normalizedStatus === "입금완료")
         ) {
-          if (counts.hasOwnProperty(normalizedClass)) {
-            counts[normalizedClass]++
-          }
+          // 클라이언트에서 구 클래스명([목동])을 날짜 포함 키([목동 6/28])로
+          // 마이그레이션하므로, 요청 목록에 없는 기존 신청 키도 함께 반환합니다.
+          counts[normalizedClass] = (counts[normalizedClass] || 0) + 1
         }
       })
     }

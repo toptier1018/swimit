@@ -172,6 +172,20 @@ const classes: ClassItem[] = [
 // 오픈 전 임시 설정: 전체 클래스를 '예약대기'로 강제 표시
 // 개발자 모드에서 대기 해제/기준 변경이 필요하므로 기본은 false로 둡니다.
 const FORCE_ALL_WAITLIST = false;
+/** 모든 클래스 예약대기 기준 (레인당 7명) */
+const DEFAULT_WAITLIST_THRESHOLD = 7;
+
+const resolveWaitlistThreshold = (
+  className: string,
+  thresholds: Record<string, number>,
+) => thresholds[className] ?? DEFAULT_WAITLIST_THRESHOLD;
+
+const normalizeWaitlistThresholds = (
+  thresholds: Record<string, number>,
+): Record<string, number> =>
+  Object.fromEntries(
+    Object.keys(thresholds).map((key) => [key, DEFAULT_WAITLIST_THRESHOLD]),
+  );
 
 type TimetableRow = {
   session: string;
@@ -531,8 +545,7 @@ export default function SwimmingClassPage() {
   });
   // 각 클래스별 신청 인원 추적 (클래스 이름을 키로 사용)
   // 모든 클래스는 0부터 시작하여 신청가능 일반 모드로 시작
-  // 1~10번째 클릭: 일반 결제 모드 (₩70,000 결제하기)
-  // 11번째 클릭: 예약대기 모드 (예약하기 버튼으로 변경)
+  // 1~6번째: 일반 결제 / 7번째부터: 예약대기
   const [classEnrollment, setClassEnrollment] =
     useState<Record<string, number>>(INITIAL_ENROLLMENT);
   const [manualWaitlistClasses, setManualWaitlistClasses] = useState<
@@ -632,7 +645,7 @@ export default function SwimmingClassPage() {
     console.log("[카운터] 로컬 카운터 불러오기 완료");
   };
 
-  // 모든 클래스 예약대기 기준: 8명 (통일)
+  // 모든 클래스 예약대기 기준: 7명 (통일)
 
   const syncClassEnrollmentFromNotion = async () => {
     try {
@@ -791,10 +804,11 @@ export default function SwimmingClassPage() {
         );
       }
       if (data.success && data.thresholds) {
-        setWaitlistThresholds(data.thresholds);
+        const normalized = normalizeWaitlistThresholds(data.thresholds);
+        setWaitlistThresholds(normalized);
         console.log(
-          "[서버 동기화] 예약대기 기준(thresholds):",
-          data.thresholds,
+          "[서버 동기화] 예약대기 기준(thresholds, 7명 통일):",
+          normalized,
         );
       }
     } catch (error) {
@@ -916,17 +930,17 @@ export default function SwimmingClassPage() {
     }
   }, []);
 
-  // 클래스별 신청 가능 여부 확인 (8명 이상이면 정원 초과)
+  // 클래스별 신청 가능 여부 확인 (7명 이상이면 예약대기)
   const isClassFull = useCallback(
     (className: string) => {
       if (FORCE_ALL_WAITLIST) return true;
       if (manualWaitlistClasses.has(className)) return true;
-      const threshold = waitlistThresholds[className];
+      const threshold = resolveWaitlistThreshold(
+        className,
+        waitlistThresholds,
+      );
       const count = getEffectiveEnrollmentCount(className, classEnrollment);
-      if (threshold !== undefined) {
-        return count >= threshold;
-      }
-      return count >= 7;
+      return count >= threshold;
     },
     [manualWaitlistClasses, classEnrollment, waitlistThresholds],
   );
@@ -936,12 +950,12 @@ export default function SwimmingClassPage() {
     (className: string) => {
       if (FORCE_ALL_WAITLIST) return true;
       if (manualWaitlistClasses.has(className)) return true;
-      const threshold = waitlistThresholds[className];
+      const threshold = resolveWaitlistThreshold(
+        className,
+        waitlistThresholds,
+      );
       const count = getEffectiveEnrollmentCount(className, classEnrollment);
-      if (threshold !== undefined) {
-        return count >= threshold;
-      }
-      return count >= 7;
+      return count >= threshold;
     },
     [manualWaitlistClasses, classEnrollment, waitlistThresholds],
   );
@@ -1340,10 +1354,11 @@ export default function SwimmingClassPage() {
                       );
                       const threshold = manualWaitlistClasses.has(className)
                         ? "강제예약"
-                        : waitlistThresholds[className];
+                        : resolveWaitlistThreshold(
+                            className,
+                            waitlistThresholds,
+                          );
                       const isWaitlist = isClassFull(className);
-                      const effectiveThreshold =
-                        typeof threshold === "number" ? threshold : 7;
                       return (
                         <div key={className} className="flex flex-col gap-1">
                           <div className="flex justify-between gap-2">
@@ -1357,9 +1372,9 @@ export default function SwimmingClassPage() {
                               </div>
                               <div className="text-[11px] text-gray-400">
                                 예약대기 기준:{" "}
-                                {threshold === undefined
-                                  ? 10
-                                  : String(threshold)}
+                                {threshold === "강제예약"
+                                  ? "강제예약"
+                                  : String(DEFAULT_WAITLIST_THRESHOLD)}
                               </div>
                               <div className="mt-1 flex items-center gap-2">
                                 <div className="text-[11px] text-gray-400">
@@ -1367,80 +1382,14 @@ export default function SwimmingClassPage() {
                                 </div>
                                 <input
                                   type="number"
-                                  min={0}
-                                  max={999}
-                                  defaultValue={effectiveThreshold}
-                                  className="w-16 rounded bg-black/60 border border-gray-600 px-2 py-1 text-white text-[11px]"
-                                  onBlur={async (e) => {
-                                    const next = Number(e.currentTarget.value);
-                                    if (!Number.isFinite(next) || next < 0)
-                                      return;
-                                    console.log("[개발자] 기준 변경 요청:", {
-                                      className,
-                                      threshold: next,
-                                    });
-                                    try {
-                                      const response = await fetch(
-                                        "/api/admin/set-waitlist",
-                                        {
-                                          method: "POST",
-                                          headers: {
-                                            "Content-Type": "application/json",
-                                          },
-                                          body: JSON.stringify({
-                                            action: "setThreshold",
-                                            className,
-                                            threshold: next,
-                                          }),
-                                        },
-                                      );
-                                      const data = await response.json();
-                                      if (
-                                        response.ok &&
-                                        data.success &&
-                                        data.thresholds
-                                      ) {
-                                        // 서버 값 기준으로 동기화하되,
-                                        // 혹시 Notion에서 클래스명이 살짝 다르더라도
-                                        // 현재 화면의 클래스는 next 값으로 확실히 반영
-                                        setWaitlistThresholds((prev) => ({
-                                          ...prev,
-                                          ...data.thresholds,
-                                          [className]: next,
-                                        }));
-                                        console.log(
-                                          "[개발자] 기준 변경 완료:",
-                                          data.thresholds[className],
-                                          "로컬 적용:",
-                                          next,
-                                        );
-                                      } else {
-                                        console.error(
-                                          "[개발자] 기준 변경 실패:",
-                                          data?.error || response.status,
-                                        );
-                                        toast({
-                                          title: "기준 변경 실패",
-                                          description:
-                                            data?.error ||
-                                            "서버에서 기준 인원을 저장하지 못했습니다.",
-                                          variant: "destructive",
-                                        });
-                                      }
-                                    } catch (error) {
-                                      console.error(
-                                        "[개발자] 기준 변경 API 호출 실패:",
-                                        error,
-                                      );
-                                      toast({
-                                        title: "기준 변경 오류",
-                                        description:
-                                          "네트워크 오류가 발생했습니다.",
-                                        variant: "destructive",
-                                      });
-                                    }
-                                  }}
+                                  value={DEFAULT_WAITLIST_THRESHOLD}
+                                  readOnly
+                                  disabled
+                                  className="w-16 rounded bg-black/40 border border-gray-700 px-2 py-1 text-gray-400 text-[11px] cursor-not-allowed"
                                 />
+                                <span className="text-[10px] text-gray-500">
+                                  전 클래스 7명 고정
+                                </span>
                               </div>
                             </div>
                             <Button
@@ -1479,7 +1428,7 @@ export default function SwimmingClassPage() {
                                         new Set(data.manualWaitlistClasses),
                                       );
                                       if (data.thresholds) {
-                                        setWaitlistThresholds(data.thresholds);
+                                        setWaitlistThresholds(normalizeWaitlistThresholds(data.thresholds));
                                       }
                                     } else {
                                       console.error(
@@ -1511,7 +1460,7 @@ export default function SwimmingClassPage() {
                                     ...prev,
                                     [className]: Math.min(
                                       prev[className] || 0,
-                                      Math.max(0, effectiveThreshold - 1),
+                                      Math.max(0, DEFAULT_WAITLIST_THRESHOLD - 1),
                                     ),
                                   }));
                                   console.log(
@@ -1546,7 +1495,7 @@ export default function SwimmingClassPage() {
                                         new Set(data.manualWaitlistClasses),
                                       );
                                       if (data.thresholds) {
-                                        setWaitlistThresholds(data.thresholds);
+                                        setWaitlistThresholds(normalizeWaitlistThresholds(data.thresholds));
                                       }
                                     } else {
                                       console.error(
@@ -1615,7 +1564,7 @@ export default function SwimmingClassPage() {
                             new Set(data.manualWaitlistClasses || []),
                           );
                           if (data.thresholds) {
-                            setWaitlistThresholds(data.thresholds);
+                            setWaitlistThresholds(normalizeWaitlistThresholds(data.thresholds));
                           }
                           console.log("[개발자] Notion 설정 행 자동 생성 완료");
                           toast({
@@ -1673,7 +1622,7 @@ export default function SwimmingClassPage() {
                               new Set(data.manualWaitlistClasses || []),
                             );
                             if (data.thresholds)
-                              setWaitlistThresholds(data.thresholds);
+                              setWaitlistThresholds(normalizeWaitlistThresholds(data.thresholds));
                           } else {
                             console.error(
                               "[개발자] 전체 예약대기 ON 실패:",
@@ -1726,7 +1675,7 @@ export default function SwimmingClassPage() {
                               new Set(data.manualWaitlistClasses || []),
                             );
                             if (data.thresholds)
-                              setWaitlistThresholds(data.thresholds);
+                              setWaitlistThresholds(normalizeWaitlistThresholds(data.thresholds));
                           } else {
                             console.error(
                               "[개발자] 전체 예약대기 OFF 실패:",

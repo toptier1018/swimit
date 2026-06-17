@@ -141,6 +141,20 @@ const classes: ClassItem[] = [
     scheduleSummaryLines: ["1부 10:00~12:00"],
   },
   {
+    id: 10,
+    year: 2026,
+    location: "스윔스튜디오제이 (동탄)",
+    locationCode: "동탄",
+    date: "7월 19일 (일)",
+    dateNum: 19,
+    month: 7,
+    venue: "스윔스튜디오제이",
+    address:
+      "경기도 화성시 동탄구 동탄신리천로 414 경서타워 4층 스윔스튜디오제이",
+    spots: "레인당 7명 모집",
+    scheduleSummaryLines: ["1부 10:00~12:00"],
+  },
+  {
     id: 9,
     year: 2026,
     location: "서울 목동스포츠센터",
@@ -266,6 +280,20 @@ const TIMETABLE_CHEONGNA: TimetableRow[] = [
   },
 ];
 
+/** 스윔스튜디오제이 7/19 특강 (동탄) */
+const TIMETABLE_DONGTAN: TimetableRow[] = [
+  {
+    session: "1부 특강",
+    time: "10:00 ~ 12:00",
+    lanes: [
+      { lane: "1레인", title: "평영 A (초급)", price: 80000 },
+      { lane: "2레인", title: "접영 A (초급)", price: 80000 },
+      { lane: "3레인", title: "자유형 A (초급)", price: 80000 },
+      { lane: "4레인", title: "접영 B (중급)", price: 80000 },
+    ],
+  },
+];
+
 const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   3: TIMETABLE_SEOCHO,   // 5/31 서초
   4: TIMETABLE_KIMPO,    // 6/14 김포
@@ -273,6 +301,7 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   5: TIMETABLE_MOKDONG,  // 6/28 목동
   7: TIMETABLE_SAMJEONG, // 7/5 은평
   8: TIMETABLE_CHEONGNA, // 7/12 인천
+  10: TIMETABLE_DONGTAN, // 7/19 동탄
   9: TIMETABLE_MOKDONG,  // 7/26 목동
 };
 

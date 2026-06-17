@@ -229,7 +229,7 @@ const TIMETABLE_HWASEONG: TimetableRow[] = [
       { lane: "2레인", title: "자유형 A (초급)", price: 80000 },
       { lane: "3레인", title: "평영 A (초급)", price: 80000 },
       { lane: "4레인", title: "접영 A (초급)", price: 80000 },
-      { lane: "5레인", title: "접영 B (중급)", price: 80000 },
+      { lane: "5레인", title: "", price: 0, closed: true },
       { lane: "6레인", title: "", price: 0, closed: true },
     ],
   },
@@ -330,6 +330,26 @@ const migrateLegacyClassKey = (key: string) =>
     return `[${getClassRegionLabel(classId)}]`;
   });
 
+/** 통합 폐강 레인: 구 키 신청 건수를 대상 레인 카운트에 합산 */
+const ENROLLMENT_MERGE_TO: Record<string, string> = {
+  "[화성] 1부 특강 5레인 접영 B (중급)":
+    "[화성] 1부 특강 4레인 접영 A (초급)",
+};
+
+const resolveEnrollmentTargetKey = (classKey: string) =>
+  ENROLLMENT_MERGE_TO[classKey] ?? classKey;
+
+const getEffectiveEnrollmentCount = (
+  className: string,
+  counts: Record<string, number>,
+): number => {
+  let total = counts[className] || 0;
+  for (const [fromKey, toKey] of Object.entries(ENROLLMENT_MERGE_TO)) {
+    if (toKey === className) total += counts[fromKey] || 0;
+  }
+  return total;
+};
+
 const normalizeEnrollmentCounts = (
   counts: Record<string, number>,
 ): Record<string, number> => {
@@ -338,8 +358,22 @@ const normalizeEnrollmentCounts = (
 
   for (const [rawKey, rawCount] of Object.entries(counts)) {
     const mappedKey = migrateLegacyClassKey(rawKey);
-    if (!validKeys.has(mappedKey)) continue;
-    normalized[mappedKey] = Number(rawCount) || 0;
+    const targetKey = resolveEnrollmentTargetKey(mappedKey);
+    if (!validKeys.has(targetKey)) continue;
+    normalized[targetKey] =
+      (normalized[targetKey] || 0) + (Number(rawCount) || 0);
+  }
+
+  const merged = Object.entries(ENROLLMENT_MERGE_TO);
+  if (merged.length > 0) {
+    console.log("[카운터] 레인 통합 반영:", {
+      rules: merged,
+      sample: merged.map(([from, to]) => ({
+        from,
+        to,
+        combined: normalized[to],
+      })),
+    });
   }
 
   return normalized;
@@ -819,10 +853,11 @@ export default function SwimmingClassPage() {
       if (FORCE_ALL_WAITLIST) return true;
       if (manualWaitlistClasses.has(className)) return true;
       const threshold = waitlistThresholds[className];
+      const count = getEffectiveEnrollmentCount(className, classEnrollment);
       if (threshold !== undefined) {
-        return (classEnrollment[className] || 0) >= threshold;
+        return count >= threshold;
       }
-      return (classEnrollment[className] || 0) >= 7;
+      return count >= 7;
     },
     [manualWaitlistClasses, classEnrollment, waitlistThresholds],
   );
@@ -833,10 +868,11 @@ export default function SwimmingClassPage() {
       if (FORCE_ALL_WAITLIST) return true;
       if (manualWaitlistClasses.has(className)) return true;
       const threshold = waitlistThresholds[className];
+      const count = getEffectiveEnrollmentCount(className, classEnrollment);
       if (threshold !== undefined) {
-        return (classEnrollment[className] || 0) >= threshold;
+        return count >= threshold;
       }
-      return (classEnrollment[className] || 0) >= 7;
+      return count >= 7;
     },
     [manualWaitlistClasses, classEnrollment, waitlistThresholds],
   );
@@ -1721,7 +1757,11 @@ export default function SwimmingClassPage() {
                     </div>
                     <div className="text-white">
                       {selectedTimeSlot.name} - 현재:{" "}
-                      {classEnrollment[selectedTimeSlot.name] || 0}명
+                      {getEffectiveEnrollmentCount(
+                        selectedTimeSlot.name,
+                        classEnrollment,
+                      )}
+                      명
                     </div>
                   </div>
                 )}
@@ -3811,7 +3851,10 @@ export default function SwimmingClassPage() {
                             selectedTimeSlot.name,
                           );
                           const currentEnrollment =
-                            classEnrollment[selectedTimeSlot.name] || 0;
+                            getEffectiveEnrollmentCount(
+                              selectedTimeSlot.name,
+                              classEnrollment,
+                            );
                           console.log(
                             `[결제] 클래스: ${selectedTimeSlot.name}, 현재 인원: ${currentEnrollment}, 다음 클릭 시: ${currentEnrollment + 1}번째`,
                           );

@@ -3576,8 +3576,9 @@ export default function SwimmingClassPage() {
                               </div>
                             </div>
                             {/* Class Grid */}
-                            <div className={`flex-1 p-3 sm:p-3 bg-white grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-3 ${row.lanes.length === 6 ? "md:grid-cols-6" : row.lanes.length === 4 ? "md:grid-cols-4" : "md:grid-cols-5"}`}>
-                              {row.lanes.map((slot, index) => {
+                            <div className="flex-1 p-3 sm:p-3 bg-white">
+                              <div className={`grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-3 ${row.lanes.length === 6 ? "md:grid-cols-6" : row.lanes.length === 4 ? "md:grid-cols-4" : "md:grid-cols-5"}`}>
+                                {row.lanes.map((slot, index) => {
                                 if (slot.closed) {
                                   return (
                                     <div
@@ -3705,7 +3706,11 @@ export default function SwimmingClassPage() {
                                     </div>
                                   </button>
                                 );
-                              })}
+                                })}
+                              </div>
+                              <p className="mt-2 text-xs text-gray-500">
+                                ※ 최소 인원 미달 시 일부 클래스는 통합반으로 운영될 수 있습니다.
+                              </p>
                             </div>
                           </div>
                           ))

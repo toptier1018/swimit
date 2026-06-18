@@ -78,7 +78,7 @@ const classes: ClassItem[] = [
   {
     id: 4,
     year: 2026,
-    location: "김포 아스타스포츠센터",
+    location: "경기 김포 · 아스타스포츠센터",
     locationCode: "김포",
     date: "6월 14일 (일)",
     dateNum: 14,
@@ -91,7 +91,7 @@ const classes: ClassItem[] = [
   {
     id: 6,
     year: 2026,
-    location: "수원 화성 와이풀앤와이에스씨",
+    location: "경기 화성 · 와이풀앤와이에스씨",
     locationCode: "화성",
     date: "6월 21일 (일)",
     dateNum: 21,
@@ -104,7 +104,7 @@ const classes: ClassItem[] = [
   {
     id: 5,
     year: 2026,
-    location: "서울 목동스포츠센터",
+    location: "서울 목동 · 목동스포츠센터",
     locationCode: "목동",
     date: "6월 28일 (일)",
     dateNum: 28,
@@ -117,7 +117,7 @@ const classes: ClassItem[] = [
   {
     id: 7,
     year: 2026,
-    location: "삼정스포츠 수영장",
+    location: "서울 은평구 · 삼정스포츠 수영장",
     locationCode: "은평",
     date: "7월 5일 (일)",
     dateNum: 5,
@@ -130,7 +130,7 @@ const classes: ClassItem[] = [
   {
     id: 8,
     year: 2026,
-    location: "청라스카이스위밍",
+    location: "인천 청라 · 청라스카이스위밍",
     locationCode: "인천",
     date: "7월 12일 (일)",
     dateNum: 12,
@@ -143,7 +143,7 @@ const classes: ClassItem[] = [
   {
     id: 10,
     year: 2026,
-    location: "스윔스튜디오제이 (동탄)",
+    location: "경기 동탄 · 스윔스튜디오제이",
     locationCode: "동탄",
     date: "7월 19일 (일)",
     dateNum: 19,
@@ -157,7 +157,7 @@ const classes: ClassItem[] = [
   {
     id: 9,
     year: 2026,
-    location: "서울 목동스포츠센터",
+    location: "서울 목동 · 목동스포츠센터",
     locationCode: "목동",
     date: "7월 26일 (일)",
     dateNum: 26,
@@ -2268,8 +2268,7 @@ export default function SwimmingClassPage() {
                               <div className="flex items-center gap-2">
                                 <MapPin className="h-5 w-5 text-blue-500 fill-blue-500/10" />
                                 <span className="font-bold text-base sm:text-lg">
-                                  {classItem.location} ({classItem.locationCode}
-                                  )
+                                  {classItem.location}
                                 </span>
                               </div>
                             </div>
@@ -3256,8 +3255,7 @@ export default function SwimmingClassPage() {
                               <div className="flex items-center gap-2">
                                 <MapPin className="h-5 w-5 text-blue-500 fill-blue-500/10" />
                                 <span className="font-bold text-lg">
-                                  {classItem.location} ({classItem.locationCode}
-                                  )
+                                  {classItem.location}
                                 </span>
                               </div>
                               {selectedClass === String(classItem.id) && (
@@ -3742,12 +3740,7 @@ export default function SwimmingClassPage() {
                             <span className="text-gray-700">
                               {classes.find(
                                 (c) => String(c.id) === selectedClass,
-                              )?.location || "정보 없음"}{" "}
-                              (
-                              {classes.find(
-                                (c) => String(c.id) === selectedClass,
-                              )?.locationCode || ""}
-                              )
+                              )?.location || "정보 없음"}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">

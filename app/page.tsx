@@ -1126,11 +1126,7 @@ export default function SwimmingClassPage() {
     const syncToday = () => {
       const nextToday = getKoreanTodayParts();
       setToday(nextToday);
-      if (!selectedClassRef.current) {
-        setCalendarMonth(nextToday.month);
-        setCalendarYear(nextToday.year);
-        console.log("[달력] KST 오늘·현재 월 동기화:", nextToday);
-      }
+      console.log("[달력] KST 오늘 날짜 동기화:", nextToday);
     };
 
     syncToday();
@@ -1203,14 +1199,10 @@ export default function SwimmingClassPage() {
     calendarDays.push(i);
   }
 
-  // 지역 선택 시 해당 지역 날짜만, 미선택 시 해당 월 전체 날짜 표시 (지난 특강 제외)
-  const highlightedDates = selectedClass
-    ? getActiveClasses()
-        .filter((c) => String(c.id) === selectedClass && c.month === calendarMonth)
-        .map((c) => c.dateNum)
-    : getActiveClasses()
-        .filter((c) => c.month === calendarMonth)
-        .map((c) => c.dateNum);
+  // 달력에서 넘긴 월 기준으로 모든 활성 특강 날짜 표시
+  const highlightedDates = getActiveClasses()
+    .filter((c) => c.year === calendarYear && c.month === calendarMonth)
+    .map((c) => c.dateNum);
 
   const handleRegistration = () => {
     incrementFunnelCount(1, "지금 바로 신청하기 클릭");

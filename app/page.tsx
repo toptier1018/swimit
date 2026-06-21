@@ -1199,10 +1199,19 @@ export default function SwimmingClassPage() {
     calendarDays.push(i);
   }
 
-  // 달력에서 넘긴 월 기준으로 모든 활성 특강 날짜 표시
-  const highlightedDates = getActiveClasses()
-    .filter((c) => c.year === calendarYear && c.month === calendarMonth)
-    .map((c) => c.dateNum);
+  // 선택 전에는 보고 있는 월의 모든 특강, 선택 후에는 선택한 특강 날짜만 표시
+  const highlightedDates = selectedClass
+    ? getActiveClasses()
+        .filter(
+          (c) =>
+            String(c.id) === selectedClass &&
+            c.year === calendarYear &&
+            c.month === calendarMonth,
+        )
+        .map((c) => c.dateNum)
+    : getActiveClasses()
+        .filter((c) => c.year === calendarYear && c.month === calendarMonth)
+        .map((c) => c.dateNum);
 
   const handleRegistration = () => {
     incrementFunnelCount(1, "지금 바로 신청하기 클릭");

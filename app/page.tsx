@@ -165,7 +165,7 @@ const classes: ClassItem[] = [
     venue: "목동스포츠센터",
     address: "서울 양천구 목동서로 130",
     spots: "레인당 7명 모집",
-    scheduleSummaryLines: ["1부 14:00~16:00"],
+    scheduleSummaryLines: ["1부 10:00~12:00"],
   },
 ];
 
@@ -229,6 +229,14 @@ const TIMETABLE_MOKDONG: TimetableRow[] = [
       { lane: "5레인", title: "자유형 A (초급)", price: 80000 },
       { lane: "6레인", title: "자유형 B (중급)", price: 80000 },
     ],
+  },
+];
+
+/** 서울 목동스포츠센터 7/26 특강 */
+const TIMETABLE_MOKDONG_JULY: TimetableRow[] = [
+  {
+    ...TIMETABLE_MOKDONG[0],
+    time: "10:00 ~ 12:00",
   },
 ];
 
@@ -316,7 +324,7 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   7: TIMETABLE_SAMJEONG, // 7/5 은평
   8: TIMETABLE_CHEONGNA, // 7/12 인천
   10: TIMETABLE_DONGTAN, // 7/19 동탄
-  9: TIMETABLE_MOKDONG,  // 7/26 목동
+  9: TIMETABLE_MOKDONG_JULY, // 7/26 목동
 };
 
 const getKoreanTodayParts = () => {

@@ -710,7 +710,7 @@ export default function SwimmingClassPage() {
     console.log("[카운터] 로컬 카운터 불러오기 완료");
   };
 
-  // 모든 클래스 예약대기 기준: 7명 (통일)
+  // 기본 예약대기 기준은 7명이며, 개발자 모드에서 클래스별 변경 가능
 
   const syncClassEnrollmentFromNotion = async () => {
     try {
@@ -874,7 +874,7 @@ export default function SwimmingClassPage() {
         const normalized = normalizeWaitlistThresholds(data.thresholds);
         setWaitlistThresholds(normalized);
         console.log(
-          "[서버 동기화] 예약대기 기준(thresholds, 7명 통일):",
+          "[서버 동기화] 예약대기 기준(thresholds):",
           normalized,
         );
       }
@@ -1444,6 +1444,7 @@ export default function SwimmingClassPage() {
                                   기준 변경:
                                 </div>
                                 <input
+                                  key={`${className}-${effectiveThreshold}`}
                                   type="number"
                                   min={0}
                                   max={999}
@@ -1538,12 +1539,21 @@ export default function SwimmingClassPage() {
                               onClick={async () => {
                                 if (isWaitlist) {
                                   // 예약대기 해제
+                                  const nextThreshold = Math.max(
+                                    effectiveThreshold,
+                                    effectiveCount + 1,
+                                  );
                                   console.log(
                                     "[개발자] 예약대기 해제 요청:",
-                                    className,
+                                    {
+                                      className,
+                                      effectiveCount,
+                                      effectiveThreshold,
+                                      nextThreshold,
+                                    },
                                   );
 
-                                  // 서버 API 호출 (모든 사용자에게 적용)
+                                  // 수동 예약대기를 해제하고, 인원 기준으로 막힌 경우 기준을 올립니다.
                                   try {
                                     const response = await fetch(
                                       "/api/admin/set-waitlist",
@@ -1567,6 +1577,50 @@ export default function SwimmingClassPage() {
                                       );
                                       if (data.thresholds) {
                                         setWaitlistThresholds(normalizeWaitlistThresholds(data.thresholds));
+                                      }
+                                      if (effectiveCount >= effectiveThreshold) {
+                                        const thresholdResponse = await fetch(
+                                          "/api/admin/set-waitlist",
+                                          {
+                                            method: "POST",
+                                            headers: {
+                                              "Content-Type": "application/json",
+                                            },
+                                            body: JSON.stringify({
+                                              action: "setThreshold",
+                                              className,
+                                              threshold: nextThreshold,
+                                            }),
+                                          },
+                                        );
+                                        const thresholdData =
+                                          await thresholdResponse.json();
+                                        if (
+                                          thresholdResponse.ok &&
+                                          thresholdData.success &&
+                                          thresholdData.thresholds
+                                        ) {
+                                          setWaitlistThresholds((prev) => ({
+                                            ...prev,
+                                            ...normalizeWaitlistThresholds(
+                                              thresholdData.thresholds,
+                                            ),
+                                            [className]: nextThreshold,
+                                          }));
+                                        } else {
+                                          console.error(
+                                            "[개발자] 대기 해제 기준 변경 실패:",
+                                            thresholdData?.error ||
+                                              thresholdResponse.status,
+                                          );
+                                          toast({
+                                            title: "기준 변경 실패",
+                                            description:
+                                              thresholdData?.error ||
+                                              "기준 인원을 저장하지 못했습니다.",
+                                            variant: "destructive",
+                                          });
+                                        }
                                       }
                                     } else {
                                       console.error(
@@ -1593,14 +1647,6 @@ export default function SwimmingClassPage() {
                                       variant: "destructive",
                                     });
                                   }
-
-                                  setClassEnrollment((prev) => ({
-                                    ...prev,
-                                    [className]: Math.min(
-                                      prev[className] || 0,
-                                      Math.max(0, DEFAULT_WAITLIST_THRESHOLD - 1),
-                                    ),
-                                  }));
                                   console.log(
                                     "[개발자] 예약대기 해제 완료:",
                                     className,

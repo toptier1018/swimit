@@ -32,6 +32,28 @@ function getNumberProp(page: any, candidates: string[]): number | null {
   return null;
 }
 
+const PRIMARY_LEGACY_DATES_BY_REGION: Record<string, string> = {
+  서초: "5/31",
+  김포: "6/14",
+  화성: "6/21",
+  목동: "6/28",
+  은평: "7/5",
+  인천: "7/12",
+  동탄: "7/19",
+};
+
+function getEquivalentSettingsNames(className: string): string[] {
+  const names = new Set([className]);
+  const datedMatch = className.match(/^\[([^\]\s]+)\s+(\d{1,2}\/\d{1,2})\](.*)$/);
+  if (datedMatch) {
+    const [, region, dateLabel, rest] = datedMatch;
+    if (PRIMARY_LEGACY_DATES_BY_REGION[region] === dateLabel) {
+      names.add(`[${region}]${rest}`);
+    }
+  }
+  return [...names];
+}
+
 /**
  * 관리자용 예약대기 설정 API (Notion 기반)
  *
@@ -171,6 +193,57 @@ async function findClassPageIdByName(className: string) {
   return null;
 }
 
+async function findClassPageIdsByNames(classNames: string[]) {
+  const notionApiKey = process.env.NOTION_API_KEY;
+  const databaseId = process.env.NOTION_CLASS_SETTINGS_DATABASE_ID;
+
+  if (!notionApiKey || !databaseId) {
+    throw new Error("Notion 환경 변수가 설정되지 않았습니다");
+  }
+
+  const targetNames = new Set(classNames);
+  const pageIds: string[] = [];
+  let hasMore = true;
+  let startCursor: string | undefined = undefined;
+
+  while (hasMore) {
+    const queryResponse = await fetch(
+      `https://api.notion.com/v1/databases/${databaseId}/query`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${notionApiKey}`,
+          "Content-Type": "application/json",
+          "Notion-Version": "2022-06-28",
+        },
+        body: JSON.stringify({
+          page_size: 100,
+          start_cursor: startCursor,
+        }),
+      }
+    );
+
+    if (!queryResponse.ok) {
+      const text = await queryResponse.text().catch(() => "");
+      console.error("[Notion 조회] 클래스 다중 스캔 실패:", queryResponse.status, text);
+      throw new Error("Notion 클래스 검색 실패");
+    }
+
+    const queryResult = await queryResponse.json();
+    const pages = queryResult.results || [];
+
+    for (const page of pages) {
+      const name = getClassNameFromPage(page);
+      if (name && targetNames.has(name)) pageIds.push(page.id);
+    }
+
+    hasMore = queryResult.has_more === true;
+    startCursor = queryResult.next_cursor || undefined;
+  }
+
+  return pageIds;
+}
+
 /**
  * Notion에 클래스 설정 페이지 생성 (없으면 자동 생성)
  */
@@ -251,36 +324,46 @@ async function updateWaitlistInNotion(className: string, isWaitlist: boolean) {
     throw new Error("Notion 환경 변수가 설정되지 않았습니다");
   }
 
-  const pageId = await ensureClassSettingsPage(className);
-  console.log("[Notion 업데이트] 예약대기 업데이트:", { className, pageId, isWaitlist });
+  const equivalentNames = getEquivalentSettingsNames(className);
+  const canonicalPageId = await ensureClassSettingsPage(className);
+  const pageIds = [
+    ...new Set([canonicalPageId, ...(await findClassPageIdsByNames(equivalentNames))]),
+  ];
+  console.log("[Notion 업데이트] 예약대기 업데이트:", {
+    className,
+    equivalentNames,
+    pageIds,
+    isWaitlist,
+  });
 
-  // 체크박스 업데이트
-  const updateResponse = await fetch(
-    `https://api.notion.com/v1/pages/${pageId}`,
-    {
-      method: "PATCH",
-      headers: {
-        Authorization: `Bearer ${notionApiKey}`,
-        "Content-Type": "application/json",
-        "Notion-Version": "2022-06-28",
-      },
-      body: JSON.stringify({
-        properties: {
-          "수동 예약대기": {
-            checkbox: isWaitlist,
-          },
+  for (const pageId of pageIds) {
+    const updateResponse = await fetch(
+      `https://api.notion.com/v1/pages/${pageId}`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${notionApiKey}`,
+          "Content-Type": "application/json",
+          "Notion-Version": "2022-06-28",
         },
-      }),
-    }
-  );
+        body: JSON.stringify({
+          properties: {
+            "수동 예약대기": {
+              checkbox: isWaitlist,
+            },
+          },
+        }),
+      }
+    );
 
-  if (!updateResponse.ok) {
-    const text = await updateResponse.text().catch(() => "");
-    console.error("[Notion 업데이트] 실패:", updateResponse.status, text);
-    throw new Error("Notion 업데이트 실패");
+    if (!updateResponse.ok) {
+      const text = await updateResponse.text().catch(() => "");
+      console.error("[Notion 업데이트] 실패:", updateResponse.status, text);
+      throw new Error("Notion 업데이트 실패");
+    }
   }
 
-  console.log("[Notion 업데이트] 완료:", { className, isWaitlist });
+  console.log("[Notion 업데이트] 완료:", { className, pageIds, isWaitlist });
 }
 
 async function updateThresholdInNotion(className: string, threshold: number) {
@@ -294,35 +377,42 @@ async function updateThresholdInNotion(className: string, threshold: number) {
     ? Math.max(0, Math.floor(threshold))
     : DEFAULT_WAITLIST_THRESHOLD;
 
-  const pageId = await ensureClassSettingsPage(className);
+  const equivalentNames = getEquivalentSettingsNames(className);
+  const canonicalPageId = await ensureClassSettingsPage(className);
+  const pageIds = [
+    ...new Set([canonicalPageId, ...(await findClassPageIdsByNames(equivalentNames))]),
+  ];
   console.log("[Notion 업데이트] 예약대기 기준 업데이트:", {
     className,
-    pageId,
+    equivalentNames,
+    pageIds,
     threshold: normalized,
   });
 
-  const updateResponse = await fetch(`https://api.notion.com/v1/pages/${pageId}`, {
-    method: "PATCH",
-    headers: {
-      Authorization: `Bearer ${notionApiKey}`,
-      "Content-Type": "application/json",
-      "Notion-Version": "2022-06-28",
-    },
-    body: JSON.stringify({
-      properties: {
-        "예약대기 기준": {
-          number: normalized,
-        },
+  for (const pageId of pageIds) {
+    const updateResponse = await fetch(`https://api.notion.com/v1/pages/${pageId}`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${notionApiKey}`,
+        "Content-Type": "application/json",
+        "Notion-Version": "2022-06-28",
       },
-    }),
-  });
+      body: JSON.stringify({
+        properties: {
+          "예약대기 기준": {
+            number: normalized,
+          },
+        },
+      }),
+    });
 
-  if (!updateResponse.ok) {
-    const text = await updateResponse.text().catch(() => "");
-    console.error("[Notion 업데이트] 기준 업데이트 실패:", updateResponse.status, text);
-    throw new Error(
-      "예약대기 기준을 저장할 수 없습니다. Notion DB에 '예약대기 기준'(숫자) 컬럼이 있는지 확인해주세요."
-    );
+    if (!updateResponse.ok) {
+      const text = await updateResponse.text().catch(() => "");
+      console.error("[Notion 업데이트] 기준 업데이트 실패:", updateResponse.status, text);
+      throw new Error(
+        "예약대기 기준을 저장할 수 없습니다. Notion DB에 '예약대기 기준'(숫자) 컬럼이 있는지 확인해주세요."
+      );
+    }
   }
 }
 

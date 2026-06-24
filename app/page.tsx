@@ -184,7 +184,12 @@ const normalizeWaitlistThresholds = (
   thresholds: Record<string, number>,
 ): Record<string, number> =>
   Object.fromEntries(
-    Object.keys(thresholds).map((key) => [key, DEFAULT_WAITLIST_THRESHOLD]),
+    Object.entries(thresholds).map(([key, value]) => [
+      key,
+      Number.isFinite(value) && value >= 0
+        ? value
+        : DEFAULT_WAITLIST_THRESHOLD,
+    ]),
   );
 
 type TimetableRow = {
@@ -1413,6 +1418,10 @@ export default function SwimmingClassPage() {
                             waitlistThresholds,
                           );
                       const isWaitlist = isClassFull(className);
+                      const effectiveThreshold =
+                        typeof threshold === "number"
+                          ? threshold
+                          : DEFAULT_WAITLIST_THRESHOLD;
                       return (
                         <div key={className} className="flex flex-col gap-1">
                           <div className="flex justify-between gap-2">
@@ -1428,7 +1437,7 @@ export default function SwimmingClassPage() {
                                 예약대기 기준:{" "}
                                 {threshold === "강제예약"
                                   ? "강제예약"
-                                  : String(DEFAULT_WAITLIST_THRESHOLD)}
+                                  : String(effectiveThreshold)}
                               </div>
                               <div className="mt-1 flex items-center gap-2">
                                 <div className="text-[11px] text-gray-400">
@@ -1436,13 +1445,86 @@ export default function SwimmingClassPage() {
                                 </div>
                                 <input
                                   type="number"
-                                  value={DEFAULT_WAITLIST_THRESHOLD}
-                                  readOnly
-                                  disabled
-                                  className="w-16 rounded bg-black/40 border border-gray-700 px-2 py-1 text-gray-400 text-[11px] cursor-not-allowed"
+                                  min={0}
+                                  max={999}
+                                  defaultValue={effectiveThreshold}
+                                  className="w-16 rounded bg-black/60 border border-gray-600 px-2 py-1 text-white text-[11px]"
+                                  onBlur={async (e) => {
+                                    const next = Number(e.currentTarget.value);
+                                    if (!Number.isFinite(next) || next < 0) {
+                                      e.currentTarget.value =
+                                        String(effectiveThreshold);
+                                      return;
+                                    }
+                                    console.log("[개발자] 기준 변경 요청:", {
+                                      className,
+                                      threshold: next,
+                                    });
+                                    try {
+                                      const response = await fetch(
+                                        "/api/admin/set-waitlist",
+                                        {
+                                          method: "POST",
+                                          headers: {
+                                            "Content-Type": "application/json",
+                                          },
+                                          body: JSON.stringify({
+                                            action: "setThreshold",
+                                            className,
+                                            threshold: next,
+                                          }),
+                                        },
+                                      );
+                                      const data = await response.json();
+                                      if (
+                                        response.ok &&
+                                        data.success &&
+                                        data.thresholds
+                                      ) {
+                                        setWaitlistThresholds((prev) => ({
+                                          ...prev,
+                                          ...normalizeWaitlistThresholds(
+                                            data.thresholds,
+                                          ),
+                                          [className]: next,
+                                        }));
+                                        console.log("[개발자] 기준 변경 완료:", {
+                                          className,
+                                          threshold: next,
+                                        });
+                                      } else {
+                                        console.error(
+                                          "[개발자] 기준 변경 실패:",
+                                          data?.error || response.status,
+                                        );
+                                        toast({
+                                          title: "기준 변경 실패",
+                                          description:
+                                            data?.error ||
+                                            "서버에서 기준 인원을 저장하지 못했습니다.",
+                                          variant: "destructive",
+                                        });
+                                        e.currentTarget.value =
+                                          String(effectiveThreshold);
+                                      }
+                                    } catch (error) {
+                                      console.error(
+                                        "[개발자] 기준 변경 API 호출 실패:",
+                                        error,
+                                      );
+                                      toast({
+                                        title: "기준 변경 오류",
+                                        description:
+                                          "네트워크 오류가 발생했습니다.",
+                                        variant: "destructive",
+                                      });
+                                      e.currentTarget.value =
+                                        String(effectiveThreshold);
+                                    }
+                                  }}
                                 />
                                 <span className="text-[10px] text-gray-500">
-                                  전 클래스 7명 고정
+                                  기본 7명, 클래스별 변경 가능
                                 </span>
                               </div>
                             </div>

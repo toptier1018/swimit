@@ -42,13 +42,6 @@ function getNumberProp(page: any, candidates: string[]): number | null {
 /** 모든 클래스 예약대기 기준 (레인당 7명) */
 const DEFAULT_WAITLIST_THRESHOLD = 7;
 
-const normalizeThresholds = (
-  thresholds: Record<string, number>,
-): Record<string, number> =>
-  Object.fromEntries(
-    Object.keys(thresholds).map((key) => [key, DEFAULT_WAITLIST_THRESHOLD]),
-  );
-
 /**
  * Notion에서 클래스 설정 전체 조회
  */
@@ -105,16 +98,10 @@ async function getClassSettingsFromNotion() {
         "예약대기 기준 인원",
         "기준 인원",
       ]);
-      if (
-        typeof thresholdVal === "number" &&
-        thresholdVal !== DEFAULT_WAITLIST_THRESHOLD
-      ) {
-        console.log("[Notion 조회] 예약대기 기준 7명으로 통일:", {
-          className,
-          was: thresholdVal,
-        });
-      }
-      thresholds[className] = DEFAULT_WAITLIST_THRESHOLD;
+      thresholds[className] =
+        typeof thresholdVal === "number"
+          ? thresholdVal
+          : DEFAULT_WAITLIST_THRESHOLD;
     }
 
     hasMore = result.has_more === true;
@@ -303,13 +290,9 @@ async function updateThresholdInNotion(className: string, threshold: number) {
     throw new Error("Notion 환경 변수가 설정되지 않았습니다");
   }
 
-  const normalized = DEFAULT_WAITLIST_THRESHOLD;
-  if (threshold !== normalized) {
-    console.log("[Notion 업데이트] 기준 변경 요청 → 7명 고정:", {
-      className,
-      requested: threshold,
-    });
-  }
+  const normalized = Number.isFinite(threshold)
+    ? Math.max(0, Math.floor(threshold))
+    : DEFAULT_WAITLIST_THRESHOLD;
 
   const pageId = await ensureClassSettingsPage(className);
   console.log("[Notion 업데이트] 예약대기 기준 업데이트:", {

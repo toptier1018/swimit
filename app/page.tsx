@@ -2623,6 +2623,13 @@ export default function SwimmingClassPage() {
                   </h1>
                 </div>
 
+                <div className="mb-4 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm leading-6 text-blue-900 sm:text-[15px]">
+                  <p>선택하신 클래스는 결제 완료 순으로 자리가 확정됩니다.</p>
+                  <p>
+                    아래에 이름과 연락처를 입력하시면 결제 단계로 이동합니다.
+                  </p>
+                </div>
+
                 {/* Registration Form */}
                 <Card>
                   <CardContent className="p-6 space-y-6">

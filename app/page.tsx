@@ -301,7 +301,7 @@ const TIMETABLE_SAMJEONG: TimetableRow[] = [
     session: "1부 특강",
     time: "09:00 ~ 11:00",
     lanes: [
-      { lane: "1레인", title: "평영 A (초급)", price: 80000 },
+      { lane: "1레인", title: "", price: 0, closed: true },
       { lane: "2레인", title: "", price: 0, closed: true },
       { lane: "3레인", title: "접영 A (초급)", price: 80000 },
       { lane: "4레인", title: "", price: 0, closed: true },

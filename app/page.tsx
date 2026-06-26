@@ -4794,6 +4794,28 @@ export default function SwimmingClassPage() {
                       >
                         계좌번호 복사하기
                       </Button>
+                      <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
+                        <p className="text-sm font-bold text-blue-900">
+                          고객센터
+                        </p>
+                        <p className="mt-1 text-sm text-gray-700">
+                          입금·결제 문의: 카카오톡{" "}
+                          <span className="font-bold">@스윔잇</span>
+                        </p>
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="mt-3 w-full bg-yellow-500 font-semibold text-white hover:bg-yellow-600"
+                          onClick={() =>
+                            window.open(
+                              "https://pf.kakao.com/_dXUgn/chat",
+                              "_blank",
+                            )
+                          }
+                        >
+                          ☎️ 카카오톡 문의하기
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 )}
@@ -4991,10 +5013,28 @@ export default function SwimmingClassPage() {
               </summary>
               <ul className="mt-4 list-disc space-y-2 pl-5 text-sm font-semibold leading-6 text-gray-900">
                 <li>수업 14일 전 취소 요청시 100% 환불됩니다.</li>
-                <li>이후 대관 예약을 진행하므로 환불 및 취소는 불가합니다.</li>
                 <li>자세한 환불 정책은 이용약관을 확인해주세요.</li>
               </ul>
             </details>
+
+            <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
+              <h3 className="font-bold text-blue-900">고객센터</h3>
+              <p className="mt-2 text-sm leading-6 text-gray-700">
+                입금·결제·예약 문의는 카카오톡{" "}
+                <span className="font-bold text-gray-900">@스윔잇</span>으로
+                연락해주세요.
+              </p>
+              <Button
+                type="button"
+                size="sm"
+                className="mt-3 w-full bg-yellow-500 font-semibold text-white hover:bg-yellow-600 sm:w-auto"
+                onClick={() =>
+                  window.open("https://pf.kakao.com/_dXUgn/chat", "_blank")
+                }
+              >
+                ☎️ 카카오톡 문의하기
+              </Button>
+            </div>
 
             <div className="grid gap-2 sm:grid-cols-2">
               <Button
@@ -6609,9 +6649,6 @@ export default function SwimmingClassPage() {
                 </h3>
                 <ul className="text-base font-bold text-gray-900 space-y-2 pl-4 list-disc">
                   <li>수업 14일 전 취소 요청시 100% 환불됩니다</li>
-                  <li>
-                    이후 대관 예약을 진행하므로 환불 및 취소는 불가합니다.
-                  </li>
                   <li>자세한 환불 정책은 이용약관을 확인해주세요</li>
                 </ul>
               </div>

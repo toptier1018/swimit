@@ -192,6 +192,25 @@ const normalizeWaitlistThresholds = (
     ]),
   );
 
+const CLASS_DISPLAY_TITLES: Record<string, string> = {
+  "자유형 A (초급)": "자유형 숨참·가라앉음 교정반",
+  "자유형 B (중급)": "자유형 장거리·효율 완성반",
+  "평영 A (초급)": "평영 제자리 탈출반",
+  "평영 B (중급)": "평영 추진력·타이밍 완성반",
+  "접영 A (초급)": "접영 첫 25m 완주반",
+  "접영 B (중급)": "접영 50m 리듬 완성반",
+};
+
+const getClassDisplayTitle = (title: string) =>
+  CLASS_DISPLAY_TITLES[title] ?? title;
+
+const getClassDisplayName = (className: string) =>
+  Object.entries(CLASS_DISPLAY_TITLES).reduce(
+    (displayName, [internalTitle, displayTitle]) =>
+      displayName.replace(internalTitle, displayTitle),
+    className,
+  );
+
 type TimetableRow = {
   session: string;
   time: string;
@@ -3439,111 +3458,153 @@ export default function SwimmingClassPage() {
                       <span>📋</span> 클래스 상세 안내
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-sm sm:text-[15px] text-gray-700 leading-relaxed">
-                      지금 막히는 지점에 맞춰 클래스를 선택해 주세요. 각 반은
-                      목표 중심으로 구성되어 있으며, 현장에서 개인 실력에 맞춰
-                      세부 피드백이 진행됩니다.
-                    </p>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div className="rounded-xl border bg-white p-4 shadow-sm">
-                        <div className="flex items-start gap-2">
-                          <Check className="h-4 w-4 text-green-600 mt-1 flex-shrink-0" />
-                          <div>
-                            <h4 className="font-bold text-gray-900 leading-snug">
-                              자유형 숨참·가라앉음 교정반
-                            </h4>
-                            <p className="mt-1 text-sm text-gray-600 leading-relaxed">
-                              숨이 차고 몸이 가라앉는 원인을 찾아 자유형의 기본
-                              호흡과 수평 자세를 교정합니다.
-                            </p>
+                  <CardContent className="space-y-5">
+                    <div className="rounded-lg border bg-white p-4">
+                      <h4 className="font-bold text-gray-900 flex items-center gap-2">
+                        <span aria-hidden>🏊</span> 자유형 클래스
+                      </h4>
+                      <div className="mt-3 space-y-3 text-sm sm:text-[15px]">
+                        <div className="leading-relaxed">
+                          <div className="font-semibold text-gray-900">
+                            자유형 숨참·가라앉음 교정반
+                          </div>
+                          <div className="text-gray-700">
+                            : 자유형 25m 이상 가능하신 분
+                          </div>
+                          <div className="text-gray-600">
+                            숨이 차거나, 다리가 가라앉거나, 자세가 쉽게 무너지는
+                            분께 추천합니다.
                           </div>
                         </div>
-                      </div>
-
-                      <div className="rounded-xl border bg-white p-4 shadow-sm">
-                        <div className="flex items-start gap-2">
-                          <Check className="h-4 w-4 text-green-600 mt-1 flex-shrink-0" />
-                          <div>
-                            <h4 className="font-bold text-gray-900 leading-snug">
-                              자유형 장거리·효율 완성반
-                            </h4>
-                            <p className="mt-1 text-sm text-gray-600 leading-relaxed">
-                              더 오래 편하게 가기 위한 스트로크 효율, 호흡
-                              타이밍, 힘 빼는 감각을 다룹니다.
-                            </p>
+                        <div className="leading-relaxed">
+                          <div className="font-semibold text-gray-900">
+                            자유형 장거리·효율 완성반
+                          </div>
+                          <div className="text-gray-700">
+                            : 자유형 50m 가능 / 수영 경력 6개월 이상
+                          </div>
+                          <div className="text-gray-600">
+                            물잡기, 롤링, 호흡 타이밍을 다듬어 더 편하게 오래
+                            수영하고 싶은 분께 추천합니다.
                           </div>
                         </div>
-                      </div>
-
-                      <div className="rounded-xl border bg-white p-4 shadow-sm">
-                        <div className="flex items-start gap-2">
-                          <Check className="h-4 w-4 text-green-600 mt-1 flex-shrink-0" />
-                          <div>
-                            <h4 className="font-bold text-gray-900 leading-snug">
-                              평영 제자리 탈출반
-                            </h4>
-                            <p className="mt-1 text-sm text-gray-600 leading-relaxed">
-                              평영을 해도 앞으로 잘 나가지 않는 분들을 위해 자세,
-                              발차기 방향, 리듬을 정리합니다.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="rounded-xl border bg-white p-4 shadow-sm">
-                        <div className="flex items-start gap-2">
-                          <Check className="h-4 w-4 text-green-600 mt-1 flex-shrink-0" />
-                          <div>
-                            <h4 className="font-bold text-gray-900 leading-snug">
-                              평영 추진력·타이밍 완성반
-                            </h4>
-                            <p className="mt-1 text-sm text-gray-600 leading-relaxed">
-                              평영의 추진력을 높이고 팔·다리·호흡 타이밍을 맞춰
-                              더 효율적인 움직임을 만듭니다.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="rounded-xl border bg-white p-4 shadow-sm">
-                        <div className="flex items-start gap-2">
-                          <Check className="h-4 w-4 text-green-600 mt-1 flex-shrink-0" />
-                          <div>
-                            <h4 className="font-bold text-gray-900 leading-snug">
-                              접영 첫 25m 완주반
-                            </h4>
-                            <p className="mt-1 text-sm text-gray-600 leading-relaxed">
-                              접영이 끊기거나 힘이 많이 드는 분들을 위해 웨이브,
-                              타이밍, 호흡 연결을 쉽게 잡아드립니다.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="rounded-xl border bg-white p-4 shadow-sm">
-                        <div className="flex items-start gap-2">
-                          <Check className="h-4 w-4 text-green-600 mt-1 flex-shrink-0" />
-                          <div>
-                            <h4 className="font-bold text-gray-900 leading-snug">
-                              접영 50m 리듬 완성반
-                            </h4>
-                            <p className="mt-1 text-sm text-gray-600 leading-relaxed">
-                              접영 50m를 더 편하게 이어가기 위해 리듬, 호흡,
-                              추진 효율을 세밀하게 다룹니다.
-                            </p>
-                          </div>
+                        <div className="pt-1 text-xs sm:text-sm text-red-600 font-semibold">
+                          ※ 연속 수강 시 개인 실력에 맞춰 단계별로 지도합니다.
                         </div>
                       </div>
                     </div>
 
-                    <div className="rounded-lg border bg-blue-50 p-4 text-sm sm:text-[15px] text-blue-900 leading-relaxed">
-                      ※ 최소 인원 미달 시 일부 클래스는 통합반으로 운영될 수
-                      있습니다. 통합 시에도 개인 목표와 실력에 맞춰 단계별로
-                      지도합니다.
+                    <div className="rounded-lg border bg-white p-4">
+                      <h4 className="font-bold text-gray-900 flex items-center gap-2">
+                        <span aria-hidden>🐸</span> 평영 클래스
+                      </h4>
+                      <div className="mt-3 space-y-3 text-sm sm:text-[15px]">
+                        <div className="leading-relaxed">
+                          <div className="font-semibold text-gray-900">
+                            평영 제자리 탈출반
+                          </div>
+                          <div className="text-gray-700">
+                            : 평영으로 50m 이상 가능하신 분
+                          </div>
+                          <div className="text-gray-600">
+                            킥을 차도 앞으로 잘 안 나가거나, 평영이 제자리처럼
+                            느껴지는 분께 추천합니다.
+                          </div>
+                        </div>
+                        <div className="leading-relaxed">
+                          <div className="font-semibold text-gray-900">
+                            평영 추진력·타이밍 완성반
+                          </div>
+                          <div className="text-gray-700">
+                            : 평영 100m 가능 / 수영 경력 1년 이상
+                          </div>
+                          <div className="text-gray-600">
+                            킥, 글라이드, 상체 타이밍을 다듬어 추진력과 속도를
+                            높이고 싶은 분께 추천합니다.
+                          </div>
+                        </div>
+                        <div className="pt-1 text-xs sm:text-sm text-red-600 font-semibold">
+                          ※ 연속 수강 시 개인 실력에 맞춰 단계별로 지도합니다.
+                        </div>
+                      </div>
                     </div>
 
+                    <div className="rounded-lg border bg-white p-4">
+                      <h4 className="font-bold text-gray-900 flex items-center gap-2">
+                        <span aria-hidden>🦋</span> 접영 클래스
+                      </h4>
+                      <div className="mt-3 space-y-3 text-sm sm:text-[15px]">
+                        <div className="leading-relaxed">
+                          <div className="font-semibold text-gray-900">
+                            접영 첫 25m 완주반
+                          </div>
+                          <div className="text-gray-700">
+                            : 접영·배영·평영·자유형을 모두 배워보았으나
+                          </div>
+                          <div className="text-gray-600">
+                            접영 동작이 아직 어렵고 25m 완주가 힘드신 분께
+                            추천합니다.
+                          </div>
+                        </div>
+                        <div className="leading-relaxed">
+                          <div className="font-semibold text-gray-900">
+                            접영 50m 리듬 완성반
+                          </div>
+                          <div className="text-gray-700">
+                            : 접영 50m 가능 / 수영 경력 1년 이상
+                          </div>
+                          <div className="text-gray-600">
+                            팔이 점점 무거워지거나 두 번째 25m부터 자세가
+                            무너지는 분께 추천합니다.
+                          </div>
+                        </div>
+                        <div className="pt-1 text-xs sm:text-sm text-red-600 font-semibold">
+                          ※ 연속 수강 시 개인 실력에 맞춰 단계별로 지도합니다.
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="rounded-lg border bg-blue-50 p-4">
+                      <h4 className="font-bold text-gray-900 mb-2">레벨 안내</h4>
+                      <div className="space-y-3 text-sm sm:text-[15px]">
+                        <div>
+                          <div className="font-semibold text-gray-900">
+                            🔹 교정반
+                          </div>
+                          <div className="mt-1 text-gray-700 leading-relaxed">
+                            호흡 · 수평 유지 · 동작 연결 등
+                            <br />
+                            수영이 힘들어지는 원인을 다시 점검하는 수업입니다.
+                            <br />
+                            고수분들도 기본기가 흔들리면 교정반을 다시 듣습니다.
+                          </div>
+                        </div>
+                        <div>
+                          <div className="font-semibold text-gray-900">
+                            🔹 완성반
+                          </div>
+                          <div className="mt-1 text-gray-700 leading-relaxed">
+                            스트로크 디테일 · 캐치 감각 · 추진 효율 · 타이밍
+                            조정 등
+                            <br />
+                            전체적인 완성도를 다루는 단계입니다.
+                          </div>
+                        </div>
+                      </div>
+                      <div className="mt-4 space-y-1 text-sm sm:text-[15px] font-semibold">
+                        <div className="text-gray-900">
+                          👉 숨이 차고 자세 안정감이 부족하다 느끼시면{" "}
+                          <span className="text-blue-700">교정반</span>
+                        </div>
+                        <div className="text-gray-900">
+                          👉 기록 단축·효율 개선·장거리 유지가 목표라면{" "}
+                          <span className="text-blue-700">완성반</span>
+                        </div>
+                      </div>
+                      <div className="mt-3 text-sm sm:text-[15px] text-gray-800 font-semibold">
+                        본인 상태에 맞게 선택해 주세요 😊🏊
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
 
@@ -3693,7 +3754,7 @@ export default function SwimmingClassPage() {
                                     </div>
 
                                     <div className="text-base md:text-sm font-bold text-gray-900 break-words leading-snug">
-                                      {slot.title}
+                                      {getClassDisplayTitle(slot.title)}
                                     </div>
                                     {slot.premium && (
                                       <div className="mt-1 flex flex-wrap gap-1">
@@ -3803,7 +3864,7 @@ export default function SwimmingClassPage() {
                           {selectedTimeSlot ? (
                             <div>
                               <p className="text-sm font-medium text-gray-800 mb-1">
-                                {selectedTimeSlot.name}
+                                {getClassDisplayName(selectedTimeSlot.name)}
                               </p>
                               <p className="text-xs text-gray-500">
                                 시간대: {selectedTimeSlot.session} (
@@ -3934,7 +3995,7 @@ export default function SwimmingClassPage() {
                             );
                             toast({
                               title: "중복 신청 방지",
-                              description: `같은 성함/연락처로 이미 ${selectedTimeSlot.name}를 신청하셨습니다. 다른 클래스는 신청 가능합니다.`,
+                              description: `같은 성함/연락처로 이미 ${getClassDisplayName(selectedTimeSlot.name)}를 신청하셨습니다. 다른 클래스는 신청 가능합니다.`,
                               variant: "destructive",
                             });
                             setIsSubmitting(false);
@@ -3954,7 +4015,7 @@ export default function SwimmingClassPage() {
                             );
                             toast({
                               title: "중복 신청 방지",
-                              description: `같은 정보로 이미 ${selectedTimeSlot.name}를 신청하셨습니다. 다른 클래스는 신청 가능합니다.`,
+                              description: `같은 정보로 이미 ${getClassDisplayName(selectedTimeSlot.name)}를 신청하셨습니다. 다른 클래스는 신청 가능합니다.`,
                               variant: "destructive",
                             });
                             setIsSubmitting(false);
@@ -6022,7 +6083,9 @@ export default function SwimmingClassPage() {
               {selectedTimeSlot && (
                 <div className="flex justify-between pt-2 border-t">
                   <span className="text-gray-600">선택된 클래스</span>
-                  <span className="font-medium">{selectedTimeSlot.name}</span>
+                  <span className="font-medium">
+                    {getClassDisplayName(selectedTimeSlot.name)}
+                  </span>
                 </div>
               )}
               {selectedTimeSlot && (

@@ -1250,8 +1250,6 @@ export default function SwimmingClassPage() {
     setStep(3);
   };
 
-  const [isAntifogLoading, setIsAntifogLoading] = useState(false);
-
   const handleClassPgTestPayment = async () => {
     if (isClassPgTestLoading || !selectedTimeSlot) return;
     const amount = selectedTimeSlot.price;
@@ -1314,47 +1312,6 @@ export default function SwimmingClassPage() {
       });
     } finally {
       setIsClassPgTestLoading(false);
-    }
-  };
-
-  const handleAntifogPurchase = async () => {
-    if (isAntifogLoading) return;
-    setIsAntifogLoading(true);
-    console.log("[안티포그] 구매하기 버튼 클릭 - 결제 시작");
-
-    try {
-      // 1. 서버에서 주문번호/금액 발급
-      const orderRes = await fetch("/api/toss/create-order", { method: "POST" });
-      const orderData = await orderRes.json();
-
-      if (!orderData.success) {
-        console.error("[안티포그] 주문 생성 실패:", orderData.error);
-        toast({ title: "주문 생성 실패", description: orderData.error, variant: "destructive" });
-        return;
-      }
-
-      console.log("[안티포그] 주문 생성 성공:", { orderId: orderData.orderId, amount: orderData.amount });
-
-      // 2. 토스페이먼츠 SDK 로드 및 결제창 호출
-      const { loadTossPayments } = await import("@tosspayments/tosspayments-sdk");
-      const tossPayments = await loadTossPayments(orderData.clientKey);
-      const payment = tossPayments.payment({ customerKey: "ANONYMOUS" });
-
-      console.log("[안티포그] 토스 결제창 호출:", { orderId: orderData.orderId });
-
-      await payment.requestPayment({
-        method: "CARD",
-        amount: { currency: "KRW", value: orderData.amount },
-        orderId: orderData.orderId,
-        orderName: orderData.orderName,
-        successUrl: `${window.location.origin}/antifog/success`,
-        failUrl: `${window.location.origin}/antifog/fail`,
-      });
-    } catch (error) {
-      console.error("[안티포그] 결제 오류:", error);
-      toast({ title: "결제 오류", description: "결제 처리 중 오류가 발생했습니다.", variant: "destructive" });
-    } finally {
-      setIsAntifogLoading(false);
     }
   };
 
@@ -6283,45 +6240,6 @@ export default function SwimmingClassPage() {
           >
             홈으로 돌아가기
           </Button>
-        </div>
-      )}
-      {step === 1 && (
-        <div className="container mx-auto px-4 max-w-4xl mt-8 mb-0">
-          <div className="bg-gradient-to-br from-sky-50 to-teal-50 rounded-2xl border border-teal-200 shadow-sm overflow-hidden">
-            {/* 상단 강조 배너 */}
-            <div className="bg-teal-600 px-4 py-2 flex items-center gap-2">
-              <span className="text-white text-xs font-bold tracking-wide">🥽 스윔잇 파트너 상품</span>
-            </div>
-
-            <div className="px-5 py-5 sm:px-6 sm:py-6">
-              {/* 타이틀 */}
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-2xl" aria-hidden>🥽</span>
-                <h2 className="text-lg sm:text-xl font-extrabold text-gray-900">
-                  스윔잇 안티포그
-                </h2>
-              </div>
-
-              {/* 본문 */}
-              <p className="text-sm sm:text-base text-gray-700 leading-relaxed mb-1">
-                수영 중 흐려지는 시야 때문에<br />
-                집중이 끊기셨다면?
-              </p>
-              <p className="text-sm sm:text-base font-semibold text-teal-700 mb-5">
-                스윔잇 안티포그를 만나보세요.
-              </p>
-
-              {/* 버튼 */}
-              <Button
-                className="w-full sm:w-auto sm:min-w-[240px] py-4 sm:py-3 text-base sm:text-sm rounded-xl bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white font-semibold shadow transition-all"
-                onClick={handleAntifogPurchase}
-                disabled={isAntifogLoading}
-              >
-                {isAntifogLoading ? "결제창 여는 중..." : "안티포그 8900원 구매"}
-              </Button>
-              <p className="mt-2 text-[11px] text-gray-400">토스페이먼츠 안전 결제</p>
-            </div>
-          </div>
         </div>
       )}
       <footer className="bg-[#1a2332] text-gray-400 py-12 mt-12">

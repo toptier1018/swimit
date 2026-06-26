@@ -2171,7 +2171,7 @@ export default function SwimmingClassPage() {
                     {/* Benefits Section */}
                     <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
                       <p className="text-base sm:text-lg font-bold text-gray-900">
-                        지금 신청하시면 받는 스윔잇 저항 올케어 시스템
+                        지금 신청하시면 받는 스윔잇 올케어
                       </p>
                       <ol className="space-y-3 text-sm sm:text-[15px] list-decimal pl-5 marker:font-semibold">
                         <li className="rounded-lg border border-slate-200 bg-slate-50 p-3 pr-2">

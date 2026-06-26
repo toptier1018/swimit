@@ -1237,12 +1237,43 @@ export default function SwimmingClassPage() {
         .filter((c) => c.year === calendarYear && c.month === calendarMonth)
         .map((c) => c.dateNum);
 
+  const selectedScheduleClass = selectedClass
+    ? classes.find((c) => String(c.id) === selectedClass) || null
+    : null;
+
+  const getScheduleShortLabel = (classItem: ClassItem) =>
+    `${classItem.locationCode} ${classItem.month}/${classItem.dateNum}`;
+
+  const scheduleApplyButtonText = selectedScheduleClass
+    ? `${getScheduleShortLabel(selectedScheduleClass)} 특강 신청하기`
+    : "먼저 일정을 선택해 주세요";
+
   const handleRegistration = () => {
     incrementFunnelCount(1, "지금 바로 신청하기 클릭");
     markFunnelStep(1);
     lastFunnelActionRef.current = { action: "step1_click", ts: Date.now() };
     setShowRegistrationForm(true);
     setStep(2); // Move to step 2 after selecting a class
+  };
+
+  const handleScheduleRegistration = () => {
+    if (!selectedScheduleClass) {
+      setRegionError(true);
+      toast({
+        title: "일정을 선택해주세요",
+        description: "신청할 특강 일정을 먼저 선택한 뒤 진행해주세요.",
+        variant: "destructive",
+      });
+      console.log("[CTA] 일정 미선택 상태에서 신청 버튼 클릭");
+      return;
+    }
+
+    console.log("[CTA] 선택 일정으로 신청 모달 열기:", {
+      id: selectedScheduleClass.id,
+      location: selectedScheduleClass.location,
+      date: selectedScheduleClass.date,
+    });
+    handleRegistration();
   };
 
   const handleBackToSchedule = () => {
@@ -2240,7 +2271,7 @@ export default function SwimmingClassPage() {
                     📌 수강 일정 · 지역 안내
                   </h3>
                 </div>
-                <div className="grid md:grid-cols-[300px_1fr] gap-4 md:gap-6 pointer-events-none opacity-100">
+                <div className="grid md:grid-cols-[300px_1fr] gap-4 md:gap-6">
                   {/* Left: Calendar */}
                   <div>
                     <Card>
@@ -2374,8 +2405,40 @@ export default function SwimmingClassPage() {
                       </h3>
                     </div>
                     <div className="space-y-3">
-                      {getActiveClasses().map((classItem) => (
-                        <Card key={classItem.id} className="transition-all shadow-sm">
+                      {getActiveClasses().map((classItem) => {
+                        const isSelectedSchedule =
+                          selectedClass === String(classItem.id);
+                        return (
+                          <Card
+                            key={classItem.id}
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => {
+                              setSelectedClass(String(classItem.id));
+                              setRegionError(false);
+                              setCalendarMonth(classItem.month);
+                              setCalendarYear(classItem.year);
+                              console.log("[일정 선택] 랜딩 일정 카드 선택:", {
+                                id: classItem.id,
+                                location: classItem.location,
+                                date: classItem.date,
+                              });
+                            }}
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter" || event.key === " ") {
+                                event.preventDefault();
+                                setSelectedClass(String(classItem.id));
+                                setRegionError(false);
+                                setCalendarMonth(classItem.month);
+                                setCalendarYear(classItem.year);
+                              }
+                            }}
+                            className={`cursor-pointer transition-all shadow-sm ${
+                              isSelectedSchedule
+                                ? "border-primary border-2 bg-primary/5 shadow-md"
+                                : "hover:border-primary/40 hover:shadow-md"
+                            }`}
+                          >
                           <CardContent className="p-4 sm:p-5">
                             <div className="mb-3 flex items-center justify-between">
                               <div className="flex items-center gap-2">
@@ -2384,6 +2447,11 @@ export default function SwimmingClassPage() {
                                   {classItem.location}
                                 </span>
                               </div>
+                              {isSelectedSchedule && (
+                                <span className="rounded-full bg-primary px-2.5 py-1 text-xs font-bold text-white">
+                                  선택됨
+                                </span>
+                              )}
                             </div>
 
                             <div className="bg-blue-50 rounded-lg p-4 mb-4 border border-blue-100">
@@ -2429,7 +2497,8 @@ export default function SwimmingClassPage() {
                             </div>
                           </CardContent>
                         </Card>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
@@ -2442,13 +2511,19 @@ export default function SwimmingClassPage() {
                     <Button
                       onClick={() => {
                         console.log("[CTA] 일정 안내 아래 자리 선점 CTA 클릭");
-                        handleRegistration();
+                        handleScheduleRegistration();
                       }}
-                      className="w-full py-3 sm:py-4 text-base sm:text-lg font-semibold leading-tight"
+                      disabled={!selectedScheduleClass}
+                      className="w-full py-3 sm:py-4 text-base sm:text-lg font-semibold leading-tight disabled:cursor-not-allowed disabled:opacity-60"
                       size="lg"
                     >
-                      내 일정에 맞는 특강 자리 선점하기 →
+                      {scheduleApplyButtonText}
                     </Button>
+                    {!selectedScheduleClass && (
+                      <p className="mt-2 text-center text-xs sm:text-sm text-orange-700">
+                        위 일정 카드 중 신청할 특강을 먼저 선택해 주세요.
+                      </p>
+                    )}
                   </div>
                   <div className="mt-3 space-y-1 text-xs sm:text-sm text-gray-700 leading-5">
                     <p>※ 선착순 마감 / 레인별 7명 제한</p>
@@ -2504,7 +2579,37 @@ export default function SwimmingClassPage() {
             </div>
           </>
         ) : (
-          <>
+          <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4">
+            <div className="relative max-h-[92vh] w-full overflow-y-auto rounded-t-2xl bg-gradient-to-br from-blue-50 to-indigo-50 p-4 shadow-2xl sm:max-h-[90vh] sm:max-w-4xl sm:rounded-2xl sm:p-6">
+              <button
+                type="button"
+                onClick={handleBackToSchedule}
+                className="absolute right-4 top-4 z-10 rounded-full bg-white/90 p-2 text-gray-600 shadow hover:bg-white hover:text-gray-900"
+                aria-label="신청 모달 닫기"
+              >
+                <X className="h-5 w-5" />
+              </button>
+
+              {selectedScheduleClass && (
+                <div className="sticky top-0 z-[1] mb-4 rounded-xl border border-blue-100 bg-white/95 p-4 pr-12 shadow-sm backdrop-blur">
+                  <div className="text-xs font-bold text-primary">
+                    선택한 일정
+                  </div>
+                  <div className="mt-1 font-bold text-gray-900">
+                    {selectedScheduleClass.location}
+                  </div>
+                  <div className="mt-2 grid gap-1 text-sm text-gray-700 sm:grid-cols-2">
+                    <div>수영장: {selectedScheduleClass.venue}</div>
+                    <div>날짜: {selectedScheduleClass.date}</div>
+                    <div>
+                      시간: {selectedScheduleClass.scheduleSummaryLines.join(", ")}
+                    </div>
+                    <div className="sm:col-span-2">
+                      주소: {selectedScheduleClass.address}
+                    </div>
+                  </div>
+                </div>
+              )}
             <div className="mb-8 flex items-center justify-center gap-4">
               {/* Step 1 */}
               <div className="flex items-center">
@@ -4511,7 +4616,7 @@ export default function SwimmingClassPage() {
                             (isClassFull(selectedTimeSlot.name) ||
                               hasEnrollment(selectedTimeSlot.name))
                           ? "예약하기"
-                          : `₩${(selectedTimeSlot?.price ?? 0).toLocaleString()} 결제하기`}
+                          : `₩${(selectedTimeSlot?.price ?? 0).toLocaleString()} 결제하고 자리 확정하기`}
                     </Button>
                     </div>
                     {showPgTest && selectedTimeSlot && (
@@ -4582,7 +4687,8 @@ export default function SwimmingClassPage() {
                 </div>
               </>
             ) : null}
-          </>
+            </div>
+          </div>
         )}
       </main>
 

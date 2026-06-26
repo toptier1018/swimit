@@ -2054,7 +2054,7 @@ export default function SwimmingClassPage() {
           <>
             <div className="flex flex-col items-center space-y-6">
               {/* Class Information Section */}
-              <Card className="w-full mb-6 border-slate-200 bg-slate-50 shadow-sm">
+              <Card className="order-1 w-full mb-6 border-slate-200 bg-slate-50 shadow-sm">
                 <CardContent className="p-4 sm:p-5">
                   <div className="space-y-6 text-sm sm:text-[15px] text-gray-700 leading-6 sm:leading-7">
                     {/* Main Title */}
@@ -2219,7 +2219,7 @@ export default function SwimmingClassPage() {
               </Card>
 
               {/* CTA Copy Section */}
-              <div className="w-full mt-6 rounded-2xl border border-orange-200 bg-orange-50 p-4 sm:p-5 shadow-sm">
+              <div className="order-3 w-full mt-6 rounded-2xl border border-orange-200 bg-orange-50 p-4 sm:p-5 shadow-sm">
                 <p className="text-base sm:text-lg font-bold text-orange-800 mb-2.5">
                   마감 주의
                 </p>
@@ -2247,7 +2247,7 @@ export default function SwimmingClassPage() {
               </div>
 
               {/* Student Review Section */}
-              <section className="w-full mt-6 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
+              <section className="order-4 w-full mt-6 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
                 <div className="mx-auto max-w-2xl">
                   <h3 className="text-lg sm:text-xl font-bold text-gray-900">
                     실제 수강생 후기
@@ -2289,7 +2289,7 @@ export default function SwimmingClassPage() {
               </section>
 
               {/* Schedule & Region Notice (Step 1) */}
-              <section className="w-full mt-6 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5">
+              <section className="order-2 w-full mt-6 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5">
                 <div className="mb-3 sm:mb-4">
                   <h3 className="text-lg sm:text-xl font-bold text-gray-900 flex items-center gap-2">
                     📌 수강 일정 · 지역 안내
@@ -2564,7 +2564,7 @@ export default function SwimmingClassPage() {
 
               {/* Action Button (hidden when showRegistrationForm is true) */}
               {/* Warning Section */}
-              <Alert className="w-full mt-6 bg-red-50 border-red-200 shadow-sm">
+              <Alert className="order-5 w-full mt-6 bg-red-50 border-red-200 shadow-sm">
                 <AlertTriangle className="h-4 w-4 text-red-600" />
                 <AlertDescription className="ml-2">
                   <h3 className="font-bold text-red-900 mb-2.5 text-base sm:text-lg">
@@ -2585,7 +2585,7 @@ export default function SwimmingClassPage() {
                 </AlertDescription>
               </Alert>
               {/* Refund Policy Section */}
-              <Alert className="w-full mt-6 bg-yellow-50 border-yellow-200 shadow-sm">
+              <Alert className="order-6 w-full mt-6 bg-yellow-50 border-yellow-200 shadow-sm">
                 <HelpCircle className="h-4 w-4 text-yellow-600" />
                 <AlertDescription className="ml-2">
                   <h3 className="font-bold text-yellow-900 mb-2 text-base sm:text-lg">

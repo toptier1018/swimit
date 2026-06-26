@@ -169,6 +169,11 @@ const classes: ClassItem[] = [
   },
 ];
 
+const DEPOSIT_BANK_NAME = "농협";
+const DEPOSIT_ACCOUNT_NUMBER = "302-1710-5277-51";
+const DEPOSIT_ACCOUNT_HOLDER = "장연성";
+const DEPOSIT_ACCOUNT_LABEL = `${DEPOSIT_BANK_NAME} ${DEPOSIT_ACCOUNT_NUMBER}`;
+
 // 오픈 전 임시 설정: 전체 클래스를 '예약대기'로 강제 표시
 // 개발자 모드에서 대기 해제/기준 변경이 필요하므로 기본은 false로 둡니다.
 const FORCE_ALL_WAITLIST = false;
@@ -611,6 +616,7 @@ export default function SwimmingClassPage() {
   const [paymentStatus, setPaymentStatus] = useState<
     "입금대기" | "입금완료" | "결제대기" | "결제완료" | "예약대기"
   >("결제대기");
+  const [showDepositModal, setShowDepositModal] = useState(false);
   const [videoCode, setVideoCode] = useState("");
   const [funnelCounts, setFunnelCounts] = useState<Record<number, number>>({
     0: 0,
@@ -1374,7 +1380,25 @@ export default function SwimmingClassPage() {
 
   const handleBackToSchedule = () => {
     setShowRegistrationForm(false);
+    setShowDepositModal(false);
     setStep(1); // Go back to step 1
+  };
+
+  const copyDepositAccount = async () => {
+    try {
+      await navigator.clipboard.writeText(DEPOSIT_ACCOUNT_LABEL);
+      toast({
+        title: "계좌번호가 복사되었습니다.",
+      });
+      console.log("[입금안내] 계좌번호 복사 완료:", DEPOSIT_ACCOUNT_LABEL);
+    } catch (error) {
+      console.error("[입금안내] 계좌번호 복사 실패:", error);
+      toast({
+        title: "복사 실패",
+        description: "계좌번호를 직접 선택해서 복사해주세요.",
+        variant: "destructive",
+      });
+    }
   };
 
   useEffect(() => {
@@ -4583,6 +4607,15 @@ export default function SwimmingClassPage() {
                                 console.log(
                                   "[결제] 결제 처리 완료 - 4단계로 이동",
                                 );
+                                console.log(
+                                  "[입금안내] 가상계좌 발급 완료 모달 열기:",
+                                  {
+                                    orderNumber: newOrderNumber,
+                                    status: "결제대기",
+                                    account: DEPOSIT_ACCOUNT_LABEL,
+                                  },
+                                );
+                                setShowDepositModal(true);
                                 setStep(4);
                               }
                             } catch (error) {
@@ -4680,192 +4713,89 @@ export default function SwimmingClassPage() {
               </>
             ) : step === 4 ? (
               <div className="space-y-4">
-                <div className="text-center py-8">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-full mb-4">
-                    <span className="text-3xl">
-                      {paymentStatus === "예약대기" ? "✅" : "💳"}
-                    </span>
+                {paymentStatus === "예약대기" ? (
+                  <div className="rounded-xl border border-purple-200 bg-white p-6 text-center shadow-sm">
+                    <div className="mb-3 text-3xl">✅</div>
+                    <h2 className="text-2xl font-bold text-gray-900">
+                      예약 대기
+                    </h2>
+                    <p className="mt-3 text-lg font-bold leading-relaxed text-gray-800">
+                      취소가 생기거나 다음 특강시 연락드리겠습니다.
+                      <br />
+                      예약해주셔서 감사합니다!
+                    </p>
                   </div>
-                  <h2 className="text-2xl font-bold mb-2">
-                    {paymentStatus === "예약대기"
-                      ? "예약 대기"
-                      : "가상계좌가 발급되었습니다"}
-                  </h2>
-                  <p
-                    className={
-                      paymentStatus === "예약대기"
-                        ? "text-gray-600"
-                        : "text-red-600 font-bold"
-                    }
-                  >
-                    {paymentStatus === "예약대기" ? (
-                      "완료"
-                    ) : (
-                      <>
-                        아래 계좌로 입금하시면
-                        <br />
-                        익일 오후 2시에 확정 문자와 함께 안내사항 보내드립니다
-                      </>
-                    )}
-                  </p>
-                </div>
-
-                <div className="bg-blue-50 rounded-lg border border-blue-200 p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-sm flex items-center gap-2">
-                      <span className="text-blue-600">📋</span>
-                      가상계좌 입금 정보
-                    </h3>
-                    <span
-                      className={`text-white text-xs px-2 py-1 rounded ${
-                        paymentStatus === "입금완료" ||
-                        paymentStatus === "결제완료"
-                          ? "bg-green-500"
-                          : paymentStatus === "예약대기" ||
-                              paymentStatus === "결제대기"
-                            ? "bg-orange-500"
-                            : "bg-green-500"
-                      }`}
-                    >
-                      {paymentStatus}
-                    </span>
-                  </div>
-                  {paymentStatus === "예약대기" ? (
-                    <div className="bg-white p-6 rounded text-center">
-                      <p className="text-xl font-bold text-gray-900 leading-relaxed">
-                        취소가 생기거나 다음 특강시 연락드리겠습니다.
-                        <br />
-                        예약해주셔서 감사합니다!
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="space-y-2 text-sm bg-white p-3 rounded">
-                      <div className="flex justify-between gap-3">
-                        <span className="text-gray-600">계좌번호</span>
-                        <span className="font-bold text-red-600 text-lg text-right">
-                          농협 302-1710-5277-51
+                ) : (
+                  <Card className="border-orange-200 bg-orange-50 shadow-sm">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <CardTitle className="text-xl text-orange-900">
+                            입금 대기
+                          </CardTitle>
+                          <p className="mt-1 text-sm font-semibold text-red-600">
+                            아직 예약 확정 전입니다. 입금 확인 후 예약이
+                            확정됩니다.
+                          </p>
+                        </div>
+                        <span className="shrink-0 rounded-full bg-orange-500 px-3 py-1 text-xs font-bold text-white">
+                          {paymentStatus}
                         </span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">예금주</span>
-                        <span className="font-medium text-red-600">장연성</span>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="rounded-xl bg-white p-4 text-sm shadow-sm">
+                        <div className="space-y-3">
+                          <div className="flex justify-between gap-3">
+                            <span className="text-gray-600">계좌번호</span>
+                            <span className="text-right text-lg font-bold text-red-600">
+                              {DEPOSIT_ACCOUNT_LABEL}
+                            </span>
+                          </div>
+                          <div className="flex justify-between gap-3">
+                            <span className="text-gray-600">예금주</span>
+                            <span className="font-bold text-red-600">
+                              {DEPOSIT_ACCOUNT_HOLDER}
+                            </span>
+                          </div>
+                          <div className="flex justify-between gap-3">
+                            <span className="text-gray-600">입금금액</span>
+                            <span className="font-bold">
+                              {(selectedTimeSlot?.price ?? 0).toLocaleString()}원
+                            </span>
+                          </div>
+                          <div className="flex justify-between gap-3">
+                            <span className="text-gray-600">입금기한</span>
+                            <span className="text-right font-bold text-red-600">
+                              {paymentDate ? getDepositDeadline() : ""}
+                            </span>
+                          </div>
+                          <div className="border-t pt-3">
+                            <div className="flex justify-between gap-3">
+                              <span className="text-gray-600">선택한 클래스</span>
+                              <span className="text-right font-medium">
+                                {selectedTimeSlot
+                                  ? getClassDisplayName(selectedTimeSlot.name)
+                                  : ""}
+                              </span>
+                            </div>
+                            <div className="mt-2 flex justify-between gap-3">
+                              <span className="text-gray-600">예약자명</span>
+                              <span className="font-bold">{formData.name}</span>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">입금금액</span>
-                        <span className="font-bold text-lg">
-                          ₩{(selectedTimeSlot?.price ?? 0).toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="flex justify-between pt-2 border-t">
-                        <span className="text-gray-600">입금기한</span>
-                        <span className="text-red-600 font-bold">
-                          {paymentDate ? getDepositDeadline() : ""}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="bg-white rounded-lg border p-4">
-                  <h3 className="font-semibold mb-3 text-sm">주문 및 결제 정보</h3>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">주문번호</span>
-                      <span className="text-orange-600">
-                        {orderNumber || "WC-000000000"}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">주문일시</span>
-                      <span>{paymentDate ? formatOrderDate(paymentDate) : ""}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">결제방법</span>
-                      <span>가상계좌</span>
-                    </div>
-                    {selectedTimeSlot && (
-                      <div className="flex justify-between gap-3 pt-2 border-t">
-                        <span className="text-gray-600">선택된 클래스</span>
-                        <span className="font-medium text-right">
-                          {getClassDisplayName(selectedTimeSlot.name)}
-                        </span>
-                      </div>
-                    )}
-                    {selectedTimeSlot && (
-                      <div className="flex justify-between gap-3">
-                        <span className="text-gray-600">시간대</span>
-                        <span className="text-gray-700 text-right">
-                          {selectedTimeSlot.session} ({selectedTimeSlot.time})
-                        </span>
-                      </div>
-                    )}
-                    {selectedTimeSlot && (
-                      <div className="flex justify-between gap-3">
-                        <span className="text-gray-600">지역</span>
-                        <span className="text-gray-700 text-right">
-                          {classes.find((c) => String(c.id) === selectedClass)
-                            ?.location || "정보 없음"}
-                        </span>
-                      </div>
-                    )}
-                    <div className="flex justify-between font-bold text-base pt-2 border-t">
-                      <span>결제 금액</span>
-                      <span className="text-cyan-600">
-                        ₩{(selectedTimeSlot?.price ?? 0).toLocaleString()}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-lg border p-4">
-                  <h3 className="font-semibold mb-3 text-sm">예약자 정보</h3>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">이름</span>
-                      <span>{formData.name || "김민지"}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">연락처</span>
-                      <span>{formData.phone || "01012345678"}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">성별</span>
-                      <span>{formData.gender === "male" ? "남성" : "여성"}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {paymentStatus !== "예약대기" && (
-                  <div className="space-y-4">
-                    <div className="bg-white rounded-lg border p-4">
-                      <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
-                        <span className="text-orange-500">⚠️</span>
-                        입금 안내
-                      </h3>
-                      <ul className="text-base font-bold text-red-600 space-y-2 pl-4 list-disc">
-                        <li>입금자명은 신청자와 같아야 합니다!</li>
-                        <li>기한 내 미입금시 주문이 자동 취소됩니다</li>
-                        <li>
-                          당일 입금 확인 후 익일 오후 2시 안내사항 문자로
-                          공지됩니다.
-                        </li>
-                      </ul>
-                    </div>
-
-                    <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-4">
-                      <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">
-                        <span className="text-yellow-600">⚠️</span>
-                        환불 정책 주의사항
-                      </h3>
-                      <ul className="text-base font-bold text-gray-900 space-y-2 pl-4 list-disc">
-                        <li>수업 14일 전 취소 요청시 100% 환불됩니다</li>
-                        <li>
-                          이후 대관 예약을 진행하므로 환불 및 취소는 불가합니다.
-                        </li>
-                        <li>자세한 환불 정책은 이용약관을 확인해주세요</li>
-                      </ul>
-                    </div>
-                  </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full border-orange-300 bg-white font-bold text-orange-700 hover:bg-orange-100"
+                        onClick={() => void copyDepositAccount()}
+                      >
+                        계좌번호 복사하기
+                      </Button>
+                    </CardContent>
+                  </Card>
                 )}
 
                 <Button
@@ -4876,6 +4806,7 @@ export default function SwimmingClassPage() {
                     setSelectedClass(null);
                     setSelectedTimeSlot(null);
                     setShowRegistrationForm(false);
+                    setShowDepositModal(false);
                     setFormData({
                       name: "",
                       phone: "",
@@ -4917,6 +4848,177 @@ export default function SwimmingClassPage() {
           </section>
         )}
       </main>
+
+      <Dialog
+        open={showDepositModal && paymentStatus !== "예약대기"}
+        onOpenChange={(open) => {
+          if (open) setShowDepositModal(true);
+        }}
+      >
+        <DialogContent
+          showCloseButton={false}
+          className="top-auto bottom-0 left-0 max-h-[92vh] w-full max-w-none translate-x-0 translate-y-0 overflow-y-auto rounded-t-2xl p-4 sm:top-[50%] sm:bottom-auto sm:left-[50%] sm:max-w-2xl sm:translate-x-[-50%] sm:translate-y-[-50%] sm:rounded-2xl sm:p-6"
+        >
+          <DialogHeader className="text-left">
+            <DialogTitle className="pr-2 text-2xl font-extrabold text-gray-900">
+              💳 입금 계좌가 발급되었습니다
+            </DialogTitle>
+            <p className="text-sm font-semibold leading-6 text-red-600">
+              아직 예약 확정 전입니다.
+              <br />
+              아래 계좌로 입금하시면 입금 확인 후 예약이 확정됩니다.
+            </p>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="rounded-2xl border border-orange-200 bg-orange-50 p-4">
+              <div className="space-y-3 rounded-xl bg-white p-4 text-sm shadow-sm">
+                <div className="flex justify-between gap-3">
+                  <span className="text-gray-600">입금 상태</span>
+                  <span className="rounded-full bg-orange-500 px-3 py-1 text-xs font-bold text-white">
+                    {paymentStatus}
+                  </span>
+                </div>
+                <div className="flex flex-col gap-2 border-t pt-3 sm:flex-row sm:items-center sm:justify-between">
+                  <span className="text-gray-600">계좌번호</span>
+                  <div className="flex flex-col gap-2 sm:items-end">
+                    <span className="text-lg font-extrabold text-red-600">
+                      {DEPOSIT_ACCOUNT_LABEL}
+                    </span>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="border-orange-300 font-bold text-orange-700 hover:bg-orange-100"
+                      onClick={() => void copyDepositAccount()}
+                    >
+                      계좌번호 복사하기
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <span className="text-gray-600">예금주</span>
+                  <span className="font-bold text-red-600">
+                    {DEPOSIT_ACCOUNT_HOLDER}
+                  </span>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <span className="text-gray-600">입금금액</span>
+                  <span className="text-lg font-extrabold text-gray-900">
+                    {(selectedTimeSlot?.price ?? 0).toLocaleString()}원
+                  </span>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <span className="text-gray-600">입금기한</span>
+                  <span className="text-right font-bold text-red-600">
+                    {paymentDate ? getDepositDeadline() : ""}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-red-100 bg-red-50 p-4">
+              <ul className="space-y-2 text-sm font-semibold leading-6 text-red-700">
+                <li>입금자명은 신청자명과 동일해야 합니다.</li>
+                <li>기한 내 미입금 시 신청은 자동 취소됩니다.</li>
+                <li>입금 확인 후 예약 확정 문자를 보내드립니다.</li>
+                <li>수업 안내사항은 익일 오후 2시에 발송됩니다.</li>
+              </ul>
+            </div>
+
+            <details className="rounded-xl border border-slate-200 bg-white p-4">
+              <summary className="cursor-pointer font-bold text-gray-900">
+                주문 상세 정보 보기
+              </summary>
+              <div className="mt-4 space-y-2 text-sm">
+                <div className="flex justify-between gap-3">
+                  <span className="text-gray-600">주문번호</span>
+                  <span className="text-right text-orange-600">
+                    {orderNumber || "WC-000000000"}
+                  </span>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <span className="text-gray-600">주문일시</span>
+                  <span className="text-right">
+                    {paymentDate ? formatOrderDate(paymentDate) : ""}
+                  </span>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <span className="text-gray-600">결제방법</span>
+                  <span>가상계좌</span>
+                </div>
+                <div className="flex justify-between gap-3 border-t pt-2">
+                  <span className="text-gray-600">선택 클래스</span>
+                  <span className="text-right font-medium">
+                    {selectedTimeSlot
+                      ? getClassDisplayName(selectedTimeSlot.name)
+                      : ""}
+                  </span>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <span className="text-gray-600">시간대</span>
+                  <span className="text-right text-gray-700">
+                    {selectedTimeSlot
+                      ? `${selectedTimeSlot.session} (${selectedTimeSlot.time})`
+                      : ""}
+                  </span>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <span className="text-gray-600">지역</span>
+                  <span className="text-right text-gray-700">
+                    {classes.find((c) => String(c.id) === selectedClass)
+                      ?.location || "정보 없음"}
+                  </span>
+                </div>
+                <div className="flex justify-between gap-3 border-t pt-2">
+                  <span className="text-gray-600">예약자명</span>
+                  <span className="font-bold">{formData.name}</span>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <span className="text-gray-600">연락처</span>
+                  <span>{formData.phone}</span>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <span className="text-gray-600">성별</span>
+                  <span>{formData.gender === "male" ? "남성" : "여성"}</span>
+                </div>
+              </div>
+            </details>
+
+            <details className="rounded-xl border border-yellow-200 bg-yellow-50 p-4">
+              <summary className="cursor-pointer font-bold text-yellow-900">
+                환불 정책 보기
+              </summary>
+              <ul className="mt-4 list-disc space-y-2 pl-5 text-sm font-semibold leading-6 text-gray-900">
+                <li>수업 14일 전 취소 요청시 100% 환불됩니다.</li>
+                <li>이후 대관 예약을 진행하므로 환불 및 취소는 불가합니다.</li>
+                <li>자세한 환불 정책은 이용약관을 확인해주세요.</li>
+              </ul>
+            </details>
+
+            <div className="grid gap-2 sm:grid-cols-2">
+              <Button
+                type="button"
+                variant="outline"
+                className="h-12 border-orange-300 bg-white font-bold text-orange-700 hover:bg-orange-100"
+                onClick={() => void copyDepositAccount()}
+              >
+                계좌번호 복사하기
+              </Button>
+              <Button
+                type="button"
+                className="h-12 bg-orange-600 font-bold text-white hover:bg-orange-700"
+                onClick={() => {
+                  console.log("[입금안내] 사용자가 입금 계좌 모달 확인 완료");
+                  setShowDepositModal(false);
+                }}
+              >
+                확인했습니다
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Privacy Policy Modal */}
       <Dialog open={showPrivacyModal} onOpenChange={setShowPrivacyModal}>
@@ -6528,6 +6630,7 @@ export default function SwimmingClassPage() {
               setSelectedClass(null);
               setSelectedTimeSlot(null);
               setShowRegistrationForm(false);
+              setShowDepositModal(false);
               setFormData({
                 name: "",
                 phone: "",

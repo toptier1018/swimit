@@ -3621,7 +3621,7 @@ export default function SwimmingClassPage() {
                           </Label>
                           <Input
                             id="combined-name"
-                            placeholder="실명을 입력해주세요"
+                            placeholder="실명을 입력해주세요 (한글만 가능)"
                             value={formData.name}
                             onChange={(e) =>
                               setFormData({ ...formData, name: e.target.value })
@@ -3635,7 +3635,7 @@ export default function SwimmingClassPage() {
                             className="text-sm font-semibold flex items-center gap-1"
                           >
                             <Phone className="h-4 w-4" />
-                            연락처 <span className="text-red-500">*</span>
+                            전화번호 <span className="text-red-500">*</span>
                           </Label>
                           <Input
                             id="combined-phone"
@@ -3694,7 +3694,7 @@ export default function SwimmingClassPage() {
                           </Label>
                           <Input
                             id="combined-location"
-                            placeholder="예시: 서울 강남구"
+                            placeholder="예시: 서울 강남구 / 부산 해운대구"
                             value={formData.location}
                             onChange={(e) =>
                               setFormData({
@@ -3703,6 +3703,87 @@ export default function SwimmingClassPage() {
                               })
                             }
                           />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="combined-email"
+                          className="text-sm font-semibold flex items-center gap-1"
+                        >
+                          <Mail className="h-4 w-4" />
+                          이메일 (특강/ 수영 제품 할인 정보를 제공합니다)
+                        </Label>
+                        <Input
+                          id="combined-email"
+                          type="email"
+                          placeholder="예시: swimit@example.com"
+                          value={formData.email}
+                          onChange={(e) => {
+                            console.log("[신청/결제] 이메일 입력:", e.target.value);
+                            setFormData({ ...formData, email: e.target.value });
+                          }}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-sm font-semibold flex items-center gap-1">
+                          수영을 배우신 지 얼마나 되셨나요?
+                        </Label>
+                        <RadioGroup
+                          value={formData.swimmingExperience}
+                          onValueChange={(value) => {
+                            console.log("[신청/결제] 수영 경력 선택:", value);
+                            setFormData({
+                              ...formData,
+                              swimmingExperience: value,
+                            });
+                          }}
+                          className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2"
+                        >
+                          {["3개월 미만", "6개월~1년", "1년~3년", "3년 이상"].map(
+                            (option) => (
+                              <div
+                                key={option}
+                                className="flex items-center space-x-2 rounded-md border border-gray-200 px-3 py-2"
+                              >
+                                <RadioGroupItem
+                                  value={option}
+                                  id={`combined-exp-${option}`}
+                                />
+                                <Label
+                                  htmlFor={`combined-exp-${option}`}
+                                  className="font-normal cursor-pointer"
+                                >
+                                  {option}
+                                </Label>
+                              </div>
+                            ),
+                          )}
+                        </RadioGroup>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-sm font-semibold flex items-center gap-1">
+                          수영 후 통증이 느껴지거나 불편한 부위가 있나요? (중복
+                          선택 가능)
+                        </Label>
+                        <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-5">
+                          {["어깨", "허리", "무릎", "목", "없음"].map((area) => {
+                            const checked = formData.painAreas.includes(area);
+                            return (
+                              <label
+                                key={area}
+                                className="flex items-center gap-2 rounded-md border border-gray-200 px-3 py-2 cursor-pointer hover:border-primary/60"
+                              >
+                                <Checkbox
+                                  checked={checked}
+                                  onCheckedChange={() => togglePainArea(area)}
+                                />
+                                <span>{area}</span>
+                              </label>
+                            );
+                          })}
                         </div>
                       </div>
 

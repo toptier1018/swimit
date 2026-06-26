@@ -2171,26 +2171,27 @@ export default function SwimmingClassPage() {
                     {/* Benefits Section */}
                     <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
                       <p className="text-base sm:text-lg font-bold text-gray-900">
-                        지금 신청하시면 받는 스윔잇 올케어
+                        지금 신청하시면 받는{" "}
+                        <span className="text-red-600">스윔잇 올케어 시스템</span>
                       </p>
                       <ol className="space-y-3 text-sm sm:text-[15px] list-decimal pl-5 marker:font-semibold">
                         <li className="rounded-lg border border-slate-200 bg-slate-50 p-3 pr-2">
                           <span className="font-bold text-gray-900">
-                            수업 전｜문제 사전 체크
+                            <span className="text-red-600">수업 전</span>｜문제 사전 체크
                           </span>
                           <br />
                           수영 경력, 고민, 불편한 부위를 미리 확인합니다.
                         </li>
                         <li className="rounded-lg border border-slate-200 bg-slate-50 p-3 pr-2">
                           <span className="font-bold text-gray-900">
-                            수업 중｜저항 원인 교정
+                            <span className="text-red-600">수업 중</span>｜저항 원인 교정
                           </span>
                           <br />
                           앞으로 안 나가고 힘든 이유를 찾아 바로 교정합니다.
                         </li>
                         <li className="rounded-lg border border-slate-200 bg-slate-50 p-3 pr-2">
                           <span className="font-bold text-gray-900">
-                            수업 후｜수중 영상 1:1 피드백
+                            <span className="text-red-600">수업 후</span>｜수중 영상 1:1 피드백
                           </span>
                           <br />
                           촬영 영상을 바탕으로 이후 연습 방법까지 안내드립니다.

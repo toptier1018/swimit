@@ -193,16 +193,22 @@ const normalizeWaitlistThresholds = (
   );
 
 const CLASS_DISPLAY_TITLES: Record<string, string> = {
-  "자유형 A (초급)": "자유형 숨참·가라앉음 교정반",
-  "자유형 B (중급)": "자유형 장거리·효율 완성반",
-  "평영 A (초급)": "평영 제자리 탈출반",
-  "평영 B (중급)": "평영 추진력·타이밍 완성반",
-  "접영 A (초급)": "접영 첫 25m 완주반",
-  "접영 B (중급)": "접영 50m 리듬 완성반",
+  "자유형 A (초급)": "자유형 A｜숨참·가라앉음 교정반",
+  "자유형 B (중급)": "자유형 B｜장거리·효율 완성반",
+  "평영 A (초급)": "평영 A｜제자리 탈출반",
+  "평영 B (중급)": "평영 B｜추진력·타이밍 완성반",
+  "접영 A (초급)": "접영 A｜첫 25m 완주반",
+  "접영 B (중급)": "접영 B｜50m 리듬 완성반",
 };
 
 const getClassDisplayTitle = (title: string) =>
   CLASS_DISPLAY_TITLES[title] ?? title;
+
+const getClassDisplayParts = (title: string) => {
+  const displayTitle = getClassDisplayTitle(title);
+  const [label, description] = displayTitle.split("｜");
+  return { label, description };
+};
 
 const getClassDisplayName = (className: string) =>
   Object.entries(CLASS_DISPLAY_TITLES).reduce(
@@ -2126,7 +2132,7 @@ export default function SwimmingClassPage() {
                         </span>
                       </p>
                       <p className="text-sm sm:text-[15px] font-semibold text-gray-900 leading-6">
-                        그래서 초중급자가 가장 빠르게 실력을 올리는 유일한 길은{" "}
+                        그래서 수영이 막히는 분들이 가장 빠르게 실력을 올리는 유일한 길은{" "}
                         <span className="font-bold text-red-600">
                           "힘을 빼고 저항을 줄이는 것"
                         </span>
@@ -3328,12 +3334,12 @@ export default function SwimmingClassPage() {
                   </CardHeader>
                   <CardContent className="grid gap-3 text-sm sm:grid-cols-2">
                     {[
-                      ["🏊", "자유형 숨참·가라앉음 교정반", "자유형 25m 이상 가능 / 숨차고 다리가 가라앉는 분"],
-                      ["🏊", "자유형 장거리·효율 완성반", "자유형 50m 가능 / 더 오래, 더 편하게 수영하고 싶은 분"],
-                      ["🐸", "평영 제자리 탈출반", "평영 50m 이상 가능 / 차도 앞으로 잘 안 나가는 분"],
-                      ["🐸", "평영 추진력·타이밍 완성반", "평영 100m 가능 / 속도와 추진력을 높이고 싶은 분"],
-                      ["🦋", "접영 첫 25m 완주반", "접영 동작이 어렵고 25m 완주가 힘든 분"],
-                      ["🦋", "접영 50m 리듬 완성반", "접영 50m 가능 / 팔이 무겁고 자세가 무너지는 분"],
+                      ["🏊", "자유형 A｜숨참·가라앉음 교정반", "자유형 25m 이상 가능 / 숨차고 다리가 가라앉는 분"],
+                      ["🏊", "자유형 B｜장거리·효율 완성반", "자유형 50m 가능 / 더 오래, 더 편하게 수영하고 싶은 분"],
+                      ["🐸", "평영 A｜제자리 탈출반", "평영 50m 이상 가능 / 차도 앞으로 잘 안 나가는 분"],
+                      ["🐸", "평영 B｜추진력·타이밍 완성반", "평영 100m 가능 / 속도와 추진력을 높이고 싶은 분"],
+                      ["🦋", "접영 A｜첫 25m 완주반", "접영 동작이 어렵고 25m 완주가 힘든 분"],
+                      ["🦋", "접영 B｜50m 리듬 완성반", "접영 50m 가능 / 팔이 무겁고 자세가 무너지는 분"],
                     ].map(([icon, title, description]) => (
                       <div
                         key={title}
@@ -3496,7 +3502,20 @@ export default function SwimmingClassPage() {
                                     </div>
 
                                     <div className="text-base md:text-sm font-bold text-gray-900 break-words leading-snug">
-                                      {getClassDisplayTitle(slot.title)}
+                                      {(() => {
+                                        const { label, description } =
+                                          getClassDisplayParts(slot.title);
+                                        return (
+                                          <>
+                                            <span className="block">{label}</span>
+                                            {description && (
+                                              <span className="block text-sm md:text-xs text-gray-700">
+                                                {description}
+                                              </span>
+                                            )}
+                                          </>
+                                        );
+                                      })()}
                                     </div>
                                     {slot.premium && (
                                       <div className="mt-1 flex flex-wrap gap-1">

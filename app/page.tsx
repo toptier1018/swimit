@@ -576,7 +576,7 @@ export default function SwimmingClassPage() {
     gender: "male",
     location: "", // Changed from 'residence' to 'location' for clarity
     email: "",
-    painAreas: [] as string[],
+    painAreas: ["없음"] as string[],
     swimmingExperience: "",
     message: "",
   });
@@ -632,6 +632,7 @@ export default function SwimmingClassPage() {
   >({});
   const { toast } = useToast();
   const submittedApplicantsRef = useRef<Set<string>>(new Set());
+  const applicationSectionRef = useRef<HTMLDivElement | null>(null);
   const lastFunnelActionRef = useRef<{ action: string; ts: number } | null>(
     null,
   );
@@ -1007,9 +1008,18 @@ export default function SwimmingClassPage() {
   const togglePainArea = (area: string) => {
     setFormData((prev) => {
       const hasArea = prev.painAreas.includes(area);
-      const nextAreas = hasArea
-        ? prev.painAreas.filter((item) => item !== area)
-        : [...prev.painAreas, area];
+      let nextAreas: string[];
+
+      if (area === "없음") {
+        nextAreas = ["없음"];
+      } else {
+        const withoutNone = prev.painAreas.filter((item) => item !== "없음");
+        nextAreas = hasArea
+          ? withoutNone.filter((item) => item !== area)
+          : [...withoutNone, area];
+        if (nextAreas.length === 0) nextAreas = ["없음"];
+      }
+
       console.log("[설문] 통증 부위 선택:", nextAreas);
       return { ...prev, painAreas: nextAreas };
     });
@@ -1262,6 +1272,19 @@ export default function SwimmingClassPage() {
     setStep(3); // 신청/결제 통합 화면으로 이동
   };
 
+  useEffect(() => {
+    if (!showRegistrationForm || !selectedScheduleClass || step !== 3) return;
+
+    const timeoutId = window.setTimeout(() => {
+      applicationSectionRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 80);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [showRegistrationForm, selectedScheduleClass, step]);
+
   const handleScheduleRegistration = () => {
     if (!selectedScheduleClass) {
       setRegionError(true);
@@ -1333,6 +1356,16 @@ export default function SwimmingClassPage() {
         variant: "destructive",
       });
       console.log("[신청/결제] 거주지역 미입력 - 결제 차단");
+      return false;
+    }
+
+    if (!formData.swimmingExperience) {
+      toast({
+        title: "수영 경력 선택 필요",
+        description: "수업 준비를 위해 수영 경력을 선택해주세요.",
+        variant: "destructive",
+      });
+      console.log("[신청/결제] 수영 경력 미선택 - 결제 차단");
       return false;
     }
 
@@ -1430,7 +1463,7 @@ export default function SwimmingClassPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
-      <main className="container mx-auto py-8 px-4 max-w-4xl">
+      <main className="container mx-auto py-8 px-4 max-w-4xl flex flex-col">
         {/* 개발자 모드: 카운터 표시 (모든 단계에서 표시) */}
         {showDebug && (
           <div className="fixed top-4 right-4 bg-black/90 text-white rounded-lg text-xs z-50 shadow-2xl border-2 border-yellow-500 w-[340px] sm:w-[420px] lg:w-[560px] max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col">
@@ -2056,9 +2089,9 @@ export default function SwimmingClassPage() {
           </div>
         )}
 
-        {!showRegistrationForm ? (
+        {(
           <>
-            <div className="flex flex-col items-center space-y-6">
+            <div className="contents">
               {/* Class Information Section */}
               <Card className="order-1 w-full mb-6 border-slate-200 bg-slate-50 shadow-sm">
                 <CardContent className="p-4 sm:p-5">
@@ -2210,7 +2243,7 @@ export default function SwimmingClassPage() {
               </Card>
 
               {/* CTA Copy Section */}
-              <div className="order-3 w-full mt-6 rounded-2xl border border-orange-200 bg-orange-50 p-4 sm:p-5 shadow-sm">
+              <div className="order-4 w-full mt-6 rounded-2xl border border-orange-200 bg-orange-50 p-4 sm:p-5 shadow-sm">
                 <p className="text-base sm:text-lg font-bold text-orange-800 mb-2.5">
                   마감 주의
                 </p>
@@ -2238,7 +2271,7 @@ export default function SwimmingClassPage() {
               </div>
 
               {/* Student Review Section */}
-              <section className="order-4 w-full mt-6 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
+              <section className="order-5 w-full mt-6 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
                 <div className="mx-auto max-w-2xl">
                   <h3 className="text-lg sm:text-xl font-bold text-gray-900">
                     실제 수강생 후기
@@ -2441,6 +2474,7 @@ export default function SwimmingClassPage() {
                                 location: classItem.location,
                                 date: classItem.date,
                               });
+                              handleRegistration();
                             }}
                             onKeyDown={(event) => {
                               if (event.key === "Enter" || event.key === " ") {
@@ -2452,6 +2486,7 @@ export default function SwimmingClassPage() {
                                 setRegionError(false);
                                 setCalendarMonth(classItem.month);
                                 setCalendarYear(classItem.year);
+                                handleRegistration();
                               }
                             }}
                             className={`cursor-pointer transition-all shadow-sm ${
@@ -2524,6 +2559,7 @@ export default function SwimmingClassPage() {
                   </div>
                 </div>
                 
+                {!showRegistrationForm && (
                 <div className="mt-4 rounded-xl border border-orange-200 bg-orange-50 p-4 sm:p-5">
                   <p className="text-base sm:text-lg font-bold text-gray-900 mb-2">
                     📌 일정 확인하셨다면, 지금 바로 자리 확보하세요
@@ -2551,11 +2587,12 @@ export default function SwimmingClassPage() {
                     <p>※ 신청 후 상세 위치 안내됩니다</p>
                   </div>
                 </div>
+                )}
               </section>
 
               {/* Action Button (hidden when showRegistrationForm is true) */}
               {/* Warning Section */}
-              <Alert className="order-5 w-full mt-6 bg-red-50 border-red-200 shadow-sm">
+              <Alert className="order-6 w-full mt-6 bg-red-50 border-red-200 shadow-sm">
                 <AlertTriangle className="h-4 w-4 text-red-600" />
                 <AlertDescription className="ml-2">
                   <h3 className="font-bold text-red-900 mb-2.5 text-base sm:text-lg">
@@ -2576,7 +2613,7 @@ export default function SwimmingClassPage() {
                 </AlertDescription>
               </Alert>
               {/* Refund Policy Section */}
-              <Alert className="order-6 w-full mt-6 bg-yellow-50 border-yellow-200 shadow-sm">
+              <Alert className="order-7 w-full mt-6 bg-yellow-50 border-yellow-200 shadow-sm">
                 <HelpCircle className="h-4 w-4 text-yellow-600" />
                 <AlertDescription className="ml-2">
                   <h3 className="font-bold text-yellow-900 mb-2 text-base sm:text-lg">
@@ -2599,14 +2636,19 @@ export default function SwimmingClassPage() {
               </Alert>
             </div>
           </>
-        ) : (
-          <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4">
-            <div className="relative max-h-[92vh] w-full overflow-y-auto rounded-t-2xl bg-gradient-to-br from-blue-50 to-indigo-50 p-4 shadow-2xl sm:max-h-[90vh] sm:max-w-4xl sm:rounded-2xl sm:p-6">
+        )}
+
+        {showRegistrationForm && (
+          <section
+            ref={applicationSectionRef}
+            className="order-3 w-full mt-6 rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50 p-4 shadow-sm sm:p-6"
+          >
+            <div className="relative">
               <button
                 type="button"
                 onClick={handleBackToSchedule}
                 className="absolute right-4 top-4 z-10 rounded-full bg-white/90 p-2 text-gray-600 shadow hover:bg-white hover:text-gray-900"
-                aria-label="신청 모달 닫기"
+                aria-label="신청 영역 닫기"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -3287,6 +3329,7 @@ export default function SwimmingClassPage() {
                       !formData.name ||
                       !formData.phone ||
                       !formData.location ||
+                      !formData.swimmingExperience ||
                       !agreeAll ||
                       isSubmitting
                     }
@@ -3326,13 +3369,14 @@ export default function SwimmingClassPage() {
                 </div>
 
                 {/* 클래스 선택 안내 */}
-                <Card className="mb-6">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center gap-2 text-lg">
-                      <span>📋</span> 어떤 반을 선택해야 할까요?
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="grid gap-3 text-sm sm:grid-cols-2">
+                <details className="mb-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                  <summary className="cursor-pointer text-base font-bold text-gray-900">
+                    📋 어떤 반을 선택해야 할까요?
+                    <span className="ml-2 text-xs font-medium text-gray-500">
+                      자세히 보기
+                    </span>
+                  </summary>
+                  <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
                     {[
                       ["🏊", "자유형 A｜숨참·가라앉음 교정반", "자유형 25m 이상 가능 / 숨차고 다리가 가라앉는 분"],
                       ["🏊", "자유형 B｜장거리·효율 완성반", "자유형 50m 가능 / 더 오래, 더 편하게 수영하고 싶은 분"],
@@ -3343,7 +3387,7 @@ export default function SwimmingClassPage() {
                     ].map(([icon, title, description]) => (
                       <div
                         key={title}
-                        className="rounded-lg border border-slate-200 bg-white p-3"
+                        className="rounded-lg border border-slate-200 bg-slate-50 p-3"
                       >
                         <div className="font-bold text-gray-900">
                           {icon} {title}
@@ -3353,8 +3397,8 @@ export default function SwimmingClassPage() {
                         </div>
                       </div>
                     ))}
-                  </CardContent>
-                </Card>
+                  </div>
+                </details>
 
                 <div className="space-y-6">
                   {regionError && (
@@ -3993,6 +4037,7 @@ export default function SwimmingClassPage() {
                         !formData.name ||
                         !formData.phone ||
                         !formData.location ||
+                        !formData.swimmingExperience ||
                         !agreeAll ||
                         isSubmitting
                       }
@@ -4837,7 +4882,7 @@ export default function SwimmingClassPage() {
                       gender: "male",
                       location: "",
                       email: "",
-                      painAreas: [],
+                      painAreas: ["없음"],
                       swimmingExperience: "",
                       message: "",
                     });
@@ -4869,7 +4914,7 @@ export default function SwimmingClassPage() {
               </div>
             ) : null}
             </div>
-          </div>
+          </section>
         )}
       </main>
 
@@ -6489,7 +6534,7 @@ export default function SwimmingClassPage() {
                 gender: "male",
                 location: "",
                 email: "",
-                painAreas: [],
+                painAreas: ["없음"],
                 swimmingExperience: "",
                 message: "",
               });

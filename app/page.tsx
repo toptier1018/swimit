@@ -603,8 +603,8 @@ export default function SwimmingClassPage() {
   const [paidPageId, setPaidPageId] = useState<string | null>(null);
   const [orderNumber, setOrderNumber] = useState<string>("");
   const [paymentStatus, setPaymentStatus] = useState<
-    "입금대기" | "입금완료" | "예약대기"
-  >("입금대기");
+    "입금대기" | "입금완료" | "결제대기" | "결제완료" | "예약대기"
+  >("결제대기");
   const [videoCode, setVideoCode] = useState("");
   const [funnelCounts, setFunnelCounts] = useState<Record<number, number>>({
     0: 0,
@@ -1253,7 +1253,7 @@ export default function SwimmingClassPage() {
     markFunnelStep(1);
     lastFunnelActionRef.current = { action: "step1_click", ts: Date.now() };
     setShowRegistrationForm(true);
-    setStep(2); // Move to step 2 after selecting a class
+    setStep(3); // 신청/결제 통합 화면으로 이동
   };
 
   const handleScheduleRegistration = () => {
@@ -1274,6 +1274,63 @@ export default function SwimmingClassPage() {
       date: selectedScheduleClass.date,
     });
     handleRegistration();
+  };
+
+  const validateApplicationForPayment = () => {
+    if (!selectedTimeSlot) {
+      toast({
+        title: "클래스를 선택해주세요",
+        description: "신청할 반을 먼저 선택한 뒤 결제를 진행해주세요.",
+        variant: "destructive",
+      });
+      console.log("[신청/결제] 클래스 미선택 - 결제 차단");
+      return false;
+    }
+
+    if (!agreeAll) {
+      toast({
+        title: "약관 동의 필요",
+        description: "모든 약관에 동의해야 결제를 진행할 수 있습니다.",
+        variant: "destructive",
+      });
+      console.log("[신청/결제] 약관 전체 동의 미체크 - 결제 차단");
+      return false;
+    }
+
+    const isKorean = /^[가-힣]+$/.test(formData.name);
+    const isPhone010 = formData.phone.startsWith("010");
+
+    if (!isKorean) {
+      toast({
+        title: "입력 오류",
+        description: "이름은 한글로만 입력해주세요.",
+        variant: "destructive",
+      });
+      console.log("[신청/결제] 이름 유효성 실패:", formData.name);
+      return false;
+    }
+
+    if (!isPhone010) {
+      toast({
+        title: "입력 오류",
+        description: "전화번호는 010으로 시작해야 합니다.",
+        variant: "destructive",
+      });
+      console.log("[신청/결제] 전화번호 유효성 실패:", formData.phone);
+      return false;
+    }
+
+    if (!formData.location) {
+      toast({
+        title: "거주지역 입력 필요",
+        description: "수업 안내를 위해 거주지역을 입력해주세요.",
+        variant: "destructive",
+      });
+      console.log("[신청/결제] 거주지역 미입력 - 결제 차단");
+      return false;
+    }
+
+    return true;
   };
 
   const handleBackToSchedule = () => {
@@ -1918,27 +1975,27 @@ export default function SwimmingClassPage() {
                   </div>
                   <div className="grid grid-cols-1 gap-2">
                     <div className="bg-white/5 border border-white/10 rounded-md p-2">
-                      <div className="text-[11px] text-gray-300">1. 선택</div>
+                      <div className="text-[11px] text-gray-300">1. 일정 선택</div>
                       <div className="text-base font-bold">
                         {funnelCounts[1] || 0}
                       </div>
                       <div className="text-[10px] text-gray-400 mt-1">
-                        선택 페이지
+                        일정 선택
                       </div>
                     </div>
                     <div className="bg-white/5 border border-white/10 rounded-md p-2">
                       <div className="text-[11px] text-gray-300">
-                        2. 개인 정보 입력
+                        2. 신청/결제
                       </div>
                       <div className="text-base font-bold">
                         {funnelCounts[2] || 0}
                       </div>
                       <div className="text-[10px] text-gray-400 mt-1">
-                        개인 정보 입력
+                        신청/결제 화면
                       </div>
                     </div>
                     <div className="bg-white/5 border border-white/10 rounded-md p-2">
-                      <div className="text-[11px] text-gray-300">3. 결제</div>
+                      <div className="text-[11px] text-gray-300">3. 결제 진행</div>
                       <div className="text-base font-bold">
                         {funnelCounts[3] || 0}
                       </div>
@@ -2415,6 +2472,9 @@ export default function SwimmingClassPage() {
                             tabIndex={0}
                             onClick={() => {
                               setSelectedClass(String(classItem.id));
+                              setSelectedTimeSlot(null);
+                              setPaidPageId(null);
+                              setOrderNumber("");
                               setRegionError(false);
                               setCalendarMonth(classItem.month);
                               setCalendarYear(classItem.year);
@@ -2428,6 +2488,9 @@ export default function SwimmingClassPage() {
                               if (event.key === "Enter" || event.key === " ") {
                                 event.preventDefault();
                                 setSelectedClass(String(classItem.id));
+                                setSelectedTimeSlot(null);
+                                setPaidPageId(null);
+                                setOrderNumber("");
                                 setRegionError(false);
                                 setCalendarMonth(classItem.month);
                                 setCalendarYear(classItem.year);
@@ -2610,7 +2673,7 @@ export default function SwimmingClassPage() {
                   </div>
                 </div>
               )}
-            <div className="mb-8 flex items-center justify-center gap-4">
+            <div className="mb-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
               {/* Step 1 */}
               <div className="flex items-center">
                 <div
@@ -2624,7 +2687,7 @@ export default function SwimmingClassPage() {
                 >
                   {step > 1 ? "✓" : "1"}
                 </div>
-                <span className="ml-2 text-sm font-medium">선택</span>
+                <span className="ml-2 text-sm font-medium">일정 선택</span>
               </div>
 
               <div className="w-12 h-0.5 bg-gray-300" />
@@ -2633,16 +2696,16 @@ export default function SwimmingClassPage() {
               <div className="flex items-center">
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
-                    step > 2
+                    step > 3
                       ? "bg-green-500 text-white"
-                      : step === 2
+                      : step === 2 || step === 3
                         ? "bg-primary text-white"
                         : "bg-gray-300 text-gray-600"
                   }`}
                 >
-                  {step > 2 ? "✓" : "2"}
+                  {step > 3 ? "✓" : "2"}
                 </div>
-                <span className="ml-2 text-sm font-medium">개인 정보 입력</span>
+                <span className="ml-2 text-sm font-medium">신청/결제</span>
               </div>
 
               <div className="w-12 h-0.5 bg-gray-300" />
@@ -2651,30 +2714,12 @@ export default function SwimmingClassPage() {
               <div className="flex items-center">
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
-                    step > 3
-                      ? "bg-green-500 text-white"
-                      : step === 3
+                    step === 4
                         ? "bg-primary text-white"
                         : "bg-gray-300 text-gray-600"
                   }`}
                 >
-                  {step > 3 ? "✓" : "3"}
-                </div>
-                <span className="ml-2 text-sm font-medium">결제</span>
-              </div>
-
-              <div className="w-12 h-0.5 bg-gray-300" />
-
-              {/* Step 4 */}
-              <div className="flex items-center">
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
-                    step === 4
-                      ? "bg-green-500 text-white"
-                      : "bg-gray-300 text-gray-600"
-                  }`}
-                >
-                  {step === 4 ? "✓" : "4"}
+                  {step === 4 ? "✓" : "3"}
                 </div>
                 <span className="ml-2 text-sm font-medium">완료</span>
               </div>
@@ -3294,9 +3339,8 @@ export default function SwimmingClassPage() {
               </>
             ) : step === 3 ? (
               <>
-                {/* Step 3: Payment */}
-                {/* Title */}
-                <div className="mb-8">
+                {/* Step 2: Combined Application and Payment */}
+                <div className="mb-6">
                   <h1 className="text-2xl font-bold text-center flex items-center justify-center gap-2">
                     <div className="bg-primary/10 p-2 rounded">
                       <svg
@@ -3316,400 +3360,41 @@ export default function SwimmingClassPage() {
                         <path d="M3 10h18" strokeWidth="2" />
                       </svg>
                     </div>
-                    특강 날짜와 지역을 선택하세요
+                    신청/결제
                   </h1>
+                  <p className="mt-2 text-center text-sm text-gray-600">
+                    클래스를 선택하고 정보를 입력한 뒤 결제까지 한 번에 진행합니다.
+                  </p>
                 </div>
 
-                {/* Two Column Layout */}
-                <div className="grid md:grid-cols-[300px_1fr] gap-6 mb-8">
-                  {/* Left: Calendar */}
-                  <div>
-                    <Card>
-                      <CardContent className="p-4">
-                        <div className="mb-4">
-                          <div className="flex items-center justify-between mb-1">
-                            <h3 className="text-sm font-semibold text-primary">
-                              📅 수강 일정 달력
-                            </h3>
-                          </div>
-                        </div>
-
-                        {/* Calendar Header */}
-                        <div className="flex items-center justify-between mb-4">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => {
-                              if (calendarMonth > 1) {
-                                setCalendarMonth(calendarMonth - 1);
-                              } else {
-                                setCalendarMonth(12);
-                                setCalendarYear(calendarYear - 1);
-                              }
-                              console.log(`[달력] 이전 월`);
-                            }}
-                          >
-                            <ChevronLeft className="h-4 w-4" />
-                          </Button>
-                          <span className="font-semibold">
-                            {calendarYear}년 {monthNames[calendarMonth - 1]}
-                          </span>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => {
-                              if (calendarMonth < 12) {
-                                setCalendarMonth(calendarMonth + 1);
-                              } else {
-                                setCalendarMonth(1);
-                                setCalendarYear(calendarYear + 1);
-                              }
-                              console.log(`[달력] 다음 월`);
-                            }}
-                          >
-                            <ChevronRight className="h-4 w-4" />
-                          </Button>
-                        </div>
-
-                        {/* Weekday Headers */}
-                        <div className="grid grid-cols-7 gap-1 mb-2">
-                          {weekDays.map((day, i) => (
-                            <div
-                              key={day}
-                              className={`text-center text-xs font-medium py-1 ${
-                                i === 0
-                                  ? "text-red-500"
-                                  : i === 6
-                                    ? "text-blue-500"
-                                    : "text-muted-foreground"
-                              }`}
-                            >
-                              {day}
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Calendar Days */}
-                        <div className="grid grid-cols-7 gap-1">
-                          {calendarDays.map((day, index) => {
-                            const isHighlighted =
-                              day && highlightedDates.includes(day);
-                            const dayOfWeek = index % 7;
-                            // 오늘 날짜인지 확인
-                            const isToday =
-                              day &&
-                              calendarYear === today.year &&
-                              calendarMonth === today.month &&
-                              day === today.day;
-
-                            return (
-                              <div
-                                key={index}
-                                className="aspect-square flex items-center justify-center"
-                              >
-                                {day ? (
-                                  <button
-                                    className={`w-full h-full flex items-center justify-center text-sm rounded-lg transition-colors ${
-                                      isHighlighted
-                                        ? "bg-primary text-primary-foreground font-semibold shadow-sm"
-                                        : isToday
-                                          ? "bg-gray-300 text-gray-700 font-medium"
-                                          : dayOfWeek === 0
-                                            ? "text-red-500 hover:bg-muted"
-                                            : dayOfWeek === 6
-                                              ? "text-blue-500 hover:bg-muted"
-                                              : "text-foreground hover:bg-muted"
-                                    }`}
-                                  >
-                                    {day}
-                                  </button>
-                                ) : (
-                                  <div />
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-
-                        {/* Legend */}
-                        <div className="mt-4 pt-4 border-t flex items-center justify-center gap-4 text-xs text-muted-foreground flex-wrap">
-                          <div className="flex items-center gap-1.5">
-                            <div className="w-3 h-3 rounded-full bg-primary" />
-                            <span>특강 일정</span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <div className="w-3 h-3 rounded bg-gray-300" />
-                            <span>오늘</span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  {/* Right: Class List */}
-                  <div>
-                    <div className="mb-4">
-                      <h3 className="text-lg font-semibold text-primary">
-                        📍 지역을 선택 해주세요
-                      </h3>
-                    </div>
-                    <div className="space-y-3">
-                      {getActiveClasses().map((classItem) => (
-                        <Card
-                          key={classItem.id}
-                          className={`cursor-pointer transition-all ${
-                            regionError
-                              ? "bg-red-50 border-red-500 border-2 shadow-md"
-                              : selectedClass === String(classItem.id)
-                                ? "bg-primary/5 border-primary border-2 shadow-md"
-                                : "hover:border-primary/30 hover:shadow-sm"
-                          }`}
-                          onClick={() => {
-                            setSelectedClass(String(classItem.id));
-                            setRegionError(false); // 에러 초기화
-                            // 선택한 지역의 달력 월로 자동 이동
-                            setCalendarMonth(classItem.month);
-                            setCalendarYear(classItem.year);
-                          }}
-                        >
-                          <CardContent className="p-4">
-                            {/* Location Header */}
-                            <div className="mb-3 flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <MapPin className="h-5 w-5 text-blue-500 fill-blue-500/10" />
-                                <span className="font-bold text-lg">
-                                  {classItem.location}
-                                </span>
-                              </div>
-                              {selectedClass === String(classItem.id) && (
-                                <CheckCircle2 className="h-5 w-5 text-primary" />
-                              )}
-                            </div>
-
-                            {/* Date Section - Blue Box */}
-                            <div className="bg-blue-50 rounded-lg p-4 mb-4 border border-blue-100">
-                              <div className="flex items-center gap-2 mb-1">
-                                <Calendar className="h-5 w-5 text-blue-600" />
-                                <span className="font-bold text-lg text-blue-900">
-                                  {classItem.date}
-                                </span>
-                              </div>
-                              <p className="ml-7 text-sm font-semibold leading-6 text-blue-700">
-                                수영 특강 일정
-                              </p>
-                              <div className="ml-7 mt-1 space-y-0.5 text-[13px] font-medium leading-5 text-blue-600">
-                                {classItem.scheduleSummaryLines.map((line) => (
-                                  <p key={line}>{line}</p>
-                                ))}
-                              </div>
-                            </div>
-
-                            {/* Details Section */}
-                            <div className="space-y-3">
-                              <div className="flex items-start gap-4">
-                                <span className="text-sm font-bold text-gray-900 min-w-[45px]">
-                                  수영장
-                                </span>
-                                <span className="text-sm text-gray-600">
-                                  {classItem.venue}
-                                </span>
-                              </div>
-                              <div className="flex items-start gap-4 relative">
-                                <span className="text-sm font-bold text-gray-900 min-w-[45px]">
-                                  주소
-                                </span>
-                                <div className="flex-1 flex items-center justify-between gap-2">
-                                  <span className="text-sm text-gray-600 leading-relaxed">
-                                    {classItem.address}
-                                  </span>
-                                  <button className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 flex-shrink-0 border rounded px-1.5 py-0.5">
-                                    <svg
-                                      className="h-3 w-3"
-                                      fill="none"
-                                      viewBox="0 0 24 24"
-                                      stroke="currentColor"
-                                    >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"
-                                      />
-                                    </svg>
-                                    복사
-                                  </button>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-2 pt-2">
-                                <Clock className="h-4 w-4 text-green-600" />
-                                <span className="text-sm font-bold text-green-600">
-                                  예약 가능
-                                </span>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* 클래스 상세 안내 */}
+                {/* 클래스 선택 안내 */}
                 <Card className="mb-6">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <span>📋</span> 클래스 상세 안내
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <span>📋</span> 어떤 반을 선택해야 할까요?
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-5">
-                    <div className="rounded-lg border bg-white p-4">
-                      <h4 className="font-bold text-gray-900 flex items-center gap-2">
-                        <span aria-hidden>🏊</span> 자유형 클래스
-                      </h4>
-                      <div className="mt-3 space-y-3 text-sm sm:text-[15px]">
-                        <div className="leading-relaxed">
-                          <div className="font-semibold text-gray-900">
-                            자유형 숨참·가라앉음 교정반
-                          </div>
-                          <div className="text-gray-700">
-                            : 자유형 25m 이상 가능하신 분
-                          </div>
-                          <div className="text-gray-600">
-                            숨이 차거나, 다리가 가라앉거나, 자세가 쉽게 무너지는
-                            분께 추천합니다.
-                          </div>
+                  <CardContent className="grid gap-3 text-sm sm:grid-cols-2">
+                    {[
+                      ["🏊", "자유형 숨참·가라앉음 교정반", "자유형 25m 이상 가능 / 숨차고 다리가 가라앉는 분"],
+                      ["🏊", "자유형 장거리·효율 완성반", "자유형 50m 가능 / 더 오래, 더 편하게 수영하고 싶은 분"],
+                      ["🐸", "평영 제자리 탈출반", "평영 50m 이상 가능 / 차도 앞으로 잘 안 나가는 분"],
+                      ["🐸", "평영 추진력·타이밍 완성반", "평영 100m 가능 / 속도와 추진력을 높이고 싶은 분"],
+                      ["🦋", "접영 첫 25m 완주반", "접영 동작이 어렵고 25m 완주가 힘든 분"],
+                      ["🦋", "접영 50m 리듬 완성반", "접영 50m 가능 / 팔이 무겁고 자세가 무너지는 분"],
+                    ].map(([icon, title, description]) => (
+                      <div
+                        key={title}
+                        className="rounded-lg border border-slate-200 bg-white p-3"
+                      >
+                        <div className="font-bold text-gray-900">
+                          {icon} {title}
                         </div>
-                        <div className="leading-relaxed">
-                          <div className="font-semibold text-gray-900">
-                            자유형 장거리·효율 완성반
-                          </div>
-                          <div className="text-gray-700">
-                            : 자유형 50m 가능 / 수영 경력 6개월 이상
-                          </div>
-                          <div className="text-gray-600">
-                            물잡기, 롤링, 호흡 타이밍을 다듬어 더 편하게 오래
-                            수영하고 싶은 분께 추천합니다.
-                          </div>
-                        </div>
-                        <div className="pt-1 text-xs sm:text-sm text-red-600 font-semibold">
-                          ※ 연속 수강 시 개인 실력에 맞춰 단계별로 지도합니다.
+                        <div className="mt-1 text-gray-600 leading-5">
+                          {description}
                         </div>
                       </div>
-                    </div>
-
-                    <div className="rounded-lg border bg-white p-4">
-                      <h4 className="font-bold text-gray-900 flex items-center gap-2">
-                        <span aria-hidden>🐸</span> 평영 클래스
-                      </h4>
-                      <div className="mt-3 space-y-3 text-sm sm:text-[15px]">
-                        <div className="leading-relaxed">
-                          <div className="font-semibold text-gray-900">
-                            평영 제자리 탈출반
-                          </div>
-                          <div className="text-gray-700">
-                            : 평영으로 50m 이상 가능하신 분
-                          </div>
-                          <div className="text-gray-600">
-                            킥을 차도 앞으로 잘 안 나가거나, 평영이 제자리처럼
-                            느껴지는 분께 추천합니다.
-                          </div>
-                        </div>
-                        <div className="leading-relaxed">
-                          <div className="font-semibold text-gray-900">
-                            평영 추진력·타이밍 완성반
-                          </div>
-                          <div className="text-gray-700">
-                            : 평영 100m 가능 / 수영 경력 1년 이상
-                          </div>
-                          <div className="text-gray-600">
-                            킥, 글라이드, 상체 타이밍을 다듬어 추진력과 속도를
-                            높이고 싶은 분께 추천합니다.
-                          </div>
-                        </div>
-                        <div className="pt-1 text-xs sm:text-sm text-red-600 font-semibold">
-                          ※ 연속 수강 시 개인 실력에 맞춰 단계별로 지도합니다.
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="rounded-lg border bg-white p-4">
-                      <h4 className="font-bold text-gray-900 flex items-center gap-2">
-                        <span aria-hidden>🦋</span> 접영 클래스
-                      </h4>
-                      <div className="mt-3 space-y-3 text-sm sm:text-[15px]">
-                        <div className="leading-relaxed">
-                          <div className="font-semibold text-gray-900">
-                            접영 첫 25m 완주반
-                          </div>
-                          <div className="text-gray-700">
-                            : 접영·배영·평영·자유형을 모두 배워보았으나
-                          </div>
-                          <div className="text-gray-600">
-                            접영 동작이 아직 어렵고 25m 완주가 힘드신 분께
-                            추천합니다.
-                          </div>
-                        </div>
-                        <div className="leading-relaxed">
-                          <div className="font-semibold text-gray-900">
-                            접영 50m 리듬 완성반
-                          </div>
-                          <div className="text-gray-700">
-                            : 접영 50m 가능 / 수영 경력 1년 이상
-                          </div>
-                          <div className="text-gray-600">
-                            팔이 점점 무거워지거나 두 번째 25m부터 자세가
-                            무너지는 분께 추천합니다.
-                          </div>
-                        </div>
-                        <div className="pt-1 text-xs sm:text-sm text-red-600 font-semibold">
-                          ※ 연속 수강 시 개인 실력에 맞춰 단계별로 지도합니다.
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="rounded-lg border bg-blue-50 p-4">
-                      <h4 className="font-bold text-gray-900 mb-2">레벨 안내</h4>
-                      <div className="space-y-3 text-sm sm:text-[15px]">
-                        <div>
-                          <div className="font-semibold text-gray-900">
-                            🔹 교정반
-                          </div>
-                          <div className="mt-1 text-gray-700 leading-relaxed">
-                            호흡 · 수평 유지 · 동작 연결 등
-                            <br />
-                            수영이 힘들어지는 원인을 다시 점검하는 수업입니다.
-                            <br />
-                            고수분들도 기본기가 흔들리면 교정반을 다시 듣습니다.
-                          </div>
-                        </div>
-                        <div>
-                          <div className="font-semibold text-gray-900">
-                            🔹 완성반
-                          </div>
-                          <div className="mt-1 text-gray-700 leading-relaxed">
-                            스트로크 디테일 · 캐치 감각 · 추진 효율 · 타이밍
-                            조정 등
-                            <br />
-                            전체적인 완성도를 다루는 단계입니다.
-                          </div>
-                        </div>
-                      </div>
-                      <div className="mt-4 space-y-1 text-sm sm:text-[15px] font-semibold">
-                        <div className="text-gray-900">
-                          👉 숨이 차고 자세 안정감이 부족하다 느끼시면{" "}
-                          <span className="text-blue-700">교정반</span>
-                        </div>
-                        <div className="text-gray-900">
-                          👉 기록 단축·효율 개선·장거리 유지가 목표라면{" "}
-                          <span className="text-blue-700">완성반</span>
-                        </div>
-                      </div>
-                      <div className="mt-3 text-sm sm:text-[15px] text-gray-800 font-semibold">
-                        본인 상태에 맞게 선택해 주세요 😊🏊
-                      </div>
-                    </div>
+                    ))}
                   </CardContent>
                 </Card>
 
@@ -3920,14 +3605,209 @@ export default function SwimmingClassPage() {
                     </CardContent>
                   </Card>
 
+                  <Card className="border-0 shadow-md">
+                    <CardHeader>
+                      <CardTitle className="text-lg">신청자 정보 입력</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-5">
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor="combined-name"
+                            className="text-sm font-semibold flex items-center gap-1"
+                          >
+                            <User className="h-4 w-4" />
+                            이름 <span className="text-red-500">*</span>
+                          </Label>
+                          <Input
+                            id="combined-name"
+                            placeholder="실명을 입력해주세요"
+                            value={formData.name}
+                            onChange={(e) =>
+                              setFormData({ ...formData, name: e.target.value })
+                            }
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor="combined-phone"
+                            className="text-sm font-semibold flex items-center gap-1"
+                          >
+                            <Phone className="h-4 w-4" />
+                            연락처 <span className="text-red-500">*</span>
+                          </Label>
+                          <Input
+                            id="combined-phone"
+                            placeholder="010-1234-5678"
+                            value={formData.phone}
+                            onChange={(e) => {
+                              const formatted = formatPhoneNumber(e.target.value);
+                              setFormData({ ...formData, phone: formatted });
+                              console.log(
+                                `[신청/결제] 전화번호 입력: ${e.target.value} -> ${formatted}`,
+                              );
+                            }}
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-sm font-semibold flex items-center gap-1">
+                            <User className="h-4 w-4" />
+                            성별 <span className="text-red-500">*</span>
+                          </Label>
+                          <RadioGroup
+                            value={formData.gender}
+                            onValueChange={(value) =>
+                              setFormData({ ...formData, gender: value })
+                            }
+                            className="flex gap-6"
+                          >
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="male" id="combined-male" />
+                              <Label
+                                htmlFor="combined-male"
+                                className="font-normal cursor-pointer"
+                              >
+                                남성
+                              </Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="female" id="combined-female" />
+                              <Label
+                                htmlFor="combined-female"
+                                className="font-normal cursor-pointer"
+                              >
+                                여성
+                              </Label>
+                            </div>
+                          </RadioGroup>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor="combined-location"
+                            className="text-sm font-semibold flex items-center gap-1"
+                          >
+                            <MapPinned className="h-4 w-4" />
+                            거주지역 <span className="text-red-500">*</span>
+                          </Label>
+                          <Input
+                            id="combined-location"
+                            placeholder="예시: 서울 강남구"
+                            value={formData.location}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                location: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="combined-message"
+                          className="text-sm font-semibold flex items-center gap-1"
+                        >
+                          <MessageSquare className="h-4 w-4" />
+                          이번 특강에서 해결하고 싶은 점
+                        </Label>
+                        <Textarea
+                          id="combined-message"
+                          rows={3}
+                          placeholder="예시: 숨쉬기 때문에 자세가 무너지는 문제를 해결하고 싶어요."
+                          value={formData.message}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              message: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                          <h4 className="font-semibold">약관/환불 규정 동의</h4>
+                        </div>
+
+                        <div className="flex items-start gap-2 pb-3 border-b border-yellow-200">
+                          <Checkbox
+                            id="combined-agree-all"
+                            checked={agreeAll}
+                            onCheckedChange={(checked) =>
+                              handleAgreeAll(checked as boolean)
+                            }
+                            className="mt-0.5 size-5 border-2 border-gray-400 data-[state=checked]:bg-primary data-[state=checked]:border-primary shadow-md hover:border-primary transition-all"
+                          />
+                          <Label
+                            htmlFor="combined-agree-all"
+                            className="text-sm font-medium cursor-pointer leading-relaxed"
+                          >
+                            전체 동의
+                          </Label>
+                        </div>
+
+                        <div className="space-y-3 text-sm">
+                          {[
+                            ["agree-1", agree1, setAgree1, "개인정보 수집 및 이용 동의", () => setShowPrivacyModal(true)],
+                            ["agree-2", agree2, setAgree2, "서비스 이용약관 동의", () => setShowTermsModal(true)],
+                            ["agree-7", agree7, setAgree7, "수영 강의 영상촬영 동의", () => setShowVideoModal(true)],
+                            ["agree-6", agree6, setAgree6, "수영 활동 안전 및 면책 동의", () => setShowSafetyModal(true)],
+                            ["agree-4", agree4, setAgree4, "취소 및 환불약관 동의", () => setShowRefundModal(true)],
+                            ["agree-5", agree5, setAgree5, "강의 취소 가능성 안내", () => setShowCancellationModal(true)],
+                          ].map(([id, checked, setter, label, openModal]) => (
+                            <div
+                              key={String(id)}
+                              className="flex items-start justify-between gap-3"
+                            >
+                              <div className="flex flex-1 items-start gap-2">
+                                <Checkbox
+                                  id={`combined-${id}`}
+                                  checked={checked as boolean}
+                                  onCheckedChange={(nextChecked) =>
+                                    (setter as (value: boolean) => void)(
+                                      nextChecked as boolean,
+                                    )
+                                  }
+                                  className="mt-0.5 size-5 border-2 border-gray-400 data-[state=checked]:bg-primary data-[state=checked]:border-primary shadow-md hover:border-primary transition-all"
+                                />
+                                <Label
+                                  htmlFor={`combined-${id}`}
+                                  className="cursor-pointer leading-relaxed"
+                                >
+                                  <span className="text-red-500 font-semibold">
+                                    [필수]
+                                  </span>{" "}
+                                  {label as string}
+                                </Label>
+                              </div>
+                              <Button
+                                variant="link"
+                                size="sm"
+                                className="h-auto p-0 text-xs text-primary hover:no-underline"
+                                onClick={openModal as () => void}
+                              >
+                                보기
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
                   {/* Payment Header */}
                   <div className="text-center py-6 border-t">
                     <div className="inline-flex items-center gap-2 mb-2">
                       <span className="text-2xl">💳</span>
-                      <h2 className="text-2xl font-bold">결제하기</h2>
+                      <h2 className="text-2xl font-bold">결제 금액 확인</h2>
                     </div>
                     <p className="text-sm text-gray-600">
-                      안전한 결제 시스템으로 강의를 신청하세요
+                      신청 정보를 저장한 뒤 결제를 진행합니다
                     </p>
                   </div>
 
@@ -4036,11 +3916,15 @@ export default function SwimmingClassPage() {
                     </div>
                   )}
                   <div className="space-y-3 pt-4">
+                    <div className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm leading-6 text-blue-900">
+                      <p>스윔잇 특강은 결제 완료 순으로 자리가 확정됩니다.</p>
+                      <p>결제 전까지는 예약이 확정되지 않습니다.</p>
+                    </div>
                     <div className="flex gap-3">
                     <Button
                       variant="outline"
                       className="px-8 border-gray-300 text-gray-700 bg-transparent"
-                      onClick={() => setStep(2)}
+                      onClick={handleBackToSchedule}
                     >
                       ← 이전
                     </Button>
@@ -4052,13 +3936,24 @@ export default function SwimmingClassPage() {
                           ? "bg-orange-500 hover:bg-orange-600"
                           : "bg-[#10B981] hover:bg-[#059669]"
                       }`}
-                      disabled={!selectedTimeSlot || isSubmitting}
+                      disabled={
+                        !selectedTimeSlot ||
+                        !formData.name ||
+                        !formData.phone ||
+                        !formData.location ||
+                        !agreeAll ||
+                        isSubmitting
+                      }
                       onClick={async () => {
                         // 중복 클릭 방지: 이미 처리 중이면 리턴
                         if (isSubmitting) {
                           console.log(
                             "[결제] 이미 처리 중입니다. 중복 클릭 방지",
                           );
+                          return;
+                        }
+
+                        if (!validateApplicationForPayment()) {
                           return;
                         }
 
@@ -4080,7 +3975,7 @@ export default function SwimmingClassPage() {
                           const paymentStartedAt = new Date();
                           setPaymentDate(paymentStartedAt);
 
-                          // 같은 클래스 중복 신청 방지 (옵션1: 입금대기/예약대기만 차단)
+                          // 같은 클래스 중복 신청 방지 (옵션1: 결제대기/예약대기만 차단)
                           const duplicateCheck =
                             await checkDuplicateForSameClass({
                               name: formData.name,
@@ -4092,7 +3987,7 @@ export default function SwimmingClassPage() {
                             duplicateCheck.hasDuplicate
                           ) {
                             console.log(
-                              "[중복방지] 동일 클래스 중복(입금대기/예약대기) 차단:",
+                              "[중복방지] 동일 클래스 중복(결제대기/예약대기) 차단:",
                               {
                                 className: selectedTimeSlot.name,
                                 statuses: duplicateCheck.matchedStatuses,
@@ -4382,7 +4277,7 @@ export default function SwimmingClassPage() {
                               if (pageId) {
                                 const newOrderNumber = generateOrderNumber();
                                 setOrderNumber(newOrderNumber); // 주문번호 저장
-                                setPaymentStatus("입금대기"); // 입금대기 상태 설정
+                                setPaymentStatus("결제대기"); // 결제 전 이탈 고객 회수용 상태
                                 const selectedClassInfo = classes.find(
                                   (c) => String(c.id) === selectedClass,
                                 );
@@ -4403,8 +4298,8 @@ export default function SwimmingClassPage() {
                                 // Notion 결제 정보 업데이트
                                 await updatePaymentInNotion({
                                   pageId,
-                                  // 노션 표의 '가상계좌 입금 정보' 컬럼에는 상태 값만 저장 (예: 입금대기)
-                                  virtualAccountInfo: "입금대기",
+                                  // 노션 표의 '가상계좌 입금 정보' 컬럼에는 상태 값만 저장 (예: 결제대기)
+                                  virtualAccountInfo: "결제대기",
                                   orderNumber: newOrderNumber,
                                   selectedClass: selectedTimeSlot.name,
                                   timeSlot: `${selectedTimeSlot.session} (${selectedTimeSlot.time})`,
@@ -4415,7 +4310,7 @@ export default function SwimmingClassPage() {
 
                                 try {
                                   console.log(
-                                    "[구글시트] 입금대기 행 추가 시작:",
+                                    "[구글시트] 결제대기 행 추가 시작:",
                                     newOrderNumber,
                                   );
                                   const sheetResponse = await fetch(
@@ -4450,7 +4345,7 @@ export default function SwimmingClassPage() {
                                         레인: selectedTimeSlot.lane,
                                         날짜: classDate,
                                         특강지역: selectedRegion,
-                                        예약상태: "입금대기",
+                                        예약상태: "결제대기",
                                       }),
                                     },
                                   );
@@ -4461,7 +4356,7 @@ export default function SwimmingClassPage() {
 
                                   if (!sheetResponse.ok || !sheetResult?.success) {
                                     console.error(
-                                      "[구글시트] 입금대기 행 추가 실패:",
+                                      "[구글시트] 결제대기 행 추가 실패:",
                                       sheetResult?.error || sheetResponse.status,
                                     );
                                     toast({
@@ -4472,13 +4367,13 @@ export default function SwimmingClassPage() {
                                     });
                                   } else {
                                     console.log(
-                                      "[구글시트] 입금대기 행 추가 완료:",
+                                      "[구글시트] 결제대기 행 추가 완료:",
                                       newOrderNumber,
                                     );
                                   }
                                 } catch (sheetError) {
                                   console.error(
-                                    "[구글시트] 입금대기 행 추가 중 예외:",
+                                    "[구글시트] 결제대기 행 추가 중 예외:",
                                     sheetError,
                                   );
                                   toast({
@@ -6124,9 +6019,9 @@ export default function SwimmingClassPage() {
               </h3>
               <span
                 className={`text-white text-xs px-2 py-1 rounded ${
-                  paymentStatus === "입금완료"
+                  paymentStatus === "입금완료" || paymentStatus === "결제완료"
                     ? "bg-green-500"
-                    : paymentStatus === "예약대기"
+                    : paymentStatus === "예약대기" || paymentStatus === "결제대기"
                       ? "bg-orange-500"
                       : "bg-green-500"
                 }`}

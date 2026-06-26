@@ -1030,12 +1030,18 @@ export async function getClassEnrollmentCounts(classNames?: string[]) {
           page.properties["가상계좌 입금 정보"]?.rich_text?.[0]?.plain_text ||
           page.properties["가상계좌 입금 정보"]?.select?.name ||
           ""
-        // 가상계좌 입금 정보 기준으로 카운트 (미입금 제외)
+        // 가상계좌 입금 정보 기준으로 카운트 (결제대기/완료 포함)
         const normalizedClass = String(selectedClass).trim()
         const normalizedStatus = String(virtualAccountInfo).trim()
+        const countableStatuses = new Set([
+          "입금대기",
+          "입금완료",
+          "결제대기",
+          "결제완료",
+        ])
         if (
           normalizedClass &&
-          (normalizedStatus === "입금대기" || normalizedStatus === "입금완료")
+          countableStatuses.has(normalizedStatus)
         ) {
           // 클라이언트에서 구 클래스명([목동])을 날짜 포함 키([목동 6/28])로
           // 마이그레이션하므로, 요청 목록에 없는 기존 신청 키도 함께 반환합니다.
@@ -1181,8 +1187,12 @@ export async function checkPaymentStatus(data: {
     const paymentConfirmed = page.properties["입금확인"]?.checkbox || false
     const currentVirtualAccountInfo = page.properties["가상계좌 입금 정보"]?.rich_text?.[0]?.plain_text || ""
 
-    // 입금확인이 체크되어 있고, 가상계좌 입금 정보가 "입금대기"인 경우 "입금완료"로 업데이트
-    if (paymentConfirmed && currentVirtualAccountInfo === "입금대기") {
+    // 입금확인이 체크되어 있고, 대기 상태인 경우 완료 상태로 업데이트
+    if (
+      paymentConfirmed &&
+      (currentVirtualAccountInfo === "입금대기" ||
+        currentVirtualAccountInfo === "결제대기")
+    ) {
       try {
         const updateResponse = await fetch(
           `https://api.notion.com/v1/pages/${page.id}`,
@@ -1199,7 +1209,10 @@ export async function checkPaymentStatus(data: {
                   rich_text: [
                     {
                       text: {
-                        content: "입금완료",
+                        content:
+                          currentVirtualAccountInfo === "결제대기"
+                            ? "결제완료"
+                            : "입금완료",
                       },
                     },
                   ],
@@ -1210,7 +1223,7 @@ export async function checkPaymentStatus(data: {
         )
 
         if (updateResponse.ok) {
-          console.log("[Notion 입금확인] 가상계좌 입금 정보를 입금완료로 업데이트 완료")
+          console.log("[Notion 입금확인] 가상계좌 입금 정보를 완료 상태로 업데이트 완료")
         } else {
           console.error("[Notion 입금확인] 가상계좌 입금 정보 업데이트 실패:", await updateResponse.json().catch(() => ({})))
         }
@@ -1388,7 +1401,11 @@ export async function checkPendingPayment(data: {
         page.properties["선택된 클래스"]?.select?.name ||
         ""
       
-      if (virtualAccountInfo.trim() === "입금대기" && selectedClass) {
+      if (
+        (virtualAccountInfo.trim() === "입금대기" ||
+          virtualAccountInfo.trim() === "결제대기") &&
+        selectedClass
+      ) {
         pendingClasses.push(selectedClass.trim())
       }
     })
@@ -1410,7 +1427,7 @@ export async function checkPendingPayment(data: {
 
 /**
  * 같은 사람(이름+전화번호)이 같은 클래스에 이미 신청했는지 확인
- * - 옵션1: "입금대기" 또는 "예약대기"만 중복으로 판단
+ * - 옵션1: "입금대기/결제대기" 또는 "예약대기"만 중복으로 판단
  * - 다른 클래스는 신청 가능
  */
 export async function checkDuplicateForSameClass(data: {
@@ -1492,7 +1509,11 @@ export async function checkDuplicateForSameClass(data: {
 
       if (String(selectedClass).trim() !== data.selectedClass.trim()) return
 
-      if (status === "입금대기" || status === "예약대기") {
+      if (
+        status === "입금대기" ||
+        status === "결제대기" ||
+        status === "예약대기"
+      ) {
         hasDuplicate = true
         matchedStatuses.push(status)
       }
@@ -1520,7 +1541,7 @@ export async function checkDuplicateForSameClass(data: {
 }
 
 /**
- * 입금대기 상태인 사용자 목록 조회 (알림톡 발송용)
+ * 입금대기/결제대기 상태인 사용자 목록 조회 (알림톡 발송용)
  */
 export async function getPendingPaymentUsers() {
   try {
@@ -1536,9 +1557,9 @@ export async function getPendingPaymentUsers() {
       }
     }
 
-    console.log("[Notion 입금대기 목록] 조회 시작")
+    console.log("[Notion 입금대기/결제대기 목록] 조회 시작")
 
-    // Notion API로 입금대기 상태인 사용자 조회
+    // Notion API로 입금대기/결제대기 상태인 사용자 조회
     const response = await fetch(
       `https://api.notion.com/v1/databases/${databaseId}/query`,
       {
@@ -1550,10 +1571,20 @@ export async function getPendingPaymentUsers() {
         },
         body: JSON.stringify({
           filter: {
-            property: "가상계좌 입금 정보",
-            rich_text: {
-              equals: "입금대기"
-            }
+            or: [
+              {
+                property: "가상계좌 입금 정보",
+                rich_text: {
+                  equals: "입금대기"
+                }
+              },
+              {
+                property: "가상계좌 입금 정보",
+                rich_text: {
+                  equals: "결제대기"
+                }
+              }
+            ]
           },
           sorts: [
             {

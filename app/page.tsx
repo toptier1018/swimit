@@ -2094,21 +2094,6 @@ export default function SwimmingClassPage() {
                         </span>
                         을 알면 수영은 놀랍도록 편해집니다.
                       </p>
-                      <div className="rounded-xl border border-orange-200 bg-white p-3 sm:p-4 shadow-sm">
-                        <Button
-                          onClick={() => {
-                            console.log("[CTA] 메인 카피 아래 물과 싸우지 않는 수영 시작하기 클릭");
-                            handleRegistration();
-                          }}
-                          className="w-full py-3 sm:py-4 text-base sm:text-lg font-semibold leading-tight"
-                          size="lg"
-                        >
-                          물과 싸우지 않는 수영 시작하기 →
-                        </Button>
-                        <p className="mt-2.5 text-xs sm:text-sm font-medium text-gray-600 leading-5">
-                          ※ 선착순 마감 / 레인별 7명 제한
-                        </p>
-                      </div>
                     </div>
 
                     {/* Problem Section */}
@@ -2229,15 +2214,6 @@ export default function SwimmingClassPage() {
                       </ol>
                     </div>
 
-                    <div className="pt-1">
-                      <Button
-                        onClick={handleRegistration}
-                        className="w-full py-3 sm:py-4 text-base sm:text-lg font-semibold leading-tight"
-                        size="lg"
-                      >
-                        오늘만 60% 할인받고 내 수영 분석받기 →
-                      </Button>
-                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -2307,15 +2283,6 @@ export default function SwimmingClassPage() {
                         을 알았기 때문입니다.
                       </p>
 
-                      <div className="pt-1">
-                        <Button
-                          onClick={handleRegistration}
-                          className="w-full py-3 sm:py-4 text-base sm:text-lg font-semibold leading-tight"
-                          size="lg"
-                        >
-                          단 하루만의 변화 직접 경험하기 →
-                        </Button>
-                      </div>
                     </div>
                   </div>
                 </div>

@@ -190,21 +190,21 @@ const STROKE_CATALOG: Record<
 > = {
   자유형: {
     icon: "🏊",
-    label: "자유형｜현장 맞춤 배정",
+    label: "자유형｜실력·목표 확인 후 반 배정",
     description:
-      "25m만 가도 숨이 차거나 다리가 가라앉는 분, 장거리가 힘든 분을 위한 저항 교정",
+      "숨참·가라앉음부터 장거리 자세 무너짐과 속도 정체까지 진단합니다.",
   },
   평영: {
     icon: "🐸",
-    label: "평영｜현장 맞춤 배정",
+    label: "평영｜실력·목표 확인 후 반 배정",
     description:
-      "킥을 차도 앞으로 안 나가거나 호흡 타이밍이 어려운 분을 위한 추진력 진단",
+      "킥 추진 부족부터 호흡·상체·타이밍 불일치까지 교정합니다.",
   },
   접영: {
     icon: "🦋",
-    label: "접영｜현장 맞춤 배정",
+    label: "접영｜실력·목표 확인 후 반 배정",
     description:
-      "첫 25m가 어렵거나 호흡 때 몸이 무너지고 허리만 아픈 분을 위한 리듬 교정",
+      "첫 25m 완주부터 50m도 힘을 빼고 나아갈 수 있도록 교정합니다.",
   },
 };
 
@@ -3588,7 +3588,10 @@ export default function SwimmingClassPage() {
                       );
                     })}
                     <p className="text-xs leading-5 text-gray-500">
-                      세부 반은 현장에서 실력과 목표에 맞춰 배정됩니다.
+                      신청 시에는 원하시는 영법만 선택해주세요.
+                      <br />
+                      세부 반과 레인은 당일 수영 실력과 목표를 확인한 뒤
+                      배정될 수 있습니다.
                     </p>
                   </div>
                 </details>
@@ -3610,7 +3613,7 @@ export default function SwimmingClassPage() {
                         </h4>
                       </div>
                       <p className="text-base md:text-sm text-blue-100 ml-8 md:ml-7">
-                        원하시는 영법을 선택해주세요. 현장에서 맞춤 배정됩니다.
+                        신청 시에는 원하시는 영법만 선택해주세요.
                       </p>
                     </div>
                     <CardContent className="p-4 sm:p-5">
@@ -3711,7 +3714,8 @@ export default function SwimmingClassPage() {
                               })}
                             </div>
                             <p className="text-xs leading-5 text-gray-500">
-                              ※ 세부 반과 레인은 현장에서 맞춤 배정됩니다.
+                              ※ 세부 반과 레인은 당일 수영 실력과 목표를 확인한 뒤
+                              배정될 수 있습니다.
                               <br />
                               ※ 최소 인원 미달 시 일부 클래스는 통합반으로
                               운영될 수 있습니다.

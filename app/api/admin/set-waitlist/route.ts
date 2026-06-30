@@ -61,7 +61,7 @@ function getEquivalentSettingsNames(className: string): string[] {
  * 모든 사용자에게 예약대기 상태를 영구적으로 적용합니다.
  */
 
-/** 모든 클래스 예약대기 기준 (레인당 7명) */
+/** 모집 인원 미설정 시 기본값 (관리자 모드에서 클래스별 변경 가능) */
 const DEFAULT_WAITLIST_THRESHOLD = 7;
 
 /**

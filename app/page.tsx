@@ -177,25 +177,8 @@ const DEPOSIT_ACCOUNT_LABEL = `${DEPOSIT_BANK_NAME} ${DEPOSIT_ACCOUNT_NUMBER}`;
 // 오픈 전 임시 설정: 전체 클래스를 '예약대기'로 강제 표시
 // 개발자 모드에서 대기 해제/기준 변경이 필요하므로 기본은 false로 둡니다.
 const FORCE_ALL_WAITLIST = false;
-/** 모든 클래스 예약대기 기준 (레인당 7명) */
+/** 모집 인원 미설정 시 기본값 */
 const DEFAULT_WAITLIST_THRESHOLD = 7;
-
-const resolveWaitlistThreshold = (
-  className: string,
-  thresholds: Record<string, number>,
-) => thresholds[className] ?? DEFAULT_WAITLIST_THRESHOLD;
-
-const normalizeWaitlistThresholds = (
-  thresholds: Record<string, number>,
-): Record<string, number> =>
-  Object.fromEntries(
-    Object.entries(thresholds).map(([key, value]) => [
-      key,
-      Number.isFinite(value) && value >= 0
-        ? value
-        : DEFAULT_WAITLIST_THRESHOLD,
-    ]),
-  );
 
 type StrokeType = "자유형" | "평영" | "접영";
 
@@ -527,6 +510,36 @@ const migrateToStrokeClassKey = (key: string): string => {
 const resolveEnrollmentTargetKey = (classKey: string) =>
   migrateToStrokeClassKey(classKey);
 
+/** 클래스별 모집 인원 조회 (레거시 레인 키도 영법 단위로 합침) */
+const resolveWaitlistThreshold = (
+  className: string,
+  thresholds: Record<string, number>,
+): number => {
+  const target = resolveEnrollmentTargetKey(className);
+  let resolved: number | undefined;
+  for (const [key, value] of Object.entries(thresholds)) {
+    if (resolveEnrollmentTargetKey(key) !== target) continue;
+    if (!Number.isFinite(value) || value < 0) continue;
+    resolved = resolved === undefined ? value : Math.max(resolved, value);
+  }
+  return resolved ?? DEFAULT_WAITLIST_THRESHOLD;
+};
+
+const normalizeWaitlistThresholds = (
+  thresholds: Record<string, number>,
+): Record<string, number> => {
+  const normalized: Record<string, number> = {};
+  for (const [rawKey, rawValue] of Object.entries(thresholds)) {
+    if (!Number.isFinite(rawValue) || rawValue < 0) continue;
+    const targetKey = resolveEnrollmentTargetKey(rawKey);
+    normalized[targetKey] = Math.max(
+      normalized[targetKey] ?? 0,
+      Math.floor(rawValue),
+    );
+  }
+  return normalized;
+};
+
 const normalizeManualWaitlistClasses = (classNames: string[] = []) =>
   new Set(
     classNames.map((className) =>
@@ -699,8 +712,7 @@ export default function SwimmingClassPage() {
     4: 0,
   });
   // 각 클래스별 신청 인원 추적 (클래스 이름을 키로 사용)
-  // 모든 클래스는 0부터 시작하여 신청가능 일반 모드로 시작
-  // 1~6번째: 일반 결제 / 7번째부터: 예약대기
+  // 관리자 모드에서 클래스별 모집 인원을 자유롭게 설정 가능 (미설정 시 기본 7명)
   const [classEnrollment, setClassEnrollment] =
     useState<Record<string, number>>(INITIAL_ENROLLMENT);
   const [manualWaitlistClasses, setManualWaitlistClasses] = useState<
@@ -716,7 +728,7 @@ export default function SwimmingClassPage() {
     null,
   );
 
-  // 개발자 모드 (URL 파라미터로 활성화)
+  // 개발자/관리자 모드 (URL: ?debug=true 또는 ?admin=true)
   const [showDebug, setShowDebug] = useState(false);
   // PG 심사용 토스 테스트 결제창 (NEXT_PUBLIC_PG_REVIEW=true 또는 ?pgtest=1)
   const pgReviewFromEnv = process.env.NEXT_PUBLIC_PG_REVIEW === "true";
@@ -749,13 +761,17 @@ export default function SwimmingClassPage() {
   // URL 파라미터 확인
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    setShowDebug(params.get("debug") === "true");
+    const adminMode =
+      params.get("debug") === "true" || params.get("admin") === "true";
+    setShowDebug(adminMode);
     const pgTestOn = params.get("pgtest") === "1";
     setShowPgTest(pgReviewFromEnv || pgTestOn);
     const nextVideoCode = params.get("video")?.trim() || "";
     setVideoCode(nextVideoCode);
     console.log("[퍼널] URL 파라미터 확인:", {
       debug: params.get("debug") === "true",
+      admin: params.get("admin") === "true",
+      adminMode,
       pgReview: pgReviewFromEnv,
       pgtest: pgTestOn,
       showPgTest: pgReviewFromEnv || pgTestOn,
@@ -813,7 +829,7 @@ export default function SwimmingClassPage() {
     console.log("[카운터] 로컬 카운터 불러오기 완료");
   };
 
-  // 기본 예약대기 기준은 7명이며, 개발자 모드에서 클래스별 변경 가능
+  // 기본 모집 인원은 7명이며, 관리자 모드에서 클래스별 자유 설정 가능
 
   const syncClassEnrollmentFromNotion = async () => {
     try {
@@ -1137,6 +1153,69 @@ export default function SwimmingClassPage() {
       return count >= threshold;
     },
     [manualWaitlistClasses, classEnrollment, waitlistThresholds],
+  );
+
+  const saveClassCapacity = useCallback(
+    async (className: string, rawValue: number, previousValue: number) => {
+      const next = Math.floor(rawValue);
+      if (!Number.isFinite(next) || next < 0) {
+        toast({
+          title: "입력 오류",
+          description: "0 이상의 숫자를 입력해주세요.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      console.log("[모집인원] 저장 요청:", {
+        className,
+        previousValue,
+        next,
+      });
+
+      try {
+        const response = await fetch("/api/admin/set-waitlist", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "setThreshold",
+            className,
+            threshold: next,
+          }),
+        });
+        const data = await response.json();
+        if (response.ok && data.success && data.thresholds) {
+          setWaitlistThresholds((prev) => ({
+            ...prev,
+            ...normalizeWaitlistThresholds(data.thresholds),
+            [className]: next,
+          }));
+          console.log("[모집인원] 저장 완료:", { className, next });
+          toast({
+            title: "모집 인원 저장됨",
+            description: `${className} → ${next}명`,
+          });
+          return true;
+        }
+
+        console.error("[모집인원] 저장 실패:", data?.error || response.status);
+        toast({
+          title: "모집 인원 저장 실패",
+          description: data?.error || "서버에서 저장하지 못했습니다.",
+          variant: "destructive",
+        });
+        return false;
+      } catch (error) {
+        console.error("[모집인원] API 호출 실패:", error);
+        toast({
+          title: "모집 인원 저장 오류",
+          description: "네트워크 오류가 발생했습니다.",
+          variant: "destructive",
+        });
+        return false;
+      }
+    },
+    [toast],
   );
 
   // 주문번호 생성 함수 (겹치지 않도록)
@@ -1550,7 +1629,7 @@ export default function SwimmingClassPage() {
             <div className="px-3 py-2 border-b border-yellow-500/40 bg-black/95 sticky top-0">
               <div className="flex items-center justify-between gap-2">
                 <div className="font-bold text-yellow-400 text-sm">
-                  🔧 개발자 모드
+                  🔧 관리자 모드
                 </div>
                 <button
                   type="button"
@@ -1575,11 +1654,16 @@ export default function SwimmingClassPage() {
                 </div>
               </div>
               {!debugCollapsed && (
-                <div className="mt-2 flex items-center gap-2">
+                <div className="mt-2 space-y-2">
+                  <p className="text-[11px] leading-4 text-gray-300">
+                    클래스별 <span className="text-yellow-300">모집 인원</span>
+                    을 자유롭게 입력하세요. 해당 인원까지 일반 결제, 초과 시
+                    예약대기입니다.
+                  </p>
                   <input
                     value={debugFilter}
                     onChange={(e) => setDebugFilter(e.target.value)}
-                    placeholder="클래스 검색 (예: 1부, 3레인, 접영)"
+                    placeholder="클래스 검색 (예: 은평, 자유형)"
                     className="w-full rounded bg-black/60 border border-gray-700 px-2 py-1 text-white text-[12px] placeholder:text-gray-500"
                   />
                 </div>
@@ -1601,115 +1685,84 @@ export default function SwimmingClassPage() {
                             waitlistThresholds,
                           );
                       const isWaitlist = isClassFull(className);
-                      const effectiveThreshold =
+                      const capacityLimit =
                         typeof threshold === "number"
                           ? threshold
                           : DEFAULT_WAITLIST_THRESHOLD;
+                      const remainingSpots = Math.max(
+                        0,
+                        capacityLimit - effectiveCount,
+                      );
+                      const capacityInputId = `capacity-${className.replace(/[^\w가-힣]/g, "-")}`;
                       return (
-                        <div key={className} className="flex flex-col gap-1">
+                        <div key={className} className="flex flex-col gap-1 border-b border-white/10 pb-2 mb-2">
                           <div className="flex justify-between gap-2">
                             <div className="flex-1">
-                              <div className="text-gray-300 font-mono break-words">
+                              <div className="text-gray-300 font-mono break-words text-[11px]">
                                 {className}
                               </div>
-                              <div className="font-bold text-sm">
-                                {effectiveCount}명 / 다음: {effectiveCount + 1}
-                                번째
+                              <div className="font-bold text-sm mt-1">
+                                신청 {effectiveCount}명 · 모집 {capacityLimit}명
+                                · 남은 {remainingSpots}명
                               </div>
                               <div className="text-[11px] text-gray-400">
-                                예약대기 기준:{" "}
+                                상태:{" "}
                                 {threshold === "강제예약"
-                                  ? "강제예약"
-                                  : String(effectiveThreshold)}
+                                  ? "강제 예약대기"
+                                  : isWaitlist
+                                    ? "예약대기"
+                                    : "결제 가능"}
                               </div>
-                              <div className="mt-1 flex items-center gap-2">
-                                <div className="text-[11px] text-gray-400">
-                                  기준 변경:
-                                </div>
+                              <div className="mt-2 flex flex-wrap items-center gap-2">
+                                <label
+                                  htmlFor={capacityInputId}
+                                  className="text-[11px] text-gray-300 shrink-0"
+                                >
+                                  모집 인원
+                                </label>
                                 <input
-                                  key={`${className}-${effectiveThreshold}`}
+                                  id={capacityInputId}
+                                  key={`${className}-${capacityLimit}`}
                                   type="number"
                                   min={0}
                                   max={999}
-                                  defaultValue={effectiveThreshold}
-                                  className="w-16 rounded bg-black/60 border border-gray-600 px-2 py-1 text-white text-[11px]"
-                                  onBlur={async (e) => {
-                                    const next = Number(e.currentTarget.value);
-                                    if (!Number.isFinite(next) || next < 0) {
-                                      e.currentTarget.value =
-                                        String(effectiveThreshold);
-                                      return;
-                                    }
-                                    console.log("[개발자] 기준 변경 요청:", {
+                                  defaultValue={capacityLimit}
+                                  className="w-20 rounded bg-black/60 border border-gray-600 px-2 py-1 text-white text-[12px]"
+                                  onKeyDown={async (e) => {
+                                    if (e.key !== "Enter") return;
+                                    e.preventDefault();
+                                    const input = e.currentTarget;
+                                    const next = Number(input.value);
+                                    const ok = await saveClassCapacity(
                                       className,
-                                      threshold: next,
-                                    });
-                                    try {
-                                      const response = await fetch(
-                                        "/api/admin/set-waitlist",
-                                        {
-                                          method: "POST",
-                                          headers: {
-                                            "Content-Type": "application/json",
-                                          },
-                                          body: JSON.stringify({
-                                            action: "setThreshold",
-                                            className,
-                                            threshold: next,
-                                          }),
-                                        },
-                                      );
-                                      const data = await response.json();
-                                      if (
-                                        response.ok &&
-                                        data.success &&
-                                        data.thresholds
-                                      ) {
-                                        setWaitlistThresholds((prev) => ({
-                                          ...prev,
-                                          ...normalizeWaitlistThresholds(
-                                            data.thresholds,
-                                          ),
-                                          [className]: next,
-                                        }));
-                                        console.log("[개발자] 기준 변경 완료:", {
-                                          className,
-                                          threshold: next,
-                                        });
-                                      } else {
-                                        console.error(
-                                          "[개발자] 기준 변경 실패:",
-                                          data?.error || response.status,
-                                        );
-                                        toast({
-                                          title: "기준 변경 실패",
-                                          description:
-                                            data?.error ||
-                                            "서버에서 기준 인원을 저장하지 못했습니다.",
-                                          variant: "destructive",
-                                        });
-                                        e.currentTarget.value =
-                                          String(effectiveThreshold);
-                                      }
-                                    } catch (error) {
-                                      console.error(
-                                        "[개발자] 기준 변경 API 호출 실패:",
-                                        error,
-                                      );
-                                      toast({
-                                        title: "기준 변경 오류",
-                                        description:
-                                          "네트워크 오류가 발생했습니다.",
-                                        variant: "destructive",
-                                      });
-                                      e.currentTarget.value =
-                                        String(effectiveThreshold);
-                                    }
+                                      next,
+                                      capacityLimit,
+                                    );
+                                    if (!ok) input.value = String(capacityLimit);
                                   }}
                                 />
-                                <span className="text-[10px] text-gray-500">
-                                  기본 7명, 클래스별 변경 가능
+                                <span className="text-[11px] text-gray-400">
+                                  명
                                 </span>
+                                <Button
+                                  size="sm"
+                                  className="text-[10px] px-2 py-1 h-auto bg-blue-600 hover:bg-blue-500"
+                                  onClick={async () => {
+                                    const input = document.getElementById(
+                                      capacityInputId,
+                                    ) as HTMLInputElement | null;
+                                    if (!input) return;
+                                    const next = Number(input.value);
+                                    const ok = await saveClassCapacity(
+                                      className,
+                                      next,
+                                      capacityLimit,
+                                    );
+                                    if (!ok) input.value = String(capacityLimit);
+                                  }}
+                                >
+                                  저장
+                                </Button>
                               </div>
                             </div>
                             <Button
@@ -1723,7 +1776,7 @@ export default function SwimmingClassPage() {
                                 if (isWaitlist) {
                                   // 예약대기 해제
                                   const nextThreshold = Math.max(
-                                    effectiveThreshold,
+                                    capacityLimit,
                                     effectiveCount + 1,
                                   );
                                   console.log(
@@ -1731,7 +1784,7 @@ export default function SwimmingClassPage() {
                                     {
                                       className,
                                       effectiveCount,
-                                      effectiveThreshold,
+                                      capacityLimit,
                                       nextThreshold,
                                     },
                                   );
@@ -1761,7 +1814,7 @@ export default function SwimmingClassPage() {
                                       if (data.thresholds) {
                                         setWaitlistThresholds(normalizeWaitlistThresholds(data.thresholds));
                                       }
-                                      if (effectiveCount >= effectiveThreshold) {
+                                      if (effectiveCount >= capacityLimit) {
                                         const thresholdResponse = await fetch(
                                           "/api/admin/set-waitlist",
                                           {

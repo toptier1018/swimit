@@ -197,31 +197,54 @@ const normalizeWaitlistThresholds = (
     ]),
   );
 
-const CLASS_DISPLAY_TITLES: Record<string, string> = {
-  "자유형 A (초급)": "자유형 A｜숨참·가라앉음 교정반",
-  "자유형 B (중급)": "자유형 B｜장거리·효율 완성반",
-  "평영 A (초급)": "평영 A｜제자리 탈출반",
-  "평영 B (중급)": "평영 B｜추진력·타이밍 완성반",
-  "접영 A (초급)": "접영 A｜첫 25m 완주반",
-  "접영 B (중급)": "접영 B｜50m 리듬 완성반",
-  "배영 A (초급)": "배영 A｜기초 리듬 교정반",
+type StrokeType = "자유형" | "평영" | "접영";
+
+const STROKE_ORDER: StrokeType[] = ["자유형", "평영", "접영"];
+
+const STROKE_CATALOG: Record<
+  StrokeType,
+  { icon: string; label: string; description: string }
+> = {
+  자유형: {
+    icon: "🏊",
+    label: "자유형 A/B｜현장 맞춤 배정",
+    description: "숨참·가라앉음 / 장거리·효율 교정",
+  },
+  평영: {
+    icon: "🐸",
+    label: "평영 A/B｜현장 맞춤 배정",
+    description: "제자리 탈출 / 추진력·타이밍 교정",
+  },
+  접영: {
+    icon: "🦋",
+    label: "접영 A/B｜현장 맞춤 배정",
+    description: "첫 25m 완주 / 50m 리듬 교정",
+  },
 };
 
-const getClassDisplayTitle = (title: string) =>
-  CLASS_DISPLAY_TITLES[title] ?? title;
+const UNASSIGNED_LANE = "미배정";
 
-const getClassDisplayParts = (title: string) => {
-  const displayTitle = getClassDisplayTitle(title);
-  const [label, description] = displayTitle.split("｜");
-  return { label, description };
+const getStrokeFromTitle = (title: string): StrokeType | null => {
+  if (title.includes("자유형")) return "자유형";
+  if (title.includes("평영")) return "평영";
+  if (title.includes("접영")) return "접영";
+  return null;
 };
 
-const getClassDisplayName = (className: string) =>
-  Object.entries(CLASS_DISPLAY_TITLES).reduce(
-    (displayName, [internalTitle, displayTitle]) =>
-      displayName.replace(internalTitle, displayTitle),
-    className,
-  );
+const getClassDisplayParts = (stroke: StrokeType) => {
+  const catalog = STROKE_CATALOG[stroke];
+  const [label] = catalog.label.split("｜");
+  return { label, description: catalog.description };
+};
+
+const getClassDisplayName = (className: string) => {
+  for (const stroke of STROKE_ORDER) {
+    if (className.includes(stroke)) {
+      return STROKE_CATALOG[stroke].label;
+    }
+  }
+  return className;
+};
 
 type TimetableRow = {
   session: string;
@@ -316,7 +339,7 @@ const TIMETABLE_SAMJEONG: TimetableRow[] = [
       { lane: "1레인", title: "", price: 0, closed: true },
       { lane: "2레인", title: "", price: 0, closed: true },
       { lane: "3레인", title: "접영 A (초급)", price: 80000 },
-      { lane: "4레인", title: "배영 A (초급)", price: 80000 },
+      { lane: "4레인", title: "", price: 0, closed: true },
       { lane: "5레인", title: "자유형 A (초급)", price: 80000 },
       { lane: "6레인", title: "자유형 B (중급)", price: 80000 },
     ],
@@ -361,6 +384,35 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   8: TIMETABLE_CHEONGNA, // 7/12 인천
   10: TIMETABLE_DONGTAN, // 7/19 동탄
   9: TIMETABLE_MOKDONG_JULY, // 7/26 목동
+};
+
+const getAvailableStrokesForClass = (classId: number) => {
+  const rows = TIMETABLE_BY_CLASS_ID[classId] ?? [];
+  const strokePrices: Partial<Record<StrokeType, number>> = {};
+  let session = "";
+  let time = "";
+
+  for (const row of rows) {
+    session = row.session;
+    time = row.time;
+    for (const lane of row.lanes) {
+      if (lane.closed || !lane.title) continue;
+      const stroke = getStrokeFromTitle(lane.title);
+      if (!stroke) continue;
+      strokePrices[stroke] = lane.price;
+    }
+  }
+
+  return {
+    session,
+    time,
+    strokes: STROKE_ORDER.filter((stroke) => strokePrices[stroke]).map(
+      (stroke) => ({
+        stroke,
+        price: strokePrices[stroke]!,
+      }),
+    ),
+  };
 };
 
 const getKoreanTodayParts = () => {
@@ -431,9 +483,8 @@ const getActiveClasses = (): ClassItem[] => {
 const makeClassKey = (
   classId: number,
   session: string,
-  lane: string,
-  title: string,
-) => `[${getClassKeyLabel(classId)}] ${session} ${lane} ${title}`;
+  stroke: string,
+) => `[${getClassKeyLabel(classId)}] ${session} ${stroke}`;
 
 const migrateLegacyClassKey = (key: string) => {
   const cidMigrated = key.replace(/^\[cid:(\d+)\]/, (_, idText) => {
@@ -454,8 +505,27 @@ const ENROLLMENT_MERGE_TO: Record<string, string> = {
     "[화성 6/21] 1부 특강 4레인 접영 A (초급)",
 };
 
+const migrateToStrokeClassKey = (key: string): string => {
+  const merged = ENROLLMENT_MERGE_TO[key] ?? key;
+  const migrated = migrateLegacyClassKey(merged);
+
+  if (/^\[[^\]]+\]\s+\d+부\s*특강\s+(자유형|평영|접영)$/.test(migrated)) {
+    return migrated;
+  }
+
+  const legacyLane = migrated.match(
+    /^(\[[^\]]+\]\s+\d+부\s*특강)\s+\d+레인\s+(.+)$/,
+  );
+  if (legacyLane) {
+    const stroke = getStrokeFromTitle(legacyLane[2]);
+    if (stroke) return `${legacyLane[1]} ${stroke}`;
+  }
+
+  return migrated;
+};
+
 const resolveEnrollmentTargetKey = (classKey: string) =>
-  ENROLLMENT_MERGE_TO[classKey] ?? classKey;
+  migrateToStrokeClassKey(classKey);
 
 const normalizeManualWaitlistClasses = (classNames: string[] = []) =>
   new Set(
@@ -468,9 +538,12 @@ const getEffectiveEnrollmentCount = (
   className: string,
   counts: Record<string, number>,
 ): number => {
-  let total = counts[className] || 0;
-  for (const [fromKey, toKey] of Object.entries(ENROLLMENT_MERGE_TO)) {
-    if (toKey === className) total += counts[fromKey] || 0;
+  const target = resolveEnrollmentTargetKey(className);
+  let total = 0;
+  for (const [key, count] of Object.entries(counts)) {
+    if (resolveEnrollmentTargetKey(key) === target) {
+      total += count || 0;
+    }
   }
   return total;
 };
@@ -507,13 +580,19 @@ const normalizeEnrollmentCounts = (
 const INITIAL_ENROLLMENT: Record<string, number> = Object.fromEntries(
   Object.entries(TIMETABLE_BY_CLASS_ID).flatMap(([idStr, rows]) => {
     const classId = Number(idStr);
+    const strokes = new Set<StrokeType>();
+    rows.forEach((row) => {
+      row.lanes.forEach((lane) => {
+        if (lane.closed || !lane.title) return;
+        const stroke = getStrokeFromTitle(lane.title);
+        if (stroke) strokes.add(stroke);
+      });
+    });
     return rows.flatMap((row) =>
-      row.lanes
-        .filter((l) => !l.closed && l.title)
-        .map((l) => [
-          makeClassKey(classId, row.session, l.lane, l.title),
-          0,
-        ]),
+      STROKE_ORDER.filter((stroke) => strokes.has(stroke)).map((stroke) => [
+        makeClassKey(classId, row.session, stroke),
+        0,
+      ]),
     );
   }),
 ) as Record<string, number>;
@@ -531,18 +610,11 @@ const buildClassKeySortIndex = (): Record<string, number> => {
   });
 
   for (const classItem of sortedClasses) {
-    const rows = TIMETABLE_BY_CLASS_ID[classItem.id] ?? [];
-    for (const row of rows) {
-      for (const lane of row.lanes) {
-        if (lane.closed || !lane.title) continue;
-        const key = makeClassKey(
-          classItem.id,
-          row.session,
-          lane.lane,
-          lane.title,
-        );
-        if (!(key in index)) index[key] = order++;
-      }
+    const { session, strokes } = getAvailableStrokesForClass(classItem.id);
+    if (!session) continue;
+    for (const { stroke } of strokes) {
+      const key = makeClassKey(classItem.id, session, stroke);
+      if (!(key in index)) index[key] = order++;
     }
   }
 
@@ -653,13 +725,11 @@ export default function SwimmingClassPage() {
 
   // 현재 활성 특강의 클래스 키 목록 (지난 특강 제거용)
   const activeClassKeys = new Set(
-    getActiveClasses().flatMap((c) =>
-      (TIMETABLE_BY_CLASS_ID[c.id] ?? []).flatMap((row) =>
-        row.lanes
-          .filter((l) => !l.closed && l.title)
-          .map((l) => makeClassKey(c.id, row.session, l.lane, l.title)),
-      ),
-    ),
+    getActiveClasses().flatMap((c) => {
+      const { session, strokes } = getAvailableStrokesForClass(c.id);
+      if (!session) return [];
+      return strokes.map(({ stroke }) => makeClassKey(c.id, session, stroke));
+    }),
   );
 
   const activeDeveloperClassEntries = Object.entries(classEnrollment)
@@ -3401,27 +3471,26 @@ export default function SwimmingClassPage() {
                       자세히 보기
                     </span>
                   </summary>
-                  <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-                    {[
-                      ["🏊", "자유형 A｜숨참·가라앉음 교정반", "자유형 25m 이상 가능 / 숨차고 다리가 가라앉는 분"],
-                      ["🏊", "자유형 B｜장거리·효율 완성반", "자유형 50m 가능 / 더 오래, 더 편하게 수영하고 싶은 분"],
-                      ["🐸", "평영 A｜제자리 탈출반", "평영 50m 이상 가능 / 차도 앞으로 잘 안 나가는 분"],
-                      ["🐸", "평영 B｜추진력·타이밍 완성반", "평영 100m 가능 / 속도와 추진력을 높이고 싶은 분"],
-                      ["🦋", "접영 A｜첫 25m 완주반", "접영 동작이 어렵고 25m 완주가 힘든 분"],
-                      ["🦋", "접영 B｜50m 리듬 완성반", "접영 50m 가능 / 팔이 무겁고 자세가 무너지는 분"],
-                    ].map(([icon, title, description]) => (
-                      <div
-                        key={title}
-                        className="rounded-lg border border-slate-200 bg-slate-50 p-3"
-                      >
-                        <div className="font-bold text-gray-900">
-                          {icon} {title}
+                  <div className="mt-4 grid gap-3 text-sm">
+                    {STROKE_ORDER.map((stroke) => {
+                      const catalog = STROKE_CATALOG[stroke];
+                      return (
+                        <div
+                          key={stroke}
+                          className="rounded-lg border border-slate-200 bg-slate-50 p-3"
+                        >
+                          <div className="font-bold text-gray-900">
+                            {catalog.icon} {catalog.label}
+                          </div>
+                          <div className="mt-1 text-gray-600 leading-5">
+                            {catalog.description}
+                          </div>
                         </div>
-                        <div className="mt-1 text-gray-600 leading-5">
-                          {description}
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
+                    <p className="text-xs leading-5 text-gray-500">
+                      A/B 세부 반은 현장에서 실력과 목표에 맞춰 배정됩니다.
+                    </p>
                   </div>
                 </details>
 
@@ -3438,210 +3507,119 @@ export default function SwimmingClassPage() {
                       <div className="flex items-center gap-2 mb-1">
                         <Calendar className="h-6 w-6 md:h-5 md:w-5" />
                         <h4 className="font-bold text-xl md:text-lg">
-                          수영 클래스 시간표
+                          영법 선택
                         </h4>
                       </div>
                       <p className="text-base md:text-sm text-blue-100 ml-8 md:ml-7">
-                        시간대별 수업을 확인하고 선택해주세요
+                        원하시는 영법을 선택해주세요. A/B는 현장에서 맞춤 배정됩니다.
                       </p>
                     </div>
-                    <CardContent className="p-0">
-                      <div className="flex flex-col w-full overflow-x-auto">
-                        {/* 레인 헤더 (PC/태블릿에서만 표시) */}
-                        {activeTimetable.length > 0 && (() => {
-                          const laneCount = activeTimetable[0].lanes.length;
-                          const colClass = laneCount === 6 ? "grid-cols-6" : laneCount === 4 ? "grid-cols-4" : "grid-cols-5";
+                    <CardContent className="p-4 sm:p-5">
+                      {(() => {
+                        const strokeSchedule = Number.isFinite(selectedClassIdNum)
+                          ? getAvailableStrokesForClass(selectedClassIdNum)
+                          : { session: "", time: "", strokes: [] as { stroke: StrokeType; price: number }[] };
+
+                        if (!selectedClass || strokeSchedule.strokes.length === 0) {
                           return (
-                            <div className="hidden md:flex border-b">
-                              <div className="w-[180px] bg-[#F8FAFC] border-r border-gray-100 shrink-0" />
-                              <div className={`flex-1 bg-white grid ${colClass} gap-3 p-3`}>
-                                {activeTimetable[0].lanes.map((l) => (
-                                  <div
-                                    key={l.lane}
-                                    className="text-sm font-bold text-gray-700 text-center py-1 rounded bg-gray-50 border border-gray-100"
-                                  >
-                                    {l.lane}
-                                  </div>
-                                ))}
-                              </div>
+                            <div className="p-6 text-center text-sm text-gray-600 bg-white rounded-lg border border-dashed">
+                              위에서 특강 일정을 먼저 선택하면 영법 선택이
+                              표시됩니다.
                             </div>
                           );
-                        })()}
+                        }
 
-                        {activeTimetable.length === 0 ? (
-                          <div className="p-8 text-center text-sm text-gray-600 bg-white">
-                            위에서 특강 지역을 먼저 선택하면 해당 일정의 시간표가
-                            표시됩니다.
-                          </div>
-                        ) : (
-                          activeTimetable.map((row) => (
-                          <div
-                            key={`${selectedClassIdNum}-${row.session}-${row.time}`}
-                            className="flex flex-col sm:flex-row border-b last:border-b-0"
-                          >
-                            {/* Time Label */}
-                            <div className="flex flex-row sm:flex-col justify-center sm:justify-center items-center sm:items-start px-4 sm:px-6 py-4 sm:py-6 bg-[#F8FAFC] w-full sm:w-[180px] sm:border-r border-gray-100 shrink-0">
-                              <div className="text-lg md:text-base font-bold text-gray-900 mr-2 sm:mr-0">
-                                {row.session}
-                              </div>
-                              <div className="text-base md:text-sm text-gray-500 sm:mt-1">
-                                {row.time}
-                              </div>
+                        return (
+                          <div className="space-y-4">
+                            <div className="rounded-lg bg-slate-50 px-4 py-3 text-sm text-gray-700">
+                              <span className="font-bold text-gray-900">
+                                {strokeSchedule.session}
+                              </span>
+                              <span className="mx-2 text-gray-400">·</span>
+                              <span>{strokeSchedule.time}</span>
                             </div>
-                            {/* Class Grid */}
-                            <div className="flex-1 p-3 sm:p-3 bg-white">
-                              <div className={`grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-3 ${row.lanes.length === 6 ? "md:grid-cols-6" : row.lanes.length === 4 ? "md:grid-cols-4" : "md:grid-cols-5"}`}>
-                                {row.lanes.map((slot, index) => {
-                                if (slot.closed) {
-                                  return (
-                                    <div
-                                      key={`${row.session}-closed-${slot.lane}`}
-                                      className="relative border border-dashed rounded-lg p-3 sm:p-4 flex flex-col justify-center min-h-[96px] sm:min-h-[110px] bg-slate-50/80 border-slate-200"
-                                    >
-                                      <div className="md:hidden mb-1">
-                                        <span className="inline-flex items-center justify-center text-[11px] font-bold text-slate-400 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded">
-                                          {slot.lane}
-                                        </span>
-                                      </div>
-                                      <p className="text-sm text-slate-400 text-center font-medium">
-                                        운영 없음
-                                      </p>
-                                    </div>
-                                  );
-                                }
+                            <div className="grid gap-3 sm:grid-cols-3">
+                              {strokeSchedule.strokes.map(({ stroke, price }) => {
                                 const classKey = makeClassKey(
                                   selectedClassIdNum,
-                                  row.session,
-                                  slot.lane,
-                                  slot.title,
+                                  strokeSchedule.session,
+                                  stroke,
                                 );
                                 const isFull = isClassFull(classKey);
                                 const hasPayment = hasEnrollment(classKey);
+                                const catalog = STROKE_CATALOG[stroke];
+                                const isSelected =
+                                  selectedTimeSlot?.name === classKey;
+
                                 return (
                                   <button
-                                    key={`${row.session}-${index}`}
+                                    key={stroke}
+                                    type="button"
                                     onClick={() => {
                                       const regionInfo = classes.find(
                                         (c) => String(c.id) === selectedClass,
                                       );
-                                      console.log("[선택] 클래스 선택:", {
+                                      console.log("[선택] 영법 선택:", {
+                                        stroke,
                                         className: classKey,
-                                        session: row.session,
-                                        time: row.time,
+                                        session: strokeSchedule.session,
+                                        time: strokeSchedule.time,
                                         region:
                                           regionInfo?.location || "정보 없음",
-                                        regionCode:
-                                          regionInfo?.locationCode || "",
                                       });
                                       setSelectedTimeSlot({
                                         name: classKey,
-                                        session: row.session,
-                                        lane: slot.lane,
-                                        title: slot.title,
-                                        time: row.time,
-                                        price: slot.price,
+                                        session: strokeSchedule.session,
+                                        lane: UNASSIGNED_LANE,
+                                        title: stroke,
+                                        time: strokeSchedule.time,
+                                        price,
                                         isWaitlist: isFull,
                                         available: !isFull,
                                       });
-                                      setStep(3); // 바로 결제 화면으로 이동
+                                      setStep(3);
                                     }}
-                                    className={`relative border rounded-lg p-3 sm:p-4 flex flex-col justify-between min-h-[96px] sm:min-h-[110px] transition-all ${
-                                      selectedTimeSlot?.name === classKey &&
-                                      selectedTimeSlot?.session === row.session
-                                        ? "border-primary border-2 ring-2 ring-primary/10 bg-primary/5"
-                                        : slot.premium
-                                          ? "border-amber-400 border-2 bg-amber-50/60 hover:border-amber-500 hover:shadow-md"
-                                          : "border-gray-200 hover:border-primary/50 hover:shadow-sm bg-white"
+                                    className={`relative flex min-h-[140px] flex-col justify-between rounded-xl border p-4 text-left transition-all ${
+                                      isSelected
+                                        ? "border-primary border-2 bg-primary/5 ring-2 ring-primary/10"
+                                        : "border-gray-200 bg-white hover:border-primary/50 hover:shadow-sm"
                                     }`}
                                   >
-                                    {/* 프리미엄 배지 */}
-                                    {slot.premium && (
-                                      <div className="absolute -top-3 left-2">
-                                        <span className="inline-flex items-center gap-1 bg-amber-400 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
-                                          ✨ 프리미엄
-                                        </span>
+                                    <div>
+                                      <div className="text-base font-bold text-gray-900">
+                                        {catalog.icon} {catalog.label}
                                       </div>
-                                    )}
-
-                                    {/* 모바일: 레인 표시를 카드 안으로 (상단 헤더가 좁아서) */}
-                                    <div className={`md:hidden ${slot.premium ? "mt-2" : ""} mb-1`}>
-                                      <span className="inline-flex items-center justify-center text-[11px] font-bold text-gray-700 bg-gray-100 border border-gray-200 px-2 py-0.5 rounded">
-                                        {slot.lane}
+                                      <div className="mt-2 text-sm leading-5 text-gray-600">
+                                        {catalog.description}
+                                      </div>
+                                    </div>
+                                    <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+                                      <span className="text-sm font-bold text-gray-900">
+                                        ₩{price.toLocaleString()}
                                       </span>
-                                    </div>
-
-                                    <div className="text-base md:text-sm font-bold text-gray-900 break-words leading-snug">
-                                      {(() => {
-                                        const { label, description } =
-                                          getClassDisplayParts(slot.title);
-                                        return (
-                                          <>
-                                            <span className="block">{label}</span>
-                                            {description && (
-                                              <span className="block text-sm md:text-xs text-gray-700">
-                                                {description}
-                                              </span>
-                                            )}
-                                          </>
-                                        );
-                                      })()}
-                                    </div>
-                                    {slot.premium && (
-                                      <div className="mt-1 flex flex-wrap gap-1">
-                                        <span className="inline-block bg-amber-100 text-amber-800 text-[11px] font-semibold px-2 py-0.5 rounded">
-                                          지상 1h + 수중 1h
-                                        </span>
-                                        <span className="inline-block bg-amber-100 text-amber-800 text-[11px] font-semibold px-2 py-0.5 rounded">
-                                          레인 당 4명 코칭
-                                        </span>
-                                      </div>
-                                    )}
-                                    <div className="flex justify-end gap-2 mt-2 sm:mt-2 flex-wrap">
-                                      {(() => {
-                                        const laneBadge: Record<
-                                          string,
-                                          string
-                                        > = {
-                                          "1레인": "1자리 남음",
-                                          "2레인": "마감임박",
-                                          "3레인": "2자리 남음",
-                                          "4레인": "마감임박",
-                                          "5레인": "1자리 남음",
-                                        };
-                                        const label =
-                                          isFull || hasPayment
-                                            ? "마감"
-                                            : (laneBadge[slot.lane] ??
-                                              "마감임박");
-                                        if (!label) return null;
-                                        return (
-                                          <span className="bg-white border border-red-200 text-red-600 text-sm md:text-[11px] px-3 md:px-2 py-1.5 md:py-1 rounded font-bold">
-                                            {label}
-                                          </span>
-                                        );
-                                      })()}
                                       {isFull || hasPayment ? (
-                                        <span className="bg-orange-500 text-white text-sm md:text-[11px] px-3 md:px-2 py-1.5 md:py-1 rounded font-bold">
+                                        <span className="rounded bg-orange-500 px-2 py-1 text-[11px] font-bold text-white">
                                           예약대기
                                         </span>
                                       ) : (
-                                        <span className="bg-[#10B981] text-white text-sm md:text-[11px] px-3 md:px-2 py-1.5 md:py-1 rounded font-bold">
+                                        <span className="rounded bg-[#10B981] px-2 py-1 text-[11px] font-bold text-white">
                                           결제가능
                                         </span>
                                       )}
                                     </div>
                                   </button>
                                 );
-                                })}
-                              </div>
-                              <p className="mt-2 text-xs text-gray-500">
-                                ※ 최소 인원 미달 시 일부 클래스는 통합반으로 운영될 수 있습니다.
-                              </p>
+                              })}
                             </div>
+                            <p className="text-xs leading-5 text-gray-500">
+                              ※ 세부 A/B 반과 레인은 현장에서 맞춤 배정됩니다.
+                              <br />
+                              ※ 최소 인원 미달 시 일부 클래스는 통합반으로
+                              운영될 수 있습니다.
+                            </p>
                           </div>
-                          ))
-                        )}
-                      </div>
+                        );
+                      })()}
                     </CardContent>
                   </Card>
 

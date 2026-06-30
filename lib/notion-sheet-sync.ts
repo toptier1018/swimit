@@ -56,16 +56,30 @@ export function formatNotionDateForSheet(iso: string): string {
   }
 }
 
-/** `[김포] 1부 특강 1레인 평영 A (초급)` 파싱 */
+/** `[은평 7/5] 1부 특강 자유형` 또는 레거시 `[김포] 1부 특강 1레인 평영 A (초급)` 파싱 */
 export function parseSelectedClassFull(full: string): {
   회차: string;
   레인: string;
   클래스: string;
 } {
+  const strokeMatch = full.match(
+    /^\[[^\]]+\]\s+(\d+부\s*특강)\s+(자유형|평영|접영)$/,
+  );
+  if (strokeMatch) {
+    const 회차 =
+      strokeMatch[1].replace(/\s+/g, " ").match(/\d+부/)?.[0] ?? strokeMatch[1];
+    return { 회차, 레인: "미배정", 클래스: strokeMatch[2] };
+  }
+
   const m = full.match(/^\[[^\]]+\]\s+(\d+부\s*특강)\s+(\d+레인)\s+(.+)$/);
   if (m) {
     const 회차 = m[1].replace(/\s+/g, " ").match(/\d+부/)?.[0] ?? m[1];
-    return { 회차, 레인: m[2], 클래스: m[3].trim() };
+    const title = m[3].trim();
+    let 클래스 = title;
+    if (title.includes("자유형")) 클래스 = "자유형";
+    else if (title.includes("평영")) 클래스 = "평영";
+    else if (title.includes("접영")) 클래스 = "접영";
+    return { 회차, 레인: m[2], 클래스 };
   }
   return { 회차: "", 레인: "", 클래스: full };
 }

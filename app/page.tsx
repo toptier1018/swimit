@@ -1421,16 +1421,6 @@ export default function SwimmingClassPage() {
       return false;
     }
 
-    if (!formData.location) {
-      toast({
-        title: "거주지역 입력 필요",
-        description: "수업 안내를 위해 거주지역을 입력해주세요.",
-        variant: "destructive",
-      });
-      console.log("[신청/결제] 거주지역 미입력 - 결제 차단");
-      return false;
-    }
-
     if (!formData.swimmingExperience) {
       toast({
         title: "수영 경력 선택 필요",
@@ -2895,7 +2885,7 @@ export default function SwimmingClassPage() {
                     <div className="space-y-2">
                       <Label className="text-sm font-semibold flex items-center gap-1">
                         <User className="h-4 w-4" />
-                        성별 <span className="text-red-500">*</span>
+                        성별
                       </Label>
                       <RadioGroup
                         value={formData.gender}
@@ -2932,7 +2922,7 @@ export default function SwimmingClassPage() {
                         className="text-sm font-semibold flex items-center gap-1"
                       >
                         <MapPinned className="h-4 w-4" />
-                        거주지역 <span className="text-red-500">*</span>
+                        거주지역
                       </Label>
                       <Input
                         id="location"
@@ -2968,7 +2958,8 @@ export default function SwimmingClassPage() {
                     {/* Swimming Experience Survey */}
                     <div className="space-y-2">
                       <Label className="text-sm font-semibold flex items-center gap-1">
-                        수영을 배우신 지 얼마나 되셨나요?
+                        수영을 배우신 지 얼마나 되셨나요?{" "}
+                        <span className="text-red-500">*</span>
                       </Label>
                       <RadioGroup
                         value={formData.swimmingExperience}
@@ -3363,8 +3354,7 @@ export default function SwimmingClassPage() {
                       if (
                         formData.name &&
                         formData.phone &&
-                        formData.gender &&
-                        formData.location &&
+                        formData.swimmingExperience &&
                         agreeAll
                       ) {
                         // 개인정보 입력 단계: Notion 조회 후 있으면 재사용, 없으면 신규 생성
@@ -3418,7 +3408,6 @@ export default function SwimmingClassPage() {
                     disabled={
                       !formData.name ||
                       !formData.phone ||
-                      !formData.location ||
                       !formData.swimmingExperience ||
                       !agreeAll ||
                       isSubmitting
@@ -3667,7 +3656,7 @@ export default function SwimmingClassPage() {
                         <div className="space-y-2">
                           <Label className="text-sm font-semibold flex items-center gap-1">
                             <User className="h-4 w-4" />
-                            성별 <span className="text-red-500">*</span>
+                            성별
                           </Label>
                           <RadioGroup
                             value={formData.gender}
@@ -3703,7 +3692,7 @@ export default function SwimmingClassPage() {
                             className="text-sm font-semibold flex items-center gap-1"
                           >
                             <MapPinned className="h-4 w-4" />
-                            거주지역 <span className="text-red-500">*</span>
+                            거주지역
                           </Label>
                           <Input
                             id="combined-location"
@@ -3741,7 +3730,8 @@ export default function SwimmingClassPage() {
 
                       <div className="space-y-2">
                         <Label className="text-sm font-semibold flex items-center gap-1">
-                          수영을 배우신 지 얼마나 되셨나요?
+                          수영을 배우신 지 얼마나 되셨나요?{" "}
+                          <span className="text-red-500">*</span>
                         </Label>
                         <RadioGroup
                           value={formData.swimmingExperience}
@@ -4034,7 +4024,6 @@ export default function SwimmingClassPage() {
                         !selectedTimeSlot ||
                         !formData.name ||
                         !formData.phone ||
-                        !formData.location ||
                         !formData.swimmingExperience ||
                         !agreeAll ||
                         isSubmitting

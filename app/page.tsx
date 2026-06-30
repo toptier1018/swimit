@@ -191,19 +191,54 @@ const STROKE_CATALOG: Record<
   자유형: {
     icon: "🏊",
     label: "자유형｜현장 맞춤 배정",
-    description: "숨참·가라앉음 / 장거리·효율 교정",
+    description:
+      "25m만 가도 숨이 차거나 다리가 가라앉는 분, 장거리가 힘든 분을 위한 저항 교정",
   },
   평영: {
     icon: "🐸",
     label: "평영｜현장 맞춤 배정",
-    description: "제자리 탈출 / 추진력·타이밍 교정",
+    description:
+      "킥을 차도 앞으로 안 나가거나 호흡 타이밍이 어려운 분을 위한 추진력 진단",
   },
   접영: {
     icon: "🦋",
     label: "접영｜현장 맞춤 배정",
-    description: "첫 25m 완주 / 50m 리듬 교정",
+    description:
+      "첫 25m가 어렵거나 호흡 때 몸이 무너지고 허리만 아픈 분을 위한 리듬 교정",
   },
 };
+
+const PROBLEM_CHECKLIST = [
+  "25m만 가도 숨이 찹니다.",
+  "힘은 많이 드는데 앞으로 안 나갑니다.",
+  "평영 킥을 차도 추진이 없습니다.",
+  "접영을 하면 허리만 아픕니다.",
+  "유튜브를 봐도 내 문제가 무엇인지 모르겠습니다.",
+  "어깨가 항상 아픕니다.",
+];
+
+const CARE_PROCESS_STEPS = [
+  { step: "STEP1", title: "사전 문제 체크", desc: "수영 경력, 통증, 가장 답답한 문제를 먼저 확인합니다." },
+  { step: "STEP2", title: "Before 수중 촬영", desc: "현재 자세와 물속 움직임을 영상으로 남깁니다." },
+  { step: "STEP3", title: "저항 원인 진단", desc: "숨참, 가라앉음, 통증이 어디서 시작되는지 찾습니다." },
+  { step: "STEP4", title: "맞춤 드릴 및 교정", desc: "문제 원인에 맞는 드릴로 바로 몸에서 바꿔봅니다." },
+  { step: "STEP5", title: "After 촬영", desc: "교정 후 움직임을 다시 촬영해 변화를 확인합니다." },
+  { step: "STEP6", title: "1:1 영상 피드백", desc: "수업 후 혼자 연습할 방향까지 영상 기반으로 안내합니다." },
+];
+
+const TRUST_METRICS = [
+  { value: "누적", label: "수강생 데이터 기반 진단" },
+  { value: "Before/After", label: "수중 촬영 비교" },
+  { value: "1:1", label: "개인별 영상 피드백" },
+  { value: "최대 7명", label: "레인당 소수 정예" },
+];
+
+const REVIEW_QUOTES = [
+  "가라앉는 이유를 처음 알았습니다.",
+  "힘을 빼라는 말의 의미를 이해했습니다.",
+  "평영 킥이 왜 안 나가는지 알게 됐습니다.",
+  "25m가 훨씬 편해졌습니다.",
+];
 
 const UNASSIGNED_LANE = "미배정";
 
@@ -2230,22 +2265,54 @@ export default function SwimmingClassPage() {
                 <CardContent className="p-4 sm:p-5">
                   <div className="space-y-6 text-sm sm:text-[15px] text-gray-700 leading-6 sm:leading-7">
                     {/* Main Title */}
-                    <div className="space-y-3">
-                      <h3 className="text-[26px] sm:text-[30px] font-bold tracking-tight leading-tight text-gray-900">
-                        수영, 왜 나는 항상 제자리걸음일까요?
+                    <div className="space-y-4">
+                      <div className="inline-flex rounded-full border border-blue-200 bg-white px-3 py-1 text-xs font-bold text-blue-700">
+                        수영 클리닉 · 저항 진단 특강
+                      </div>
+                      <h3 className="text-[27px] sm:text-[32px] font-bold tracking-tight leading-tight text-gray-950">
+                        25m만 가도 숨이 차고 몸이 가라앉는다면,
+                        <br className="hidden sm:block" />
+                        문제는 체력이 아니라{" "}
+                        <span className="text-blue-700">'저항'</span>일 수 있습니다.
                       </h3>
-                      <p className="text-base sm:text-[17px] font-medium text-gray-800 leading-6 sm:leading-7">
-                        매일 숨이 차고,
+                      <p className="text-base sm:text-[17px] font-medium text-gray-800 leading-7">
+                        스윔잇은 많이 수영시키는 특강이 아닙니다.
                         <br />
-                        어깨가 아픈{" "}
-                        <span className="font-bold text-red-600">
-                          진짜 이유
+                        내 몸에서 왜 저항이 생기는지 직접 찾아 교정하는{" "}
+                        <span className="font-bold text-blue-700">
+                          저항 진단 특강
                         </span>
-                        를 알고 싶으신가요?
+                        입니다.
                       </p>
-                      <p className="text-lg sm:text-xl font-bold text-red-600 leading-tight">
-                        단 하루, 당신의 수영 인생이 바뀝니다.
-                      </p>
+
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        <Button
+                          size="lg"
+                          className="w-full text-base font-bold"
+                          onClick={() => {
+                            console.log("[CTA] Hero 지역 특강 보기 클릭");
+                            document
+                              .getElementById("schedule-section")
+                              ?.scrollIntoView({
+                                behavior: "smooth",
+                                block: "start",
+                              });
+                          }}
+                        >
+                          가장 가까운 지역 특강 보기
+                        </Button>
+                        <Button
+                          size="lg"
+                          variant="outline"
+                          className="w-full border-blue-200 bg-white text-base font-bold text-blue-700 hover:bg-blue-50"
+                          onClick={() => {
+                            console.log("[CTA] Hero 카카오톡 진단 문의 클릭");
+                            window.open("https://pf.kakao.com/_dXUgn/chat", "_blank");
+                          }}
+                        >
+                          내 수영 진단받기
+                        </Button>
+                      </div>
 
                       {/* 비포/애프터 영상 */}
                       <div className="w-full rounded-xl overflow-hidden shadow-md relative" style={{ paddingBottom: "56.25%" }}>
@@ -2257,149 +2324,133 @@ export default function SwimmingClassPage() {
                           className="absolute inset-0 w-full h-full"
                         />
                       </div>
+                    </div>
 
-                      <p className="text-sm sm:text-[15px] text-gray-700 leading-6 sm:leading-7">
-                        믿기 힘드시겠지만,
-                        <br />
-                        <span className="font-bold text-gray-900">
-                          "물과 싸우지 않는 법"
-                        </span>
-                        을 알면 수영은 놀랍도록 편해집니다.
+                    {/* Problem Checklist */}
+                    <div className="space-y-3 rounded-2xl border border-blue-100 bg-white p-4 shadow-sm">
+                      <p className="text-base sm:text-lg font-bold text-gray-950">
+                        혹시 하나라도 해당되나요?
+                      </p>
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        {PROBLEM_CHECKLIST.map((item) => (
+                          <div
+                            key={item}
+                            className="flex items-start gap-2 rounded-xl bg-blue-50/70 px-3 py-2.5 text-sm font-semibold text-gray-800"
+                          >
+                            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" />
+                            <span>{item}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold leading-6 text-white">
+                        문제는 운동신경이 아니라, 내 몸에서 생기는 저항을 아직
+                        정확히 보지 못했기 때문일 수 있습니다.
                       </p>
                     </div>
 
-                    {/* Problem Section */}
-                    <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
-                      <p className="text-base sm:text-lg font-bold text-gray-900">
-                        혹시 이런 경험 있으신가요?
+                    {/* Differentiation Section */}
+                    <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                      <p className="text-base sm:text-lg font-bold text-gray-950">
+                        왜 스윔잇은 다른 특강과 다를까요?
                       </p>
-                      <ul className="space-y-2 text-sm sm:text-[15px] list-disc pl-5 marker:text-gray-400 leading-6">
-                        <li>
-                          남들은 편하게 몇 바퀴씩 도는데
-                          <br />
-                          나만 25m 가기가 벅차다
-                        </li>
-                        <li>
-                          건강하려고 시작했는데 오히려 어깨와 허리가 쑤신다
-                        </li>
-                        <li>
-                          유튜브를 아무리 봐도
-                          <br />
-                          내 자세가 뭐가 문제인지 모르겠다
-                        </li>
-                      </ul>
-                      <p className="text-sm sm:text-[15px] font-semibold text-gray-900">
-                        문제는 운동신경이 아닙니다.
-                      </p>
-                      <p className="text-sm sm:text-[15px] text-gray-700 leading-6">
-                        물은 공기보다 훨씬 무겁기 때문에{" "}
-                        <span className="font-bold text-red-600">
-                          힘으로 버티면 더 가라앉을 수 밖에 없습니다.
-                        </span>
-                      </p>
-                      <p className="text-sm sm:text-[15px] font-semibold text-gray-900 leading-6">
-                        그래서 수영이 막히는 분들이 가장 빠르게 실력을 올리는 유일한 길은{" "}
-                        <span className="font-bold text-red-600">
-                          "힘을 빼고 저항을 줄이는 것"
-                        </span>
-                        입니다.
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                          <p className="text-xs font-bold text-gray-500">
+                            대부분의 특강
+                          </p>
+                          <p className="mt-2 text-lg font-bold text-gray-900">
+                            "어떻게 해야 하는지"
+                          </p>
+                          <p className="mt-1 text-sm text-gray-600">
+                            동작과 방법을 먼저 설명합니다.
+                          </p>
+                        </div>
+                        <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
+                          <p className="text-xs font-bold text-blue-600">
+                            스윔잇
+                          </p>
+                          <p className="mt-2 text-lg font-bold text-blue-900">
+                            "왜 안 되는지"
+                          </p>
+                          <p className="mt-1 text-sm text-blue-800">
+                            앞으로 안 나가는 원인부터 찾습니다.
+                          </p>
+                        </div>
+                      </div>
+                      <p className="text-sm sm:text-[15px] leading-6 text-gray-700">
+                        왜 숨이 차는지, 왜 물과 싸우는지, 왜 힘이 많이 드는지
+                        알아야 가장 빠르게 좋아질 수 있습니다. 스윔잇은 수중
+                        촬영과 현장 피드백으로 문제의 원인을 먼저 진단합니다.
                       </p>
                     </div>
 
-                    {/* Solution Section */}
-                    <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
-                      <p className="text-sm sm:text-[15px] text-gray-700 leading-6">
-                        <span className="font-bold text-gray-900">
-                          스윔잇(Swim-It)
-                        </span>
-                        은 단순한 강습 아닙니다.
-                        <br />
-                        <span className="font-bold text-red-600">
-                          내 수영이 안 되는 이유를
-                        </span>
-                        <br />
-                        <span className="font-bold text-red-600">
-                          그 자리 직접 확인 하고
-                          <br />
-                          교정하고 피드백하는 수업
-                        </span>
-                        입니다.
-                      </p>
-                      <p className="text-sm sm:text-[15px] text-gray-700 leading-6">
-                        국가대표급 선수와{" "}
-                        <span className="font-bold text-gray-900">
-                          15년 차 이상 베테랑 강사
-                        </span>
-                        들이 여러분의 영법을 정밀 진단합니다.
-                      </p>
-                      <p className="text-sm sm:text-[15px] font-semibold text-gray-900 leading-6">
-                        <span className="font-bold text-red-600">
-                          "저항을 줄이는 수영"
-                        </span>
-                        의 메커니즘을 몸에 심어드립니다.
-                      </p>
+                    {/* Process Section */}
+                    <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                      <div>
+                        <p className="text-base sm:text-lg font-bold text-gray-950">
+                          스윔잇 저항 진단 6단계 Process
+                        </p>
+                        <p className="mt-1 text-sm text-gray-600">
+                          Before / After를 비교하며, 수업 후 혼자 연습할 방향까지
+                          남깁니다.
+                        </p>
+                      </div>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        {CARE_PROCESS_STEPS.map((item) => (
+                          <div
+                            key={item.step}
+                            className="rounded-xl border border-slate-200 bg-slate-50 p-3"
+                          >
+                            <div className="text-xs font-bold text-blue-600">
+                              {item.step}
+                            </div>
+                            <div className="mt-1 font-bold text-gray-950">
+                              {item.title}
+                            </div>
+                            <p className="mt-1 text-sm leading-5 text-gray-600">
+                              {item.desc}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
                     </div>
 
-                    {/* Benefits Section */}
-                    <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
-                      <p className="text-base sm:text-lg font-bold text-gray-900">
-                        지금 신청하시면 받는{" "}
-                        <span className="text-red-600">스윔잇 올케어 시스템</span>
-                      </p>
-                      <ol className="space-y-3 text-sm sm:text-[15px] list-decimal pl-5 marker:font-semibold">
-                        <li className="rounded-lg border border-slate-200 bg-slate-50 p-3 pr-2">
-                          <span className="font-bold text-gray-900">
-                            <span className="text-red-600">수업 전</span>｜문제 사전 체크
-                          </span>
-                          <br />
-                          수영 경력, 고민, 불편한 부위를 미리 확인합니다.
-                        </li>
-                        <li className="rounded-lg border border-slate-200 bg-slate-50 p-3 pr-2">
-                          <span className="font-bold text-gray-900">
-                            <span className="text-red-600">수업 중</span>｜저항 원인 교정
-                          </span>
-                          <br />
-                          앞으로 안 나가고 힘든 이유를 찾아 바로 교정합니다.
-                        </li>
-                        <li className="rounded-lg border border-slate-200 bg-slate-50 p-3 pr-2">
-                          <span className="font-bold text-gray-900">
-                            <span className="text-red-600">수업 후</span>｜수중 영상 1:1 피드백
-                          </span>
-                          <br />
-                          촬영 영상을 바탕으로 이후 연습 방법까지 안내드립니다.
-                        </li>
-                      </ol>
+                    {/* Trust Metrics */}
+                    <div className="grid gap-3 rounded-2xl border border-blue-100 bg-blue-50 p-4 sm:grid-cols-4">
+                      {TRUST_METRICS.map((metric) => (
+                        <div
+                          key={metric.label}
+                          className="rounded-xl bg-white p-3 text-center shadow-sm"
+                        >
+                          <div className="text-lg font-black text-blue-700">
+                            {metric.value}
+                          </div>
+                          <div className="mt-1 text-xs font-semibold leading-4 text-gray-600">
+                            {metric.label}
+                          </div>
+                        </div>
+                      ))}
                     </div>
-
                   </div>
                 </CardContent>
               </Card>
 
               {/* CTA Copy Section */}
-              <div className="order-4 w-full mt-6 rounded-2xl border border-orange-200 bg-orange-50 p-4 sm:p-5 shadow-sm">
-                <p className="text-base sm:text-lg font-bold text-orange-800 mb-2.5">
-                  마감 주의
+              <div className="order-4 w-full mt-6 rounded-2xl border border-blue-200 bg-blue-50 p-4 sm:p-5 shadow-sm">
+                <p className="text-base sm:text-lg font-bold text-blue-900 mb-2.5">
+                  런칭 특가로 진행 중입니다
                 </p>
                 <p className="text-sm sm:text-[15px] text-gray-900 leading-6">
-                  제대로 된 코칭을 위해{" "}
-                  <span className="font-bold text-red-600">소수 정예</span>로만
-                  진행합니다.
+                  스윔잇은 많은 인원을 한 번에 돌리는 수업이 아니라, 한 명 한 명
+                  수중 움직임을 보고 직접 교정하는 진단형 특강입니다.
                 </p>
                 <p className="mt-2 text-sm sm:text-[15px] text-gray-700 leading-6">
-                  현재 유튜브 홍보 직후라 실시간으로 자리가 차고 있습니다.
+                  레인당 최대 7명 기준으로 운영하며, Before / After 촬영과 1:1 영상
+                  피드백까지 포함됩니다.
                 </p>
-                <p className="mt-2.5 text-sm sm:text-[15px] font-bold text-red-600 leading-6">
-                  "다음에 해야지"라고 생각하는 순간,
-                  <br />
-                  가격은 오르고 자리는 없습니다.
-                </p>
-                <p className="mt-2 text-sm sm:text-[15px] text-gray-900 leading-6">
-                  가장 저렴한 가격으로 최고의 코칭을 받을 기회,
-                </p>
-                <p className="text-sm sm:text-[15px] text-gray-900 leading-6">
-                  <span className="font-bold text-red-600">
-                    지금 바로 선점하세요.
-                  </span>
+                <p className="mt-2.5 text-sm sm:text-[15px] font-bold text-blue-800 leading-6">
+                  단순히 수업을 듣는 것이 아니라, 내 수영의 문제를 진단받는
+                  시간으로 설계했습니다.
                 </p>
               </div>
 
@@ -2407,8 +2458,12 @@ export default function SwimmingClassPage() {
               <section className="order-5 w-full mt-6 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
                 <div className="mx-auto max-w-2xl">
                   <h3 className="text-lg sm:text-xl font-bold text-gray-900">
-                    실제 수강생 후기
+                    문제 해결 중심 실제 후기
                   </h3>
+                  <p className="mt-1 text-sm text-gray-600">
+                    "좋았다"보다 중요한 것은, 무엇이 문제였는지 알게 됐다는
+                    변화입니다.
+                  </p>
 
                   <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3 sm:p-4">
                     <div className="overflow-hidden rounded-xl bg-white">
@@ -2422,22 +2477,26 @@ export default function SwimmingClassPage() {
 
                     <div className="mt-4 space-y-3">
                       <p className="text-base sm:text-lg font-bold text-gray-900 leading-tight">
-                        단 하루 만에 이렇게 바뀝니다.
+                        Before / After의 차이는 원인을 찾는 데서 시작됩니다.
                       </p>
 
-                      <div className="space-y-2 text-sm sm:text-[15px] text-gray-800 leading-6">
-                        <p className="rounded-lg bg-white px-3 py-2 shadow-sm">“25m도 힘들었는데 50m가 편해졌어요”</p>
-                        <p className="rounded-lg bg-white px-3 py-2 shadow-sm">“가라앉는 이유를 처음 알았습니다”</p>
-                        <p className="rounded-lg bg-white px-3 py-2 shadow-sm">“힘 빼는 법을 알고 나니까 쭉~ 나아갑니다”</p>
+                      <div className="grid gap-2 text-sm sm:text-[15px] text-gray-800 leading-6 sm:grid-cols-2">
+                        {REVIEW_QUOTES.map((quote) => (
+                          <p
+                            key={quote}
+                            className="rounded-lg bg-white px-3 py-2 font-semibold shadow-sm"
+                          >
+                            "{quote}"
+                          </p>
+                        ))}
                       </div>
 
                       <p className="text-sm sm:text-[15px] leading-6 text-gray-700">
-                        이건 물과 싸우던 분들이
-                        <br />
+                        물과 싸우던 분들이 달라지는 이유는 단순 반복이 아니라{" "}
                         <span className="font-bold text-red-600">
-                          ‘저항을 줄이는 방법’
+                          내 몸에서 생기는 저항의 원인
                         </span>
-                        을 알았기 때문입니다.
+                        을 확인했기 때문입니다.
                       </p>
 
                     </div>
@@ -2446,7 +2505,10 @@ export default function SwimmingClassPage() {
               </section>
 
               {/* Schedule & Region Notice (Step 1) */}
-              <section className="order-2 w-full mt-6 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5">
+              <section
+                id="schedule-section"
+                className="order-2 w-full mt-6 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5 scroll-mt-4"
+              >
                 <div className="mb-3 sm:mb-4">
                   <h3 className="text-lg sm:text-xl font-bold text-gray-900 flex items-center gap-2">
                     📌 수강 일정 · 지역 안내
@@ -2716,7 +2778,7 @@ export default function SwimmingClassPage() {
                     )}
                   </div>
                   <div className="mt-3 space-y-1 text-xs sm:text-sm text-gray-700 leading-5">
-                    <p>※ 선착순 마감 / 레인별 7명 제한</p>
+                    <p>※ 소수 정예 운영 / 모집 인원 도달 시 예약대기 전환</p>
                     <p>※ 신청 후 상세 위치 안내됩니다</p>
                   </div>
                 </div>
@@ -2994,7 +3056,7 @@ export default function SwimmingClassPage() {
                         className="text-sm font-semibold flex items-center gap-1"
                       >
                         <Mail className="h-4 w-4" />
-                        이메일 (특강/ 수영 제품 할인 정보를 제공합니다)
+                        이메일 (특강/수영 제품 소식을 제공합니다)
                       </Label>
                       <Input
                         id="email"
@@ -3767,7 +3829,7 @@ export default function SwimmingClassPage() {
                           className="text-sm font-semibold flex items-center gap-1"
                         >
                           <Mail className="h-4 w-4" />
-                          이메일 (특강/ 수영 제품 할인 정보를 제공합니다)
+                          이메일 (특강/수영 제품 소식을 제공합니다)
                         </Label>
                         <Input
                           id="combined-email"
@@ -4029,14 +4091,11 @@ export default function SwimmingClassPage() {
                         {selectedTimeSlot &&
                           !selectedTimeSlot.isWaitlist &&
                           selectedTimeSlot.available && (
-                            <div className="mb-3 space-y-1">
-                              <div className="flex justify-between text-sm text-gray-600">
-                                <span>원가</span>
-                                <span className="line-through">₩200,000</span>
-                              </div>
-                              <div className="flex justify-between text-sm text-red-600 font-semibold">
-                                <span>할인</span>
-                                <span>-₩{(200000 - (selectedTimeSlot?.price ?? 80000)).toLocaleString()}</span>
+                            <div className="mb-3 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm leading-6 text-blue-900">
+                              <div className="font-bold">런칭 특가 적용</div>
+                              <div>
+                                사전 문제 체크, Before / After 수중 촬영, 현장 교정,
+                                1:1 영상 피드백이 포함됩니다.
                               </div>
                             </div>
                           )}

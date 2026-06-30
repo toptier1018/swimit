@@ -207,17 +207,17 @@ const STROKE_CATALOG: Record<
 > = {
   자유형: {
     icon: "🏊",
-    label: "자유형 A/B｜현장 맞춤 배정",
+    label: "자유형｜현장 맞춤 배정",
     description: "숨참·가라앉음 / 장거리·효율 교정",
   },
   평영: {
     icon: "🐸",
-    label: "평영 A/B｜현장 맞춤 배정",
+    label: "평영｜현장 맞춤 배정",
     description: "제자리 탈출 / 추진력·타이밍 교정",
   },
   접영: {
     icon: "🦋",
-    label: "접영 A/B｜현장 맞춤 배정",
+    label: "접영｜현장 맞춤 배정",
     description: "첫 25m 완주 / 50m 리듬 교정",
   },
 };
@@ -3473,7 +3473,7 @@ export default function SwimmingClassPage() {
                       );
                     })}
                     <p className="text-xs leading-5 text-gray-500">
-                      A/B 세부 반은 현장에서 실력과 목표에 맞춰 배정됩니다.
+                      세부 반은 현장에서 실력과 목표에 맞춰 배정됩니다.
                     </p>
                   </div>
                 </details>
@@ -3495,7 +3495,7 @@ export default function SwimmingClassPage() {
                         </h4>
                       </div>
                       <p className="text-base md:text-sm text-blue-100 ml-8 md:ml-7">
-                        원하시는 영법을 선택해주세요. A/B는 현장에서 맞춤 배정됩니다.
+                        원하시는 영법을 선택해주세요. 현장에서 맞춤 배정됩니다.
                       </p>
                     </div>
                     <CardContent className="p-4 sm:p-5">
@@ -3596,7 +3596,7 @@ export default function SwimmingClassPage() {
                               })}
                             </div>
                             <p className="text-xs leading-5 text-gray-500">
-                              ※ 세부 A/B 반과 레인은 현장에서 맞춤 배정됩니다.
+                              ※ 세부 반과 레인은 현장에서 맞춤 배정됩니다.
                               <br />
                               ※ 최소 인원 미달 시 일부 클래스는 통합반으로
                               운영될 수 있습니다.

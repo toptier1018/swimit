@@ -1212,11 +1212,6 @@ export default function SwimmingClassPage() {
   selectedClassRef.current = selectedClass;
 
   const selectedClassIdNum = selectedClass ? Number(selectedClass) : NaN;
-  const activeTimetable =
-    Number.isFinite(selectedClassIdNum) &&
-    TIMETABLE_BY_CLASS_ID[selectedClassIdNum]
-      ? TIMETABLE_BY_CLASS_ID[selectedClassIdNum]
-      : [];
 
   // selectedClass 변경 시 해당 특강 월로 이동, 미선택 시 KST 현재 월
   useEffect(() => {

@@ -1426,9 +1426,21 @@ export default function SwimmingClassPage() {
 
   // 달력: 한국 시간(KST) 기준 현재 연·월로 초기화
   const kstTodayInit = getKoreanTodayParts();
+  const initialActiveClasses = getActiveClasses();
+  const initialScheduleMonth =
+    initialActiveClasses.length > 0
+      ? [...initialActiveClasses].sort((a, b) => {
+          if (a.year !== b.year) return a.year - b.year;
+          if (a.month !== b.month) return a.month - b.month;
+          return a.dateNum - b.dateNum;
+        })[0].month
+      : kstTodayInit.month;
   const [calendarMonth, setCalendarMonth] = useState(kstTodayInit.month);
   const [calendarYear, setCalendarYear] = useState(kstTodayInit.year);
   const [today, setToday] = useState(kstTodayInit);
+  const [activeScheduleMonth, setActiveScheduleMonth] = useState(
+    initialScheduleMonth,
+  );
   const selectedClassRef = useRef<string | null>(null);
   selectedClassRef.current = selectedClass;
 
@@ -1549,6 +1561,38 @@ export default function SwimmingClassPage() {
   const selectedScheduleClass = selectedClass
     ? classes.find((c) => String(c.id) === selectedClass) || null
     : null;
+
+  const activeClasses = getActiveClasses();
+  const scheduleTabMonths = Array.from(
+    new Set(activeClasses.map((c) => c.month)),
+  ).sort((a, b) => a - b);
+  const effectiveScheduleMonth = scheduleTabMonths.includes(activeScheduleMonth)
+    ? activeScheduleMonth
+    : (scheduleTabMonths[0] ?? activeScheduleMonth);
+  const activeScheduleClasses = activeClasses.filter(
+    (c) => c.month === effectiveScheduleMonth,
+  );
+
+  const handleScheduleMonthChange = (month: number) => {
+    setActiveScheduleMonth(month);
+    const classInMonth = activeClasses.find((c) => c.month === month);
+    if (classInMonth) {
+      setCalendarYear(classInMonth.year);
+      setCalendarMonth(month);
+    }
+    const selected = selectedClass
+      ? classes.find((c) => String(c.id) === selectedClass)
+      : null;
+    if (selected && selected.month !== month) {
+      setSelectedClass(null);
+      setSelectedTimeSlot(null);
+      setPaidPageId(null);
+      setOrderNumber("");
+      setRegionError(false);
+      console.log("[일정 탭] 다른 월로 전환 — 선택 일정 초기화:", month);
+    }
+    console.log("[일정 탭] 월별 탭 전환:", month);
+  };
 
   const getScheduleShortLabel = (classItem: ClassItem) =>
     `${classItem.locationCode} ${classItem.month}/${classItem.dateNum}`;
@@ -2621,6 +2665,43 @@ export default function SwimmingClassPage() {
                     📌 수강 일정 · 지역 안내
                   </h3>
                 </div>
+                {scheduleTabMonths.length > 1 && (
+                  <div
+                    className="mb-4 flex gap-2 overflow-x-auto pb-1"
+                    role="tablist"
+                    aria-label="월별 일정"
+                  >
+                    {scheduleTabMonths.map((month) => {
+                      const isActive = effectiveScheduleMonth === month;
+                      const count = activeClasses.filter(
+                        (c) => c.month === month,
+                      ).length;
+                      return (
+                        <button
+                          key={month}
+                          type="button"
+                          role="tab"
+                          aria-selected={isActive}
+                          onClick={() => handleScheduleMonthChange(month)}
+                          className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+                            isActive
+                              ? "bg-primary text-primary-foreground shadow-sm"
+                              : "bg-white text-gray-600 border border-slate-200 hover:border-primary/40 hover:text-primary"
+                          }`}
+                        >
+                          {month}월 일정
+                          <span
+                            className={`ml-1.5 text-xs font-medium ${
+                              isActive ? "text-primary-foreground/80" : "text-gray-400"
+                            }`}
+                          >
+                            ({count})
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
                 <div className="grid md:grid-cols-[300px_1fr] gap-4 md:gap-6">
                   {/* Left: Calendar */}
                   <div>
@@ -2755,7 +2836,7 @@ export default function SwimmingClassPage() {
                       </h3>
                     </div>
                     <div className="space-y-3">
-                      {getActiveClasses().map((classItem) => {
+                      {activeScheduleClasses.map((classItem) => {
                         const isSelectedSchedule =
                           selectedClass === String(classItem.id);
                         return (

@@ -167,6 +167,59 @@ const classes: ClassItem[] = [
     spots: "레인당 7명 모집",
     scheduleSummaryLines: ["1부 10:00~12:00"],
   },
+  {
+    id: 11,
+    year: 2026,
+    location: "서울 은평구 · 삼정스포츠 수영장",
+    locationCode: "은평",
+    date: "8월 9일 (일)",
+    dateNum: 9,
+    month: 8,
+    venue: "삼정스포츠 수영장",
+    address: "서울 은평구 서오릉로 94 삼성타운아파트 지하2층",
+    spots: "영법별 14명 모집",
+    scheduleSummaryLines: ["1부 09:00~11:00"],
+  },
+  {
+    id: 12,
+    year: 2026,
+    location: "인천 청라 · 청라스카이스위밍",
+    locationCode: "청라",
+    date: "8월 16일 (일)",
+    dateNum: 16,
+    month: 8,
+    venue: "청라스카이스위밍",
+    address: "인천 서구 청라한내로 90 MK뷰 8층",
+    spots: "자유형 7명 · 평영 7명 · 접영 14명 모집",
+    scheduleSummaryLines: ["1부 10:00~12:00"],
+  },
+  {
+    id: 13,
+    year: 2026,
+    location: "경기 동탄 · 스윔스튜디오제이",
+    locationCode: "동탄",
+    date: "8월 23일 (일)",
+    dateNum: 23,
+    month: 8,
+    venue: "스윔스튜디오제이",
+    address:
+      "경기도 화성시 동탄구 동탄신리천로 414 경서타워 4층 스윔스튜디오제이",
+    spots: "자유형 7명 · 평영 7명 · 접영 14명 모집",
+    scheduleSummaryLines: ["1부 10:00~12:00"],
+  },
+  {
+    id: 14,
+    year: 2026,
+    location: "서울 목동 · 목동스포츠센터",
+    locationCode: "목동",
+    date: "8월 30일 (일)",
+    dateNum: 30,
+    month: 8,
+    venue: "목동스포츠센터",
+    address: "서울 양천구 목동서로 130",
+    spots: "영법별 14명 모집",
+    scheduleSummaryLines: ["1부 10:00~12:00"],
+  },
 ];
 
 const DEPOSIT_BANK_NAME = "농협";
@@ -393,6 +446,37 @@ const TIMETABLE_DONGTAN: TimetableRow[] = [
   },
 ];
 
+/** 삼정스포츠 수영장 8/9 특강 (서울 은평) */
+const TIMETABLE_SAMJEONG_AUGUST: TimetableRow[] = [
+  {
+    session: "1부 특강",
+    time: "09:00 ~ 11:00",
+    lanes: [
+      { lane: "1레인", title: "평영 A (초급)", price: 80000 },
+      { lane: "2레인", title: "평영 B (중급)", price: 80000 },
+      { lane: "3레인", title: "접영 A (초급)", price: 80000 },
+      { lane: "4레인", title: "접영 B (중급)", price: 80000 },
+      { lane: "5레인", title: "자유형 A (초급)", price: 80000 },
+      { lane: "6레인", title: "자유형 B (중급)", price: 80000 },
+    ],
+  },
+];
+
+/** 청라스카이스위밍 8/16 특강 (인천) */
+const TIMETABLE_CHEONGNA_AUGUST: TimetableRow[] = [
+  {
+    session: "1부 특강",
+    time: "10:00 ~ 12:00",
+    lanes: [
+      { lane: "1레인", title: "평영 A (초급)", price: 80000 },
+      { lane: "2레인", title: "접영 A (초급)", price: 80000 },
+      { lane: "3레인", title: "접영 B (중급)", price: 80000 },
+      { lane: "4레인", title: "자유형 A (초급)", price: 80000 },
+      { lane: "5레인", title: "", price: 0, closed: true },
+    ],
+  },
+];
+
 const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   3: TIMETABLE_SEOCHO,   // 5/31 서초
   4: TIMETABLE_KIMPO,    // 6/14 김포
@@ -402,6 +486,10 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   8: TIMETABLE_CHEONGNA, // 7/12 인천
   10: TIMETABLE_DONGTAN, // 7/19 동탄
   9: TIMETABLE_MOKDONG_JULY, // 7/26 목동
+  11: TIMETABLE_SAMJEONG_AUGUST, // 8/9 은평
+  12: TIMETABLE_CHEONGNA_AUGUST, // 8/16 청라
+  13: TIMETABLE_DONGTAN, // 8/23 동탄
+  14: TIMETABLE_MOKDONG_JULY, // 8/30 목동
 };
 
 const getAvailableStrokesForClass = (classId: number) => {
@@ -545,6 +633,21 @@ const migrateToStrokeClassKey = (key: string): string => {
 const resolveEnrollmentTargetKey = (classKey: string) =>
   migrateToStrokeClassKey(classKey);
 
+const DEFAULT_WAITLIST_THRESHOLDS_BY_CLASS: Record<string, number> = {
+  "[은평 8/9] 1부 특강 자유형": 14,
+  "[은평 8/9] 1부 특강 평영": 14,
+  "[은평 8/9] 1부 특강 접영": 14,
+  "[청라 8/16] 1부 특강 자유형": 7,
+  "[청라 8/16] 1부 특강 평영": 7,
+  "[청라 8/16] 1부 특강 접영": 14,
+  "[동탄 8/23] 1부 특강 자유형": 7,
+  "[동탄 8/23] 1부 특강 평영": 7,
+  "[동탄 8/23] 1부 특강 접영": 14,
+  "[목동 8/30] 1부 특강 자유형": 14,
+  "[목동 8/30] 1부 특강 평영": 14,
+  "[목동 8/30] 1부 특강 접영": 14,
+};
+
 /** 클래스별 모집 인원 조회 (레거시 레인 키도 영법 단위로 합침) */
 const resolveWaitlistThreshold = (
   className: string,
@@ -557,7 +660,11 @@ const resolveWaitlistThreshold = (
     if (!Number.isFinite(value) || value < 0) continue;
     resolved = resolved === undefined ? value : Math.max(resolved, value);
   }
-  return resolved ?? DEFAULT_WAITLIST_THRESHOLD;
+  return (
+    resolved ??
+    DEFAULT_WAITLIST_THRESHOLDS_BY_CLASS[target] ??
+    DEFAULT_WAITLIST_THRESHOLD
+  );
 };
 
 const normalizeWaitlistThresholds = (

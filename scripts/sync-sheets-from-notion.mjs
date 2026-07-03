@@ -87,13 +87,26 @@ const CLASS_DATES = {
   화성: "2026-06-21",
   목동: "2026-06-28",
   "목동7/26": "2026-07-26",
+  "목동8/30": "2026-08-30",
   은평: "2026-07-05",
+  "은평8/9": "2026-08-09",
   삼정: "2026-07-05",
   인천: "2026-07-12",
   청라: "2026-07-12",
+  "청라8/16": "2026-08-16",
+  동탄: "2026-07-19",
+  "동탄8/23": "2026-08-23",
+  스윔스튜디오제이: "2026-07-19",
 };
 
 function guessClassDate(region, selectedClass) {
+  const datedClassLabel = selectedClass.match(/^\[[^\]]*?(\d{1,2})\/(\d{1,2})\]/);
+  if (datedClassLabel) {
+    const month = datedClassLabel[1].padStart(2, "0");
+    const day = datedClassLabel[2].padStart(2, "0");
+    return `2026-${month}-${day}`;
+  }
+
   for (const [key, date] of Object.entries(CLASS_DATES)) {
     if (region.includes(key) || selectedClass.includes(key)) return date;
   }

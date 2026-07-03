@@ -64,6 +64,25 @@ function getEquivalentSettingsNames(className: string): string[] {
 /** 모집 인원 미설정 시 기본값 (관리자 모드에서 클래스별 변경 가능) */
 const DEFAULT_WAITLIST_THRESHOLD = 7;
 
+const DEFAULT_WAITLIST_THRESHOLDS_BY_CLASS: Record<string, number> = {
+  "[은평 8/9] 1부 특강 자유형": 14,
+  "[은평 8/9] 1부 특강 평영": 14,
+  "[은평 8/9] 1부 특강 접영": 14,
+  "[청라 8/16] 1부 특강 자유형": 7,
+  "[청라 8/16] 1부 특강 평영": 7,
+  "[청라 8/16] 1부 특강 접영": 14,
+  "[동탄 8/23] 1부 특강 자유형": 7,
+  "[동탄 8/23] 1부 특강 평영": 7,
+  "[동탄 8/23] 1부 특강 접영": 14,
+  "[목동 8/30] 1부 특강 자유형": 14,
+  "[목동 8/30] 1부 특강 평영": 14,
+  "[목동 8/30] 1부 특강 접영": 14,
+};
+
+function getDefaultWaitlistThreshold(className: string) {
+  return DEFAULT_WAITLIST_THRESHOLDS_BY_CLASS[className] ?? DEFAULT_WAITLIST_THRESHOLD;
+}
+
 /**
  * Notion에서 클래스 설정 전체 조회
  */
@@ -258,7 +277,11 @@ async function ensureClassSettingsPage(className: string) {
   const existing = await findClassPageIdByName(className);
   if (existing) return existing;
 
-  console.log("[Notion 생성] 클래스 설정 페이지 생성:", className);
+  const defaultThreshold = getDefaultWaitlistThreshold(className);
+  console.log("[Notion 생성] 클래스 설정 페이지 생성:", {
+    className,
+    defaultThreshold,
+  });
 
   const baseHeaders = {
     Authorization: `Bearer ${notionApiKey}`,
@@ -286,7 +309,7 @@ async function ensureClassSettingsPage(className: string) {
     {
       클래스명: { title: [{ text: { content: className } }] },
       "수동 예약대기": { checkbox: false },
-      "예약대기 기준": { number: DEFAULT_WAITLIST_THRESHOLD },
+      "예약대기 기준": { number: defaultThreshold },
     },
     {
       클래스명: { title: [{ text: { content: className } }] },
@@ -295,7 +318,7 @@ async function ensureClassSettingsPage(className: string) {
     {
       클래스명: { rich_text: [{ text: { content: className } }] },
       "수동 예약대기": { checkbox: false },
-      "예약대기 기준": { number: DEFAULT_WAITLIST_THRESHOLD },
+      "예약대기 기준": { number: defaultThreshold },
     },
     {
       클래스명: { rich_text: [{ text: { content: className } }] },

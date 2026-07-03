@@ -2662,44 +2662,58 @@ export default function SwimmingClassPage() {
               >
                 <div className="mb-3 sm:mb-4">
                   <h3 className="text-lg sm:text-xl font-bold text-gray-900 flex items-center gap-2">
-                    📌 수강 일정 · 지역 안내
+                    📌{" "}
+                    {scheduleTabMonths.length > 1
+                      ? `${scheduleTabMonths.map((m) => `${m}월`).join("·")} `
+                      : scheduleTabMonths.length === 1
+                        ? `${scheduleTabMonths[0]}월 `
+                        : ""}
+                    수강 일정 · 지역 안내
                   </h3>
                 </div>
                 {scheduleTabMonths.length > 1 && (
-                  <div
-                    className="mb-4 flex gap-2 overflow-x-auto pb-1"
-                    role="tablist"
-                    aria-label="월별 일정"
-                  >
-                    {scheduleTabMonths.map((month) => {
-                      const isActive = effectiveScheduleMonth === month;
-                      const count = activeClasses.filter(
-                        (c) => c.month === month,
-                      ).length;
-                      return (
-                        <button
-                          key={month}
-                          type="button"
-                          role="tab"
-                          aria-selected={isActive}
-                          onClick={() => handleScheduleMonthChange(month)}
-                          className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-                            isActive
-                              ? "bg-primary text-primary-foreground shadow-sm"
-                              : "bg-white text-gray-600 border border-slate-200 hover:border-primary/40 hover:text-primary"
-                          }`}
-                        >
-                          {month}월 일정
-                          <span
-                            className={`ml-1.5 text-xs font-medium ${
-                              isActive ? "text-primary-foreground/80" : "text-gray-400"
+                  <div className="mb-4">
+                    <div
+                      className="flex rounded-xl border border-slate-200 bg-white p-1 shadow-sm"
+                      role="tablist"
+                      aria-label="월별 일정"
+                    >
+                      {scheduleTabMonths.map((month) => {
+                        const isActive = effectiveScheduleMonth === month;
+                        const count = activeClasses.filter(
+                          (c) => c.month === month,
+                        ).length;
+                        return (
+                          <button
+                            key={month}
+                            type="button"
+                            role="tab"
+                            aria-selected={isActive}
+                            onClick={() => handleScheduleMonthChange(month)}
+                            className={`flex-1 rounded-lg py-3 text-sm sm:text-base font-bold transition-all ${
+                              isActive
+                                ? "bg-primary text-primary-foreground shadow-md"
+                                : "text-gray-600 hover:bg-slate-50"
                             }`}
                           >
-                            ({count})
-                          </span>
-                        </button>
-                      );
-                    })}
+                            {month}월 일정
+                            <span
+                              className={`ml-1 text-xs sm:text-sm font-semibold ${
+                                isActive
+                                  ? "text-primary-foreground/85"
+                                  : "text-gray-400"
+                              }`}
+                            >
+                              ({count})
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <p className="mt-3 text-sm leading-5 text-gray-600">
+                      {scheduleTabMonths.map((m) => `${m}월`).join("·")} 특강
+                      모두 신청 가능합니다. 원하는 달을 선택해 주세요.
+                    </p>
                   </div>
                 )}
                 <div className="grid md:grid-cols-[300px_1fr] gap-4 md:gap-6">

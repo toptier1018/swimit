@@ -191,7 +191,7 @@ const classes: ClassItem[] = [
     venue: "청라스카이스위밍",
     address: "인천 서구 청라한내로 90 MK뷰 8층",
     spots: "자유형 7명 · 평영 7명 · 접영 14명 모집",
-    scheduleSummaryLines: ["1부 10:00~12:00"],
+    scheduleSummaryLines: ["1부 14:00~16:00"],
   },
   {
     id: 13,
@@ -205,7 +205,7 @@ const classes: ClassItem[] = [
     address:
       "경기도 화성시 동탄구 동탄신리천로 414 경서타워 4층 스윔스튜디오제이",
     spots: "자유형 7명 · 평영 7명 · 접영 14명 모집",
-    scheduleSummaryLines: ["1부 10:00~12:00"],
+    scheduleSummaryLines: ["1부 14:00~16:00"],
   },
   {
     id: 14,
@@ -218,7 +218,7 @@ const classes: ClassItem[] = [
     venue: "목동스포츠센터",
     address: "서울 양천구 목동서로 130",
     spots: "영법별 14명 모집",
-    scheduleSummaryLines: ["1부 10:00~12:00"],
+    scheduleSummaryLines: ["1부 14:00~16:00"],
   },
 ];
 
@@ -466,7 +466,7 @@ const TIMETABLE_SAMJEONG_AUGUST: TimetableRow[] = [
 const TIMETABLE_CHEONGNA_AUGUST: TimetableRow[] = [
   {
     session: "1부 특강",
-    time: "10:00 ~ 12:00",
+    time: "14:00 ~ 16:00",
     lanes: [
       { lane: "1레인", title: "평영 A (초급)", price: 80000 },
       { lane: "2레인", title: "접영 A (초급)", price: 80000 },
@@ -474,6 +474,22 @@ const TIMETABLE_CHEONGNA_AUGUST: TimetableRow[] = [
       { lane: "4레인", title: "자유형 A (초급)", price: 80000 },
       { lane: "5레인", title: "", price: 0, closed: true },
     ],
+  },
+];
+
+/** 스윔스튜디오제이 8/23 특강 (동탄) */
+const TIMETABLE_DONGTAN_AUGUST: TimetableRow[] = [
+  {
+    ...TIMETABLE_DONGTAN[0],
+    time: "14:00 ~ 16:00",
+  },
+];
+
+/** 목동스포츠센터 8/30 특강 */
+const TIMETABLE_MOKDONG_AUGUST: TimetableRow[] = [
+  {
+    ...TIMETABLE_MOKDONG_JULY[0],
+    time: "14:00 ~ 16:00",
   },
 ];
 
@@ -488,8 +504,8 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   9: TIMETABLE_MOKDONG_JULY, // 7/26 목동
   11: TIMETABLE_SAMJEONG_AUGUST, // 8/9 은평
   12: TIMETABLE_CHEONGNA_AUGUST, // 8/16 청라
-  13: TIMETABLE_DONGTAN, // 8/23 동탄
-  14: TIMETABLE_MOKDONG_JULY, // 8/30 목동
+  13: TIMETABLE_DONGTAN_AUGUST, // 8/23 동탄
+  14: TIMETABLE_MOKDONG_AUGUST, // 8/30 목동
 };
 
 const getAvailableStrokesForClass = (classId: number) => {

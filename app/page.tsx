@@ -168,19 +168,6 @@ const classes: ClassItem[] = [
     scheduleSummaryLines: ["1부 10:00~12:00"],
   },
   {
-    id: 11,
-    year: 2026,
-    location: "서울 은평구 · 삼정스포츠 수영장",
-    locationCode: "은평",
-    date: "8월 9일 (일)",
-    dateNum: 9,
-    month: 8,
-    venue: "삼정스포츠 수영장",
-    address: "서울 은평구 서오릉로 94 삼성타운아파트 지하2층",
-    spots: "영법별 14명 모집",
-    scheduleSummaryLines: ["1부 09:00~11:00"],
-  },
-  {
     id: 12,
     year: 2026,
     location: "인천 청라 · 청라스카이스위밍",
@@ -446,22 +433,6 @@ const TIMETABLE_DONGTAN: TimetableRow[] = [
   },
 ];
 
-/** 삼정스포츠 수영장 8/9 특강 (서울 은평) */
-const TIMETABLE_SAMJEONG_AUGUST: TimetableRow[] = [
-  {
-    session: "1부 특강",
-    time: "09:00 ~ 11:00",
-    lanes: [
-      { lane: "1레인", title: "평영 A (초급)", price: 80000 },
-      { lane: "2레인", title: "평영 B (중급)", price: 80000 },
-      { lane: "3레인", title: "접영 A (초급)", price: 80000 },
-      { lane: "4레인", title: "접영 B (중급)", price: 80000 },
-      { lane: "5레인", title: "자유형 A (초급)", price: 80000 },
-      { lane: "6레인", title: "자유형 B (중급)", price: 80000 },
-    ],
-  },
-];
-
 /** 청라스카이스위밍 8/16 특강 (인천) */
 const TIMETABLE_CHEONGNA_AUGUST: TimetableRow[] = [
   {
@@ -502,7 +473,6 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   8: TIMETABLE_CHEONGNA, // 7/12 인천
   10: TIMETABLE_DONGTAN, // 7/19 동탄
   9: TIMETABLE_MOKDONG_JULY, // 7/26 목동
-  11: TIMETABLE_SAMJEONG_AUGUST, // 8/9 은평
   12: TIMETABLE_CHEONGNA_AUGUST, // 8/16 청라
   13: TIMETABLE_DONGTAN_AUGUST, // 8/23 동탄
   14: TIMETABLE_MOKDONG_AUGUST, // 8/30 목동
@@ -650,9 +620,6 @@ const resolveEnrollmentTargetKey = (classKey: string) =>
   migrateToStrokeClassKey(classKey);
 
 const DEFAULT_WAITLIST_THRESHOLDS_BY_CLASS: Record<string, number> = {
-  "[은평 8/9] 1부 특강 자유형": 14,
-  "[은평 8/9] 1부 특강 평영": 14,
-  "[은평 8/9] 1부 특강 접영": 14,
   "[청라 8/16] 1부 특강 자유형": 7,
   "[청라 8/16] 1부 특강 평영": 7,
   "[청라 8/16] 1부 특강 접영": 14,

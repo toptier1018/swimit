@@ -65,9 +65,6 @@ function getEquivalentSettingsNames(className: string): string[] {
 const DEFAULT_WAITLIST_THRESHOLD = 7;
 
 const DEFAULT_WAITLIST_THRESHOLDS_BY_CLASS: Record<string, number> = {
-  "[은평 8/9] 1부 특강 자유형": 14,
-  "[은평 8/9] 1부 특강 평영": 14,
-  "[은평 8/9] 1부 특강 접영": 14,
   "[청라 8/16] 1부 특강 자유형": 7,
   "[청라 8/16] 1부 특강 평영": 7,
   "[청라 8/16] 1부 특강 접영": 14,

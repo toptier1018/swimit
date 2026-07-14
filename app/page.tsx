@@ -1410,19 +1410,16 @@ export default function SwimmingClassPage() {
   // 달력: 한국 시간(KST) 기준 현재 연·월로 초기화
   const kstTodayInit = getKoreanTodayParts();
   const initialActiveClasses = getActiveClasses();
-  const initialScheduleClass =
+  const initialScheduleMonth =
     initialActiveClasses.length > 0
       ? [...initialActiveClasses].sort((a, b) => {
-          if (a.year !== b.year) return b.year - a.year;
-          if (a.month !== b.month) return b.month - a.month;
-          return b.dateNum - a.dateNum;
-        })[0]
-      : null;
-  // 새로 모집하는 가장 먼 미래의 일정을 먼저 보여줍니다.
-  const initialScheduleMonth = initialScheduleClass?.month ?? kstTodayInit.month;
-  const initialScheduleYear = initialScheduleClass?.year ?? kstTodayInit.year;
-  const [calendarMonth, setCalendarMonth] = useState(initialScheduleMonth);
-  const [calendarYear, setCalendarYear] = useState(initialScheduleYear);
+          if (a.year !== b.year) return a.year - b.year;
+          if (a.month !== b.month) return a.month - b.month;
+          return a.dateNum - b.dateNum;
+        })[0].month
+      : kstTodayInit.month;
+  const [calendarMonth, setCalendarMonth] = useState(kstTodayInit.month);
+  const [calendarYear, setCalendarYear] = useState(kstTodayInit.year);
   const [today, setToday] = useState(kstTodayInit);
   const [activeScheduleMonth, setActiveScheduleMonth] = useState(
     initialScheduleMonth,
@@ -1432,19 +1429,24 @@ export default function SwimmingClassPage() {
 
   const selectedClassIdNum = selectedClass ? Number(selectedClass) : NaN;
 
-  // 선택한 특강이 있으면 해당 월의 달력으로 이동합니다.
+  // selectedClass 변경 시 해당 특강 월로 이동, 미선택 시 KST 현재 월
   useEffect(() => {
+    const kst = getKoreanTodayParts();
     if (selectedClass) {
       const selectedClassData = classes.find(
         (c) => c.id === Number(selectedClass),
       );
       if (selectedClassData) {
         setCalendarMonth(selectedClassData.month);
-        setCalendarYear(selectedClassData.year);
+        setCalendarYear(selectedClassData.year ?? kst.year);
         console.log(
-          `[달력] 선택 지역 연/월: ${selectedClassData.year}-${selectedClassData.month}`,
+          `[달력] 선택 지역 연/월: ${selectedClassData.year ?? kst.year}-${selectedClassData.month}`,
         );
       }
+    } else {
+      setCalendarMonth(kst.month);
+      setCalendarYear(kst.year);
+      console.log(`[달력] KST 현재 월로 복귀: ${kst.year}-${kst.month}`);
     }
   }, [selectedClass]);
 
@@ -2682,7 +2684,8 @@ export default function SwimmingClassPage() {
                             }`}
                           >
                             {month}월 일정
-                              {month === newestScheduleMonth && (
+                              {scheduleTabMonths.length > 1 &&
+                                month === newestScheduleMonth && (
                                 <span
                                   className={`ml-1.5 rounded-full px-1.5 py-0.5 text-[10px] font-extrabold tracking-wide ${
                                     isActive

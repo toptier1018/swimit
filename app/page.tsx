@@ -1410,16 +1410,19 @@ export default function SwimmingClassPage() {
   // 달력: 한국 시간(KST) 기준 현재 연·월로 초기화
   const kstTodayInit = getKoreanTodayParts();
   const initialActiveClasses = getActiveClasses();
-  const initialScheduleMonth =
+  const initialScheduleClass =
     initialActiveClasses.length > 0
       ? [...initialActiveClasses].sort((a, b) => {
-          if (a.year !== b.year) return a.year - b.year;
-          if (a.month !== b.month) return a.month - b.month;
-          return a.dateNum - b.dateNum;
-        })[0].month
-      : kstTodayInit.month;
-  const [calendarMonth, setCalendarMonth] = useState(kstTodayInit.month);
-  const [calendarYear, setCalendarYear] = useState(kstTodayInit.year);
+          if (a.year !== b.year) return b.year - a.year;
+          if (a.month !== b.month) return b.month - a.month;
+          return b.dateNum - a.dateNum;
+        })[0]
+      : null;
+  // 새로 모집하는 가장 먼 미래의 일정을 먼저 보여줍니다.
+  const initialScheduleMonth = initialScheduleClass?.month ?? kstTodayInit.month;
+  const initialScheduleYear = initialScheduleClass?.year ?? kstTodayInit.year;
+  const [calendarMonth, setCalendarMonth] = useState(initialScheduleMonth);
+  const [calendarYear, setCalendarYear] = useState(initialScheduleYear);
   const [today, setToday] = useState(kstTodayInit);
   const [activeScheduleMonth, setActiveScheduleMonth] = useState(
     initialScheduleMonth,
@@ -1429,24 +1432,19 @@ export default function SwimmingClassPage() {
 
   const selectedClassIdNum = selectedClass ? Number(selectedClass) : NaN;
 
-  // selectedClass 변경 시 해당 특강 월로 이동, 미선택 시 KST 현재 월
+  // 선택한 특강이 있으면 해당 월의 달력으로 이동합니다.
   useEffect(() => {
-    const kst = getKoreanTodayParts();
     if (selectedClass) {
       const selectedClassData = classes.find(
         (c) => c.id === Number(selectedClass),
       );
       if (selectedClassData) {
         setCalendarMonth(selectedClassData.month);
-        setCalendarYear(selectedClassData.year ?? kst.year);
+        setCalendarYear(selectedClassData.year);
         console.log(
-          `[달력] 선택 지역 연/월: ${selectedClassData.year ?? kst.year}-${selectedClassData.month}`,
+          `[달력] 선택 지역 연/월: ${selectedClassData.year}-${selectedClassData.month}`,
         );
       }
-    } else {
-      setCalendarMonth(kst.month);
-      setCalendarYear(kst.year);
-      console.log(`[달력] KST 현재 월로 복귀: ${kst.year}-${kst.month}`);
     }
   }, [selectedClass]);
 
@@ -1549,6 +1547,10 @@ export default function SwimmingClassPage() {
   const scheduleTabMonths = Array.from(
     new Set(activeClasses.map((c) => c.month)),
   ).sort((a, b) => a - b);
+  const newestScheduleMonth = scheduleTabMonths.at(-1);
+  const newestScheduleCount = newestScheduleMonth
+    ? activeClasses.filter((c) => c.month === newestScheduleMonth).length
+    : 0;
   const effectiveScheduleMonth = scheduleTabMonths.includes(activeScheduleMonth)
     ? activeScheduleMonth
     : (scheduleTabMonths[0] ?? activeScheduleMonth);
@@ -2680,6 +2682,17 @@ export default function SwimmingClassPage() {
                             }`}
                           >
                             {month}월 일정
+                              {month === newestScheduleMonth && (
+                                <span
+                                  className={`ml-1.5 rounded-full px-1.5 py-0.5 text-[10px] font-extrabold tracking-wide ${
+                                    isActive
+                                      ? "bg-white text-primary"
+                                      : "bg-orange-500 text-white"
+                                  }`}
+                                >
+                                  NEW
+                                </span>
+                              )}
                             <span
                               className={`ml-1 text-xs sm:text-sm font-semibold ${
                                 isActive
@@ -2693,10 +2706,25 @@ export default function SwimmingClassPage() {
                         );
                       })}
                     </div>
-                    <p className="mt-3 text-sm leading-5 text-gray-600">
-                      {scheduleTabMonths.map((m) => `${m}월`).join("·")} 특강
-                      모두 신청 가능합니다. 원하는 달을 선택해 주세요.
-                    </p>
+                    {newestScheduleMonth && (
+                      <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-orange-200 bg-orange-50 px-3 py-2.5 text-sm leading-5 text-orange-900">
+                        <p>
+                          ✨ <strong>{newestScheduleMonth}월 특강 {newestScheduleCount}개 일정</strong>을
+                          모집 중입니다.
+                        </p>
+                        {effectiveScheduleMonth !== newestScheduleMonth && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleScheduleMonthChange(newestScheduleMonth)
+                            }
+                            className="shrink-0 font-bold text-orange-700 underline underline-offset-2"
+                          >
+                            {newestScheduleMonth}월 보기
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
                 <div className="grid md:grid-cols-[300px_1fr] gap-4 md:gap-6">

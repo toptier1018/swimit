@@ -220,7 +220,11 @@ const classes: ClassItem[] = [
     venue: "더스포츠센터",
     address: "부산 해운대구 선수촌로 122 상가동 지하1층",
     spots: "영법별 14명 모집",
-    scheduleSummaryLines: ["1부 14:00~16:00", "자유형 · 평영 · 접영"],
+    scheduleSummaryLines: [
+      "1부 14:00~16:00",
+      "자유형 · 평영 · 접영",
+      "한 레인에 최대 7명 소수 정예 클래스",
+    ],
     badge: "부산 첫 특강",
     parking: "주차 3시간 지원 가능",
   },
@@ -3032,7 +3036,7 @@ export default function SwimmingClassPage() {
                               <div className="flex items-center gap-2 pt-2">
                                 <Clock className="h-4 w-4 text-green-600" />
                                 <span className="text-sm sm:text-[15px] font-bold text-green-600">
-                                  예약 가능 · {classItem.spots}
+                                  예약 가능
                                 </span>
                               </div>
                             </div>

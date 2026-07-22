@@ -3032,7 +3032,7 @@ export default function SwimmingClassPage() {
                               <div className="flex items-center gap-2 pt-2">
                                 <Clock className="h-4 w-4 text-green-600" />
                                 <span className="text-sm sm:text-[15px] font-bold text-green-600">
-                                  예약 가능 · 최대 7명 소수 정예 클래스
+                                  예약 가능 · 코치 1명 당 최대 7명 소수 정예 클래스
                                 </span>
                               </div>
                             </div>

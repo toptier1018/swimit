@@ -2699,7 +2699,7 @@ export default function SwimmingClassPage() {
                   <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-orange-200 bg-orange-50 p-3 sm:p-4">
                     <div>
                       <p className="text-sm sm:text-base font-bold text-orange-900">
-                        📍 부산 첫 수영 진단 특강 오픈 · 8월 30일(일)
+                        📍 부산 첫 특강 오픈 · 8월 30일(일)
                       </p>
                       <p className="mt-1 text-xs sm:text-sm text-orange-800">
                         부산 해운대 더스포츠센터에서 14:00~16:00에 진행됩니다.

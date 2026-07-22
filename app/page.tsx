@@ -59,6 +59,8 @@ type ClassItem = {
   address: string;
   spots: string;
   scheduleSummaryLines: string[];
+  badge?: string;
+  parking?: string;
 };
 
 const classes: ClassItem[] = [
@@ -206,6 +208,21 @@ const classes: ClassItem[] = [
     address: "서울 양천구 목동서로 130",
     spots: "영법별 14명 모집",
     scheduleSummaryLines: ["1부 14:00~16:00"],
+  },
+  {
+    id: 15,
+    year: 2026,
+    location: "부산 해운대 · 더스포츠센터",
+    locationCode: "부산",
+    date: "8월 30일 (일)",
+    dateNum: 30,
+    month: 8,
+    venue: "더스포츠센터",
+    address: "부산 해운대구 선수촌로 122 상가동 지하1층",
+    spots: "영법별 14명 모집",
+    scheduleSummaryLines: ["1부 14:00~16:00", "자유형 · 평영 · 접영"],
+    badge: "부산 첫 특강",
+    parking: "주차 3시간 지원 가능",
   },
 ];
 
@@ -464,6 +481,19 @@ const TIMETABLE_MOKDONG_AUGUST: TimetableRow[] = [
   },
 ];
 
+/** 더스포츠센터 8/30 특강 (부산 해운대) */
+const TIMETABLE_BUSAN_AUGUST: TimetableRow[] = [
+  {
+    session: "1부 특강",
+    time: "14:00 ~ 16:00",
+    lanes: [
+      { lane: "1레인", title: "자유형", price: 80000 },
+      { lane: "2레인", title: "평영", price: 80000 },
+      { lane: "3레인", title: "접영", price: 80000 },
+    ],
+  },
+];
+
 const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   3: TIMETABLE_SEOCHO,   // 5/31 서초
   4: TIMETABLE_KIMPO,    // 6/14 김포
@@ -476,6 +506,7 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   12: TIMETABLE_CHEONGNA_AUGUST, // 8/16 청라
   13: TIMETABLE_DONGTAN_AUGUST, // 8/23 동탄
   14: TIMETABLE_MOKDONG_AUGUST, // 8/30 목동
+  15: TIMETABLE_BUSAN_AUGUST, // 8/30 부산
 };
 
 const getAvailableStrokesForClass = (classId: number) => {
@@ -629,6 +660,9 @@ const DEFAULT_WAITLIST_THRESHOLDS_BY_CLASS: Record<string, number> = {
   "[목동 8/30] 1부 특강 자유형": 14,
   "[목동 8/30] 1부 특강 평영": 14,
   "[목동 8/30] 1부 특강 접영": 14,
+  "[부산 8/30] 1부 특강 자유형": 14,
+  "[부산 8/30] 1부 특강 평영": 14,
+  "[부산 8/30] 1부 특강 접영": 14,
 };
 
 /** 클래스별 모집 인원 조회 (레거시 레인 키도 영법 단위로 합침) */
@@ -1558,6 +1592,9 @@ export default function SwimmingClassPage() {
     : (scheduleTabMonths[0] ?? activeScheduleMonth);
   const activeScheduleClasses = activeClasses.filter(
     (c) => c.month === effectiveScheduleMonth,
+  );
+  const activeBusanClass = activeClasses.find(
+    (classItem) => classItem.locationCode === "부산",
   );
 
   const handleScheduleMonthChange = (month: number) => {
@@ -2658,6 +2695,28 @@ export default function SwimmingClassPage() {
                     수강 일정 · 지역 안내
                   </h3>
                 </div>
+                {activeBusanClass && (
+                  <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-orange-200 bg-orange-50 p-3 sm:p-4">
+                    <div>
+                      <p className="text-sm sm:text-base font-bold text-orange-900">
+                        📍 부산 첫 수영 진단 특강 오픈 · 8월 30일(일)
+                      </p>
+                      <p className="mt-1 text-xs sm:text-sm text-orange-800">
+                        부산 해운대 더스포츠센터에서 14:00~16:00에 진행됩니다.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleScheduleMonthChange(activeBusanClass.month);
+                        console.log("[부산 특강] 일정 보기 배너 클릭");
+                      }}
+                      className="shrink-0 rounded-lg bg-orange-500 px-3 py-2 text-xs sm:text-sm font-bold text-white shadow-sm transition-colors hover:bg-orange-600"
+                    >
+                      일정 보기
+                    </button>
+                  </div>
+                )}
                 {scheduleTabMonths.length > 1 && (
                   <div className="mb-4">
                     <div
@@ -2913,6 +2972,11 @@ export default function SwimmingClassPage() {
                                 <span className="font-bold text-base sm:text-lg">
                                   {classItem.location}
                                 </span>
+                                {classItem.badge && (
+                                  <span className="rounded-full bg-orange-500 px-2 py-0.5 text-xs font-bold text-white">
+                                    {classItem.badge}
+                                  </span>
+                                )}
                               </div>
                               {isSelectedSchedule && (
                                 <span className="rounded-full bg-primary px-2.5 py-1 text-xs font-bold text-white">
@@ -2955,10 +3019,20 @@ export default function SwimmingClassPage() {
                                   {classItem.address}
                                 </span>
                               </div>
+                              {classItem.parking && (
+                                <div className="flex items-start gap-4">
+                                  <span className="text-sm sm:text-[15px] font-bold text-gray-900 min-w-[45px]">
+                                    주차
+                                  </span>
+                                  <span className="text-sm sm:text-[15px] text-gray-600 leading-6">
+                                    {classItem.parking}
+                                  </span>
+                                </div>
+                              )}
                               <div className="flex items-center gap-2 pt-2">
                                 <Clock className="h-4 w-4 text-green-600" />
                                 <span className="text-sm sm:text-[15px] font-bold text-green-600">
-                                  예약 가능
+                                  예약 가능 · {classItem.spots}
                                 </span>
                               </div>
                             </div>

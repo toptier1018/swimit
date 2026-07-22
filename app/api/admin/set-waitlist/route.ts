@@ -74,6 +74,9 @@ const DEFAULT_WAITLIST_THRESHOLDS_BY_CLASS: Record<string, number> = {
   "[목동 8/30] 1부 특강 자유형": 14,
   "[목동 8/30] 1부 특강 평영": 14,
   "[목동 8/30] 1부 특강 접영": 14,
+  "[부산 8/30] 1부 특강 자유형": 14,
+  "[부산 8/30] 1부 특강 평영": 14,
+  "[부산 8/30] 1부 특강 접영": 14,
 };
 
 function getDefaultWaitlistThreshold(className: string) {

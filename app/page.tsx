@@ -3962,8 +3962,8 @@ export default function SwimmingClassPage() {
                                           예약대기
                                         </span>
                                       ) : (
-                                        <span className="rounded bg-[#10B981] px-2 py-1 text-[11px] font-bold text-white">
-                                          결제가능
+                                        <span className="rounded bg-orange-500 px-2 py-1 text-[11px] font-bold text-white">
+                                          마감임박
                                         </span>
                                       )}
                                     </div>

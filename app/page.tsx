@@ -688,6 +688,32 @@ const getEffectiveEnrollmentCount = (
   return total;
 };
 
+const getClassAvailabilityBadge = (
+  className: string,
+  counts: Record<string, number>,
+  thresholds: Record<string, number>,
+  manualWaitlist: Set<string>,
+): { label: string; isWaitlist: boolean; remaining: number } => {
+  if (FORCE_ALL_WAITLIST || manualWaitlist.has(className)) {
+    return { label: "예약대기", isWaitlist: true, remaining: 0 };
+  }
+
+  const threshold = resolveWaitlistThreshold(className, thresholds);
+  const count = getEffectiveEnrollmentCount(className, counts);
+  const remaining = Math.max(0, threshold - count);
+
+  if (remaining <= 0) {
+    return { label: "예약대기", isWaitlist: true, remaining: 0 };
+  }
+  if (remaining === 1) {
+    return { label: "1자리 남음", isWaitlist: false, remaining: 1 };
+  }
+  if (remaining === 2) {
+    return { label: "2자리 남음", isWaitlist: false, remaining: 2 };
+  }
+  return { label: "마감임박", isWaitlist: false, remaining };
+};
+
 const normalizeEnrollmentCounts = (
   counts: Record<string, number>,
 ): Record<string, number> => {
@@ -1280,6 +1306,17 @@ export default function SwimmingClassPage() {
       return count >= threshold;
     },
     [manualWaitlistClasses, classEnrollment, waitlistThresholds],
+  );
+
+  const getAvailabilityBadge = useCallback(
+    (className: string) =>
+      getClassAvailabilityBadge(
+        className,
+        classEnrollment,
+        waitlistThresholds,
+        manualWaitlistClasses,
+      ),
+    [classEnrollment, waitlistThresholds, manualWaitlistClasses],
   );
 
   const saveClassCapacity = useCallback(
@@ -3906,7 +3943,8 @@ export default function SwimmingClassPage() {
                                   stroke,
                                 );
                                 const isFull = isClassFull(classKey);
-                                const hasPayment = hasEnrollment(classKey);
+                                const availabilityBadge =
+                                  getAvailabilityBadge(classKey);
                                 const catalog = STROKE_CATALOG[stroke];
                                 const isSelected =
                                   selectedTimeSlot?.name === classKey;
@@ -3926,6 +3964,8 @@ export default function SwimmingClassPage() {
                                         time: strokeSchedule.time,
                                         region:
                                           regionInfo?.location || "정보 없음",
+                                        remaining: availabilityBadge.remaining,
+                                        badge: availabilityBadge.label,
                                       });
                                       setSelectedTimeSlot({
                                         name: classKey,
@@ -3957,13 +3997,13 @@ export default function SwimmingClassPage() {
                                       <span className="text-sm font-bold text-gray-900">
                                         ₩{price.toLocaleString()}
                                       </span>
-                                      {isFull || hasPayment ? (
+                                      {availabilityBadge.isWaitlist ? (
                                         <span className="rounded bg-orange-500 px-2 py-1 text-[11px] font-bold text-white">
                                           예약대기
                                         </span>
                                       ) : (
                                         <span className="rounded bg-orange-500 px-2 py-1 text-[11px] font-bold text-white">
-                                          마감임박
+                                          {availabilityBadge.label}
                                         </span>
                                       )}
                                     </div>

@@ -170,19 +170,6 @@ const classes: ClassItem[] = [
     scheduleSummaryLines: ["1부 10:00~12:00"],
   },
   {
-    id: 12,
-    year: 2026,
-    location: "인천 청라 · 청라스카이스위밍",
-    locationCode: "청라",
-    date: "8월 16일 (일)",
-    dateNum: 16,
-    month: 8,
-    venue: "청라스카이스위밍",
-    address: "인천 서구 청라한내로 90 MK뷰 8층",
-    spots: "자유형 7명 · 평영 7명 · 접영 14명 모집",
-    scheduleSummaryLines: ["1부 14:00~16:00"],
-  },
-  {
     id: 13,
     year: 2026,
     location: "경기 동탄 · 스윔스튜디오제이",
@@ -450,21 +437,6 @@ const TIMETABLE_DONGTAN: TimetableRow[] = [
   },
 ];
 
-/** 청라스카이스위밍 8/16 특강 (인천) */
-const TIMETABLE_CHEONGNA_AUGUST: TimetableRow[] = [
-  {
-    session: "1부 특강",
-    time: "14:00 ~ 16:00",
-    lanes: [
-      { lane: "1레인", title: "평영 A (초급)", price: 80000 },
-      { lane: "2레인", title: "접영 A (초급)", price: 80000 },
-      { lane: "3레인", title: "접영 B (중급)", price: 80000 },
-      { lane: "4레인", title: "자유형 A (초급)", price: 80000 },
-      { lane: "5레인", title: "", price: 0, closed: true },
-    ],
-  },
-];
-
 /** 스윔스튜디오제이 8/23 특강 (동탄) */
 const TIMETABLE_DONGTAN_AUGUST: TimetableRow[] = [
   {
@@ -503,7 +475,6 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   8: TIMETABLE_CHEONGNA, // 7/12 인천
   10: TIMETABLE_DONGTAN, // 7/19 동탄
   9: TIMETABLE_MOKDONG_JULY, // 7/26 목동
-  12: TIMETABLE_CHEONGNA_AUGUST, // 8/16 청라
   13: TIMETABLE_DONGTAN_AUGUST, // 8/23 동탄
   14: TIMETABLE_MOKDONG_AUGUST, // 8/30 목동
   15: TIMETABLE_BUSAN_AUGUST, // 8/30 부산
@@ -651,9 +622,6 @@ const resolveEnrollmentTargetKey = (classKey: string) =>
   migrateToStrokeClassKey(classKey);
 
 const DEFAULT_WAITLIST_THRESHOLDS_BY_CLASS: Record<string, number> = {
-  "[청라 8/16] 1부 특강 자유형": 7,
-  "[청라 8/16] 1부 특강 평영": 7,
-  "[청라 8/16] 1부 특강 접영": 14,
   "[동탄 8/23] 1부 특강 자유형": 7,
   "[동탄 8/23] 1부 특강 평영": 7,
   "[동탄 8/23] 1부 특강 접영": 14,

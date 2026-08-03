@@ -1770,13 +1770,21 @@ export default function SwimmingClassPage() {
     setStep(3);
   };
 
-  const handleClassPgTestPayment = async () => {
-    if (isClassPgTestLoading || !selectedTimeSlot) return;
-    const amount = selectedTimeSlot.price;
+  const handleClassPgTestPayment = async (override?: {
+    amount?: number;
+    orderName?: string;
+  }) => {
+    if (isClassPgTestLoading) return;
+    const amount = override?.amount ?? selectedTimeSlot?.price;
+    const orderName =
+      override?.orderName ??
+      selectedTimeSlot?.name ??
+      "스윔잇 수영 특강 (PG심사용)";
+
     if (!amount || amount <= 0) {
       toast({
         title: "테스트 결제 불가",
-        description: "선택한 클래스에 결제 금액이 없습니다.",
+        description: "결제 금액이 없습니다. 영법을 먼저 선택하거나 다시 시도해주세요.",
         variant: "destructive",
       });
       return;
@@ -1784,8 +1792,9 @@ export default function SwimmingClassPage() {
 
     setIsClassPgTestLoading(true);
     console.log("[PG테스트] 특강 테스트 결제 시작:", {
-      className: selectedTimeSlot.name,
+      className: orderName,
       amount,
+      hasSelectedSlot: Boolean(selectedTimeSlot),
     });
 
     try {
@@ -1794,7 +1803,7 @@ export default function SwimmingClassPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           amount,
-          orderName: selectedTimeSlot.name,
+          orderName,
         }),
       });
       const orderData = await orderRes.json();
@@ -1804,6 +1813,17 @@ export default function SwimmingClassPage() {
         toast({
           title: "테스트 주문 실패",
           description: orderData.error,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!orderData.clientKey) {
+        console.error("[PG테스트] TOSS_CLIENT_KEY 미설정");
+        toast({
+          title: "토스 키 없음",
+          description:
+            "Vercel 환경변수에 TOSS_CLIENT_KEY(test_ck_...)를 추가한 뒤 재배포해주세요.",
           variant: "destructive",
         });
         return;
@@ -1827,7 +1847,7 @@ export default function SwimmingClassPage() {
       console.error("[PG테스트] 결제 오류:", error);
       toast({
         title: "테스트 결제 오류",
-        description: "결제 처리 중 오류가 발생했습니다.",
+        description: "결제 처리 중 오류가 발생했습니다. 콘솔 로그를 확인해주세요.",
         variant: "destructive",
       });
     } finally {
@@ -1837,6 +1857,38 @@ export default function SwimmingClassPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
+      {showPgTest && (
+        <div className="sticky top-0 z-40 border-b-2 border-amber-500 bg-amber-50 px-4 py-3 shadow-md">
+          <div className="mx-auto flex max-w-4xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-extrabold text-amber-950 sm:text-base">
+                PG 심사용 테스트 모드 · 실제 특강 신청 아님
+              </p>
+              <p className="mt-0.5 text-xs text-amber-900 sm:text-sm">
+                아래 버튼으로 토스페이먼츠 테스트 결제창을 바로 열 수 있습니다.
+                (?pgtest=1 또는 NEXT_PUBLIC_PG_REVIEW=true)
+              </p>
+            </div>
+            <Button
+              type="button"
+              className="shrink-0 bg-amber-600 font-bold text-white hover:bg-amber-700"
+              disabled={isClassPgTestLoading}
+              onClick={() => {
+                console.log("[PG테스트] 상단 바로결제 버튼 클릭");
+                void handleClassPgTestPayment({
+                  amount: selectedTimeSlot?.price || 80000,
+                  orderName:
+                    selectedTimeSlot?.name || "스윔잇 수영 특강 (PG심사용)",
+                });
+              }}
+            >
+              {isClassPgTestLoading
+                ? "결제창 여는 중..."
+                : "결제하기 (토스 테스트)"}
+            </Button>
+          </div>
+        </div>
+      )}
       <main className="container mx-auto py-8 px-4 max-w-4xl flex flex-col">
         {/* 개발자 모드: 카운터 표시 (모든 단계에서 표시) */}
         {showDebug && (

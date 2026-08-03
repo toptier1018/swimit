@@ -20,11 +20,25 @@ export async function POST(req: NextRequest) {
     }
 
     const orderId = `CLASS-TEST-${randomUUID().replace(/-/g, "").slice(0, 16).toUpperCase()}`;
+    const clientKey = process.env.TOSS_CLIENT_KEY ?? "";
+
+    if (!clientKey) {
+      console.error("[PG테스트] TOSS_CLIENT_KEY 환경 변수 미설정");
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "TOSS_CLIENT_KEY가 없습니다. Vercel 환경변수에 test_ck_ 키를 추가한 뒤 재배포하세요.",
+        },
+        { status: 500 },
+      );
+    }
 
     console.log("[PG테스트] 특강 테스트 주문 생성:", {
       orderId,
       amount,
       orderName,
+      clientKeyPrefix: clientKey.slice(0, 10),
     });
 
     return NextResponse.json({
@@ -32,7 +46,7 @@ export async function POST(req: NextRequest) {
       orderId,
       orderName,
       amount,
-      clientKey: process.env.TOSS_CLIENT_KEY ?? "",
+      clientKey,
     });
   } catch (error) {
     console.error("[PG테스트] 주문 생성 실패:", error);

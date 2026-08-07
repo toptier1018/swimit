@@ -182,8 +182,8 @@ const classes: ClassItem[] = [
       "경기도 화성시 동탄구 동탄신리천로 414 경서타워 4층 스윔스튜디오제이",
     spots: "1부 저항 제로 · 2부 저항 진단",
     scheduleSummaryLines: [
-      "1부 저항 제로 특강｜14:00~16:00(2시간)｜정가 150,000 → 80,000원",
-      "2부 저항 진단 프로그램｜16:00~18:00(2시간)｜정가 80,000 → 40,000원",
+      "1부 제로 특강｜14:00~16:00(2h)｜15만→8만",
+      "2부 진단 프로그램｜16:00~18:00(2h)｜8만→4만",
     ],
   },
   {
@@ -262,15 +262,15 @@ const PRODUCT_CATALOG: Record<
     strokeCount: 1,
     buttonLabel: "저항 제로 특강 신청하기",
     description:
-      "내 문제를 확인한 뒤 코치와 함께 직접 동작을 교정하는 소수 정예 특강입니다.",
+      "코치와 함께 Before/After 수중 촬영으로 직접 교정하는 특강입니다.",
     includes: [
-      "영법 1가지 선택",
+      "영법 1개",
       "코치 1명당 최대 7명",
-      "Before 디테일 어항샷",
+      "Before 수중 촬영",
       "저항 원인 진단",
-      "맞춤 드릴 및 현장 교정",
-      "After 디테일 어항샷",
-      "개인별 영상 피드백",
+      "현장 교정",
+      "After 수중 촬영",
+      "개인 영상 피드백",
     ],
   },
   diagnosis: {
@@ -284,13 +284,13 @@ const PRODUCT_CATALOG: Record<
     strokeCount: 2,
     buttonLabel: "내 수영 저항 진단받기",
     description:
-      "내 수영이 왜 힘들고 앞으로 나가지 않는지, 디테일 어항샷으로 저항이 어디서 생기는지 확인하는 진단 프로그램입니다. 교정 수업이 아닙니다.",
+      "어항샷으로 저항 원인을 확인합니다. 교정 수업이 아닙니다.",
     includes: [
-      "자유형·평영·접영 중 영법 2가지 선택",
-      "선택한 2가지 영법 디테일 어항샷 촬영",
-      "개인별 저항 분석 리포트 제공",
-      "저항 제로 무료 연습 PDF 제공",
-      "총 정원 20명",
+      "영법 2개 선택",
+      "디테일 어항샷 촬영",
+      "저항 분석 리포트",
+      "연습 PDF 제공",
+      "정원 20명",
     ],
   },
 };
@@ -311,8 +311,10 @@ const ProductPriceLabel = ({
   originalPrice: number;
   className?: string;
 }) => (
-  <span className={`inline-flex flex-wrap items-baseline gap-x-2 gap-y-0.5 ${className}`}>
-    <span className="text-sm font-medium text-gray-400 line-through">
+  <span
+    className={`inline-flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 ${className}`}
+  >
+    <span className="text-xs font-medium text-gray-400 line-through">
       {formatWon(originalPrice)}
     </span>
     <span className="text-base font-extrabold text-blue-800">
@@ -1835,7 +1837,7 @@ export default function SwimmingClassPage() {
     ) {
       toast({
         title: "영법 2개를 선택해주세요",
-        description: "저항 진단 프로그램은 영법을 정확히 2개 선택해야 합니다.",
+        description: "영법 2개를 선택해주세요.",
         variant: "destructive",
       });
       console.log("[신청/결제] 진단 영법 개수 부족 - 결제 차단");
@@ -1993,7 +1995,7 @@ export default function SwimmingClassPage() {
       if (prev.length >= 2) {
         toast({
           title: "영법은 2개까지",
-          description: "저항 진단 프로그램은 영법을 정확히 2개 선택해주세요.",
+          description: "영법 2개를 선택해주세요.",
         });
         return prev;
       }
@@ -2829,22 +2831,21 @@ export default function SwimmingClassPage() {
                       className="scroll-mt-4 space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5"
                     >
                       <div>
-                        <h3 className="text-xl sm:text-2xl font-bold text-gray-950">
+                        <h3 className="text-xl font-bold text-gray-950 sm:text-2xl">
                           어떤 도움이 필요하신가요?
                         </h3>
                         <p className="mt-1 text-sm text-gray-600">
-                          동탄 일정에서 먼저 운영합니다. 상품을 고르면 신청으로
-                          이동합니다.
+                          지금은 동탄 일정에서 신청할 수 있습니다.
                         </p>
                       </div>
-                      <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="grid gap-3">
                         {(["zero", "diagnosis"] as ProductType[]).map(
                           (productType) => {
                             const product = PRODUCT_CATALOG[productType];
                             return (
                               <div
                                 key={productType}
-                                className="flex flex-col rounded-xl border border-slate-200 bg-slate-50/80 p-4"
+                                className="flex flex-col rounded-xl border border-slate-200 bg-slate-50/80 p-3.5 sm:p-4"
                               >
                                 <div className="flex flex-wrap items-center gap-2">
                                   <span className="rounded-full bg-blue-600 px-2 py-0.5 text-[11px] font-bold text-white">
@@ -2854,7 +2855,7 @@ export default function SwimmingClassPage() {
                                     {product.name}
                                   </span>
                                 </div>
-                                <p className="mt-2 text-sm font-bold text-blue-800">
+                                <p className="mt-1.5 text-sm font-bold text-blue-800">
                                   {product.timeLabel}
                                 </p>
                                 <div className="mt-1">
@@ -2863,16 +2864,16 @@ export default function SwimmingClassPage() {
                                     originalPrice={product.originalPrice}
                                   />
                                 </div>
-                                <p className="mt-2 text-sm leading-6 text-gray-700">
+                                <p className="mt-2 text-sm leading-5 text-gray-700">
                                   {product.description}
                                 </p>
-                                <ul className="mt-3 space-y-1 text-xs leading-5 text-gray-600">
+                                <ul className="mt-2.5 space-y-0.5 text-xs leading-5 text-gray-600">
                                   {product.includes.map((item) => (
                                     <li key={item}>· {item}</li>
                                   ))}
                                 </ul>
                                 <Button
-                                  className="mt-4 w-full font-bold"
+                                  className="mt-3 w-full font-bold"
                                   onClick={() =>
                                     startDongtanProductApplication(productType)
                                   }
@@ -2885,24 +2886,24 @@ export default function SwimmingClassPage() {
                         )}
                       </div>
 
-                      {/* 어항샷 샘플 영상 */}
-                      <div className="space-y-3 rounded-xl border border-blue-100 bg-blue-50/50 p-3 sm:p-4">
+                      {/* 어항샷 샘플 영상 — 진단 프로그램용 */}
+                      <div className="space-y-2 rounded-xl border border-blue-100 bg-blue-50/50 p-3">
                         <div>
-                          <p className="text-base font-bold text-gray-950">
-                            왜 어항샷인가요?
+                          <p className="text-sm font-bold text-gray-950">
+                            어항샷이란?
                           </p>
-                          <p className="mt-1 text-sm leading-6 text-gray-700">
-                            일반 수중 촬영이 아닙니다. 옆·아래 각도의 디테일
-                            어항샷으로 저항이 어디서 생기는지 보이게 찍습니다.
+                          <p className="mt-0.5 text-xs leading-5 text-gray-700 sm:text-sm">
+                            옆·아래 각도로 저항이 보이게 찍는 촬영입니다. (진단
+                            프로그램)
                           </p>
                         </div>
                         <div
-                          className="relative w-full overflow-hidden rounded-xl shadow-md"
+                          className="relative w-full overflow-hidden rounded-lg shadow-md"
                           style={{ paddingBottom: "56.25%" }}
                         >
                           <iframe
                             src={AQUARIUM_SHOT_EMBED_URL}
-                            title="스윔잇 디테일 어항샷 샘플 영상"
+                            title="스윔잇 어항샷 샘플"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                             allowFullScreen
                             referrerPolicy="strict-origin-when-cross-origin"
@@ -2915,26 +2916,11 @@ export default function SwimmingClassPage() {
                             }
                           />
                         </div>
-                        <a
-                          href={`https://youtu.be/${AQUARIUM_SHOT_YOUTUBE_ID}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-block text-sm font-bold text-blue-700 underline"
-                          onClick={() =>
-                            console.log(
-                              "[어항샷] 유튜브에서 크게 보기 클릭:",
-                              AQUARIUM_SHOT_YOUTUBE_ID,
-                            )
-                          }
-                        >
-                          유튜브에서 크게 보기
-                        </a>
                       </div>
 
-                      <p className="text-sm leading-6 text-gray-600">
-                        저항 진단 프로그램은 어항샷으로 원인을 보는 분석, 저항
-                        제로 특강은 코치와 함께 직접 Before/After로 촬영하여
-                        교정하는 수업입니다.
+                      <p className="text-xs leading-5 text-gray-600 sm:text-sm">
+                        진단은 어항샷 분석, 제로는 Before/After 수중 촬영
+                        교정입니다.
                       </p>
                     </div>
 
@@ -4327,9 +4313,9 @@ export default function SwimmingClassPage() {
                       </div>
                       <p className="text-base md:text-sm text-blue-100 ml-8 md:ml-7">
                         {selectedProductType === "diagnosis"
-                          ? "저항 진단 프로그램은 영법을 정확히 2개 선택해주세요."
+                          ? "영법 2개를 선택해주세요."
                           : selectedProductType === "zero"
-                            ? "저항 제로 특강은 영법을 1개만 선택해주세요."
+                            ? "영법 1개를 선택해주세요."
                             : "신청 시에는 원하시는 영법만 선택해주세요."}
                       </p>
                     </div>
@@ -4399,10 +4385,9 @@ export default function SwimmingClassPage() {
                                     );
                                   })}
                                 </div>
-                                <p className="text-sm leading-6 text-gray-600">
-                                  저항 진단 프로그램은 어항샷으로 원인을 보는
-                                  분석, 저항 제로 특강은 코치와 함께 직접
-                                  Before/After로 촬영하여 교정하는 수업입니다.
+                                <p className="text-xs leading-5 text-gray-600 sm:text-sm">
+                                  진단은 어항샷 분석, 제로는 Before/After 수중
+                                  촬영 교정입니다.
                                 </p>
                               </div>
                             );
@@ -4544,7 +4529,7 @@ export default function SwimmingClassPage() {
                                           {isChecked ? " ✓" : ""}
                                         </div>
                                         <div className="mt-2 text-sm leading-5 text-gray-600">
-                                          촬영·분석용 영법으로 선택합니다.
+                                          어항샷으로 촬영할 영법입니다.
                                         </div>
                                       </div>
                                       <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
@@ -4563,15 +4548,12 @@ export default function SwimmingClassPage() {
                               </div>
                               {selectedProductType === "diagnosis" && (
                                 <p className="text-xs leading-5 text-gray-500">
-                                  ※ 영법을 정확히 2개 선택하면 결제 단계로
-                                  이어집니다. 교정 수업이 아닌 촬영·분석
-                                  프로그램입니다.
+                                  ※ 영법 2개 선택 → 결제. 교정 수업이 아닙니다.
                                 </p>
                               )}
                               {selectedProductType === "zero" && (
                                 <p className="text-xs leading-5 text-gray-500">
-                                  ※ 영법 1개를 선택하면 결제 단계로 이어집니다.
-                                  코치 1명당 최대 7명입니다.
+                                  ※ 영법 1개 선택 → 결제. 코치당 최대 7명.
                                 </p>
                               )}
                             </div>
@@ -5108,9 +5090,8 @@ export default function SwimmingClassPage() {
                                       PRODUCT_CATALOG.diagnosis.originalPrice,
                                     )}{" "}
                                     → {formatWon(PRODUCT_CATALOG.diagnosis.price)}{" "}
-                                    (2시간). 선택한 2가지 영법 디테일 어항샷
-                                    촬영, 개인별 저항 분석 리포트, 저항 제로 무료
-                                    연습 PDF가 포함됩니다. 교정 수업이 아닙니다.
+                                    (2시간). 어항샷·분석 리포트·연습 PDF 포함.
+                                    교정 수업이 아닙니다.
                                   </div>
                                 </>
                               ) : selectedTimeSlot.productType === "zero" ? (
@@ -5122,9 +5103,8 @@ export default function SwimmingClassPage() {
                                     정가{" "}
                                     {formatWon(PRODUCT_CATALOG.zero.originalPrice)}{" "}
                                     → {formatWon(PRODUCT_CATALOG.zero.price)}{" "}
-                                    (2시간). Before 디테일 어항샷, 저항 원인 진단,
-                                    맞춤 드릴 및 현장 교정, After 디테일 어항샷,
-                                    개인별 영상 피드백이 포함됩니다.
+                                    (2시간). Before/After 수중 촬영·현장
+                                    교정·영상 피드백 포함.
                                   </div>
                                 </>
                               ) : (

@@ -90,6 +90,7 @@ export async function POST(request: NextRequest) {
     // 알림톡에 보이는 상품명 정리 (정원 키 ≠ 고객 안내 문구)
     const displayClassName = String(className || "")
       .replace("2부 저항진단", "2부 저항 진단 프로그램")
+      .replace("2부 진단", "2부 저항 진단 프로그램")
       .replace("2부 저항 진단 프로그램 특강", "2부 저항 진단 프로그램");
 
     console.log("[NHN Cloud 알림톡] API 호출 준비:", {

@@ -257,7 +257,7 @@ const PRODUCT_CATALOG: Record<
     tag: "현장 교정",
     timeLabel: "14:00~16:00 · 2시간",
     time: "14:00 ~ 16:00",
-    session: "1부 저항제로",
+    session: "1부 특강",
     price: 80000,
     originalPrice: 150000,
     strokeCount: 1,
@@ -279,7 +279,7 @@ const PRODUCT_CATALOG: Record<
     tag: "어항샷 진단",
     timeLabel: "16:00~18:00 · 2시간",
     time: "16:00 ~ 18:00",
-    session: "2부 저항 진단 프로그램",
+    session: "2부 진단",
     price: 40000,
     originalPrice: 80000,
     strokeCount: 2,
@@ -326,7 +326,7 @@ const ProductPriceLabel = ({
   </span>
 );
 
-const getDongtanDiagnosisEnrollmentKey = () => "[동탄 8/23] 2부 저항진단";
+const getDongtanDiagnosisEnrollmentKey = () => "[동탄 8/23] 2부 진단";
 
 const isDongtanDualProductClass = (classId: number) =>
   classId === DONGTAN_AUGUST_CLASS_ID;
@@ -403,13 +403,18 @@ const getClassDisplayParts = (stroke: StrokeType) => {
 };
 
 const getClassDisplayName = (className: string) => {
-  if (className === getDongtanDiagnosisEnrollmentKey()) {
-    return PRODUCT_CATALOG.diagnosis.name;
+  if (
+    className === getDongtanDiagnosisEnrollmentKey() ||
+    className.includes("2부 진단") ||
+    className.includes("2부 저항진단")
+  ) {
+    return "진단";
   }
-  if (className.includes("1부 저항제로")) {
+  if (className.includes("1부 저항제로") || className.includes("1부 특강")) {
     for (const stroke of STROKE_ORDER) {
-      if (className.includes(stroke)) {
-        return `${PRODUCT_CATALOG.zero.name} · ${stroke}`;
+      if (className.includes(stroke) && className.includes("동탄 8/23")) {
+        // 동탄 제로는 다른 클래스와 같이 특강+영법으로 표시
+        return `특강 ${stroke}`;
       }
     }
   }
@@ -423,15 +428,13 @@ const getClassDisplayName = (className: string) => {
 
 const getSelectedClassSheetLabel = (slot: {
   title: string;
+  productType?: ProductType;
   productName?: string;
   strokes?: StrokeType[];
 }) => {
-  if (slot.productName) {
-    if (slot.strokes && slot.strokes.length > 0) {
-      return `${slot.productName} (${slot.strokes.join("·")})`;
-    }
-    return slot.productName;
-  }
+  // 노션·시트 클래스명: 다른 일정과 동일 규칙
+  if (slot.productType === "diagnosis") return "진단";
+  // 제로·기타: 영법명 (예: 자유형) — 노션 키는 [동탄 8/23] 1부 특강 자유형
   return slot.title;
 };
 
@@ -445,6 +448,7 @@ const getAlimtalkClassLabel = (slot: {
   if (
     slot.productType === "diagnosis" ||
     slot.name === getDongtanDiagnosisEnrollmentKey() ||
+    slot.name.includes("2부 진단") ||
     slot.name.includes("2부 저항진단")
   ) {
     return "[동탄 8/23] 2부 저항 진단 프로그램";
@@ -452,7 +456,7 @@ const getAlimtalkClassLabel = (slot: {
   if (slot.productType === "zero") {
     const stroke = slot.strokes?.[0];
     return stroke
-      ? `[동탄 8/23] 1부 저항 제로 특강 ${stroke}`
+      ? `[동탄 8/23] 1부 특강 ${stroke}`
       : slot.name;
   }
   return slot.name;
@@ -756,7 +760,26 @@ const ENROLLMENT_MERGE_TO: Record<string, string> = {
 
 const migrateToStrokeClassKey = (key: string): string => {
   const merged = ENROLLMENT_MERGE_TO[key] ?? key;
-  const migrated = migrateLegacyClassKey(merged);
+  let migrated = migrateLegacyClassKey(merged);
+
+  // 동탄 제로: 구 키(1부 저항제로) → 다른 지역과 동일한 1부 특강
+  migrated = migrated.replace(
+    /^(\[[^\]]+\])\s+1부\s*저항제로\s+(자유형|평영|접영)$/,
+    "$1 1부 특강 $2",
+  );
+
+  // 동탄 진단: 구 키 → 2부 진단
+  if (
+    migrated === "진단" ||
+    /2부\s*저항\s*진단/.test(migrated) ||
+    /2부\s*저항진단/.test(migrated) ||
+    migrated.includes("2부 저항 진단 프로그램")
+  ) {
+    return "[동탄 8/23] 2부 진단";
+  }
+  if (/^\[[^\]]+\]\s+2부\s*진단$/.test(migrated)) {
+    return "[동탄 8/23] 2부 진단";
+  }
 
   if (/^\[[^\]]+\]\s+\d+부\s*특강\s+(자유형|평영|접영)$/.test(migrated)) {
     return migrated;
@@ -777,6 +800,11 @@ const resolveEnrollmentTargetKey = (classKey: string) =>
   migrateToStrokeClassKey(classKey);
 
 const DEFAULT_WAITLIST_THRESHOLDS_BY_CLASS: Record<string, number> = {
+  "[동탄 8/23] 1부 특강 자유형": 7,
+  "[동탄 8/23] 1부 특강 평영": 7,
+  "[동탄 8/23] 1부 특강 접영": 7,
+  "[동탄 8/23] 2부 진단": 20,
+  // 구 키 호환 (마이그레이션 전 설정)
   "[동탄 8/23] 1부 저항제로 자유형": 7,
   "[동탄 8/23] 1부 저항제로 평영": 7,
   "[동탄 8/23] 1부 저항제로 접영": 7,
@@ -2036,6 +2064,8 @@ export default function SwimmingClassPage() {
     console.log("[상품] 저항 진단 신청 확정 (영법 선택 없음):", {
       classKey,
       isFull,
+      notionClassName: classKey,
+      sheetClassName: "진단",
     });
     setSelectedProductType("diagnosis");
     setDiagnosisStrokes([]);
@@ -2043,7 +2073,7 @@ export default function SwimmingClassPage() {
       name: classKey,
       session: product.session,
       lane: UNASSIGNED_LANE,
-      title: product.name,
+      title: "진단",
       time: product.time,
       price: product.price,
       isWaitlist: isFull,

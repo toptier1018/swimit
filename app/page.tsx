@@ -1778,6 +1778,35 @@ export default function SwimmingClassPage() {
     console.log("[일정 탭] 월별 탭 전환:", month);
   };
 
+  /** 배너 「일정 보기」: 해당 월로 전환 + 카드 선택 + 스크롤 */
+  const focusScheduleClass = (classItem: ClassItem) => {
+    console.log("[일정] 배너 일정 보기 → 해당 카드로 이동:", {
+      id: classItem.id,
+      location: classItem.locationCode,
+      date: classItem.date,
+    });
+    setActiveScheduleMonth(classItem.month);
+    setCalendarMonth(classItem.month);
+    setCalendarYear(classItem.year);
+    setSelectedClass(String(classItem.id));
+    setSelectedTimeSlot(null);
+    setSelectedProductType(null);
+    setDiagnosisStrokes([]);
+    setPaidPageId(null);
+    setOrderNumber("");
+    setRegionError(false);
+    window.setTimeout(() => {
+      const el = document.getElementById(`schedule-class-${classItem.id}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.focus({ preventScroll: true });
+        console.log("[일정] 카드 스크롤/포커스 완료:", classItem.id);
+      } else {
+        console.warn("[일정] 카드를 찾지 못함:", classItem.id);
+      }
+    }, 120);
+  };
+
   const getScheduleShortLabel = (classItem: ClassItem) =>
     `${classItem.locationCode} ${classItem.month}/${classItem.dateNum}`;
 
@@ -3088,8 +3117,7 @@ export default function SwimmingClassPage() {
                     <button
                       type="button"
                       onClick={() => {
-                        handleScheduleMonthChange(activeDongtanDualClass.month);
-                        console.log("[동탄 진단] 일정 보기 배너 클릭");
+                        focusScheduleClass(activeDongtanDualClass);
                       }}
                       className="shrink-0 rounded-lg bg-blue-600 px-3 py-2 text-xs sm:text-sm font-bold text-white shadow-sm transition-colors hover:bg-blue-700"
                     >
@@ -3110,8 +3138,7 @@ export default function SwimmingClassPage() {
                     <button
                       type="button"
                       onClick={() => {
-                        handleScheduleMonthChange(activeBusanClass.month);
-                        console.log("[부산 특강] 일정 보기 배너 클릭");
+                        focusScheduleClass(activeBusanClass);
                       }}
                       className="shrink-0 rounded-lg bg-orange-500 px-3 py-2 text-xs sm:text-sm font-bold text-white shadow-sm transition-colors hover:bg-orange-600"
                     >
@@ -3331,6 +3358,7 @@ export default function SwimmingClassPage() {
                         return (
                           <Card
                             key={classItem.id}
+                            id={`schedule-class-${classItem.id}`}
                             role="button"
                             tabIndex={0}
                             onClick={() => {
@@ -3365,7 +3393,7 @@ export default function SwimmingClassPage() {
                                 handleRegistration();
                               }
                             }}
-                            className={`cursor-pointer transition-all shadow-sm ${
+                            className={`scroll-mt-24 cursor-pointer transition-all shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                               isSelectedSchedule
                                 ? "border-primary border-2 bg-primary/5 shadow-md"
                                 : "hover:border-primary/40 hover:shadow-md"

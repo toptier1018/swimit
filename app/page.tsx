@@ -2912,7 +2912,8 @@ export default function SwimmingClassPage() {
                           어떤 도움이 필요하신가요?
                         </h3>
                         <p className="mt-1 text-sm text-gray-600">
-                          지금은 동탄 일정에서 신청할 수 있습니다.
+                          어항샷 저항 진단 프로그램은 동탄 일정에서 신청할 수
+                          있습니다.
                         </p>
                       </div>
                       <div className="grid gap-3">

@@ -2709,7 +2709,7 @@ export default function SwimmingClassPage() {
                     {/* Main Title */}
                     <div className="space-y-4">
                       <div className="inline-flex rounded-full border border-blue-200 bg-white px-3 py-1 text-xs font-bold text-blue-700">
-                        수영 클리닉 · 저항 진단 특강
+                        수영 클리닉 · 저항 교정 특강
                       </div>
                       <h3 className="text-[27px] sm:text-[32px] font-bold tracking-tight leading-tight text-gray-950">
                         25m만 가도 숨이 차고 몸이 가라앉는다면,
@@ -2722,7 +2722,7 @@ export default function SwimmingClassPage() {
                         <br />
                         내 몸에서 왜 저항이 생기는지 직접 찾아 교정하는{" "}
                         <span className="font-bold text-blue-700">
-                          저항 진단 특강
+                          저항 교정 특강
                         </span>
                         입니다.
                       </p>

@@ -5125,7 +5125,11 @@ export default function SwimmingClassPage() {
                                       PRODUCT_CATALOG.diagnosis.originalPrice,
                                     )}{" "}
                                     → {formatWon(PRODUCT_CATALOG.diagnosis.price)}{" "}
-                                    (2시간). 어항샷·분석 리포트·연습 PDF 포함.
+                                    (2시간).
+                                    <br />
+                                    촬영 자유수영+어항샷+분석 리포트+연습 PDF
+                                    포함.
+                                    <br />
                                     교정 수업이 아닙니다.
                                   </div>
                                 </>

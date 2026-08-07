@@ -183,7 +183,7 @@ const classes: ClassItem[] = [
     spots: "1부 저항 제로 · 2부 저항 진단",
     scheduleSummaryLines: [
       "1부 저항 제로 특강｜14:00~16:00｜80,000원",
-      "2부 저항 진단 클래스｜16:00~18:00｜40,000원",
+      "2부 저항 진단 프로그램｜16:00~18:00｜40,000원",
     ],
   },
   {
@@ -264,16 +264,16 @@ const PRODUCT_CATALOG: Record<
     includes: [
       "영법 1가지 선택",
       "코치 1명당 최대 7명",
-      "Before 수중 촬영",
+      "Before 디테일 어항샷",
       "저항 원인 진단",
       "맞춤 드릴 및 현장 교정",
-      "After 수중 촬영",
+      "After 디테일 어항샷",
       "개인별 영상 피드백",
     ],
   },
   diagnosis: {
-    name: "저항 진단 클래스",
-    tag: "촬영·분석",
+    name: "저항 진단 프로그램",
+    tag: "어항샷 진단",
     timeLabel: "16:00~18:00",
     time: "16:00 ~ 18:00",
     session: "2부 저항진단",
@@ -281,16 +281,20 @@ const PRODUCT_CATALOG: Record<
     strokeCount: 2,
     buttonLabel: "내 수영 저항 진단받기",
     description:
-      "내 수영이 왜 힘들고 앞으로 나가지 않는지 수중 영상을 통해 확인하는 진단 프로그램입니다. 교정 수업이 아닙니다.",
+      "내 수영이 왜 힘들고 앞으로 나가지 않는지, 디테일 어항샷으로 저항이 어디서 생기는지 확인하는 진단 프로그램입니다. 교정 수업이 아닙니다.",
     includes: [
       "자유형·평영·접영 중 영법 2가지 선택",
-      "선택한 2가지 영법 수중 촬영",
+      "선택한 2가지 영법 디테일 어항샷 촬영",
       "개인별 저항 분석 리포트 제공",
       "저항 제로 무료 연습 PDF 제공",
       "총 정원 20명",
     ],
   },
 };
+
+/** 어항샷 샘플 영상 (유튜브) */
+const AQUARIUM_SHOT_YOUTUBE_ID = "m66xoYx91Xc";
+const AQUARIUM_SHOT_EMBED_URL = `https://www.youtube.com/embed/${AQUARIUM_SHOT_YOUTUBE_ID}?rel=0&modestbranding=1&playsinline=1`;
 
 const getDongtanDiagnosisEnrollmentKey = () => "[동탄 8/23] 2부 저항진단";
 
@@ -1803,7 +1807,7 @@ export default function SwimmingClassPage() {
     ) {
       toast({
         title: "영법 2개를 선택해주세요",
-        description: "저항 진단 클래스는 영법을 정확히 2개 선택해야 합니다.",
+        description: "저항 진단 프로그램은 영법을 정확히 2개 선택해야 합니다.",
         variant: "destructive",
       });
       console.log("[신청/결제] 진단 영법 개수 부족 - 결제 차단");
@@ -1961,7 +1965,7 @@ export default function SwimmingClassPage() {
       if (prev.length >= 2) {
         toast({
           title: "영법은 2개까지",
-          description: "저항 진단 클래스는 영법을 정확히 2개 선택해주세요.",
+          description: "저항 진단 프로그램은 영법을 정확히 2개 선택해주세요.",
         });
         return prev;
       }
@@ -2847,9 +2851,56 @@ export default function SwimmingClassPage() {
                           },
                         )}
                       </div>
+
+                      {/* 어항샷 샘플 영상 */}
+                      <div className="space-y-3 rounded-xl border border-blue-100 bg-blue-50/50 p-3 sm:p-4">
+                        <div>
+                          <p className="text-base font-bold text-gray-950">
+                            왜 어항샷인가요?
+                          </p>
+                          <p className="mt-1 text-sm leading-6 text-gray-700">
+                            일반 수중 촬영이 아닙니다. 옆·아래 각도의 디테일
+                            어항샷으로 저항이 어디서 생기는지 보이게 찍습니다.
+                          </p>
+                        </div>
+                        <div
+                          className="relative w-full overflow-hidden rounded-xl shadow-md"
+                          style={{ paddingBottom: "56.25%" }}
+                        >
+                          <iframe
+                            src={AQUARIUM_SHOT_EMBED_URL}
+                            title="스윔잇 디테일 어항샷 샘플 영상"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowFullScreen
+                            referrerPolicy="strict-origin-when-cross-origin"
+                            className="absolute inset-0 h-full w-full"
+                            onLoad={() =>
+                              console.log(
+                                "[어항샷] 샘플 영상 로드:",
+                                AQUARIUM_SHOT_YOUTUBE_ID,
+                              )
+                            }
+                          />
+                        </div>
+                        <a
+                          href={`https://youtu.be/${AQUARIUM_SHOT_YOUTUBE_ID}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-block text-sm font-bold text-blue-700 underline"
+                          onClick={() =>
+                            console.log(
+                              "[어항샷] 유튜브에서 크게 보기 클릭:",
+                              AQUARIUM_SHOT_YOUTUBE_ID,
+                            )
+                          }
+                        >
+                          유튜브에서 크게 보기
+                        </a>
+                      </div>
+
                       <p className="text-sm leading-6 text-gray-600">
-                        저항 진단 클래스는 촬영과 분석 중심, 저항 제로 특강은
-                        코치와 함께 직접 교정하는 수업입니다.
+                        저항 진단 프로그램은 어항샷으로 원인을 보는 분석, 저항
+                        제로 특강은 코치와 함께 직접 교정하는 수업입니다.
                       </p>
                     </div>
 
@@ -4242,7 +4293,7 @@ export default function SwimmingClassPage() {
                       </div>
                       <p className="text-base md:text-sm text-blue-100 ml-8 md:ml-7">
                         {selectedProductType === "diagnosis"
-                          ? "저항 진단 클래스는 영법을 정확히 2개 선택해주세요."
+                          ? "저항 진단 프로그램은 영법을 정확히 2개 선택해주세요."
                           : selectedProductType === "zero"
                             ? "저항 제로 특강은 영법을 1개만 선택해주세요."
                             : "신청 시에는 원하시는 영법만 선택해주세요."}
@@ -4310,8 +4361,9 @@ export default function SwimmingClassPage() {
                                   })}
                                 </div>
                                 <p className="text-sm leading-6 text-gray-600">
-                                  저항 진단 클래스는 촬영과 분석 중심, 저항 제로
-                                  특강은 코치와 함께 직접 교정하는 수업입니다.
+                                  저항 진단 프로그램은 어항샷으로 원인을 보는
+                                  분석, 저항 제로 특강은 코치와 함께 직접
+                                  교정하는 수업입니다.
                                 </p>
                               </div>
                             );
@@ -4364,7 +4416,7 @@ export default function SwimmingClassPage() {
                               {selectedProductType === "diagnosis" &&
                                 sharedBadge && (
                                   <div className="rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-sm text-orange-900">
-                                    저항 진단 클래스 정원 20명 ·{" "}
+                                    저항 진단 프로그램 정원 20명 ·{" "}
                                     {sharedBadge.isWaitlist
                                       ? "예약대기"
                                       : sharedBadge.label}
@@ -4983,11 +5035,11 @@ export default function SwimmingClassPage() {
                               {selectedTimeSlot.productType === "diagnosis" ? (
                                 <>
                                   <div className="font-bold">
-                                    저항 진단 클래스
+                                    저항 진단 프로그램
                                   </div>
                                   <div>
-                                    선택한 2가지 영법 수중 촬영, 개인별 저항
-                                    분석 리포트, 저항 제로 무료 연습 PDF가
+                                    선택한 2가지 영법 디테일 어항샷 촬영, 개인별
+                                    저항 분석 리포트, 저항 제로 무료 연습 PDF가
                                     포함됩니다. 교정 수업이 아닙니다.
                                   </div>
                                 </>
@@ -4997,9 +5049,9 @@ export default function SwimmingClassPage() {
                                     저항 제로 특강
                                   </div>
                                   <div>
-                                    Before 수중 촬영, 저항 원인 진단, 맞춤 드릴
-                                    및 현장 교정, After 수중 촬영, 개인별 영상
-                                    피드백이 포함됩니다.
+                                    Before 디테일 어항샷, 저항 원인 진단, 맞춤
+                                    드릴 및 현장 교정, After 디테일 어항샷,
+                                    개인별 영상 피드백이 포함됩니다.
                                   </div>
                                 </>
                               ) : (

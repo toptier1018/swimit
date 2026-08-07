@@ -251,6 +251,7 @@ const PRODUCT_CATALOG: Record<
     description: string;
     includes: string[];
     couponNote?: string;
+    priceBadge: string;
   }
 > = {
   zero: {
@@ -274,7 +275,7 @@ const PRODUCT_CATALOG: Record<
       "After 수중 촬영",
       "개인 영상 피드백 후 연습 방향 제시",
     ],
-    couponNote: "진단 수강생 특강 1만원 쿠폰 적용",
+    priceBadge: "프리미엄 특가",
   },
   diagnosis: {
     name: "저항 진단 프로그램",
@@ -294,7 +295,8 @@ const PRODUCT_CATALOG: Record<
       "연습 PDF 제공",
       "2시간 자유수영 (촬영가능)",
     ],
-    couponNote: "이후 특강 수강 시 1만원 쿠폰 제공",
+    couponNote: "이후 저항 제로 특강 수강 시 1만원 할인 쿠폰 제공",
+    priceBadge: "런칭특가",
   },
 };
 
@@ -308,10 +310,12 @@ const formatWon = (amount: number) => `₩${amount.toLocaleString()}`;
 const ProductPriceLabel = ({
   price,
   originalPrice,
+  badge = "런칭특가",
   className = "",
 }: {
   price: number;
   originalPrice: number;
+  badge?: string;
   className?: string;
 }) => (
   <span
@@ -324,7 +328,7 @@ const ProductPriceLabel = ({
       {formatWon(price)}
     </span>
     <span className="rounded bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
-      런칭특가
+      {badge}
     </span>
   </span>
 );
@@ -2957,6 +2961,7 @@ export default function SwimmingClassPage() {
                                   <ProductPriceLabel
                                     price={product.price}
                                     originalPrice={product.originalPrice}
+                                    badge={product.priceBadge}
                                   />
                                 </div>
                                 <p className="mt-2 text-sm leading-5 text-gray-700">
@@ -3021,7 +3026,7 @@ export default function SwimmingClassPage() {
                         <span className="mr-1.5 inline-block rounded bg-orange-500 px-1.5 py-0.5 text-[11px] font-bold text-white">
                           쿠폰
                         </span>
-                        진단 후 특강 수강 시 1만원 쿠폰 제공
+                        이후 저항 제로 특강 수강 시 1만원 할인 쿠폰 제공
                       </div>
                       <p className="text-xs leading-5 text-gray-600 sm:text-sm">
                         진단은 어항샷 분석, 제로는 Before/After 수중 촬영
@@ -4546,6 +4551,7 @@ export default function SwimmingClassPage() {
                                           <ProductPriceLabel
                                             price={product.price}
                                             originalPrice={product.originalPrice}
+                                            badge={product.priceBadge}
                                           />
                                         </div>
                                         <p className="mt-2 text-sm text-gray-600">
@@ -4559,7 +4565,8 @@ export default function SwimmingClassPage() {
                                   <span className="mr-1.5 inline-block rounded bg-orange-500 px-1.5 py-0.5 text-[11px] font-bold text-white">
                                     쿠폰
                                   </span>
-                                  진단 후 특강 수강 시 1만원 쿠폰 제공
+                                  이후 저항 제로 특강 수강 시 1만원 할인 쿠폰
+                                  제공
                                 </div>
                                 <p className="text-xs leading-5 text-gray-600 sm:text-sm">
                                   진단은 어항샷 분석, 제로는 Before/After 수중
@@ -4602,6 +4609,7 @@ export default function SwimmingClassPage() {
                                   <ProductPriceLabel
                                     price={product.price}
                                     originalPrice={product.originalPrice}
+                                    badge={product.priceBadge}
                                   />
                                 </div>
                                 <button
@@ -4677,6 +4685,7 @@ export default function SwimmingClassPage() {
                                               originalPrice={
                                                 product.originalPrice
                                               }
+                                              badge={product.priceBadge}
                                             />
                                             {availabilityBadge.isWaitlist ? (
                                               <span className="rounded bg-orange-500 px-2 py-1 text-[11px] font-bold text-white">
@@ -5216,7 +5225,11 @@ export default function SwimmingClassPage() {
                                 {formatWon(selectedTimeSlot.price)}
                               </div>
                               <div className="text-xs font-bold text-red-600">
-                                런칭특가 · 2시간
+                                {
+                                  PRODUCT_CATALOG[selectedTimeSlot.productType]
+                                    .priceBadge
+                                }{" "}
+                                · 2시간
                               </div>
                             </div>
                           ) : (
@@ -5250,7 +5263,8 @@ export default function SwimmingClassPage() {
                                       <span className="rounded bg-orange-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
                                         쿠폰
                                       </span>
-                                      이후 특강 수강 시 1만원 쿠폰 제공
+                                      이후 저항 제로 특강 수강 시 1만원 할인
+                                      쿠폰 제공
                                     </span>
                                     <br />
                                     교정 수업이 아닙니다.
@@ -5259,7 +5273,7 @@ export default function SwimmingClassPage() {
                               ) : selectedTimeSlot.productType === "zero" ? (
                                 <>
                                   <div className="font-bold">
-                                    저항 제로 특강 · 런칭특가
+                                    저항 제로 특강 · 프리미엄 특가
                                   </div>
                                   <div>
                                     정가{" "}
@@ -5267,13 +5281,6 @@ export default function SwimmingClassPage() {
                                     → {formatWon(PRODUCT_CATALOG.zero.price)}{" "}
                                     (2시간). Before/After 수중 촬영·현장
                                     교정·영상 피드백 포함.
-                                    <br />
-                                    <span className="mt-1.5 inline-flex items-center gap-1.5 rounded-md border-2 border-orange-400 bg-orange-50 px-2 py-1 text-sm font-extrabold text-orange-950">
-                                      <span className="rounded bg-orange-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
-                                        쿠폰
-                                      </span>
-                                      진단 수강생 특강 1만원 쿠폰 적용
-                                    </span>
                                   </div>
                                 </>
                               ) : (

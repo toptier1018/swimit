@@ -182,8 +182,8 @@ const classes: ClassItem[] = [
       "경기도 화성시 동탄구 동탄신리천로 414 경서타워 4층 스윔스튜디오제이",
     spots: "첫 저항 진단 프로그램 · 제로 특강",
     scheduleSummaryLines: [
-      "1부 제로 특강｜14:00~16:00(2h)｜15만→8만",
-      "2부 진단 프로그램｜16:00~18:00(2h)｜8만→4만",
+      "1부 제로 특강 · 14:00~16:00 (2시간)",
+      "2부 진단 프로그램 · 16:00~18:00 (2시간)",
     ],
     badge: "첫 진단 프로그램",
   },
@@ -250,6 +250,7 @@ const PRODUCT_CATALOG: Record<
     buttonLabel: string;
     description: string;
     includes: string[];
+    couponNote?: string;
   }
 > = {
   zero: {
@@ -272,8 +273,8 @@ const PRODUCT_CATALOG: Record<
       "실시간 현장 교정",
       "After 수중 촬영",
       "개인 영상 피드백 후 연습 방향 제시",
-      "진단 수강생 특강 1만원 쿠폰 적용",
     ],
+    couponNote: "진단 수강생 특강 1만원 쿠폰 적용",
   },
   diagnosis: {
     name: "저항 진단 프로그램",
@@ -292,8 +293,8 @@ const PRODUCT_CATALOG: Record<
       "저항 분석 리포트",
       "연습 PDF 제공",
       "2시간 자유수영 (촬영가능)",
-      "이후 특강 수강 시 1만원 쿠폰",
     ],
+    couponNote: "이후 특강 수강 시 1만원 쿠폰 제공",
   },
 };
 
@@ -326,6 +327,16 @@ const ProductPriceLabel = ({
       런칭특가
     </span>
   </span>
+);
+
+/** 1만원 쿠폰 강조 배지 (모바일에서도 잘 보이게) */
+const CouponHighlight = ({ note }: { note: string }) => (
+  <div className="mt-2.5 rounded-lg border-2 border-orange-400 bg-orange-50 px-3 py-2.5 text-sm font-extrabold leading-5 text-orange-950 shadow-sm">
+    <span className="mr-1.5 inline-block rounded bg-orange-500 px-1.5 py-0.5 text-[11px] font-bold text-white">
+      쿠폰
+    </span>
+    {note}
+  </div>
 );
 
 const getDongtanDiagnosisEnrollmentKey = () => "[동탄 8/23] 2부 진단";
@@ -2956,6 +2967,9 @@ export default function SwimmingClassPage() {
                                     <li key={item}>· {item}</li>
                                   ))}
                                 </ul>
+                                {product.couponNote && (
+                                  <CouponHighlight note={product.couponNote} />
+                                )}
                                 <Button
                                   className="mt-3 w-full font-bold"
                                   onClick={() =>
@@ -3003,10 +3017,15 @@ export default function SwimmingClassPage() {
                         </div>
                       </div>
 
+                      <div className="rounded-lg border-2 border-orange-400 bg-orange-50 px-3 py-2.5 text-sm font-extrabold leading-5 text-orange-950">
+                        <span className="mr-1.5 inline-block rounded bg-orange-500 px-1.5 py-0.5 text-[11px] font-bold text-white">
+                          쿠폰
+                        </span>
+                        진단 후 특강 수강 시 1만원 쿠폰 제공
+                      </div>
                       <p className="text-xs leading-5 text-gray-600 sm:text-sm">
-                        저항 진단 프로그램은 어항샷 분석, 저항 제로 특강은
-                        Before/After 수중 촬영 교정입니다. 진단 후 특강 수강 시
-                        1만원 쿠폰이 제공됩니다.
+                        진단은 어항샷 분석, 제로는 Before/After 수중 촬영
+                        교정입니다.
                       </p>
                     </div>
 
@@ -3507,9 +3526,14 @@ export default function SwimmingClassPage() {
                               <p className="ml-7 text-sm sm:text-[15px] font-semibold leading-6 text-blue-700">
                                 수영 특강 일정
                               </p>
-                              <div className="ml-7 mt-1 space-y-0.5 text-[13px] sm:text-sm font-medium leading-5 text-blue-600">
+                              <div className="ml-0 mt-2 space-y-1.5 sm:ml-7">
                                 {classItem.scheduleSummaryLines.map((line) => (
-                                  <p key={line}>{line}</p>
+                                  <p
+                                    key={line}
+                                    className="rounded-md bg-white/80 px-2.5 py-1.5 text-[13px] font-semibold leading-5 text-blue-800 sm:text-sm"
+                                  >
+                                    {line}
+                                  </p>
                                 ))}
                               </div>
                             </div>
@@ -3677,8 +3701,20 @@ export default function SwimmingClassPage() {
                   <div className="mt-2 grid gap-1 text-sm text-gray-700 sm:grid-cols-2">
                     <div>수영장: {selectedScheduleClass.venue}</div>
                     <div>날짜: {selectedScheduleClass.date}</div>
-                    <div>
-                      시간: {selectedScheduleClass.scheduleSummaryLines.join(", ")}
+                    <div className="sm:col-span-2">
+                      <span className="font-semibold text-gray-900">시간</span>
+                      <div className="mt-1 space-y-1">
+                        {selectedScheduleClass.scheduleSummaryLines.map(
+                          (line) => (
+                            <p
+                              key={line}
+                              className="rounded-md bg-slate-50 px-2 py-1 text-sm leading-5 text-gray-800"
+                            >
+                              {line}
+                            </p>
+                          ),
+                        )}
+                      </div>
                     </div>
                     <div className="sm:col-span-2">
                       주소: {selectedScheduleClass.address}
@@ -4519,10 +4555,15 @@ export default function SwimmingClassPage() {
                                     );
                                   })}
                                 </div>
+                                <div className="rounded-lg border-2 border-orange-400 bg-orange-50 px-3 py-2.5 text-sm font-extrabold leading-5 text-orange-950">
+                                  <span className="mr-1.5 inline-block rounded bg-orange-500 px-1.5 py-0.5 text-[11px] font-bold text-white">
+                                    쿠폰
+                                  </span>
+                                  진단 후 특강 수강 시 1만원 쿠폰 제공
+                                </div>
                                 <p className="text-xs leading-5 text-gray-600 sm:text-sm">
-                                  저항 진단 프로그램은 어항샷 분석, 저항 제로
-                                  특강은 Before/After 수중 촬영 교정입니다.
-                                  진단 후 특강 수강 시 1만원 쿠폰이 제공됩니다.
+                                  진단은 어항샷 분석, 제로는 Before/After 수중
+                                  촬영 교정입니다.
                                 </p>
                               </div>
                             );
@@ -5205,7 +5246,12 @@ export default function SwimmingClassPage() {
                                     촬영 자유수영+어항샷+분석 리포트+연습 PDF
                                     포함.
                                     <br />
-                                    이후 특강 수강 시 1만원 쿠폰 제공.
+                                    <span className="mt-1.5 inline-flex items-center gap-1.5 rounded-md border-2 border-orange-400 bg-orange-50 px-2 py-1 text-sm font-extrabold text-orange-950">
+                                      <span className="rounded bg-orange-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                                        쿠폰
+                                      </span>
+                                      이후 특강 수강 시 1만원 쿠폰 제공
+                                    </span>
                                     <br />
                                     교정 수업이 아닙니다.
                                   </div>
@@ -5221,6 +5267,13 @@ export default function SwimmingClassPage() {
                                     → {formatWon(PRODUCT_CATALOG.zero.price)}{" "}
                                     (2시간). Before/After 수중 촬영·현장
                                     교정·영상 피드백 포함.
+                                    <br />
+                                    <span className="mt-1.5 inline-flex items-center gap-1.5 rounded-md border-2 border-orange-400 bg-orange-50 px-2 py-1 text-sm font-extrabold text-orange-950">
+                                      <span className="rounded bg-orange-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                                        쿠폰
+                                      </span>
+                                      진단 수강생 특강 1만원 쿠폰 적용
+                                    </span>
                                   </div>
                                 </>
                               ) : (

@@ -180,11 +180,12 @@ const classes: ClassItem[] = [
     venue: "스윔스튜디오제이",
     address:
       "경기도 화성시 동탄구 동탄신리천로 414 경서타워 4층 스윔스튜디오제이",
-    spots: "1부 저항 제로 · 2부 저항 진단",
+    spots: "첫 저항 진단 프로그램 · 제로 특강",
     scheduleSummaryLines: [
       "1부 제로 특강｜14:00~16:00(2h)｜15만→8만",
       "2부 진단 프로그램｜16:00~18:00(2h)｜8만→4만",
     ],
+    badge: "첫 진단 프로그램",
   },
   {
     id: 14,
@@ -264,13 +265,13 @@ const PRODUCT_CATALOG: Record<
     description:
       "코치와 함께 Before/After 수중 촬영으로 직접 교정하는 특강입니다.",
     includes: [
-      "영법 1개",
+      "영법 1개 집중 교정",
       "코치 1명당 최대 7명",
       "Before 수중 촬영",
       "저항 원인 진단",
-      "현장 교정",
+      "실시간 현장 교정",
       "After 수중 촬영",
-      "개인 영상 피드백",
+      "개인 영상 피드백 후 연습 방향 제시",
     ],
   },
   diagnosis: {
@@ -286,11 +287,9 @@ const PRODUCT_CATALOG: Record<
     description:
       "어항샷으로 저항 원인을 확인합니다. 교정 수업이 아닙니다.",
     includes: [
-      "영법 2개 선택",
       "디테일 어항샷 촬영",
       "저항 분석 리포트",
       "연습 PDF 제공",
-      "정원 20명",
     ],
   },
 };
@@ -426,8 +425,11 @@ const getSelectedClassSheetLabel = (slot: {
   productName?: string;
   strokes?: StrokeType[];
 }) => {
-  if (slot.productName && slot.strokes && slot.strokes.length > 0) {
-    return `${slot.productName} (${slot.strokes.join("·")})`;
+  if (slot.productName) {
+    if (slot.strokes && slot.strokes.length > 0) {
+      return `${slot.productName} (${slot.strokes.join("·")})`;
+    }
+    return slot.productName;
   }
   return slot.title;
 };
@@ -1748,6 +1750,9 @@ export default function SwimmingClassPage() {
   const activeBusanClass = activeClasses.find(
     (classItem) => classItem.locationCode === "부산",
   );
+  const activeDongtanDualClass = activeClasses.find((classItem) =>
+    isDongtanDualProductClass(classItem.id),
+  );
 
   const handleScheduleMonthChange = (month: number) => {
     setActiveScheduleMonth(month);
@@ -1828,19 +1833,6 @@ export default function SwimmingClassPage() {
         variant: "destructive",
       });
       console.log("[신청/결제] 클래스 미선택 - 결제 차단");
-      return false;
-    }
-
-    if (
-      selectedTimeSlot.productType === "diagnosis" &&
-      (selectedTimeSlot.strokes?.length ?? 0) !== 2
-    ) {
-      toast({
-        title: "영법 2개를 선택해주세요",
-        description: "영법 2개를 선택해주세요.",
-        variant: "destructive",
-      });
-      console.log("[신청/결제] 진단 영법 개수 부족 - 결제 차단");
       return false;
     }
 
@@ -1926,7 +1918,6 @@ export default function SwimmingClassPage() {
     console.log("[상품] 동탄 상품 선택:", productType);
     setSelectedClass(String(dongtan.id));
     setSelectedProductType(productType);
-    setSelectedTimeSlot(null);
     setDiagnosisStrokes([]);
     setPaidPageId(null);
     setOrderNumber("");
@@ -1934,6 +1925,11 @@ export default function SwimmingClassPage() {
     setCalendarMonth(dongtan.month);
     setCalendarYear(dongtan.year);
     setActiveScheduleMonth(dongtan.month);
+    if (productType === "diagnosis") {
+      applyDiagnosisProductSelection();
+    } else {
+      setSelectedTimeSlot(null);
+    }
     handleRegistration();
   };
 
@@ -1962,50 +1958,31 @@ export default function SwimmingClassPage() {
     setStep(3);
   };
 
-  const applyDiagnosisStrokeSelection = (strokes: StrokeType[]) => {
-    if (strokes.length !== 2) return;
+  /** 진단 프로그램: 영법 선택 없이 바로 신청/결제 */
+  const applyDiagnosisProductSelection = () => {
     const product = PRODUCT_CATALOG.diagnosis;
     const classKey = getDongtanDiagnosisEnrollmentKey();
     const isFull = isClassFull(classKey);
-    const title = strokes.join("·");
-    console.log("[상품] 저항 진단 영법 선택:", { strokes, classKey, isFull });
+    console.log("[상품] 저항 진단 신청 확정 (영법 선택 없음):", {
+      classKey,
+      isFull,
+    });
+    setSelectedProductType("diagnosis");
+    setDiagnosisStrokes([]);
     setSelectedTimeSlot({
       name: classKey,
       session: product.session,
       lane: UNASSIGNED_LANE,
-      title,
+      title: product.name,
       time: product.time,
       price: product.price,
       isWaitlist: isFull,
       available: !isFull,
       productType: "diagnosis",
       productName: product.name,
-      strokes,
+      strokes: [],
     });
     setStep(3);
-  };
-
-  const toggleDiagnosisStroke = (stroke: StrokeType) => {
-    setDiagnosisStrokes((prev) => {
-      if (prev.includes(stroke)) {
-        const next = prev.filter((s) => s !== stroke);
-        console.log("[상품] 진단 영법 해제:", stroke, next);
-        return next;
-      }
-      if (prev.length >= 2) {
-        toast({
-          title: "영법은 2개까지",
-          description: "영법 2개를 선택해주세요.",
-        });
-        return prev;
-      }
-      const next = [...prev, stroke];
-      console.log("[상품] 진단 영법 추가:", stroke, next);
-      if (next.length === 2) {
-        window.setTimeout(() => applyDiagnosisStrokeSelection(next), 0);
-      }
-      return next;
-    });
   };
 
   const paymentCtaLabel = (() => {
@@ -2893,8 +2870,9 @@ export default function SwimmingClassPage() {
                             어항샷이란?
                           </p>
                           <p className="mt-0.5 text-xs leading-5 text-gray-700 sm:text-sm">
-                            옆·아래 각도로 저항이 보이게 찍는 촬영입니다. (진단
-                            프로그램)
+                            위·아래를 동시에 찍어 저항이 보이게 촬영합니다.
+                            <br />
+                            영상을 기반으로 저항 분석 리포트를 드립니다.
                           </p>
                         </div>
                         <div
@@ -2919,8 +2897,8 @@ export default function SwimmingClassPage() {
                       </div>
 
                       <p className="text-xs leading-5 text-gray-600 sm:text-sm">
-                        진단은 어항샷 분석, 제로는 Before/After 수중 촬영
-                        교정입니다.
+                        저항 진단 프로그램은 어항샷 분석, 저항 제로 특강은
+                        Before/After 수중 촬영 교정입니다.
                       </p>
                     </div>
 
@@ -2964,7 +2942,7 @@ export default function SwimmingClassPage() {
                     <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                       <div>
                         <p className="text-base sm:text-lg font-bold text-gray-950">
-                          스윔잇 저항 진단 6단계 Process
+                          스윔잇 저항 제로 특강 6단계 Process
                         </p>
                         <p className="mt-1 text-sm text-gray-600">
                           Before / After를 비교하며, 수업 후 혼자 연습할 방향까지
@@ -3096,6 +3074,28 @@ export default function SwimmingClassPage() {
                     수강 일정 · 지역 안내
                   </h3>
                 </div>
+                {activeDongtanDualClass && (
+                  <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-blue-200 bg-blue-50 p-3 sm:p-4">
+                    <div>
+                      <p className="text-sm sm:text-base font-bold text-blue-900">
+                        📍 동탄 첫 저항 진단 프로그램 오픈 · 8월 23일(일)
+                      </p>
+                      <p className="mt-1 text-xs sm:text-sm text-blue-800">
+                        어항샷 진단 프로그램과 저항 제로 특강을 함께 운영합니다.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleScheduleMonthChange(activeDongtanDualClass.month);
+                        console.log("[동탄 진단] 일정 보기 배너 클릭");
+                      }}
+                      className="shrink-0 rounded-lg bg-blue-600 px-3 py-2 text-xs sm:text-sm font-bold text-white shadow-sm transition-colors hover:bg-blue-700"
+                    >
+                      일정 보기
+                    </button>
+                  </div>
+                )}
                 {activeBusanClass && (
                   <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-orange-200 bg-orange-50 p-3 sm:p-4">
                     <div>
@@ -3804,32 +3804,35 @@ export default function SwimmingClassPage() {
                       </RadioGroup>
                     </div>
 
-                    {/* Pain Area Survey */}
-                    <div className="space-y-2">
-                      <Label className="text-sm font-semibold flex items-center gap-1">
-                        수영 후 통증이 느껴지거나 불편한 부위가 있나요? (중복
-                        선택 가능)
-                      </Label>
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        {["어깨", "허리", "무릎", "목", "없음"].map((area) => {
-                          const checked = formData.painAreas.includes(area);
-                          return (
-                            <label
-                              key={area}
-                              className="flex items-center gap-2 rounded-md border border-gray-200 px-3 py-2 cursor-pointer hover:border-primary/60"
-                            >
-                              <Checkbox
-                                checked={checked}
-                                onCheckedChange={() => togglePainArea(area)}
-                              />
-                              <span>{area}</span>
-                            </label>
-                          );
-                        })}
+                    {/* Pain Area Survey — 진단 프로그램에서는 생략 */}
+                    {selectedProductType !== "diagnosis" && (
+                      <div className="space-y-2">
+                        <Label className="text-sm font-semibold flex items-center gap-1">
+                          수영 후 통증이 느껴지거나 불편한 부위가 있나요? (중복
+                          선택 가능)
+                        </Label>
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          {["어깨", "허리", "무릎", "목", "없음"].map((area) => {
+                            const checked = formData.painAreas.includes(area);
+                            return (
+                              <label
+                                key={area}
+                                className="flex items-center gap-2 rounded-md border border-gray-200 px-3 py-2 cursor-pointer hover:border-primary/60"
+                              >
+                                <Checkbox
+                                  checked={checked}
+                                  onCheckedChange={() => togglePainArea(area)}
+                                />
+                                <span>{area}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
+                    )}
 
-                    {/* Message Field */}
+                    {/* Message Field — 진단 프로그램에서는 생략 */}
+                    {selectedProductType !== "diagnosis" && (
                     <div className="space-y-2">
                       <Label
                         htmlFor="message"
@@ -3849,6 +3852,7 @@ export default function SwimmingClassPage() {
                         }
                       />
                     </div>
+                    )}
 
                     {/* Required Agreements */}
                     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 space-y-3">
@@ -4304,16 +4308,16 @@ export default function SwimmingClassPage() {
                       <div className="flex items-center gap-2 mb-1">
                         <Calendar className="h-6 w-6 md:h-5 md:w-5" />
                         <h4 className="font-bold text-xl md:text-lg">
-                          {selectedProductType
-                            ? selectedProductType === "diagnosis"
-                              ? "영법 2개 선택"
-                              : "영법 1개 선택"
-                            : "영법 선택"}
+                          {selectedProductType === "diagnosis"
+                            ? "상품 확인"
+                            : selectedProductType === "zero"
+                              ? "영법 1개 선택"
+                              : "영법 선택"}
                         </h4>
                       </div>
                       <p className="text-base md:text-sm text-blue-100 ml-8 md:ml-7">
                         {selectedProductType === "diagnosis"
-                          ? "영법 2개를 선택해주세요."
+                          ? "아래 정보를 입력하고 결제해 주세요."
                           : selectedProductType === "zero"
                             ? "영법 1개를 선택해주세요."
                             : "신청 시에는 원하시는 영법만 선택해주세요."}
@@ -4357,9 +4361,13 @@ export default function SwimmingClassPage() {
                                             "[상품] 신청폼에서 상품 선택:",
                                             productType,
                                           );
-                                          setSelectedProductType(productType);
-                                          setSelectedTimeSlot(null);
-                                          setDiagnosisStrokes([]);
+                                          if (productType === "diagnosis") {
+                                            applyDiagnosisProductSelection();
+                                          } else {
+                                            setSelectedProductType(productType);
+                                            setSelectedTimeSlot(null);
+                                            setDiagnosisStrokes([]);
+                                          }
                                         }}
                                         className="rounded-xl border border-slate-200 bg-white p-4 text-left hover:border-primary/50 hover:shadow-sm"
                                       >
@@ -4386,8 +4394,8 @@ export default function SwimmingClassPage() {
                                   })}
                                 </div>
                                 <p className="text-xs leading-5 text-gray-600 sm:text-sm">
-                                  진단은 어항샷 분석, 제로는 Before/After 수중
-                                  촬영 교정입니다.
+                                  저항 진단 프로그램은 어항샷 분석, 저항 제로
+                                  특강은 Before/After 수중 촬영 교정입니다.
                                 </p>
                               </div>
                             );
@@ -4416,13 +4424,11 @@ export default function SwimmingClassPage() {
                                     {product.name}
                                   </span>
                                 </div>
-                                <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
-                                  <span>
-                                    {product.timeLabel}
-                                    {selectedProductType === "zero"
-                                      ? " · 영법 1개"
-                                      : " · 영법 정확히 2개"}
-                                  </span>
+                                <p className="mt-1">
+                                  {product.timeLabel}
+                                  {selectedProductType === "zero"
+                                    ? " · 영법 1개 집중 교정"
+                                    : ""}
                                 </p>
                                 <div className="mt-1">
                                   <ProductPriceLabel
@@ -4444,117 +4450,86 @@ export default function SwimmingClassPage() {
                                 </button>
                               </div>
 
-                              {selectedProductType === "diagnosis" &&
-                                sharedBadge && (
-                                  <div className="rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-sm text-orange-900">
-                                    저항 진단 프로그램 정원 20명 ·{" "}
-                                    {sharedBadge.isWaitlist
-                                      ? "예약대기"
-                                      : sharedBadge.label}
+                              {selectedProductType === "diagnosis" ? (
+                                <div className="space-y-2">
+                                  {sharedBadge && (
+                                    <div className="rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-sm text-orange-900">
+                                      {sharedBadge.isWaitlist
+                                        ? "예약대기"
+                                        : sharedBadge.label}
+                                    </div>
+                                  )}
+                                  <p className="rounded-lg border border-dashed border-blue-200 bg-blue-50/60 px-3 py-3 text-sm leading-6 text-blue-900">
+                                    영법 선택 없이 신청할 수 있습니다.
+                                    <br />
+                                    아래 정보를 입력하고 결제해 주세요.
+                                    <br />
+                                    <span className="text-xs text-blue-800">
+                                      ※ 교정 수업이 아닌 어항샷 진단
+                                      프로그램입니다.
+                                    </span>
+                                  </p>
+                                </div>
+                              ) : (
+                                <>
+                                  <div className="grid gap-3 sm:grid-cols-3">
+                                    {STROKE_ORDER.map((stroke) => {
+                                      const catalog = STROKE_CATALOG[stroke];
+                                      const classKey = makeClassKey(
+                                        selectedClassIdNum,
+                                        product.session,
+                                        stroke,
+                                      );
+                                      const availabilityBadge =
+                                        getAvailabilityBadge(classKey);
+                                      const isSelected =
+                                        selectedTimeSlot?.name === classKey;
+                                      return (
+                                        <button
+                                          key={stroke}
+                                          type="button"
+                                          onClick={() =>
+                                            applyZeroStrokeSelection(stroke)
+                                          }
+                                          className={`relative flex min-h-[140px] flex-col justify-between rounded-xl border p-4 text-left transition-all ${
+                                            isSelected
+                                              ? "border-primary border-2 bg-primary/5 ring-2 ring-primary/10"
+                                              : "border-gray-200 bg-white hover:border-primary/50 hover:shadow-sm"
+                                          }`}
+                                        >
+                                          <div>
+                                            <div className="text-base font-bold text-gray-900">
+                                              {catalog.icon} {stroke}
+                                            </div>
+                                            <div className="mt-2 text-sm leading-5 text-gray-600">
+                                              {catalog.description}
+                                            </div>
+                                          </div>
+                                          <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+                                            <ProductPriceLabel
+                                              price={product.price}
+                                              originalPrice={
+                                                product.originalPrice
+                                              }
+                                            />
+                                            {availabilityBadge.isWaitlist ? (
+                                              <span className="rounded bg-orange-500 px-2 py-1 text-[11px] font-bold text-white">
+                                                예약대기
+                                              </span>
+                                            ) : (
+                                              <span className="rounded bg-orange-500 px-2 py-1 text-[11px] font-bold text-white">
+                                                {availabilityBadge.label}
+                                              </span>
+                                            )}
+                                          </div>
+                                        </button>
+                                      );
+                                    })}
                                   </div>
-                                )}
-
-                              <div className="grid gap-3 sm:grid-cols-3">
-                                {STROKE_ORDER.map((stroke) => {
-                                  const catalog = STROKE_CATALOG[stroke];
-                                  if (selectedProductType === "zero") {
-                                    const classKey = makeClassKey(
-                                      selectedClassIdNum,
-                                      product.session,
-                                      stroke,
-                                    );
-                                    const availabilityBadge =
-                                      getAvailabilityBadge(classKey);
-                                    const isSelected =
-                                      selectedTimeSlot?.name === classKey;
-                                    return (
-                                      <button
-                                        key={stroke}
-                                        type="button"
-                                        onClick={() =>
-                                          applyZeroStrokeSelection(stroke)
-                                        }
-                                        className={`relative flex min-h-[140px] flex-col justify-between rounded-xl border p-4 text-left transition-all ${
-                                          isSelected
-                                            ? "border-primary border-2 bg-primary/5 ring-2 ring-primary/10"
-                                            : "border-gray-200 bg-white hover:border-primary/50 hover:shadow-sm"
-                                        }`}
-                                      >
-                                        <div>
-                                          <div className="text-base font-bold text-gray-900">
-                                            {catalog.icon} {stroke}
-                                          </div>
-                                          <div className="mt-2 text-sm leading-5 text-gray-600">
-                                            {catalog.description}
-                                          </div>
-                                        </div>
-                                        <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
-                                          <ProductPriceLabel
-                                            price={product.price}
-                                            originalPrice={product.originalPrice}
-                                          />
-                                          {availabilityBadge.isWaitlist ? (
-                                            <span className="rounded bg-orange-500 px-2 py-1 text-[11px] font-bold text-white">
-                                              예약대기
-                                            </span>
-                                          ) : (
-                                            <span className="rounded bg-orange-500 px-2 py-1 text-[11px] font-bold text-white">
-                                              {availabilityBadge.label}
-                                            </span>
-                                          )}
-                                        </div>
-                                      </button>
-                                    );
-                                  }
-
-                                  // diagnosis: multi-select exactly 2
-                                  const isChecked =
-                                    diagnosisStrokes.includes(stroke);
-                                  return (
-                                    <button
-                                      key={stroke}
-                                      type="button"
-                                      onClick={() =>
-                                        toggleDiagnosisStroke(stroke)
-                                      }
-                                      className={`relative flex min-h-[140px] flex-col justify-between rounded-xl border p-4 text-left transition-all ${
-                                        isChecked
-                                          ? "border-primary border-2 bg-primary/5 ring-2 ring-primary/10"
-                                          : "border-gray-200 bg-white hover:border-primary/50 hover:shadow-sm"
-                                      }`}
-                                    >
-                                      <div>
-                                        <div className="text-base font-bold text-gray-900">
-                                          {catalog.icon} {stroke}
-                                          {isChecked ? " ✓" : ""}
-                                        </div>
-                                        <div className="mt-2 text-sm leading-5 text-gray-600">
-                                          어항샷으로 촬영할 영법입니다.
-                                        </div>
-                                      </div>
-                                      <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
-                                        <span className="text-sm font-bold text-gray-900">
-                                          {isChecked
-                                            ? "선택됨"
-                                            : "탭하여 선택"}
-                                        </span>
-                                        <span className="rounded bg-slate-700 px-2 py-1 text-[11px] font-bold text-white">
-                                          {diagnosisStrokes.length}/2
-                                        </span>
-                                      </div>
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                              {selectedProductType === "diagnosis" && (
-                                <p className="text-xs leading-5 text-gray-500">
-                                  ※ 영법 2개 선택 → 결제. 교정 수업이 아닙니다.
-                                </p>
-                              )}
-                              {selectedProductType === "zero" && (
-                                <p className="text-xs leading-5 text-gray-500">
-                                  ※ 영법 1개 선택 → 결제. 코치당 최대 7명.
-                                </p>
+                                  <p className="text-xs leading-5 text-gray-500">
+                                    ※ 영법 1개 선택 → 결제. 코치당 최대 7명.
+                                  </p>
+                                </>
                               )}
                             </div>
                           );
@@ -4843,51 +4818,61 @@ export default function SwimmingClassPage() {
                         </RadioGroup>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label className="text-sm font-semibold flex items-center gap-1">
-                          수영 후 통증이 느껴지거나 불편한 부위가 있나요? (중복
-                          선택 가능)
-                        </Label>
-                        <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-5">
-                          {["어깨", "허리", "무릎", "목", "없음"].map((area) => {
-                            const checked = formData.painAreas.includes(area);
-                            return (
-                              <label
-                                key={area}
-                                className="flex items-center gap-2 rounded-md border border-gray-200 px-3 py-2 cursor-pointer hover:border-primary/60"
-                              >
-                                <Checkbox
-                                  checked={checked}
-                                  onCheckedChange={() => togglePainArea(area)}
-                                />
-                                <span>{area}</span>
-                              </label>
-                            );
-                          })}
-                        </div>
-                      </div>
+                      {selectedTimeSlot?.productType !== "diagnosis" &&
+                        selectedProductType !== "diagnosis" && (
+                          <>
+                            <div className="space-y-2">
+                              <Label className="text-sm font-semibold flex items-center gap-1">
+                                수영 후 통증이 느껴지거나 불편한 부위가 있나요?
+                                (중복 선택 가능)
+                              </Label>
+                              <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-5">
+                                {["어깨", "허리", "무릎", "목", "없음"].map(
+                                  (area) => {
+                                    const checked =
+                                      formData.painAreas.includes(area);
+                                    return (
+                                      <label
+                                        key={area}
+                                        className="flex items-center gap-2 rounded-md border border-gray-200 px-3 py-2 cursor-pointer hover:border-primary/60"
+                                      >
+                                        <Checkbox
+                                          checked={checked}
+                                          onCheckedChange={() =>
+                                            togglePainArea(area)
+                                          }
+                                        />
+                                        <span>{area}</span>
+                                      </label>
+                                    );
+                                  },
+                                )}
+                              </div>
+                            </div>
 
-                      <div className="space-y-2">
-                        <Label
-                          htmlFor="combined-message"
-                          className="text-sm font-semibold flex items-center gap-1"
-                        >
-                          <MessageSquare className="h-4 w-4" />
-                          이번 특강에서 해결하고 싶은 점
-                        </Label>
-                        <Textarea
-                          id="combined-message"
-                          rows={3}
-                          placeholder="예시: 숨쉬기 때문에 자세가 무너지는 문제를 해결하고 싶어요."
-                          value={formData.message}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              message: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
+                            <div className="space-y-2">
+                              <Label
+                                htmlFor="combined-message"
+                                className="text-sm font-semibold flex items-center gap-1"
+                              >
+                                <MessageSquare className="h-4 w-4" />
+                                이번 특강에서 해결하고 싶은 점
+                              </Label>
+                              <Textarea
+                                id="combined-message"
+                                rows={3}
+                                placeholder="예시: 숨쉬기 때문에 자세가 무너지는 문제를 해결하고 싶어요."
+                                value={formData.message}
+                                onChange={(e) =>
+                                  setFormData({
+                                    ...formData,
+                                    message: e.target.value,
+                                  })
+                                }
+                              />
+                            </div>
+                          </>
+                        )}
 
                       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 space-y-3">
                         <div className="flex items-center gap-2">

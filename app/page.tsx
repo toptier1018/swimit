@@ -290,6 +290,7 @@ const PRODUCT_CATALOG: Record<
       "디테일 어항샷 촬영",
       "저항 분석 리포트",
       "연습 PDF 제공",
+      "2시간 자유수영 (촬영가능)",
     ],
   },
 };
@@ -4460,8 +4461,6 @@ export default function SwimmingClassPage() {
                                     </div>
                                   )}
                                   <p className="rounded-lg border border-dashed border-blue-200 bg-blue-50/60 px-3 py-3 text-sm leading-6 text-blue-900">
-                                    영법 선택 없이 신청할 수 있습니다.
-                                    <br />
                                     아래 정보를 입력하고 결제해 주세요.
                                     <br />
                                     <span className="text-xs text-blue-800">

@@ -272,6 +272,7 @@ const PRODUCT_CATALOG: Record<
       "실시간 현장 교정",
       "After 수중 촬영",
       "개인 영상 피드백 후 연습 방향 제시",
+      "진단 수강생 특강 1만원 쿠폰 적용",
     ],
   },
   diagnosis: {
@@ -291,6 +292,7 @@ const PRODUCT_CATALOG: Record<
       "저항 분석 리포트",
       "연습 PDF 제공",
       "2시간 자유수영 (촬영가능)",
+      "이후 특강 수강 시 1만원 쿠폰",
     ],
   },
 };
@@ -3003,7 +3005,8 @@ export default function SwimmingClassPage() {
 
                       <p className="text-xs leading-5 text-gray-600 sm:text-sm">
                         저항 진단 프로그램은 어항샷 분석, 저항 제로 특강은
-                        Before/After 수중 촬영 교정입니다.
+                        Before/After 수중 촬영 교정입니다. 진단 후 특강 수강 시
+                        1만원 쿠폰이 제공됩니다.
                       </p>
                     </div>
 
@@ -4519,6 +4522,7 @@ export default function SwimmingClassPage() {
                                 <p className="text-xs leading-5 text-gray-600 sm:text-sm">
                                   저항 진단 프로그램은 어항샷 분석, 저항 제로
                                   특강은 Before/After 수중 촬영 교정입니다.
+                                  진단 후 특강 수강 시 1만원 쿠폰이 제공됩니다.
                                 </p>
                               </div>
                             );
@@ -5200,6 +5204,8 @@ export default function SwimmingClassPage() {
                                     <br />
                                     촬영 자유수영+어항샷+분석 리포트+연습 PDF
                                     포함.
+                                    <br />
+                                    이후 특강 수강 시 1만원 쿠폰 제공.
                                     <br />
                                     교정 수업이 아닙니다.
                                   </div>

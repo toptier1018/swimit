@@ -180,8 +180,11 @@ const classes: ClassItem[] = [
     venue: "스윔스튜디오제이",
     address:
       "경기도 화성시 동탄구 동탄신리천로 414 경서타워 4층 스윔스튜디오제이",
-    spots: "자유형 7명 · 평영 7명 · 접영 14명 모집",
-    scheduleSummaryLines: ["1부 14:00~16:00"],
+    spots: "1부 저항 제로 · 2부 저항 진단",
+    scheduleSummaryLines: [
+      "1부 저항 제로 특강｜14:00~16:00｜80,000원",
+      "2부 저항 진단 클래스｜16:00~18:00｜40,000원",
+    ],
   },
   {
     id: 14,
@@ -225,8 +228,74 @@ const FORCE_ALL_WAITLIST = false;
 const DEFAULT_WAITLIST_THRESHOLD = 7;
 
 type StrokeType = "자유형" | "평영" | "접영";
+type ProductType = "zero" | "diagnosis";
 
 const STROKE_ORDER: StrokeType[] = ["자유형", "평영", "접영"];
+
+/** 동탄 8/23 전용 이중 상품 */
+const DONGTAN_AUGUST_CLASS_ID = 13;
+
+const PRODUCT_CATALOG: Record<
+  ProductType,
+  {
+    name: string;
+    tag: string;
+    timeLabel: string;
+    time: string;
+    session: string;
+    price: number;
+    strokeCount: number;
+    buttonLabel: string;
+    description: string;
+    includes: string[];
+  }
+> = {
+  zero: {
+    name: "저항 제로 특강",
+    tag: "현장 교정",
+    timeLabel: "14:00~16:00",
+    time: "14:00 ~ 16:00",
+    session: "1부 저항제로",
+    price: 80000,
+    strokeCount: 1,
+    buttonLabel: "저항 제로 특강 신청하기",
+    description:
+      "내 문제를 확인한 뒤 코치와 함께 직접 동작을 교정하는 소수 정예 특강입니다.",
+    includes: [
+      "영법 1가지 선택",
+      "코치 1명당 최대 7명",
+      "Before 수중 촬영",
+      "저항 원인 진단",
+      "맞춤 드릴 및 현장 교정",
+      "After 수중 촬영",
+      "개인별 영상 피드백",
+    ],
+  },
+  diagnosis: {
+    name: "저항 진단 클래스",
+    tag: "촬영·분석",
+    timeLabel: "16:00~18:00",
+    time: "16:00 ~ 18:00",
+    session: "2부 저항진단",
+    price: 40000,
+    strokeCount: 2,
+    buttonLabel: "내 수영 저항 진단받기",
+    description:
+      "내 수영이 왜 힘들고 앞으로 나가지 않는지 수중 영상을 통해 확인하는 진단 프로그램입니다. 교정 수업이 아닙니다.",
+    includes: [
+      "자유형·평영·접영 중 영법 2가지 선택",
+      "선택한 2가지 영법 수중 촬영",
+      "개인별 저항 분석 리포트 제공",
+      "저항 제로 무료 연습 PDF 제공",
+      "총 정원 20명",
+    ],
+  },
+};
+
+const getDongtanDiagnosisEnrollmentKey = () => "[동탄 8/23] 2부 저항진단";
+
+const isDongtanDualProductClass = (classId: number) =>
+  classId === DONGTAN_AUGUST_CLASS_ID;
 
 const STROKE_CATALOG: Record<
   StrokeType,
@@ -300,12 +369,33 @@ const getClassDisplayParts = (stroke: StrokeType) => {
 };
 
 const getClassDisplayName = (className: string) => {
+  if (className === getDongtanDiagnosisEnrollmentKey()) {
+    return PRODUCT_CATALOG.diagnosis.name;
+  }
+  if (className.includes("1부 저항제로")) {
+    for (const stroke of STROKE_ORDER) {
+      if (className.includes(stroke)) {
+        return `${PRODUCT_CATALOG.zero.name} · ${stroke}`;
+      }
+    }
+  }
   for (const stroke of STROKE_ORDER) {
     if (className.includes(stroke)) {
       return STROKE_CATALOG[stroke].label;
     }
   }
   return className;
+};
+
+const getSelectedClassSheetLabel = (slot: {
+  title: string;
+  productName?: string;
+  strokes?: StrokeType[];
+}) => {
+  if (slot.productName && slot.strokes && slot.strokes.length > 0) {
+    return `${slot.productName} (${slot.strokes.join("·")})`;
+  }
+  return slot.title;
 };
 
 type TimetableRow = {
@@ -437,11 +527,16 @@ const TIMETABLE_DONGTAN: TimetableRow[] = [
   },
 ];
 
-/** 스윔스튜디오제이 8/23 특강 (동탄) */
+/** 스윔스튜디오제이 8/23 특강 (동탄) — 1부 저항 제로만 영법 키 생성용 */
 const TIMETABLE_DONGTAN_AUGUST: TimetableRow[] = [
   {
-    ...TIMETABLE_DONGTAN[0],
-    time: "14:00 ~ 16:00",
+    session: PRODUCT_CATALOG.zero.session,
+    time: PRODUCT_CATALOG.zero.time,
+    lanes: [
+      { lane: "1레인", title: "자유형", price: PRODUCT_CATALOG.zero.price },
+      { lane: "2레인", title: "평영", price: PRODUCT_CATALOG.zero.price },
+      { lane: "3레인", title: "접영", price: PRODUCT_CATALOG.zero.price },
+    ],
   },
 ];
 
@@ -622,9 +717,10 @@ const resolveEnrollmentTargetKey = (classKey: string) =>
   migrateToStrokeClassKey(classKey);
 
 const DEFAULT_WAITLIST_THRESHOLDS_BY_CLASS: Record<string, number> = {
-  "[동탄 8/23] 1부 특강 자유형": 7,
-  "[동탄 8/23] 1부 특강 평영": 7,
-  "[동탄 8/23] 1부 특강 접영": 14,
+  "[동탄 8/23] 1부 저항제로 자유형": 7,
+  "[동탄 8/23] 1부 저항제로 평영": 7,
+  "[동탄 8/23] 1부 저항제로 접영": 7,
+  "[동탄 8/23] 2부 저항진단": 20,
   "[목동 8/30] 1부 특강 자유형": 14,
   "[목동 8/30] 1부 특강 평영": 14,
   "[목동 8/30] 1부 특강 접영": 14,
@@ -743,25 +839,28 @@ const normalizeEnrollmentCounts = (
   return normalized;
 };
 
-const INITIAL_ENROLLMENT: Record<string, number> = Object.fromEntries(
-  Object.entries(TIMETABLE_BY_CLASS_ID).flatMap(([idStr, rows]) => {
-    const classId = Number(idStr);
-    const strokes = new Set<StrokeType>();
-    rows.forEach((row) => {
-      row.lanes.forEach((lane) => {
-        if (lane.closed || !lane.title) return;
-        const stroke = getStrokeFromTitle(lane.title);
-        if (stroke) strokes.add(stroke);
+const INITIAL_ENROLLMENT: Record<string, number> = {
+  ...(Object.fromEntries(
+    Object.entries(TIMETABLE_BY_CLASS_ID).flatMap(([idStr, rows]) => {
+      const classId = Number(idStr);
+      const strokes = new Set<StrokeType>();
+      rows.forEach((row) => {
+        row.lanes.forEach((lane) => {
+          if (lane.closed || !lane.title) return;
+          const stroke = getStrokeFromTitle(lane.title);
+          if (stroke) strokes.add(stroke);
+        });
       });
-    });
-    return rows.flatMap((row) =>
-      STROKE_ORDER.filter((stroke) => strokes.has(stroke)).map((stroke) => [
-        makeClassKey(classId, row.session, stroke),
-        0,
-      ]),
-    );
-  }),
-) as Record<string, number>;
+      return rows.flatMap((row) =>
+        STROKE_ORDER.filter((stroke) => strokes.has(stroke)).map((stroke) => [
+          makeClassKey(classId, row.session, stroke),
+          0,
+        ]),
+      );
+    }),
+  ) as Record<string, number>),
+  [getDongtanDiagnosisEnrollmentKey()]: 0,
+};
 
 /** 특강 날짜 → 부 → 레인 순 (개발자 모드 등 시간 흐름 정렬용) */
 const buildClassKeySortIndex = (): Record<string, number> => {
@@ -809,8 +908,14 @@ export default function SwimmingClassPage() {
     time: string;
     price: number;
     isWaitlist: boolean;
-    available?: boolean; // Added for consistency with updates
+    available?: boolean;
+    productType?: ProductType;
+    productName?: string;
+    strokes?: StrokeType[];
   } | null>(null);
+  const [selectedProductType, setSelectedProductType] =
+    useState<ProductType | null>(null);
+  const [diagnosisStrokes, setDiagnosisStrokes] = useState<StrokeType[]>([]);
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
   const [debugCollapsed, setDebugCollapsed] = useState(false);
   const [debugFilter, setDebugFilter] = useState("");
@@ -891,6 +996,14 @@ export default function SwimmingClassPage() {
   // 현재 활성 특강의 클래스 키 목록 (지난 특강 제거용)
   const activeClassKeys = new Set(
     getActiveClasses().flatMap((c) => {
+      if (isDongtanDualProductClass(c.id)) {
+        return [
+          ...STROKE_ORDER.map((stroke) =>
+            makeClassKey(c.id, PRODUCT_CATALOG.zero.session, stroke),
+          ),
+          getDongtanDiagnosisEnrollmentKey(),
+        ];
+      }
       const { session, strokes } = getAvailableStrokesForClass(c.id);
       if (!session) return [];
       return strokes.map(({ stroke }) => makeClassKey(c.id, session, stroke));
@@ -1615,6 +1728,8 @@ export default function SwimmingClassPage() {
     if (selected && selected.month !== month) {
       setSelectedClass(null);
       setSelectedTimeSlot(null);
+      setSelectedProductType(null);
+      setDiagnosisStrokes([]);
       setPaidPageId(null);
       setOrderNumber("");
       setRegionError(false);
@@ -1682,6 +1797,32 @@ export default function SwimmingClassPage() {
       return false;
     }
 
+    if (
+      selectedTimeSlot.productType === "diagnosis" &&
+      (selectedTimeSlot.strokes?.length ?? 0) !== 2
+    ) {
+      toast({
+        title: "영법 2개를 선택해주세요",
+        description: "저항 진단 클래스는 영법을 정확히 2개 선택해야 합니다.",
+        variant: "destructive",
+      });
+      console.log("[신청/결제] 진단 영법 개수 부족 - 결제 차단");
+      return false;
+    }
+
+    if (
+      selectedTimeSlot.productType === "zero" &&
+      (selectedTimeSlot.strokes?.length ?? 0) !== 1
+    ) {
+      toast({
+        title: "영법 1개를 선택해주세요",
+        description: "저항 제로 특강은 영법을 1개만 선택해주세요.",
+        variant: "destructive",
+      });
+      console.log("[신청/결제] 제로 영법 미선택 - 결제 차단");
+      return false;
+    }
+
     if (!agreeAll) {
       toast({
         title: "약관 동의 필요",
@@ -1731,8 +1872,125 @@ export default function SwimmingClassPage() {
   const handleBackToSchedule = () => {
     setShowRegistrationForm(false);
     setShowDepositModal(false);
-    setStep(1); // Go back to step 1
+    setSelectedProductType(null);
+    setDiagnosisStrokes([]);
+    setStep(1);
   };
+
+  const startDongtanProductApplication = (productType: ProductType) => {
+    const dongtan = getActiveClasses().find((c) =>
+      isDongtanDualProductClass(c.id),
+    );
+    if (!dongtan) {
+      toast({
+        title: "동탄 일정을 찾을 수 없습니다",
+        description: "모집 중인 동탄 특강이 없습니다.",
+        variant: "destructive",
+      });
+      return;
+    }
+    console.log("[상품] 동탄 상품 선택:", productType);
+    setSelectedClass(String(dongtan.id));
+    setSelectedProductType(productType);
+    setSelectedTimeSlot(null);
+    setDiagnosisStrokes([]);
+    setPaidPageId(null);
+    setOrderNumber("");
+    setRegionError(false);
+    setCalendarMonth(dongtan.month);
+    setCalendarYear(dongtan.year);
+    setActiveScheduleMonth(dongtan.month);
+    handleRegistration();
+  };
+
+  const applyZeroStrokeSelection = (stroke: StrokeType) => {
+    const product = PRODUCT_CATALOG.zero;
+    const classKey = makeClassKey(
+      DONGTAN_AUGUST_CLASS_ID,
+      product.session,
+      stroke,
+    );
+    const isFull = isClassFull(classKey);
+    console.log("[상품] 저항 제로 영법 선택:", { stroke, classKey, isFull });
+    setSelectedTimeSlot({
+      name: classKey,
+      session: product.session,
+      lane: UNASSIGNED_LANE,
+      title: stroke,
+      time: product.time,
+      price: product.price,
+      isWaitlist: isFull,
+      available: !isFull,
+      productType: "zero",
+      productName: product.name,
+      strokes: [stroke],
+    });
+    setStep(3);
+  };
+
+  const applyDiagnosisStrokeSelection = (strokes: StrokeType[]) => {
+    if (strokes.length !== 2) return;
+    const product = PRODUCT_CATALOG.diagnosis;
+    const classKey = getDongtanDiagnosisEnrollmentKey();
+    const isFull = isClassFull(classKey);
+    const title = strokes.join("·");
+    console.log("[상품] 저항 진단 영법 선택:", { strokes, classKey, isFull });
+    setSelectedTimeSlot({
+      name: classKey,
+      session: product.session,
+      lane: UNASSIGNED_LANE,
+      title,
+      time: product.time,
+      price: product.price,
+      isWaitlist: isFull,
+      available: !isFull,
+      productType: "diagnosis",
+      productName: product.name,
+      strokes,
+    });
+    setStep(3);
+  };
+
+  const toggleDiagnosisStroke = (stroke: StrokeType) => {
+    setDiagnosisStrokes((prev) => {
+      if (prev.includes(stroke)) {
+        const next = prev.filter((s) => s !== stroke);
+        console.log("[상품] 진단 영법 해제:", stroke, next);
+        return next;
+      }
+      if (prev.length >= 2) {
+        toast({
+          title: "영법은 2개까지",
+          description: "저항 진단 클래스는 영법을 정확히 2개 선택해주세요.",
+        });
+        return prev;
+      }
+      const next = [...prev, stroke];
+      console.log("[상품] 진단 영법 추가:", stroke, next);
+      if (next.length === 2) {
+        window.setTimeout(() => applyDiagnosisStrokeSelection(next), 0);
+      }
+      return next;
+    });
+  };
+
+  const paymentCtaLabel = (() => {
+    if (!selectedTimeSlot) return "일정을 선택해 주세요";
+    if (
+      isClassFull(selectedTimeSlot.name) ||
+      hasEnrollment(selectedTimeSlot.name)
+    ) {
+      return "예약하기";
+    }
+    const price = selectedTimeSlot.price.toLocaleString();
+    if (selectedTimeSlot.productType === "zero") {
+      return `₩${price} 결제하고 저항 제로 특강 신청하기`;
+    }
+    if (selectedTimeSlot.productType === "diagnosis") {
+      return `₩${price} 결제하고 저항 진단 신청하기`;
+    }
+    return `₩${price} 결제하고 자리 확정하기`;
+  })();
 
   const copyDepositAccount = async () => {
     try {
@@ -2486,11 +2744,16 @@ export default function SwimmingClassPage() {
                           variant="outline"
                           className="w-full border-blue-200 bg-white text-base font-bold text-blue-700 hover:bg-blue-50"
                           onClick={() => {
-                            console.log("[CTA] Hero 카카오톡 진단 문의 클릭");
-                            window.open("https://pf.kakao.com/_dXUgn/chat", "_blank");
+                            console.log("[CTA] Hero 상품 선택으로 이동");
+                            document
+                              .getElementById("product-section")
+                              ?.scrollIntoView({
+                                behavior: "smooth",
+                                block: "start",
+                              });
                           }}
                         >
-                          내 수영 진단받기
+                          어떤 도움이 필요하신가요?
                         </Button>
                       </div>
 
@@ -2525,6 +2788,68 @@ export default function SwimmingClassPage() {
                       <p className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold leading-6 text-white">
                         문제는 운동신경이 아니라, 내 몸에서 생기는 저항을 아직
                         정확히 보지 못했기 때문일 수 있습니다.
+                      </p>
+                    </div>
+
+                    {/* Product picker — 동탄 이중 상품 안내 */}
+                    <div
+                      id="product-section"
+                      className="scroll-mt-4 space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5"
+                    >
+                      <div>
+                        <h3 className="text-xl sm:text-2xl font-bold text-gray-950">
+                          어떤 도움이 필요하신가요?
+                        </h3>
+                        <p className="mt-1 text-sm text-gray-600">
+                          동탄 일정에서 먼저 운영합니다. 상품을 고르면 신청으로
+                          이동합니다.
+                        </p>
+                      </div>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        {(["zero", "diagnosis"] as ProductType[]).map(
+                          (productType) => {
+                            const product = PRODUCT_CATALOG[productType];
+                            return (
+                              <div
+                                key={productType}
+                                className="flex flex-col rounded-xl border border-slate-200 bg-slate-50/80 p-4"
+                              >
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <span className="rounded-full bg-blue-600 px-2 py-0.5 text-[11px] font-bold text-white">
+                                    {product.tag}
+                                  </span>
+                                  <span className="text-base font-extrabold text-gray-950">
+                                    {product.name}
+                                  </span>
+                                </div>
+                                <p className="mt-2 text-sm font-bold text-blue-800">
+                                  {product.timeLabel} · ₩
+                                  {product.price.toLocaleString()}
+                                </p>
+                                <p className="mt-2 text-sm leading-6 text-gray-700">
+                                  {product.description}
+                                </p>
+                                <ul className="mt-3 space-y-1 text-xs leading-5 text-gray-600">
+                                  {product.includes.map((item) => (
+                                    <li key={item}>· {item}</li>
+                                  ))}
+                                </ul>
+                                <Button
+                                  className="mt-4 w-full font-bold"
+                                  onClick={() =>
+                                    startDongtanProductApplication(productType)
+                                  }
+                                >
+                                  {product.buttonLabel}
+                                </Button>
+                              </div>
+                            );
+                          },
+                        )}
+                      </div>
+                      <p className="text-sm leading-6 text-gray-600">
+                        저항 진단 클래스는 촬영과 분석 중심, 저항 제로 특강은
+                        코치와 함께 직접 교정하는 수업입니다.
                       </p>
                     </div>
 
@@ -2939,6 +3264,8 @@ export default function SwimmingClassPage() {
                             onClick={() => {
                               setSelectedClass(String(classItem.id));
                               setSelectedTimeSlot(null);
+                              setSelectedProductType(null);
+                              setDiagnosisStrokes([]);
                               setPaidPageId(null);
                               setOrderNumber("");
                               setRegionError(false);
@@ -2956,6 +3283,8 @@ export default function SwimmingClassPage() {
                                 event.preventDefault();
                                 setSelectedClass(String(classItem.id));
                                 setSelectedTimeSlot(null);
+                                setSelectedProductType(null);
+                                setDiagnosisStrokes([]);
                                 setPaidPageId(null);
                                 setOrderNumber("");
                                 setRegionError(false);
@@ -3904,20 +4233,266 @@ export default function SwimmingClassPage() {
                       <div className="flex items-center gap-2 mb-1">
                         <Calendar className="h-6 w-6 md:h-5 md:w-5" />
                         <h4 className="font-bold text-xl md:text-lg">
-                          영법 선택
+                          {selectedProductType
+                            ? selectedProductType === "diagnosis"
+                              ? "영법 2개 선택"
+                              : "영법 1개 선택"
+                            : "영법 선택"}
                         </h4>
                       </div>
                       <p className="text-base md:text-sm text-blue-100 ml-8 md:ml-7">
-                        신청 시에는 원하시는 영법만 선택해주세요.
+                        {selectedProductType === "diagnosis"
+                          ? "저항 진단 클래스는 영법을 정확히 2개 선택해주세요."
+                          : selectedProductType === "zero"
+                            ? "저항 제로 특강은 영법을 1개만 선택해주세요."
+                            : "신청 시에는 원하시는 영법만 선택해주세요."}
                       </p>
                     </div>
                     <CardContent className="p-4 sm:p-5">
                       {(() => {
-                        const strokeSchedule = Number.isFinite(selectedClassIdNum)
-                          ? getAvailableStrokesForClass(selectedClassIdNum)
-                          : { session: "", time: "", strokes: [] as { stroke: StrokeType; price: number }[] };
+                        const isDongtanDual =
+                          Number.isFinite(selectedClassIdNum) &&
+                          isDongtanDualProductClass(selectedClassIdNum);
 
-                        if (!selectedClass || strokeSchedule.strokes.length === 0) {
+                        if (!selectedClass) {
+                          return (
+                            <div className="p-6 text-center text-sm text-gray-600 bg-white rounded-lg border border-dashed">
+                              위에서 특강 일정을 먼저 선택하면 영법 선택이
+                              표시됩니다.
+                            </div>
+                          );
+                        }
+
+                        // 동탄 8/23: 상품 선택 → 영법(제로 1개 / 진단 2개)
+                        if (isDongtanDual) {
+                          if (!selectedProductType) {
+                            return (
+                              <div className="space-y-4">
+                                <p className="text-sm text-gray-700">
+                                  동탄 일정은 상품을 먼저 선택해주세요.
+                                </p>
+                                <div className="grid gap-3 sm:grid-cols-2">
+                                  {(
+                                    ["zero", "diagnosis"] as ProductType[]
+                                  ).map((productType) => {
+                                    const product =
+                                      PRODUCT_CATALOG[productType];
+                                    return (
+                                      <button
+                                        key={productType}
+                                        type="button"
+                                        onClick={() => {
+                                          console.log(
+                                            "[상품] 신청폼에서 상품 선택:",
+                                            productType,
+                                          );
+                                          setSelectedProductType(productType);
+                                          setSelectedTimeSlot(null);
+                                          setDiagnosisStrokes([]);
+                                        }}
+                                        className="rounded-xl border border-slate-200 bg-white p-4 text-left hover:border-primary/50 hover:shadow-sm"
+                                      >
+                                        <span className="rounded-full bg-blue-600 px-2 py-0.5 text-[11px] font-bold text-white">
+                                          {product.tag}
+                                        </span>
+                                        <p className="mt-2 text-base font-extrabold text-gray-950">
+                                          {product.name}
+                                        </p>
+                                        <p className="mt-1 text-sm font-bold text-blue-800">
+                                          {product.timeLabel} · ₩
+                                          {product.price.toLocaleString()}
+                                        </p>
+                                        <p className="mt-2 text-sm text-gray-600">
+                                          {product.description}
+                                        </p>
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                                <p className="text-sm leading-6 text-gray-600">
+                                  저항 진단 클래스는 촬영과 분석 중심, 저항 제로
+                                  특강은 코치와 함께 직접 교정하는 수업입니다.
+                                </p>
+                              </div>
+                            );
+                          }
+
+                          const product =
+                            PRODUCT_CATALOG[selectedProductType];
+                          const diagnosisKey =
+                            getDongtanDiagnosisEnrollmentKey();
+                          const enrollmentKeyForBadge =
+                            selectedProductType === "diagnosis"
+                              ? diagnosisKey
+                              : null;
+                          const sharedBadge = enrollmentKeyForBadge
+                            ? getAvailabilityBadge(enrollmentKeyForBadge)
+                            : null;
+
+                          return (
+                            <div className="space-y-4">
+                              <div className="rounded-lg bg-slate-50 px-4 py-3 text-sm text-gray-700">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <span className="rounded-full bg-blue-600 px-2 py-0.5 text-[11px] font-bold text-white">
+                                    {product.tag}
+                                  </span>
+                                  <span className="font-bold text-gray-900">
+                                    {product.name}
+                                  </span>
+                                </div>
+                                <p className="mt-1">
+                                  {product.time} · ₩
+                                  {product.price.toLocaleString()}
+                                  {selectedProductType === "zero"
+                                    ? " · 영법 1개"
+                                    : " · 영법 정확히 2개"}
+                                </p>
+                                <button
+                                  type="button"
+                                  className="mt-2 text-xs font-bold text-blue-700 underline"
+                                  onClick={() => {
+                                    console.log("[상품] 상품 다시 선택");
+                                    setSelectedProductType(null);
+                                    setSelectedTimeSlot(null);
+                                    setDiagnosisStrokes([]);
+                                  }}
+                                >
+                                  다른 상품 선택하기
+                                </button>
+                              </div>
+
+                              {selectedProductType === "diagnosis" &&
+                                sharedBadge && (
+                                  <div className="rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-sm text-orange-900">
+                                    저항 진단 클래스 정원 20명 ·{" "}
+                                    {sharedBadge.isWaitlist
+                                      ? "예약대기"
+                                      : sharedBadge.label}
+                                  </div>
+                                )}
+
+                              <div className="grid gap-3 sm:grid-cols-3">
+                                {STROKE_ORDER.map((stroke) => {
+                                  const catalog = STROKE_CATALOG[stroke];
+                                  if (selectedProductType === "zero") {
+                                    const classKey = makeClassKey(
+                                      selectedClassIdNum,
+                                      product.session,
+                                      stroke,
+                                    );
+                                    const availabilityBadge =
+                                      getAvailabilityBadge(classKey);
+                                    const isSelected =
+                                      selectedTimeSlot?.name === classKey;
+                                    return (
+                                      <button
+                                        key={stroke}
+                                        type="button"
+                                        onClick={() =>
+                                          applyZeroStrokeSelection(stroke)
+                                        }
+                                        className={`relative flex min-h-[140px] flex-col justify-between rounded-xl border p-4 text-left transition-all ${
+                                          isSelected
+                                            ? "border-primary border-2 bg-primary/5 ring-2 ring-primary/10"
+                                            : "border-gray-200 bg-white hover:border-primary/50 hover:shadow-sm"
+                                        }`}
+                                      >
+                                        <div>
+                                          <div className="text-base font-bold text-gray-900">
+                                            {catalog.icon} {stroke}
+                                          </div>
+                                          <div className="mt-2 text-sm leading-5 text-gray-600">
+                                            {catalog.description}
+                                          </div>
+                                        </div>
+                                        <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+                                          <span className="text-sm font-bold text-gray-900">
+                                            ₩{product.price.toLocaleString()}
+                                          </span>
+                                          {availabilityBadge.isWaitlist ? (
+                                            <span className="rounded bg-orange-500 px-2 py-1 text-[11px] font-bold text-white">
+                                              예약대기
+                                            </span>
+                                          ) : (
+                                            <span className="rounded bg-orange-500 px-2 py-1 text-[11px] font-bold text-white">
+                                              {availabilityBadge.label}
+                                            </span>
+                                          )}
+                                        </div>
+                                      </button>
+                                    );
+                                  }
+
+                                  // diagnosis: multi-select exactly 2
+                                  const isChecked =
+                                    diagnosisStrokes.includes(stroke);
+                                  return (
+                                    <button
+                                      key={stroke}
+                                      type="button"
+                                      onClick={() =>
+                                        toggleDiagnosisStroke(stroke)
+                                      }
+                                      className={`relative flex min-h-[140px] flex-col justify-between rounded-xl border p-4 text-left transition-all ${
+                                        isChecked
+                                          ? "border-primary border-2 bg-primary/5 ring-2 ring-primary/10"
+                                          : "border-gray-200 bg-white hover:border-primary/50 hover:shadow-sm"
+                                      }`}
+                                    >
+                                      <div>
+                                        <div className="text-base font-bold text-gray-900">
+                                          {catalog.icon} {stroke}
+                                          {isChecked ? " ✓" : ""}
+                                        </div>
+                                        <div className="mt-2 text-sm leading-5 text-gray-600">
+                                          촬영·분석용 영법으로 선택합니다.
+                                        </div>
+                                      </div>
+                                      <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+                                        <span className="text-sm font-bold text-gray-900">
+                                          {isChecked
+                                            ? "선택됨"
+                                            : "탭하여 선택"}
+                                        </span>
+                                        <span className="rounded bg-slate-700 px-2 py-1 text-[11px] font-bold text-white">
+                                          {diagnosisStrokes.length}/2
+                                        </span>
+                                      </div>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                              {selectedProductType === "diagnosis" && (
+                                <p className="text-xs leading-5 text-gray-500">
+                                  ※ 영법을 정확히 2개 선택하면 결제 단계로
+                                  이어집니다. 교정 수업이 아닌 촬영·분석
+                                  프로그램입니다.
+                                </p>
+                              )}
+                              {selectedProductType === "zero" && (
+                                <p className="text-xs leading-5 text-gray-500">
+                                  ※ 영법 1개를 선택하면 결제 단계로 이어집니다.
+                                  코치 1명당 최대 7명입니다.
+                                </p>
+                              )}
+                            </div>
+                          );
+                        }
+
+                        const strokeSchedule = Number.isFinite(
+                          selectedClassIdNum,
+                        )
+                          ? getAvailableStrokesForClass(selectedClassIdNum)
+                          : {
+                              session: "",
+                              time: "",
+                              strokes: [] as {
+                                stroke: StrokeType;
+                                price: number;
+                              }[],
+                            };
+
+                        if (strokeSchedule.strokes.length === 0) {
                           return (
                             <div className="p-6 text-center text-sm text-gray-600 bg-white rounded-lg border border-dashed">
                               위에서 특강 일정을 먼저 선택하면 영법 선택이
@@ -3936,84 +4511,89 @@ export default function SwimmingClassPage() {
                               <span>{strokeSchedule.time}</span>
                             </div>
                             <div className="grid gap-3 sm:grid-cols-3">
-                              {strokeSchedule.strokes.map(({ stroke, price }) => {
-                                const classKey = makeClassKey(
-                                  selectedClassIdNum,
-                                  strokeSchedule.session,
-                                  stroke,
-                                );
-                                const isFull = isClassFull(classKey);
-                                const availabilityBadge =
-                                  getAvailabilityBadge(classKey);
-                                const catalog = STROKE_CATALOG[stroke];
-                                const isSelected =
-                                  selectedTimeSlot?.name === classKey;
+                              {strokeSchedule.strokes.map(
+                                ({ stroke, price }) => {
+                                  const classKey = makeClassKey(
+                                    selectedClassIdNum,
+                                    strokeSchedule.session,
+                                    stroke,
+                                  );
+                                  const isFull = isClassFull(classKey);
+                                  const availabilityBadge =
+                                    getAvailabilityBadge(classKey);
+                                  const catalog = STROKE_CATALOG[stroke];
+                                  const isSelected =
+                                    selectedTimeSlot?.name === classKey;
 
-                                return (
-                                  <button
-                                    key={stroke}
-                                    type="button"
-                                    onClick={() => {
-                                      const regionInfo = classes.find(
-                                        (c) => String(c.id) === selectedClass,
-                                      );
-                                      console.log("[선택] 영법 선택:", {
-                                        stroke,
-                                        className: classKey,
-                                        session: strokeSchedule.session,
-                                        time: strokeSchedule.time,
-                                        region:
-                                          regionInfo?.location || "정보 없음",
-                                        remaining: availabilityBadge.remaining,
-                                        badge: availabilityBadge.label,
-                                      });
-                                      setSelectedTimeSlot({
-                                        name: classKey,
-                                        session: strokeSchedule.session,
-                                        lane: UNASSIGNED_LANE,
-                                        title: stroke,
-                                        time: strokeSchedule.time,
-                                        price,
-                                        isWaitlist: isFull,
-                                        available: !isFull,
-                                      });
-                                      setStep(3);
-                                    }}
-                                    className={`relative flex min-h-[140px] flex-col justify-between rounded-xl border p-4 text-left transition-all ${
-                                      isSelected
-                                        ? "border-primary border-2 bg-primary/5 ring-2 ring-primary/10"
-                                        : "border-gray-200 bg-white hover:border-primary/50 hover:shadow-sm"
-                                    }`}
-                                  >
-                                    <div>
-                                      <div className="text-base font-bold text-gray-900">
-                                        {catalog.icon} {catalog.label}
+                                  return (
+                                    <button
+                                      key={stroke}
+                                      type="button"
+                                      onClick={() => {
+                                        const regionInfo = classes.find(
+                                          (c) =>
+                                            String(c.id) === selectedClass,
+                                        );
+                                        console.log("[선택] 영법 선택:", {
+                                          stroke,
+                                          className: classKey,
+                                          session: strokeSchedule.session,
+                                          time: strokeSchedule.time,
+                                          region:
+                                            regionInfo?.location ||
+                                            "정보 없음",
+                                          remaining:
+                                            availabilityBadge.remaining,
+                                          badge: availabilityBadge.label,
+                                        });
+                                        setSelectedTimeSlot({
+                                          name: classKey,
+                                          session: strokeSchedule.session,
+                                          lane: UNASSIGNED_LANE,
+                                          title: stroke,
+                                          time: strokeSchedule.time,
+                                          price,
+                                          isWaitlist: isFull,
+                                          available: !isFull,
+                                        });
+                                        setStep(3);
+                                      }}
+                                      className={`relative flex min-h-[140px] flex-col justify-between rounded-xl border p-4 text-left transition-all ${
+                                        isSelected
+                                          ? "border-primary border-2 bg-primary/5 ring-2 ring-primary/10"
+                                          : "border-gray-200 bg-white hover:border-primary/50 hover:shadow-sm"
+                                      }`}
+                                    >
+                                      <div>
+                                        <div className="text-base font-bold text-gray-900">
+                                          {catalog.icon} {catalog.label}
+                                        </div>
+                                        <div className="mt-2 text-sm leading-5 text-gray-600">
+                                          {catalog.description}
+                                        </div>
                                       </div>
-                                      <div className="mt-2 text-sm leading-5 text-gray-600">
-                                        {catalog.description}
+                                      <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+                                        <span className="text-sm font-bold text-gray-900">
+                                          ₩{price.toLocaleString()}
+                                        </span>
+                                        {availabilityBadge.isWaitlist ? (
+                                          <span className="rounded bg-orange-500 px-2 py-1 text-[11px] font-bold text-white">
+                                            예약대기
+                                          </span>
+                                        ) : (
+                                          <span className="rounded bg-orange-500 px-2 py-1 text-[11px] font-bold text-white">
+                                            {availabilityBadge.label}
+                                          </span>
+                                        )}
                                       </div>
-                                    </div>
-                                    <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
-                                      <span className="text-sm font-bold text-gray-900">
-                                        ₩{price.toLocaleString()}
-                                      </span>
-                                      {availabilityBadge.isWaitlist ? (
-                                        <span className="rounded bg-orange-500 px-2 py-1 text-[11px] font-bold text-white">
-                                          예약대기
-                                        </span>
-                                      ) : (
-                                        <span className="rounded bg-orange-500 px-2 py-1 text-[11px] font-bold text-white">
-                                          {availabilityBadge.label}
-                                        </span>
-                                      )}
-                                    </div>
-                                  </button>
-                                );
-                              })}
+                                    </button>
+                                  );
+                                },
+                              )}
                             </div>
                             <p className="text-xs leading-5 text-gray-500">
-                              ※ 세부 반과 레인은 당일 수영 실력과 목표를 확인한 뒤
-                              배정될 수 있습니다.
+                              ※ 세부 반과 레인은 당일 수영 실력과 목표를 확인한
+                              뒤 배정될 수 있습니다.
                               <br />
                               ※ 일부 클래스는 통합반으로 운영될 수 있습니다.
                             </p>
@@ -4349,12 +4929,19 @@ export default function SwimmingClassPage() {
                           {selectedTimeSlot ? (
                             <div>
                               <p className="text-sm font-medium text-gray-800 mb-1">
-                                {getClassDisplayName(selectedTimeSlot.name)}
+                                {selectedTimeSlot.productName ||
+                                  getClassDisplayName(selectedTimeSlot.name)}
                               </p>
                               <p className="text-xs text-gray-500">
                                 시간대: {selectedTimeSlot.session} (
                                 {selectedTimeSlot.time})
                               </p>
+                              {selectedTimeSlot.strokes &&
+                                selectedTimeSlot.strokes.length > 0 && (
+                                  <p className="text-xs text-gray-500">
+                                    영법: {selectedTimeSlot.strokes.join(" · ")}
+                                  </p>
+                                )}
                               <p className="text-xs text-gray-500">
                                 지역:{" "}
                                 {classes.find(
@@ -4393,11 +4980,37 @@ export default function SwimmingClassPage() {
                           !selectedTimeSlot.isWaitlist &&
                           selectedTimeSlot.available && (
                             <div className="mb-3 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm leading-6 text-blue-900">
-                              <div className="font-bold">런칭 특가 적용</div>
-                              <div>
-                                사전 문제 체크, Before / After 수중 촬영, 현장 교정,
-                                1:1 영상 피드백이 포함됩니다.
-                              </div>
+                              {selectedTimeSlot.productType === "diagnosis" ? (
+                                <>
+                                  <div className="font-bold">
+                                    저항 진단 클래스
+                                  </div>
+                                  <div>
+                                    선택한 2가지 영법 수중 촬영, 개인별 저항
+                                    분석 리포트, 저항 제로 무료 연습 PDF가
+                                    포함됩니다. 교정 수업이 아닙니다.
+                                  </div>
+                                </>
+                              ) : selectedTimeSlot.productType === "zero" ? (
+                                <>
+                                  <div className="font-bold">
+                                    저항 제로 특강
+                                  </div>
+                                  <div>
+                                    Before 수중 촬영, 저항 원인 진단, 맞춤 드릴
+                                    및 현장 교정, After 수중 촬영, 개인별 영상
+                                    피드백이 포함됩니다.
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="font-bold">런칭 특가 적용</div>
+                                  <div>
+                                    사전 문제 체크, Before / After 수중 촬영,
+                                    현장 교정, 1:1 영상 피드백이 포함됩니다.
+                                  </div>
+                                </>
+                              )}
                             </div>
                           )}
                       </div>
@@ -4631,7 +5244,9 @@ export default function SwimmingClassPage() {
                                           formData.swimmingExperience || "",
                                         통증부위: formData.painAreas.join(", "),
                                         해결문제: formData.message || "",
-                                        클래스: selectedTimeSlot.title,
+                                        클래스: getSelectedClassSheetLabel(
+                                          selectedTimeSlot,
+                                        ),
                                         회차: formatSheetSession(
                                           selectedTimeSlot.session,
                                         ),
@@ -4835,7 +5450,9 @@ export default function SwimmingClassPage() {
                                           formData.swimmingExperience || "",
                                         통증부위: formData.painAreas.join(", "),
                                         해결문제: formData.message || "",
-                                        클래스: selectedTimeSlot.title,
+                                        클래스: getSelectedClassSheetLabel(
+                                          selectedTimeSlot,
+                                        ),
                                         회차: formatSheetSession(
                                           selectedTimeSlot.session,
                                         ),
@@ -5013,11 +5630,7 @@ export default function SwimmingClassPage() {
                     >
                       {isSubmitting
                         ? "처리 중..."
-                        : selectedTimeSlot &&
-                            (isClassFull(selectedTimeSlot.name) ||
-                              hasEnrollment(selectedTimeSlot.name))
-                          ? "예약하기"
-                          : `₩${(selectedTimeSlot?.price ?? 0).toLocaleString()} 결제하고 자리 확정하기`}
+                        : paymentCtaLabel}
                     </Button>
                     </div>
                     {showPgTest && selectedTimeSlot && (
@@ -5120,7 +5733,13 @@ export default function SwimmingClassPage() {
                               <span className="text-gray-600">선택한 클래스</span>
                               <span className="text-right font-medium">
                                 {selectedTimeSlot
-                                  ? getClassDisplayName(selectedTimeSlot.name)
+                                  ? selectedTimeSlot.productName
+                                    ? `${selectedTimeSlot.productName}${
+                                        selectedTimeSlot.strokes?.length
+                                          ? ` · ${selectedTimeSlot.strokes.join("·")}`
+                                          : ""
+                                      }`
+                                    : getClassDisplayName(selectedTimeSlot.name)
                                   : ""}
                               </span>
                             </div>
@@ -5172,6 +5791,8 @@ export default function SwimmingClassPage() {
                     setSelectedDate(null);
                     setSelectedClass(null);
                     setSelectedTimeSlot(null);
+                    setSelectedProductType(null);
+                    setDiagnosisStrokes([]);
                     setShowRegistrationForm(false);
                     setShowDepositModal(false);
                     setFormData({
@@ -5318,7 +5939,9 @@ export default function SwimmingClassPage() {
                   <span className="text-gray-600">선택 클래스</span>
                   <span className="text-right font-medium">
                     {selectedTimeSlot
-                      ? getClassDisplayName(selectedTimeSlot.name)
+                      ? selectedTimeSlot.productName
+                        ? getSelectedClassSheetLabel(selectedTimeSlot)
+                        : getClassDisplayName(selectedTimeSlot.name)
                       : ""}
                   </span>
                 </div>
@@ -6903,7 +7526,9 @@ export default function SwimmingClassPage() {
                 <div className="flex justify-between pt-2 border-t">
                   <span className="text-gray-600">선택된 클래스</span>
                   <span className="font-medium">
-                    {getClassDisplayName(selectedTimeSlot.name)}
+                    {selectedTimeSlot.productName
+                      ? getSelectedClassSheetLabel(selectedTimeSlot)
+                      : getClassDisplayName(selectedTimeSlot.name)}
                   </span>
                 </div>
               )}
@@ -7011,6 +7636,8 @@ export default function SwimmingClassPage() {
               setSelectedDate(null);
               setSelectedClass(null);
               setSelectedTimeSlot(null);
+              setSelectedProductType(null);
+              setDiagnosisStrokes([]);
               setShowRegistrationForm(false);
               setShowDepositModal(false);
               setFormData({

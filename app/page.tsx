@@ -182,8 +182,8 @@ const classes: ClassItem[] = [
       "경기도 화성시 동탄구 동탄신리천로 414 경서타워 4층 스윔스튜디오제이",
     spots: "1부 저항 제로 · 2부 저항 진단",
     scheduleSummaryLines: [
-      "1부 저항 제로 특강｜14:00~16:00｜80,000원",
-      "2부 저항 진단 프로그램｜16:00~18:00｜40,000원",
+      "1부 저항 제로 특강｜14:00~16:00(2시간)｜정가 150,000 → 80,000원",
+      "2부 저항 진단 프로그램｜16:00~18:00(2시간)｜정가 80,000 → 40,000원",
     ],
   },
   {
@@ -244,6 +244,7 @@ const PRODUCT_CATALOG: Record<
     time: string;
     session: string;
     price: number;
+    originalPrice: number;
     strokeCount: number;
     buttonLabel: string;
     description: string;
@@ -253,10 +254,11 @@ const PRODUCT_CATALOG: Record<
   zero: {
     name: "저항 제로 특강",
     tag: "현장 교정",
-    timeLabel: "14:00~16:00",
+    timeLabel: "14:00~16:00 · 2시간",
     time: "14:00 ~ 16:00",
     session: "1부 저항제로",
     price: 80000,
+    originalPrice: 150000,
     strokeCount: 1,
     buttonLabel: "저항 제로 특강 신청하기",
     description:
@@ -274,10 +276,11 @@ const PRODUCT_CATALOG: Record<
   diagnosis: {
     name: "저항 진단 프로그램",
     tag: "어항샷 진단",
-    timeLabel: "16:00~18:00",
+    timeLabel: "16:00~18:00 · 2시간",
     time: "16:00 ~ 18:00",
     session: "2부 저항진단",
     price: 40000,
+    originalPrice: 80000,
     strokeCount: 2,
     buttonLabel: "내 수영 저항 진단받기",
     description:
@@ -295,6 +298,31 @@ const PRODUCT_CATALOG: Record<
 /** 어항샷 샘플 영상 (유튜브) */
 const AQUARIUM_SHOT_YOUTUBE_ID = "d3UT4FzduME";
 const AQUARIUM_SHOT_EMBED_URL = `https://www.youtube.com/embed/${AQUARIUM_SHOT_YOUTUBE_ID}?rel=0&modestbranding=1&playsinline=1`;
+
+const formatWon = (amount: number) => `₩${amount.toLocaleString()}`;
+
+/** 정가 취소선 + 할인가 표시 */
+const ProductPriceLabel = ({
+  price,
+  originalPrice,
+  className = "",
+}: {
+  price: number;
+  originalPrice: number;
+  className?: string;
+}) => (
+  <span className={`inline-flex flex-wrap items-baseline gap-x-2 gap-y-0.5 ${className}`}>
+    <span className="text-sm font-medium text-gray-400 line-through">
+      {formatWon(originalPrice)}
+    </span>
+    <span className="text-base font-extrabold text-blue-800">
+      {formatWon(price)}
+    </span>
+    <span className="rounded bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
+      런칭특가
+    </span>
+  </span>
+);
 
 const getDongtanDiagnosisEnrollmentKey = () => "[동탄 8/23] 2부 저항진단";
 
@@ -2827,9 +2855,14 @@ export default function SwimmingClassPage() {
                                   </span>
                                 </div>
                                 <p className="mt-2 text-sm font-bold text-blue-800">
-                                  {product.timeLabel} · ₩
-                                  {product.price.toLocaleString()}
+                                  {product.timeLabel}
                                 </p>
+                                <div className="mt-1">
+                                  <ProductPriceLabel
+                                    price={product.price}
+                                    originalPrice={product.originalPrice}
+                                  />
+                                </div>
                                 <p className="mt-2 text-sm leading-6 text-gray-700">
                                   {product.description}
                                 </p>
@@ -4350,9 +4383,14 @@ export default function SwimmingClassPage() {
                                           {product.name}
                                         </p>
                                         <p className="mt-1 text-sm font-bold text-blue-800">
-                                          {product.timeLabel} · ₩
-                                          {product.price.toLocaleString()}
+                                          {product.timeLabel}
                                         </p>
+                                        <div className="mt-1">
+                                          <ProductPriceLabel
+                                            price={product.price}
+                                            originalPrice={product.originalPrice}
+                                          />
+                                        </div>
                                         <p className="mt-2 text-sm text-gray-600">
                                           {product.description}
                                         </p>
@@ -4392,13 +4430,20 @@ export default function SwimmingClassPage() {
                                     {product.name}
                                   </span>
                                 </div>
-                                <p className="mt-1">
-                                  {product.time} · ₩
-                                  {product.price.toLocaleString()}
-                                  {selectedProductType === "zero"
-                                    ? " · 영법 1개"
-                                    : " · 영법 정확히 2개"}
+                                <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
+                                  <span>
+                                    {product.timeLabel}
+                                    {selectedProductType === "zero"
+                                      ? " · 영법 1개"
+                                      : " · 영법 정확히 2개"}
+                                  </span>
                                 </p>
+                                <div className="mt-1">
+                                  <ProductPriceLabel
+                                    price={product.price}
+                                    originalPrice={product.originalPrice}
+                                  />
+                                </div>
                                 <button
                                   type="button"
                                   className="mt-2 text-xs font-bold text-blue-700 underline"
@@ -4458,9 +4503,10 @@ export default function SwimmingClassPage() {
                                           </div>
                                         </div>
                                         <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
-                                          <span className="text-sm font-bold text-gray-900">
-                                            ₩{product.price.toLocaleString()}
-                                          </span>
+                                          <ProductPriceLabel
+                                            price={product.price}
+                                            originalPrice={product.originalPrice}
+                                          />
                                           {availabilityBadge.isWaitlist ? (
                                             <span className="rounded bg-orange-500 px-2 py-1 text-[11px] font-bold text-white">
                                               예약대기
@@ -5021,11 +5067,29 @@ export default function SwimmingClassPage() {
 
                       {/* Total Amount */}
                       <div>
-                        <div className="flex items-center justify-between mb-3">
+                        <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
                           <h3 className="text-lg font-bold">총 결제 금액</h3>
-                          <span className="text-2xl font-bold text-primary">
-                            ₩{(selectedTimeSlot?.price ?? 0).toLocaleString()}
-                          </span>
+                          {selectedTimeSlot?.productType &&
+                          PRODUCT_CATALOG[selectedTimeSlot.productType] ? (
+                            <div className="text-right">
+                              <div className="text-sm text-gray-400 line-through">
+                                {formatWon(
+                                  PRODUCT_CATALOG[selectedTimeSlot.productType]
+                                    .originalPrice,
+                                )}
+                              </div>
+                              <div className="text-2xl font-bold text-primary">
+                                {formatWon(selectedTimeSlot.price)}
+                              </div>
+                              <div className="text-xs font-bold text-red-600">
+                                런칭특가 · 2시간
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="text-2xl font-bold text-primary">
+                              ₩{(selectedTimeSlot?.price ?? 0).toLocaleString()}
+                            </span>
+                          )}
                         </div>
 
                         {selectedTimeSlot &&
@@ -5035,22 +5099,30 @@ export default function SwimmingClassPage() {
                               {selectedTimeSlot.productType === "diagnosis" ? (
                                 <>
                                   <div className="font-bold">
-                                    저항 진단 프로그램
+                                    저항 진단 프로그램 · 런칭특가
                                   </div>
                                   <div>
-                                    선택한 2가지 영법 디테일 어항샷 촬영, 개인별
-                                    저항 분석 리포트, 저항 제로 무료 연습 PDF가
-                                    포함됩니다. 교정 수업이 아닙니다.
+                                    정가{" "}
+                                    {formatWon(
+                                      PRODUCT_CATALOG.diagnosis.originalPrice,
+                                    )}{" "}
+                                    → {formatWon(PRODUCT_CATALOG.diagnosis.price)}{" "}
+                                    (2시간). 선택한 2가지 영법 디테일 어항샷
+                                    촬영, 개인별 저항 분석 리포트, 저항 제로 무료
+                                    연습 PDF가 포함됩니다. 교정 수업이 아닙니다.
                                   </div>
                                 </>
                               ) : selectedTimeSlot.productType === "zero" ? (
                                 <>
                                   <div className="font-bold">
-                                    저항 제로 특강
+                                    저항 제로 특강 · 런칭특가
                                   </div>
                                   <div>
-                                    Before 디테일 어항샷, 저항 원인 진단, 맞춤
-                                    드릴 및 현장 교정, After 디테일 어항샷,
+                                    정가{" "}
+                                    {formatWon(PRODUCT_CATALOG.zero.originalPrice)}{" "}
+                                    → {formatWon(PRODUCT_CATALOG.zero.price)}{" "}
+                                    (2시간). Before 디테일 어항샷, 저항 원인 진단,
+                                    맞춤 드릴 및 현장 교정, After 디테일 어항샷,
                                     개인별 영상 피드백이 포함됩니다.
                                   </div>
                                 </>

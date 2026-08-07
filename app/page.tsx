@@ -1952,8 +1952,10 @@ export default function SwimmingClassPage() {
     setShowRegistrationForm(false);
     setShowDepositModal(false);
     setSelectedProductType(null);
+    setSelectedTimeSlot(null);
     setDiagnosisStrokes([]);
     setStep(1);
+    console.log("[상품] 신청 영역 닫기 — 상품·영법 선택 초기화");
   };
 
   const startDongtanProductApplication = (productType: ProductType) => {
@@ -1968,22 +1970,37 @@ export default function SwimmingClassPage() {
       });
       return;
     }
-    console.log("[상품] 동탄 상품 선택:", productType);
+    console.log("[상품] 동탄 상품 전환:", {
+      from: selectedProductType,
+      to: productType,
+      prevSlot: selectedTimeSlot?.name ?? null,
+    });
     setSelectedClass(String(dongtan.id));
-    setSelectedProductType(productType);
-    setDiagnosisStrokes([]);
     setPaidPageId(null);
     setOrderNumber("");
     setRegionError(false);
     setCalendarMonth(dongtan.month);
     setCalendarYear(dongtan.year);
     setActiveScheduleMonth(dongtan.month);
+    setDiagnosisStrokes([]);
+
+    // 이전 상품(제로↔진단) 선택을 완전히 비운 뒤 새 상품 적용
     if (productType === "diagnosis") {
       applyDiagnosisProductSelection();
     } else {
+      setSelectedProductType("zero");
       setSelectedTimeSlot(null);
+      console.log("[상품] 저항 제로 특강으로 전환 — 영법 선택 대기");
     }
+
     handleRegistration();
+    window.setTimeout(() => {
+      applicationSectionRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+      console.log("[상품] 신청 영역으로 스크롤:", productType);
+    }, 120);
   };
 
   const applyZeroStrokeSelection = (stroke: StrokeType) => {
@@ -2875,7 +2892,11 @@ export default function SwimmingClassPage() {
                             return (
                               <div
                                 key={productType}
-                                className="flex flex-col rounded-xl border border-slate-200 bg-slate-50/80 p-3.5 sm:p-4"
+                                className={`flex flex-col rounded-xl border p-3.5 sm:p-4 ${
+                                  selectedProductType === productType
+                                    ? "border-primary border-2 bg-primary/5 shadow-sm"
+                                    : "border-slate-200 bg-slate-50/80"
+                                }`}
                               >
                                 <div className="flex flex-wrap items-center gap-2">
                                   <span className="rounded-full bg-blue-600 px-2 py-0.5 text-[11px] font-bold text-white">
@@ -3603,6 +3624,22 @@ export default function SwimmingClassPage() {
                   <div className="mt-1 font-bold text-gray-900">
                     {selectedScheduleClass.location}
                   </div>
+                  {(selectedTimeSlot?.productName ||
+                    selectedProductType) && (
+                    <div className="mt-2 rounded-lg bg-blue-50 px-3 py-2 text-sm font-bold text-blue-900">
+                      상품:{" "}
+                      {selectedTimeSlot?.productName ||
+                        PRODUCT_CATALOG[selectedProductType!].name}
+                      {selectedTimeSlot?.time
+                        ? ` · ${selectedTimeSlot.time}`
+                        : selectedProductType
+                          ? ` · ${PRODUCT_CATALOG[selectedProductType].timeLabel}`
+                          : ""}
+                      {selectedTimeSlot?.price
+                        ? ` · ₩${selectedTimeSlot.price.toLocaleString()}`
+                        : ""}
+                    </div>
+                  )}
                   <div className="mt-2 grid gap-1 text-sm text-gray-700 sm:grid-cols-2">
                     <div>수영장: {selectedScheduleClass.venue}</div>
                     <div>날짜: {selectedScheduleClass.date}</div>
@@ -4416,7 +4453,10 @@ export default function SwimmingClassPage() {
                                           if (productType === "diagnosis") {
                                             applyDiagnosisProductSelection();
                                           } else {
-                                            setSelectedProductType(productType);
+                                            console.log(
+                                              "[상품] 신청폼에서 제로로 전환",
+                                            );
+                                            setSelectedProductType("zero");
                                             setSelectedTimeSlot(null);
                                             setDiagnosisStrokes([]);
                                           }

@@ -297,7 +297,7 @@ const PRODUCT_CATALOG: Record<
 
 /** 어항샷 샘플 영상 (유튜브) */
 const AQUARIUM_SHOT_YOUTUBE_ID = "d3UT4FzduME";
-const AQUARIUM_SHOT_EMBED_URL = `https://www.youtube.com/embed/${AQUARIUM_SHOT_YOUTUBE_ID}?rel=0&modestbranding=1&playsinline=1`;
+const AQUARIUM_SHOT_EMBED_URL = `https://www.youtube.com/embed/${AQUARIUM_SHOT_YOUTUBE_ID}?autoplay=1&mute=1&loop=1&playlist=${AQUARIUM_SHOT_YOUTUBE_ID}&playsinline=1&rel=0&modestbranding=1`;
 
 const formatWon = (amount: number) => `₩${amount.toLocaleString()}`;
 

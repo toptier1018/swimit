@@ -2933,7 +2933,8 @@ export default function SwimmingClassPage() {
 
                       <p className="text-sm leading-6 text-gray-600">
                         저항 진단 프로그램은 어항샷으로 원인을 보는 분석, 저항
-                        제로 특강은 코치와 함께 직접 교정하는 수업입니다.
+                        제로 특강은 코치와 함께 직접 Before/After로 촬영하여
+                        교정하는 수업입니다.
                       </p>
                     </div>
 
@@ -4401,7 +4402,7 @@ export default function SwimmingClassPage() {
                                 <p className="text-sm leading-6 text-gray-600">
                                   저항 진단 프로그램은 어항샷으로 원인을 보는
                                   분석, 저항 제로 특강은 코치와 함께 직접
-                                  교정하는 수업입니다.
+                                  Before/After로 촬영하여 교정하는 수업입니다.
                                 </p>
                               </div>
                             );

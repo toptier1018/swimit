@@ -279,7 +279,7 @@ const PRODUCT_CATALOG: Record<
     tag: "어항샷 진단",
     timeLabel: "16:00~18:00 · 2시간",
     time: "16:00 ~ 18:00",
-    session: "2부 저항진단",
+    session: "2부 저항 진단 프로그램",
     price: 40000,
     originalPrice: 80000,
     strokeCount: 2,
@@ -433,6 +433,29 @@ const getSelectedClassSheetLabel = (slot: {
     return slot.productName;
   }
   return slot.title;
+};
+
+/** 알림톡에 보낼 읽기 쉬운 클래스명 (정원 키와 분리) */
+const getAlimtalkClassLabel = (slot: {
+  name: string;
+  productType?: ProductType;
+  productName?: string;
+  strokes?: StrokeType[];
+}) => {
+  if (
+    slot.productType === "diagnosis" ||
+    slot.name === getDongtanDiagnosisEnrollmentKey() ||
+    slot.name.includes("2부 저항진단")
+  ) {
+    return "[동탄 8/23] 2부 저항 진단 프로그램";
+  }
+  if (slot.productType === "zero") {
+    const stroke = slot.strokes?.[0];
+    return stroke
+      ? `[동탄 8/23] 1부 저항 제로 특강 ${stroke}`
+      : slot.name;
+  }
+  return slot.name;
 };
 
 type TimetableRow = {
@@ -5628,7 +5651,8 @@ export default function SwimmingClassPage() {
                                       body: JSON.stringify({
                                         customerName: formData.name,
                                         customerPhone: formData.phone,
-                                        className: selectedTimeSlot.name,
+                                        className:
+                                          getAlimtalkClassLabel(selectedTimeSlot),
                                         pageId,
                                       }),
                                     },

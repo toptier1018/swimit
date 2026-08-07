@@ -87,12 +87,18 @@ export async function POST(request: NextRequest) {
     // 전화번호 형식 정리 (하이픈 제거)
     const receiverPhone = customerPhone.replace(/-/g, "");
 
+    // 알림톡에 보이는 상품명 정리 (정원 키 ≠ 고객 안내 문구)
+    const displayClassName = String(className || "")
+      .replace("2부 저항진단", "2부 저항 진단 프로그램")
+      .replace("2부 저항 진단 프로그램 특강", "2부 저항 진단 프로그램");
+
     console.log("[NHN Cloud 알림톡] API 호출 준비:", {
       appKey: appKey.substring(0, 10) + "...",
       secretKey: secretKey.substring(0, 10) + "...",
       senderKey: senderKey.substring(0, 10) + "...",
       templateCode,
       receiver: receiverPhone,
+      className: displayClassName,
     });
 
     // NHN Cloud 알림톡 API 호출 (/messages: 템플릿 치환 발송)
@@ -106,7 +112,7 @@ export async function POST(request: NextRequest) {
           recipientNo: receiverPhone,
           templateParameter: {
             고객명: customerName,
-            클래스명: className,
+            클래스명: displayClassName,
           },
         },
       ],

@@ -197,8 +197,12 @@ const classes: ClassItem[] = [
     month: 8,
     venue: "목동스포츠센터",
     address: "서울 양천구 목동서로 130",
-    spots: "영법별 14명 모집",
-    scheduleSummaryLines: ["1부 14:00~16:00"],
+    spots: "접영 14명 · 자유형·평영 7명 · 진단 14명",
+    scheduleSummaryLines: [
+      "1부 특강 · 14:00~16:00 (2시간)",
+      "1부 진단 프로그램 · 14:00~16:00 (5·6레인)",
+    ],
+    badge: "특강 + 진단 동시 운영",
   },
   {
     id: 15,
@@ -344,6 +348,9 @@ const CouponHighlight = ({ note }: { note: string }) => (
 
 const getDongtanDiagnosisEnrollmentKey = () => "[동탄 8/23] 2부 진단";
 
+/** 시간표 안에서 진단 프로그램 레인을 표시하는 이름 (목동 8/30 5·6레인 등) */
+const DIAGNOSIS_LANE_TITLE = "저항 진단 프로그램";
+
 const isDongtanDualProductClass = (classId: number) =>
   classId === DONGTAN_AUGUST_CLASS_ID;
 
@@ -421,8 +428,7 @@ const getClassDisplayParts = (stroke: StrokeType) => {
 const getClassDisplayName = (className: string) => {
   if (
     className === getDongtanDiagnosisEnrollmentKey() ||
-    className.includes("2부 진단") ||
-    className.includes("2부 저항진단")
+    /\d+부\s*(?:저항\s*)?진단/.test(className)
   ) {
     return "진단";
   }
@@ -461,12 +467,14 @@ const getAlimtalkClassLabel = (slot: {
   productName?: string;
   strokes?: StrokeType[];
 }) => {
-  if (
-    slot.productType === "diagnosis" ||
-    slot.name === getDongtanDiagnosisEnrollmentKey() ||
-    slot.name.includes("2부 진단") ||
-    slot.name.includes("2부 저항진단")
-  ) {
+  // 「[목동 8/30] 1부 진단」 → 「[목동 8/30] 1부 저항 진단 프로그램」
+  const diagnosisName = slot.name.match(
+    /^(\[[^\]]+\])\s+(\d+부)\s*(?:저항\s*)?진단(?:\s*프로그램)?$/,
+  );
+  if (diagnosisName) {
+    return `${diagnosisName[1]} ${diagnosisName[2]} 저항 진단 프로그램`;
+  }
+  if (slot.productType === "diagnosis") {
     return "[동탄 8/23] 2부 저항 진단 프로그램";
   }
   if (slot.productType === "zero") {
@@ -620,11 +628,27 @@ const TIMETABLE_DONGTAN_AUGUST: TimetableRow[] = [
   },
 ];
 
-/** 목동스포츠센터 8/30 특강 */
+/** 목동스포츠센터 8/30 특강 — 1부에 특강과 저항 진단 프로그램(5·6레인) 동시 운영 */
 const TIMETABLE_MOKDONG_AUGUST: TimetableRow[] = [
   {
-    ...TIMETABLE_MOKDONG_JULY[0],
+    session: "1부 특강",
     time: "14:00 ~ 16:00",
+    lanes: [
+      { lane: "1레인", title: "평영", price: 80000 },
+      { lane: "2레인", title: "접영", price: 80000 },
+      { lane: "3레인", title: "접영", price: 80000 },
+      { lane: "4레인", title: "자유형", price: 80000 },
+      {
+        lane: "5레인",
+        title: DIAGNOSIS_LANE_TITLE,
+        price: PRODUCT_CATALOG.diagnosis.price,
+      },
+      {
+        lane: "6레인",
+        title: DIAGNOSIS_LANE_TITLE,
+        price: PRODUCT_CATALOG.diagnosis.price,
+      },
+    ],
   },
 ];
 
@@ -757,6 +781,61 @@ const makeClassKey = (
   stroke: string,
 ) => `[${getClassKeyLabel(classId)}] ${session} ${stroke}`;
 
+/** "1부 특강" → "1부" (진단 키는 부 단위로만 표기) */
+const getSessionNumberLabel = (session: string) =>
+  session.match(/^(\d+부)/)?.[1] ?? session;
+
+const makeDiagnosisEnrollmentKey = (classId: number, session: string) =>
+  `[${getClassKeyLabel(classId)}] ${getSessionNumberLabel(session)} 진단`;
+
+type DiagnosisOffering = {
+  classId: number;
+  session: string;
+  time: string;
+  price: number;
+  lanes: string[];
+  enrollmentKey: string;
+};
+
+/**
+ * 특강별 저항 진단 프로그램 운영 정보
+ * - 동탄 8/23: 2부에 진단만 단독 운영
+ * - 목동 8/30: 1부 특강과 동시 운영 (5·6레인)
+ */
+const getDiagnosisOfferingForClass = (
+  classId: number,
+): DiagnosisOffering | null => {
+  if (isDongtanDualProductClass(classId)) {
+    const product = PRODUCT_CATALOG.diagnosis;
+    return {
+      classId,
+      session: product.session,
+      time: product.time,
+      price: product.price,
+      lanes: [],
+      enrollmentKey: getDongtanDiagnosisEnrollmentKey(),
+    };
+  }
+
+  const rows = TIMETABLE_BY_CLASS_ID[classId] ?? [];
+  for (const row of rows) {
+    const diagnosisLanes = row.lanes.filter(
+      (lane) => !lane.closed && lane.title === DIAGNOSIS_LANE_TITLE,
+    );
+    if (diagnosisLanes.length === 0) continue;
+    return {
+      classId,
+      session: row.session,
+      time: row.time,
+      price: diagnosisLanes[0].price,
+      lanes: diagnosisLanes.map((lane) => lane.lane),
+      enrollmentKey: makeDiagnosisEnrollmentKey(classId, row.session),
+    };
+  }
+
+  return null;
+};
+
 const migrateLegacyClassKey = (key: string) => {
   const cidMigrated = key.replace(/^\[cid:(\d+)\]/, (_, idText) => {
     const classId = Number(idText);
@@ -790,17 +869,16 @@ const migrateToStrokeClassKey = (key: string): string => {
     "$1 1부 특강 $2",
   );
 
-  // 동탄 진단: 구 키 → 2부 진단
-  if (
-    migrated === "진단" ||
-    /2부\s*저항\s*진단/.test(migrated) ||
-    /2부\s*저항진단/.test(migrated) ||
-    migrated.includes("2부 저항 진단 프로그램")
-  ) {
-    return "[동탄 8/23] 2부 진단";
+  // 진단: 표기가 어떻든 「[지역 날짜] N부 진단」 하나로 통일
+  const diagnosisKey = migrated.match(
+    /^(\[[^\]]+\])\s+(\d+부)\s*(?:저항\s*)?진단(?:\s*프로그램)?$/,
+  );
+  if (diagnosisKey) {
+    return `${diagnosisKey[1]} ${diagnosisKey[2]} 진단`;
   }
-  if (/^\[[^\]]+\]\s+2부\s*진단$/.test(migrated)) {
-    return "[동탄 8/23] 2부 진단";
+  // 지역 표기가 없던 구 키는 첫 진단 일정(동탄 8/23)으로 귀속
+  if (migrated === "진단" || /저항\s*진단/.test(migrated)) {
+    return getDongtanDiagnosisEnrollmentKey();
   }
 
   if (/^\[[^\]]+\]\s+\d+부\s*특강\s+(자유형|평영|접영)$/.test(migrated)) {
@@ -831,9 +909,11 @@ const DEFAULT_WAITLIST_THRESHOLDS_BY_CLASS: Record<string, number> = {
   "[동탄 8/23] 1부 저항제로 평영": 7,
   "[동탄 8/23] 1부 저항제로 접영": 7,
   "[동탄 8/23] 2부 저항진단": 20,
-  "[목동 8/30] 1부 특강 자유형": 14,
-  "[목동 8/30] 1부 특강 평영": 14,
+  // 목동 8/30: 평영 1레인 · 접영 2·3레인 · 자유형 4레인 · 진단 5·6레인
+  "[목동 8/30] 1부 특강 자유형": 7,
+  "[목동 8/30] 1부 특강 평영": 7,
   "[목동 8/30] 1부 특강 접영": 14,
+  "[목동 8/30] 1부 진단": 14,
   "[부산 9/6] 1부 특강 자유형": 14,
   "[부산 9/6] 1부 특강 평영": 7,
   "[부산 9/6] 1부 특강 접영": 14,
@@ -973,6 +1053,13 @@ const INITIAL_ENROLLMENT: Record<string, number> = {
       );
     }),
   ) as Record<string, number>),
+  // 진단 프로그램은 영법이 없어 시간표 레인에서 자동 생성되지 않으므로 따로 추가
+  ...(Object.fromEntries(
+    Object.keys(TIMETABLE_BY_CLASS_ID)
+      .map((idStr) => getDiagnosisOfferingForClass(Number(idStr)))
+      .filter((offering): offering is DiagnosisOffering => offering !== null)
+      .map((offering) => [offering.enrollmentKey, 0]),
+  ) as Record<string, number>),
   [getDongtanDiagnosisEnrollmentKey()]: 0,
 };
 
@@ -990,10 +1077,15 @@ const buildClassKeySortIndex = (): Record<string, number> => {
 
   for (const classItem of sortedClasses) {
     const { session, strokes } = getAvailableStrokesForClass(classItem.id);
-    if (!session) continue;
-    for (const { stroke } of strokes) {
-      const key = makeClassKey(classItem.id, session, stroke);
-      if (!(key in index)) index[key] = order++;
+    if (session) {
+      for (const { stroke } of strokes) {
+        const key = makeClassKey(classItem.id, session, stroke);
+        if (!(key in index)) index[key] = order++;
+      }
+    }
+    const diagnosis = getDiagnosisOfferingForClass(classItem.id);
+    if (diagnosis && !(diagnosis.enrollmentKey in index)) {
+      index[diagnosis.enrollmentKey] = order++;
     }
   }
 
@@ -1119,8 +1211,13 @@ export default function SwimmingClassPage() {
         ];
       }
       const { session, strokes } = getAvailableStrokesForClass(c.id);
-      if (!session) return [];
-      return strokes.map(({ stroke }) => makeClassKey(c.id, session, stroke));
+      const strokeKeys = session
+        ? strokes.map(({ stroke }) => makeClassKey(c.id, session, stroke))
+        : [];
+      const diagnosis = getDiagnosisOfferingForClass(c.id);
+      return diagnosis
+        ? [...strokeKeys, diagnosis.enrollmentKey]
+        : strokeKeys;
     }),
   );
 
@@ -1831,6 +1928,19 @@ export default function SwimmingClassPage() {
   const activeDongtanDualClass = activeClasses.find((classItem) =>
     isDongtanDualProductClass(classItem.id),
   );
+  /** 저항 진단 프로그램을 모집 중인 일정 (동탄 2부 · 목동 1부 5·6레인) */
+  const activeDiagnosisClasses = activeClasses
+    .map((classItem) => ({
+      classItem,
+      offering: getDiagnosisOfferingForClass(classItem.id),
+    }))
+    .filter(
+      (entry): entry is { classItem: ClassItem; offering: DiagnosisOffering } =>
+        entry.offering !== null,
+    );
+  const selectedClassDiagnosis = Number.isFinite(selectedClassIdNum)
+    ? getDiagnosisOfferingForClass(selectedClassIdNum)
+    : null;
 
   const handleScheduleMonthChange = (month: number) => {
     setActiveScheduleMonth(month);
@@ -2040,7 +2150,7 @@ export default function SwimmingClassPage() {
 
     // 이전 상품(제로↔진단) 선택을 완전히 비운 뒤 새 상품 적용
     if (productType === "diagnosis") {
-      applyDiagnosisProductSelection();
+      applyDiagnosisProductSelection(dongtan.id);
     } else {
       setSelectedProductType("zero");
       setSelectedTimeSlot(null);
@@ -2083,12 +2193,24 @@ export default function SwimmingClassPage() {
   };
 
   /** 진단 프로그램: 영법 선택 없이 바로 신청/결제 */
-  const applyDiagnosisProductSelection = () => {
+  const applyDiagnosisProductSelection = (
+    classId: number = DONGTAN_AUGUST_CLASS_ID,
+  ) => {
     const product = PRODUCT_CATALOG.diagnosis;
-    const classKey = getDongtanDiagnosisEnrollmentKey();
+    const offering = getDiagnosisOfferingForClass(classId);
+    const classKey =
+      offering?.enrollmentKey ?? getDongtanDiagnosisEnrollmentKey();
+    const session = offering?.session ?? product.session;
+    const time = offering?.time ?? product.time;
+    const price = offering?.price ?? product.price;
     const isFull = isClassFull(classKey);
     console.log("[상품] 저항 진단 신청 확정 (영법 선택 없음):", {
+      classId,
       classKey,
+      session,
+      time,
+      price,
+      lanes: offering?.lanes ?? [],
       isFull,
       notionClassName: classKey,
       sheetClassName: "진단",
@@ -2097,11 +2219,11 @@ export default function SwimmingClassPage() {
     setDiagnosisStrokes([]);
     setSelectedTimeSlot({
       name: classKey,
-      session: product.session,
+      session,
       lane: UNASSIGNED_LANE,
       title: "진단",
-      time: product.time,
-      price: product.price,
+      time,
+      price,
       isWaitlist: isFull,
       available: !isFull,
       productType: "diagnosis",
@@ -2109,6 +2231,51 @@ export default function SwimmingClassPage() {
       strokes: [],
     });
     setStep(3);
+  };
+
+  /** 진단 프로그램 신청 시작 (동탄=2부 단독, 목동=1부 5·6레인) */
+  const startDiagnosisApplication = (classId: number) => {
+    const classItem = getActiveClasses().find((c) => c.id === classId);
+    const offering = getDiagnosisOfferingForClass(classId);
+    if (!classItem || !offering) {
+      toast({
+        title: "진단 일정을 찾을 수 없습니다",
+        description: "모집 중인 저항 진단 프로그램이 없습니다.",
+        variant: "destructive",
+      });
+      console.warn("[상품] 진단 일정 없음:", classId);
+      return;
+    }
+
+    if (isDongtanDualProductClass(classId)) {
+      startDongtanProductApplication("diagnosis");
+      return;
+    }
+
+    console.log("[상품] 진단 프로그램 신청 시작:", {
+      classId,
+      location: classItem.locationCode,
+      date: classItem.date,
+      session: offering.session,
+      lanes: offering.lanes,
+      classKey: offering.enrollmentKey,
+    });
+    setSelectedClass(String(classId));
+    setPaidPageId(null);
+    setOrderNumber("");
+    setRegionError(false);
+    setCalendarMonth(classItem.month);
+    setCalendarYear(classItem.year);
+    setActiveScheduleMonth(classItem.month);
+    applyDiagnosisProductSelection(classId);
+    handleRegistration();
+    window.setTimeout(() => {
+      applicationSectionRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+      console.log("[상품] 신청 영역으로 스크롤:", classItem.locationCode);
+    }, 120);
   };
 
   const paymentCtaLabel = (() => {
@@ -2938,8 +3105,15 @@ export default function SwimmingClassPage() {
                           어떤 도움이 필요하신가요?
                         </h3>
                         <p className="mt-1 text-sm text-gray-600">
-                          어항샷 저항 진단 프로그램은 동탄 일정에서 신청할 수
-                          있습니다.
+                          어항샷 저항 진단 프로그램은{" "}
+                          {activeDiagnosisClasses.length > 0
+                            ? activeDiagnosisClasses
+                                .map(({ classItem }) =>
+                                  getScheduleShortLabel(classItem),
+                                )
+                                .join(" · ")
+                            : "동탄"}{" "}
+                          일정에서 신청할 수 있습니다.
                         </p>
                       </div>
                       <div className="grid gap-3">
@@ -2963,9 +3137,29 @@ export default function SwimmingClassPage() {
                                     {product.name}
                                   </span>
                                 </div>
-                                <p className="mt-1.5 text-sm font-bold text-blue-800">
-                                  {product.timeLabel}
-                                </p>
+                                {productType === "diagnosis" &&
+                                activeDiagnosisClasses.length > 0 ? (
+                                  <div className="mt-1.5 space-y-0.5">
+                                    {activeDiagnosisClasses.map(
+                                      ({ classItem, offering }) => (
+                                        <p
+                                          key={classItem.id}
+                                          className="text-sm font-bold text-blue-800"
+                                        >
+                                          {getScheduleShortLabel(classItem)} ·{" "}
+                                          {getSessionNumberLabel(
+                                            offering.session,
+                                          )}{" "}
+                                          {offering.time.replace(/\s/g, "")}
+                                        </p>
+                                      ),
+                                    )}
+                                  </div>
+                                ) : (
+                                  <p className="mt-1.5 text-sm font-bold text-blue-800">
+                                    {product.timeLabel}
+                                  </p>
+                                )}
                                 <div className="mt-1">
                                   <ProductPriceLabel
                                     price={product.price}
@@ -2984,14 +3178,45 @@ export default function SwimmingClassPage() {
                                 {product.couponNote && (
                                   <CouponHighlight note={product.couponNote} />
                                 )}
-                                <Button
-                                  className="mt-3 w-full font-bold"
-                                  onClick={() =>
-                                    startDongtanProductApplication(productType)
-                                  }
-                                >
-                                  {product.buttonLabel}
-                                </Button>
+                                {productType === "diagnosis" &&
+                                activeDiagnosisClasses.length > 1 ? (
+                                  <div className="mt-3 grid gap-2">
+                                    {activeDiagnosisClasses.map(
+                                      ({ classItem }) => (
+                                        <Button
+                                          key={classItem.id}
+                                          className="w-full font-bold"
+                                          onClick={() =>
+                                            startDiagnosisApplication(
+                                              classItem.id,
+                                            )
+                                          }
+                                        >
+                                          {getScheduleShortLabel(classItem)}{" "}
+                                          진단 신청하기
+                                        </Button>
+                                      ),
+                                    )}
+                                  </div>
+                                ) : (
+                                  <Button
+                                    className="mt-3 w-full font-bold"
+                                    onClick={() => {
+                                      if (productType === "diagnosis") {
+                                        startDiagnosisApplication(
+                                          activeDiagnosisClasses[0]?.classItem
+                                            .id ?? DONGTAN_AUGUST_CLASS_ID,
+                                        );
+                                        return;
+                                      }
+                                      startDongtanProductApplication(
+                                        productType,
+                                      );
+                                    }}
+                                  >
+                                    {product.buttonLabel}
+                                  </Button>
+                                )}
                               </div>
                             );
                           },
@@ -4485,7 +4710,9 @@ export default function SwimmingClassPage() {
                             ? "상품 확인"
                             : selectedProductType === "zero"
                               ? "영법 1개 선택"
-                              : "영법 선택"}
+                              : selectedClassDiagnosis
+                                ? "클래스 선택"
+                                : "영법 선택"}
                         </h4>
                       </div>
                       <p className="text-base md:text-sm text-blue-100 ml-8 md:ml-7">
@@ -4493,7 +4720,9 @@ export default function SwimmingClassPage() {
                           ? "아래 정보를 입력하고 결제해 주세요."
                           : selectedProductType === "zero"
                             ? "영법 1개를 선택해주세요."
-                            : "신청 시에는 원하시는 영법만 선택해주세요."}
+                            : selectedClassDiagnosis
+                              ? "영법 특강 또는 저항 진단 프로그램을 선택해주세요."
+                              : "신청 시에는 원하시는 영법만 선택해주세요."}
                       </p>
                     </div>
                     <CardContent className="p-4 sm:p-5">
@@ -4732,7 +4961,10 @@ export default function SwimmingClassPage() {
                               }[],
                             };
 
-                        if (strokeSchedule.strokes.length === 0) {
+                        if (
+                          strokeSchedule.strokes.length === 0 &&
+                          !selectedClassDiagnosis
+                        ) {
                           return (
                             <div className="p-6 text-center text-sm text-gray-600 bg-white rounded-lg border border-dashed">
                               위에서 특강 일정을 먼저 선택하면 영법 선택이
@@ -4786,6 +5018,7 @@ export default function SwimmingClassPage() {
                                             availabilityBadge.remaining,
                                           badge: availabilityBadge.label,
                                         });
+                                        setSelectedProductType(null);
                                         setSelectedTimeSlot({
                                           name: classKey,
                                           session: strokeSchedule.session,
@@ -4830,7 +5063,77 @@ export default function SwimmingClassPage() {
                                   );
                                 },
                               )}
+                              {selectedClassDiagnosis &&
+                                (() => {
+                                  const diagnosisProduct =
+                                    PRODUCT_CATALOG.diagnosis;
+                                  const classKey =
+                                    selectedClassDiagnosis.enrollmentKey;
+                                  const availabilityBadge =
+                                    getAvailabilityBadge(classKey);
+                                  const isSelected =
+                                    selectedTimeSlot?.name === classKey;
+
+                                  return (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        console.log("[선택] 진단 프로그램 선택:", {
+                                          className: classKey,
+                                          lanes: selectedClassDiagnosis.lanes,
+                                          remaining:
+                                            availabilityBadge.remaining,
+                                          badge: availabilityBadge.label,
+                                        });
+                                        applyDiagnosisProductSelection(
+                                          selectedClassIdNum,
+                                        );
+                                      }}
+                                      className={`relative flex min-h-[140px] flex-col justify-between rounded-xl border p-4 text-left transition-all ${
+                                        isSelected
+                                          ? "border-primary border-2 bg-primary/5 ring-2 ring-primary/10"
+                                          : "border-gray-200 bg-white hover:border-primary/50 hover:shadow-sm"
+                                      }`}
+                                    >
+                                      <div>
+                                        <div className="text-base font-bold text-gray-900">
+                                          🔍 저항 진단 프로그램
+                                        </div>
+                                        <div className="mt-2 text-sm leading-5 text-gray-600">
+                                          {selectedClassDiagnosis.lanes.join(
+                                            "·",
+                                          )}{" "}
+                                          어항샷 촬영 + 저항 분석 리포트.
+                                          교정 수업이 아닙니다.
+                                        </div>
+                                      </div>
+                                      <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+                                        <ProductPriceLabel
+                                          price={selectedClassDiagnosis.price}
+                                          originalPrice={
+                                            diagnosisProduct.originalPrice
+                                          }
+                                          badge={diagnosisProduct.priceBadge}
+                                        />
+                                        <span className="rounded bg-orange-500 px-2 py-1 text-[11px] font-bold text-white">
+                                          {availabilityBadge.isWaitlist
+                                            ? "예약대기"
+                                            : availabilityBadge.label}
+                                        </span>
+                                      </div>
+                                    </button>
+                                  );
+                                })()}
                             </div>
+                            {selectedClassDiagnosis && (
+                              <div className="rounded-lg border-2 border-orange-400 bg-orange-50 px-3 py-2.5 text-sm font-extrabold leading-5 text-orange-950">
+                                <span className="mr-1.5 inline-block rounded bg-orange-500 px-1.5 py-0.5 text-[11px] font-bold text-white">
+                                  쿠폰
+                                </span>
+                                진단 후 저항 제로 특강 수강 시 1만원 할인 쿠폰
+                                제공
+                              </div>
+                            )}
                             <p className="text-xs leading-5 text-gray-500">
                               ※ 세부 반과 레인은 당일 수영 실력과 목표를 확인한
                               뒤 배정될 수 있습니다.

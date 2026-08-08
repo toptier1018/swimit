@@ -88,10 +88,13 @@ export async function POST(request: NextRequest) {
     const receiverPhone = customerPhone.replace(/-/g, "");
 
     // 알림톡에 보이는 상품명 정리 (정원 키 ≠ 고객 안내 문구)
+    // 「1부 진단」「2부 저항진단」 등 어떤 표기든 「N부 저항 진단 프로그램」으로 통일
     const displayClassName = String(className || "")
-      .replace("2부 저항진단", "2부 저항 진단 프로그램")
-      .replace("2부 진단", "2부 저항 진단 프로그램")
-      .replace("2부 저항 진단 프로그램 특강", "2부 저항 진단 프로그램");
+      .replace(
+        /(\d+부)\s*(?:저항\s*)?진단(?:\s*프로그램)?/,
+        "$1 저항 진단 프로그램",
+      )
+      .replace("저항 진단 프로그램 특강", "저항 진단 프로그램");
 
     console.log("[NHN Cloud 알림톡] API 호출 준비:", {
       appKey: appKey.substring(0, 10) + "...",

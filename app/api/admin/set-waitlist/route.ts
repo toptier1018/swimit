@@ -63,21 +63,27 @@ function getEquivalentSettingsNames(className: string): string[] {
 
 /** 모집 인원 미설정 시 기본값 (관리자 모드에서 클래스별 변경 가능) */
 const DEFAULT_WAITLIST_THRESHOLD = 7;
+/** 저항 진단 프로그램 기본 정원 (레인 수와 무관하게 20명) */
+const DIAGNOSIS_WAITLIST_THRESHOLD = 20;
+
+/** 「[목동 8/30] 1부 진단」처럼 진단 프로그램 키인지 판별 */
+const isDiagnosisClassKey = (className: string) =>
+  /^\[[^\]]+\]\s+\d+부\s*진단$/.test(className);
 
 const DEFAULT_WAITLIST_THRESHOLDS_BY_CLASS: Record<string, number> = {
   "[동탄 8/23] 1부 특강 자유형": 7,
   "[동탄 8/23] 1부 특강 평영": 7,
   "[동탄 8/23] 1부 특강 접영": 7,
-  "[동탄 8/23] 2부 진단": 20,
+  "[동탄 8/23] 2부 진단": DIAGNOSIS_WAITLIST_THRESHOLD,
   "[동탄 8/23] 1부 저항제로 자유형": 7,
   "[동탄 8/23] 1부 저항제로 평영": 7,
   "[동탄 8/23] 1부 저항제로 접영": 7,
-  "[동탄 8/23] 2부 저항진단": 20,
+  "[동탄 8/23] 2부 저항진단": DIAGNOSIS_WAITLIST_THRESHOLD,
   // 목동 8/30: 평영 1레인 · 접영 2·3레인 · 자유형 4레인 · 진단 5·6레인
   "[목동 8/30] 1부 특강 자유형": 7,
   "[목동 8/30] 1부 특강 평영": 7,
   "[목동 8/30] 1부 특강 접영": 14,
-  "[목동 8/30] 1부 진단": 14,
+  "[목동 8/30] 1부 진단": DIAGNOSIS_WAITLIST_THRESHOLD,
   "[부산 9/6] 1부 특강 자유형": 14,
   "[부산 9/6] 1부 특강 평영": 7,
   "[부산 9/6] 1부 특강 접영": 14,
@@ -87,7 +93,12 @@ const DEFAULT_WAITLIST_THRESHOLDS_BY_CLASS: Record<string, number> = {
 };
 
 function getDefaultWaitlistThreshold(className: string) {
-  return DEFAULT_WAITLIST_THRESHOLDS_BY_CLASS[className] ?? DEFAULT_WAITLIST_THRESHOLD;
+  return (
+    DEFAULT_WAITLIST_THRESHOLDS_BY_CLASS[className] ??
+    (isDiagnosisClassKey(className)
+      ? DIAGNOSIS_WAITLIST_THRESHOLD
+      : DEFAULT_WAITLIST_THRESHOLD)
+  );
 }
 
 /**

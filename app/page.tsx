@@ -203,7 +203,7 @@ const classes: ClassItem[] = [
   {
     id: 15,
     year: 2026,
-    location: "부산 부산진 · 조이풀스윔",
+    location: "부산 · 조이풀스윔",
     locationCode: "부산",
     date: "9월 6일 (일)",
     dateNum: 6,
@@ -3243,7 +3243,7 @@ export default function SwimmingClassPage() {
                         📍 부산 첫 특강 오픈 · 9월 6일(일)
                       </p>
                       <p className="mt-1 text-xs sm:text-sm text-orange-800">
-                        부산 부산진 조이풀스윔에서 14:00~16:00에 진행됩니다.
+                        부산 조이풀스윔에서 14:00~16:00에 진행됩니다.
                       </p>
                     </div>
                     <button

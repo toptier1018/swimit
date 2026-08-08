@@ -203,17 +203,16 @@ const classes: ClassItem[] = [
   {
     id: 15,
     year: 2026,
-    location: "부산 해운대 · 더스포츠센터",
+    location: "부산 부산진 · 조이풀스윔",
     locationCode: "부산",
-    date: "8월 30일 (일)",
-    dateNum: 30,
-    month: 8,
-    venue: "더스포츠센터",
-    address: "부산 해운대구 선수촌로 122 상가동 지하1층",
-    spots: "영법별 14명 모집",
+    date: "9월 6일 (일)",
+    dateNum: 6,
+    month: 9,
+    venue: "조이풀스윔",
+    address: "부산광역시 부산진구 백양관문로 20 현대빌딩 지하 1, 2층",
+    spots: "자유형·접영 14명 · 평영 7명",
     scheduleSummaryLines: ["1부 14:00~16:00", "자유형 · 평영 · 접영"],
     badge: "부산 첫 특강",
-    parking: "주차 3시간 지원 가능",
   },
 ];
 
@@ -629,15 +628,17 @@ const TIMETABLE_MOKDONG_AUGUST: TimetableRow[] = [
   },
 ];
 
-/** 더스포츠센터 8/30 특강 (부산 해운대) */
-const TIMETABLE_BUSAN_AUGUST: TimetableRow[] = [
+/** 조이풀스윔 9/6 특강 (부산 부산진) */
+const TIMETABLE_BUSAN_SEPTEMBER: TimetableRow[] = [
   {
     session: "1부 특강",
     time: "14:00 ~ 16:00",
     lanes: [
       { lane: "1레인", title: "자유형", price: 80000 },
-      { lane: "2레인", title: "평영", price: 80000 },
+      { lane: "2레인", title: "자유형", price: 80000 },
       { lane: "3레인", title: "접영", price: 80000 },
+      { lane: "4레인", title: "접영", price: 80000 },
+      { lane: "5레인", title: "평영", price: 80000 },
     ],
   },
 ];
@@ -653,7 +654,7 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   9: TIMETABLE_MOKDONG_JULY, // 7/26 목동
   13: TIMETABLE_DONGTAN_AUGUST, // 8/23 동탄
   14: TIMETABLE_MOKDONG_AUGUST, // 8/30 목동
-  15: TIMETABLE_BUSAN_AUGUST, // 8/30 부산
+  15: TIMETABLE_BUSAN_SEPTEMBER, // 9/6 부산
 };
 
 const getAvailableStrokesForClass = (classId: number) => {
@@ -773,6 +774,10 @@ const migrateLegacyClassKey = (key: string) => {
 const ENROLLMENT_MERGE_TO: Record<string, string> = {
   "[화성 6/21] 1부 특강 5레인 접영 B (중급)":
     "[화성 6/21] 1부 특강 4레인 접영 A (초급)",
+  // 부산 일정 이전(8/30 → 9/6)
+  "[부산 8/30] 1부 특강 자유형": "[부산 9/6] 1부 특강 자유형",
+  "[부산 8/30] 1부 특강 평영": "[부산 9/6] 1부 특강 평영",
+  "[부산 8/30] 1부 특강 접영": "[부산 9/6] 1부 특강 접영",
 };
 
 const migrateToStrokeClassKey = (key: string): string => {
@@ -829,8 +834,12 @@ const DEFAULT_WAITLIST_THRESHOLDS_BY_CLASS: Record<string, number> = {
   "[목동 8/30] 1부 특강 자유형": 14,
   "[목동 8/30] 1부 특강 평영": 14,
   "[목동 8/30] 1부 특강 접영": 14,
+  "[부산 9/6] 1부 특강 자유형": 14,
+  "[부산 9/6] 1부 특강 평영": 7,
+  "[부산 9/6] 1부 특강 접영": 14,
+  // 구 키 호환 (부산 8/30)
   "[부산 8/30] 1부 특강 자유형": 14,
-  "[부산 8/30] 1부 특강 평영": 14,
+  "[부산 8/30] 1부 특강 평영": 7,
   "[부산 8/30] 1부 특강 접영": 14,
 };
 
@@ -3231,10 +3240,10 @@ export default function SwimmingClassPage() {
                   <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-orange-200 bg-orange-50 p-3 sm:p-4">
                     <div>
                       <p className="text-sm sm:text-base font-bold text-orange-900">
-                        📍 부산 첫 특강 오픈 · 8월 30일(일)
+                        📍 부산 첫 특강 오픈 · 9월 6일(일)
                       </p>
                       <p className="mt-1 text-xs sm:text-sm text-orange-800">
-                        부산 해운대 더스포츠센터에서 14:00~16:00에 진행됩니다.
+                        부산 부산진 조이풀스윔에서 14:00~16:00에 진행됩니다.
                       </p>
                     </div>
                     <button

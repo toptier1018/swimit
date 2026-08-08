@@ -6229,34 +6229,42 @@ export default function SwimmingClassPage() {
                     </div>
                     {showPgTest && selectedTimeSlot && (
                       <div
-                        className="rounded-xl border-2 border-amber-400 bg-amber-50 p-4 sm:p-5 space-y-3 shadow-sm"
+                        className="rounded-xl border-2 border-red-500 bg-red-50 p-4 sm:p-5 space-y-3 shadow-sm"
                         role="complementary"
-                        aria-label="PG 심사용 토스 테스트 결제"
+                        aria-label="PG 심사용 토스 테스트 결제 — 실제 결제되지 않음"
                       >
-                        <p className="text-base sm:text-lg font-extrabold text-amber-950 text-center leading-snug">
-                          PG·카드사 심사용 · 실제 특강 신청 아님 · 테스트만
+                        <p className="flex items-center justify-center gap-1.5 text-center text-lg sm:text-xl font-extrabold leading-snug text-red-700">
+                          <AlertTriangle className="h-5 w-5 shrink-0" />
+                          실제 결제가 되지 않습니다
                         </p>
-                        <p className="text-xs sm:text-sm text-amber-900 text-center leading-relaxed">
-                          위 「결제하고 자리 확정하기」는 무통장 입금 신청입니다.
-                          아래 버튼은 토스페이먼츠 테스트 카드 결제(실제 출금
-                          없음)이며 Notion·정원에 반영되지 않습니다.
+                        <p className="text-center text-sm font-bold leading-relaxed text-red-900">
+                          PG·카드사 심사용 테스트 버튼입니다.
+                        </p>
+                        <ul className="space-y-1 rounded-lg bg-white/90 px-3 py-2.5 text-xs sm:text-sm font-bold leading-5 text-red-950">
+                          <li>· 카드에서 돈이 빠져나가지 않습니다</li>
+                          <li>· 특강 신청이 되지 않습니다</li>
+                          <li>· 정원·노션에 반영되지 않습니다</li>
+                        </ul>
+                        <p className="text-center text-xs leading-5 text-red-900">
+                          실제 신청은 위 「결제하고 자리 확정하기」(무통장 입금)로
+                          진행해 주세요.
                         </p>
                         <Button
                           type="button"
                           variant="outline"
-                          className="w-full py-3 text-sm sm:text-base border-2 border-amber-600 text-amber-950 bg-white hover:bg-amber-100 font-bold"
+                          className="w-full py-3 text-sm sm:text-base border-2 border-red-500 text-red-800 bg-white hover:bg-red-100 font-bold"
                           disabled={isClassPgTestLoading}
                           onClick={() => {
                             console.log(
-                              "[PG테스트] 결제하기 버튼 클릭 — 토스 스테이징 결제창 요청",
+                              "[PG테스트] 결제하기 버튼 클릭 — 토스 스테이징 결제창 요청 (실제 결제 아님)",
                             );
                             void handleClassPgTestPayment();
                           }}
-                          aria-label="토스페이먼츠 테스트 결제하기"
+                          aria-label="토스페이먼츠 테스트 결제하기 — 실제 결제되지 않음"
                         >
                           {isClassPgTestLoading
                             ? "결제창 여는 중..."
-                            : "결제하기 (토스페이먼츠 테스트)"}
+                            : "테스트 결제하기 (실제 결제 안 됨)"}
                         </Button>
                       </div>
                     )}

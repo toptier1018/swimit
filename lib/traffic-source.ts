@@ -29,11 +29,14 @@ export const TRAFFIC_SOURCE_STORAGE_KEY = "swimit_traffic_source";
 export const DIRECT_REFERRAL_PATH = "direct";
 
 /**
- * 신청자 목록에 표시할 대표 유입경로
- * source가 있으면 source, 없으면 video, 둘 다 없으면 direct
+ * 신청자 목록·퍼널에 표시할 대표 유입경로
+ * source → video → utm_source 순으로 찾고, 하나도 없으면 direct
  */
 export const resolveReferralPath = (traffic: TrafficSource): string =>
-  traffic.source || traffic.video || DIRECT_REFERRAL_PATH;
+  traffic.source ||
+  traffic.video ||
+  traffic.utm_source ||
+  DIRECT_REFERRAL_PATH;
 
 export const hasAnyTrafficValue = (traffic: TrafficSource): boolean =>
   Object.values(traffic).some((value) => Boolean(value));

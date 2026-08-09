@@ -1395,7 +1395,7 @@ export default function SwimmingClassPage() {
 
   /**
    * 퍼널 DB 행을 구분하는 키
-   * 유입경로(source → video → direct)를 그대로 쓰고,
+   * 유입경로(source → video → utm_source → direct)를 그대로 쓰고,
    * 파라미터가 하나도 없는 방문은 기존처럼 퍼널을 기록하지 않습니다.
    */
   const funnelKey = hasAnyTrafficValue(trafficSource)

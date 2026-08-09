@@ -59,7 +59,7 @@ export type GoogleSheetRowInput = {
   특강지역: string;
   /** P: 예약상태 */
   예약상태: string;
-  /** Q: 유입경로 (source → video → direct) */
+  /** Q: 유입경로 (source → video → utm_source → direct) */
   유입경로?: string;
   /** R: video */
   video?: string;

@@ -9,6 +9,7 @@ export async function POST(request: NextRequest) {
       신청번호: body?.신청번호,
       예약상태: body?.예약상태,
       이름: body?.이름,
+      유입경로: body?.유입경로,
     });
 
     if (!body?.이름 || !body?.전화번호 || !body?.예약상태) {
@@ -38,6 +39,12 @@ export async function POST(request: NextRequest) {
       날짜: body.날짜 ?? "",
       특강지역: body.특강지역 ?? "",
       예약상태: body.예약상태 ?? "",
+      유입경로: body.유입경로 ?? "",
+      video: body.video ?? "",
+      source: body.source ?? "",
+      utm_source: body.utm_source ?? "",
+      utm_medium: body.utm_medium ?? "",
+      utm_campaign: body.utm_campaign ?? "",
     });
 
     if (!result.success) {

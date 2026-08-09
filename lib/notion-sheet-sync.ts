@@ -21,6 +21,30 @@ function titleText(prop: unknown): string {
   return arr.map((t) => t.plain_text ?? "").join("").trim();
 }
 
+/** 유입경로 속성은 텍스트/선택 등 형식이 섞일 수 있어 모두 읽습니다 */
+function anyText(prop: unknown): string {
+  if (!prop || typeof prop !== "object") return "";
+  const p = prop as {
+    rich_text?: NotionRichText[];
+    title?: NotionRichText[];
+    select?: { name?: string };
+    multi_select?: { name?: string }[];
+    url?: string;
+  };
+  if (Array.isArray(p.rich_text)) {
+    return p.rich_text.map((t) => t.plain_text ?? "").join("").trim();
+  }
+  if (Array.isArray(p.title)) {
+    return p.title.map((t) => t.plain_text ?? "").join("").trim();
+  }
+  if (p.select?.name) return p.select.name.trim();
+  if (Array.isArray(p.multi_select)) {
+    return p.multi_select.map((s) => s.name ?? "").filter(Boolean).join(", ");
+  }
+  if (typeof p.url === "string") return p.url.trim();
+  return "";
+}
+
 function dateStart(prop: unknown): string {
   if (!prop || typeof prop !== "object") return "";
   const start = (prop as { date?: { start?: string } }).date?.start;
@@ -162,6 +186,12 @@ export function notionPageToSheetRow(page: NotionPage): GoogleSheetRowInput | nu
     날짜: guessClassDate(region, selectedClass),
     특강지역: region,
     예약상태: status,
+    유입경로: anyText(p["유입경로"]) || "direct",
+    video: anyText(p["video"]),
+    source: anyText(p["source"]),
+    utm_source: anyText(p["utm_source"]),
+    utm_medium: anyText(p["utm_medium"]),
+    utm_campaign: anyText(p["utm_campaign"]),
   };
 }
 

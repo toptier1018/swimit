@@ -59,6 +59,18 @@ export type GoogleSheetRowInput = {
   특강지역: string;
   /** P: 예약상태 */
   예약상태: string;
+  /** Q: 유입경로 (source → video → direct) */
+  유입경로?: string;
+  /** R: video */
+  video?: string;
+  /** S: source */
+  source?: string;
+  /** T: utm_source */
+  utm_source?: string;
+  /** U: utm_medium */
+  utm_medium?: string;
+  /** V: utm_campaign */
+  utm_campaign?: string;
 };
 
 /** 시트 B열(신청번호) 목록 — 중복 복구 방지 */
@@ -114,6 +126,7 @@ export async function appendRowToGoogleSheet(
     console.log("[Google Sheets] 행 추가 시작:", {
       신청번호: row["신청번호"],
       예약상태: row["예약상태"],
+      유입경로: row["유입경로"] ?? "",
       시트명: env.sheetName,
     });
 
@@ -138,12 +151,18 @@ export async function appendRowToGoogleSheet(
         row["날짜"],
         row["특강지역"],
         row["예약상태"],
+        row["유입경로"] ?? "",
+        row["video"] ?? "",
+        row["source"] ?? "",
+        row["utm_source"] ?? "",
+        row["utm_medium"] ?? "",
+        row["utm_campaign"] ?? "",
       ],
     ];
 
     await sheets.spreadsheets.values.append({
       spreadsheetId: env.spreadsheetId,
-      range: `'${env.sheetName}'!A:P`,
+      range: `'${env.sheetName}'!A:V`,
       valueInputOption: "USER_ENTERED",
       insertDataOption: "INSERT_ROWS",
       requestBody: { values },

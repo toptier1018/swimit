@@ -823,6 +823,117 @@ export async function getFunnelCountsByDate(date: string) {
  * 결제 완료 단계에서 가상계좌 및 주문 정보를 업데이트하는 서버 액션
  * 같은 Notion 데이터베이스의 추가 컬럼(가상계좌 입금 정보, 주문번호, 선택된 클래스, 시간대)에 값을 채웁니다.
  */
+/**
+ * 유입경로 관련 Notion 속성
+ * DB에 없는 속성을 보내면 Notion이 400을 돌려주고 신청 저장 자체가 실패하므로,
+ * 실제로 존재하는 속성만 골라서 저장합니다.
+ */
+const TRAFFIC_PROPERTY_NAMES = [
+  "유입경로",
+  "video",
+  "source",
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+] as const
+
+const TRAFFIC_SCHEMA_TTL_MS = 5 * 60 * 1000
+
+let cachedTrafficSchema: {
+  databaseId: string
+  types: Record<string, string>
+  fetchedAt: number
+} | null = null
+
+const getTrafficPropertyTypes = async (
+  databaseId: string
+): Promise<Record<string, string>> => {
+  const notionApiKey = process.env.NOTION_API_KEY
+  if (!notionApiKey) return {}
+
+  const now = Date.now()
+  if (
+    cachedTrafficSchema &&
+    cachedTrafficSchema.databaseId === databaseId &&
+    now - cachedTrafficSchema.fetchedAt < TRAFFIC_SCHEMA_TTL_MS
+  ) {
+    return cachedTrafficSchema.types
+  }
+
+  try {
+    const response = await fetch(
+      `https://api.notion.com/v1/databases/${databaseId}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${notionApiKey}`,
+          "Content-Type": "application/json",
+          "Notion-Version": "2022-06-28",
+        },
+      }
+    )
+
+    if (!response.ok) {
+      console.warn("[유입경로] Notion 스키마 조회 실패 — 유입경로 저장을 건너뜁니다:", response.status)
+      return {}
+    }
+
+    const schema = await response.json()
+    const properties = schema?.properties || {}
+    const types: Record<string, string> = {}
+    for (const name of TRAFFIC_PROPERTY_NAMES) {
+      if (properties[name]?.type) types[name] = properties[name].type
+    }
+
+    cachedTrafficSchema = { databaseId, types, fetchedAt: now }
+
+    const missing = TRAFFIC_PROPERTY_NAMES.filter((name) => !types[name])
+    console.log("[유입경로] Notion 속성 확인:", {
+      저장가능: types,
+      누락: missing,
+    })
+    if (missing.length > 0) {
+      console.warn(
+        `[유입경로] Notion DB에 다음 속성을 만들어 주세요(텍스트 형식): ${missing.join(", ")}`
+      )
+    }
+
+    return types
+  } catch (error) {
+    console.warn("[유입경로] Notion 스키마 조회 예외:", error)
+    return {}
+  }
+}
+
+const buildTrafficTextProperty = (type: string, value: string) => {
+  if (!value) return null
+  if (type === "rich_text") return { rich_text: [{ text: { content: value } }] }
+  if (type === "select") return { select: { name: value } }
+  if (type === "multi_select") return { multi_select: [{ name: value }] }
+  if (type === "title") return { title: [{ text: { content: value } }] }
+  if (type === "url") return { url: value }
+  return null
+}
+
+const buildTrafficProperties = async (
+  databaseId: string,
+  traffic?: Record<string, string>
+) => {
+  if (!traffic || !databaseId) return {}
+
+  const types = await getTrafficPropertyTypes(databaseId)
+  const properties: Record<string, unknown> = {}
+
+  for (const name of TRAFFIC_PROPERTY_NAMES) {
+    const type = types[name]
+    if (!type) continue
+    const property = buildTrafficTextProperty(type, traffic[name] || "")
+    if (property) properties[name] = property
+  }
+
+  return properties
+}
+
 export async function updatePaymentInNotion(data: {
   pageId: string
   virtualAccountInfo: string
@@ -831,6 +942,8 @@ export async function updatePaymentInNotion(data: {
   timeSlot: string
   region: string
   paymentStartedAt?: string
+  /** 유입경로 (유입경로/video/source/utm_source/utm_medium/utm_campaign) */
+  traffic?: Record<string, string>
 }) {
   try {
     const notionApiKey = process.env.NOTION_API_KEY
@@ -841,6 +954,19 @@ export async function updatePaymentInNotion(data: {
         success: false,
         error: "서버 설정 오류: 환경 변수가 설정되지 않았습니다",
       }
+    }
+
+    const trafficProperties = await buildTrafficProperties(
+      process.env.NOTION_DATABASE_ID || "",
+      data.traffic
+    )
+    if (data.traffic) {
+      console.log("[유입경로] 신청 데이터에 저장:", {
+        pageId: data.pageId,
+        orderNumber: data.orderNumber,
+        유입경로: data.traffic["유입경로"],
+        저장된속성: Object.keys(trafficProperties),
+      })
     }
 
     const response = await fetch(
@@ -854,6 +980,7 @@ export async function updatePaymentInNotion(data: {
         },
         body: JSON.stringify({
           properties: {
+            ...trafficProperties,
             // 가상계좌 입금 정보 (Rich Text)
             "가상계좌 입금 정보": {
               rich_text: [

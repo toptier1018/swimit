@@ -46,6 +46,16 @@ import {
   getClassEnrollmentCounts,
   findOrCreateApplicant,
 } from "@/app/actions/notion";
+import {
+  EMPTY_TRAFFIC_SOURCE,
+  TRAFFIC_SOURCE_STORAGE_KEY,
+  hasAnyTrafficValue,
+  parseStoredTrafficSource,
+  readTrafficSourceFromParams,
+  resolveReferralPath,
+  toTrafficRecord,
+  type TrafficSource,
+} from "@/lib/traffic-source";
 
 type ClassItem = {
   id: number;
@@ -1176,6 +1186,9 @@ export default function SwimmingClassPage() {
   >("결제대기");
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [videoCode, setVideoCode] = useState("");
+  const [trafficSource, setTrafficSource] = useState<TrafficSource>(
+    EMPTY_TRAFFIC_SOURCE,
+  );
   const [funnelCounts, setFunnelCounts] = useState<Record<number, number>>({
     0: 0,
     1: 0,
@@ -1253,6 +1266,30 @@ export default function SwimmingClassPage() {
     setShowPgTest(pgReviewFromEnv || pgTestOn);
     const nextVideoCode = params.get("video")?.trim() || "";
     setVideoCode(nextVideoCode);
+
+    // 유입경로: URL에 값이 있으면 새로 저장하고, 없으면 첫 방문 때 저장한 값을 유지
+    const fromUrl = readTrafficSourceFromParams(params);
+    let nextTraffic = fromUrl;
+    if (hasAnyTrafficValue(fromUrl)) {
+      try {
+        localStorage.setItem(
+          TRAFFIC_SOURCE_STORAGE_KEY,
+          JSON.stringify(fromUrl),
+        );
+      } catch (error) {
+        console.log("[유입경로] 로컬 저장 실패:", error);
+      }
+    } else {
+      try {
+        nextTraffic = parseStoredTrafficSource(
+          localStorage.getItem(TRAFFIC_SOURCE_STORAGE_KEY),
+        );
+      } catch (error) {
+        console.log("[유입경로] 로컬 불러오기 실패:", error);
+      }
+    }
+    setTrafficSource(nextTraffic);
+
     console.log("[퍼널] URL 파라미터 확인:", {
       debug: params.get("debug") === "true",
       admin: params.get("admin") === "true",
@@ -1261,6 +1298,11 @@ export default function SwimmingClassPage() {
       pgtest: pgTestOn,
       showPgTest: pgReviewFromEnv || pgTestOn,
       video: nextVideoCode,
+    });
+    console.log("[유입경로] 수집 결과:", {
+      fromUrl: hasAnyTrafficValue(fromUrl),
+      ...nextTraffic,
+      유입경로: resolveReferralPath(nextTraffic),
     });
   }, [pgReviewFromEnv]);
 
@@ -2449,6 +2491,21 @@ export default function SwimmingClassPage() {
               </div>
               {!debugCollapsed && (
                 <div className="mt-2 space-y-2">
+                  <div className="rounded border border-sky-500/40 bg-sky-500/10 px-2 py-1.5">
+                    <div className="text-[11px] font-bold text-sky-300">
+                      현재 방문자 유입경로:{" "}
+                      <span className="font-mono text-white">
+                        {resolveReferralPath(trafficSource)}
+                      </span>
+                    </div>
+                    <div className="mt-0.5 text-[10px] leading-4 text-gray-300 font-mono break-all">
+                      video={trafficSource.video || "-"} · source=
+                      {trafficSource.source || "-"} · utm_source=
+                      {trafficSource.utm_source || "-"} · utm_medium=
+                      {trafficSource.utm_medium || "-"} · utm_campaign=
+                      {trafficSource.utm_campaign || "-"}
+                    </div>
+                  </div>
                   <p className="text-[11px] leading-4 text-gray-300">
                     클래스별 <span className="text-yellow-300">모집 인원</span>
                     을 자유롭게 입력하세요. 해당 인원까지 일반 결제, 초과 시
@@ -5822,6 +5879,7 @@ export default function SwimmingClassPage() {
                                   region: selectedRegion,
                                   paymentStartedAt:
                                     paymentStartedAt.toISOString(),
+                                  traffic: toTrafficRecord(trafficSource),
                                 });
 
                                 try {
@@ -5864,6 +5922,7 @@ export default function SwimmingClassPage() {
                                         날짜: classDate,
                                         특강지역: selectedRegion,
                                         예약상태: "예약대기",
+                                        ...toTrafficRecord(trafficSource),
                                       }),
                                     },
                                   );
@@ -6028,6 +6087,7 @@ export default function SwimmingClassPage() {
                                   region: selectedRegion,
                                   paymentStartedAt:
                                     paymentStartedAt.toISOString(),
+                                  traffic: toTrafficRecord(trafficSource),
                                 });
 
                                 try {
@@ -6070,6 +6130,7 @@ export default function SwimmingClassPage() {
                                         날짜: classDate,
                                         특강지역: selectedRegion,
                                         예약상태: "결제대기",
+                                        ...toTrafficRecord(trafficSource),
                                       }),
                                     },
                                   );

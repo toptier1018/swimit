@@ -1393,13 +1393,23 @@ export default function SwimmingClassPage() {
     }
   };
 
+  /**
+   * 퍼널 DB 행을 구분하는 키
+   * 유입경로(source → video → direct)를 그대로 쓰고,
+   * 파라미터가 하나도 없는 방문은 기존처럼 퍼널을 기록하지 않습니다.
+   */
+  const funnelKey = hasAnyTrafficValue(trafficSource)
+    ? resolveReferralPath(trafficSource)
+    : "";
+  const trafficRecord = toTrafficRecord(trafficSource);
+
   const resetFunnelCounts = async () => {
-    const storageKey = `funnel_totals_${videoCode || "default"}`;
+    const storageKey = `funnel_totals_${funnelKey || "default"}`;
     try {
       const response = await fetch("/api/funnel", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "reset", video: videoCode }),
+        body: JSON.stringify({ action: "reset", video: funnelKey }),
       });
       const data = await response.json();
       if (data?.totals) {
@@ -1423,7 +1433,7 @@ export default function SwimmingClassPage() {
   ) => {
     const guardKey = "step_view_guard";
     const now = Date.now();
-    const currentVideoCode = explicitVideo ?? videoCode;
+    const currentVideoCode = explicitVideo ?? funnelKey;
     let guard: { step: number; ts: number } | null = null;
     try {
       const guardRaw = sessionStorage.getItem(guardKey);
@@ -1461,6 +1471,7 @@ export default function SwimmingClassPage() {
             step: stepNumber,
             reason,
             video: currentVideoCode,
+            traffic: trafficRecord,
             debug: showDebug,
           }),
         });
@@ -1556,7 +1567,7 @@ export default function SwimmingClassPage() {
 
   // 컴포넌트 마운트 시 퍼널 카운트 로드 (서버 기준)
   useEffect(() => {
-    const storageKey = `funnel_totals_${videoCode || "default"}`;
+    const storageKey = `funnel_totals_${funnelKey || "default"}`;
     try {
       const localTotals = localStorage.getItem(storageKey);
       if (localTotals) {
@@ -1570,8 +1581,8 @@ export default function SwimmingClassPage() {
     void (async () => {
       try {
         const response = await fetch(
-          videoCode
-            ? `/api/funnel?video=${encodeURIComponent(videoCode)}`
+          funnelKey
+            ? `/api/funnel?video=${encodeURIComponent(funnelKey)}`
             : "/api/funnel",
           { cache: "no-store" },
         );
@@ -1584,7 +1595,7 @@ export default function SwimmingClassPage() {
             console.log("[퍼널] 로컬 저장 실패:", error);
           }
           console.log("[퍼널] 서버 카운트 불러오기:", {
-            video: videoCode,
+            유입경로: funnelKey,
             totals: data.totals,
           });
         }
@@ -1592,15 +1603,15 @@ export default function SwimmingClassPage() {
         console.log("[퍼널] 서버 카운트 불러오기 실패:", error);
       }
     })();
-  }, [videoCode]);
+  }, [funnelKey]);
 
   useEffect(() => {
-    if (!videoCode) return;
+    if (!funnelKey) return;
 
-    const landingKey = `funnel_landing_${videoCode}`;
+    const landingKey = `funnel_landing_${funnelKey}`;
     try {
       if (sessionStorage.getItem(landingKey) === "1") {
-        console.log("[퍼널] 랜딩 유입 중복 차단:", { video: videoCode });
+        console.log("[퍼널] 랜딩 유입 중복 차단:", { 유입경로: funnelKey });
         return;
       }
       sessionStorage.setItem(landingKey, "1");
@@ -1608,8 +1619,9 @@ export default function SwimmingClassPage() {
       console.log("[퍼널] 랜딩 유입 세션 저장 실패:", error);
     }
 
-    incrementFunnelCount(0, "랜딩 유입", videoCode);
-  }, [videoCode]);
+    console.log("[퍼널] 랜딩 유입 기록:", trafficRecord);
+    incrementFunnelCount(0, "랜딩 유입", funnelKey);
+  }, [funnelKey]);
 
   // 단계 변경 시 항상 상단으로 스크롤
   useEffect(() => {

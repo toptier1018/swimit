@@ -412,13 +412,58 @@ const EMPTY_FUNNEL_TOTALS: FunnelTotals = {
   4: 0,
 }
 
+/** 텍스트/선택 등 어떤 형식이든 값 하나를 넣을 수 있게 변환 */
+const buildTrafficTextProperty = (type: string, value: string) => {
+  if (!value) return null
+  if (type === "rich_text") return { rich_text: [{ text: { content: value } }] }
+  if (type === "select") return { select: { name: value } }
+  if (type === "multi_select") return { multi_select: [{ name: value }] }
+  if (type === "title") return { title: [{ text: { content: value } }] }
+  if (type === "url") return { url: value }
+  return null
+}
+
+/**
+ * 퍼널 DB에 함께 남길 유입경로 세부 항목
+ * video 칸에는 대표 유입경로가 들어가므로 여기서는 제외합니다.
+ */
+const FUNNEL_TRAFFIC_PROPERTY_NAMES = [
+  "유입경로",
+  "source",
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+] as const
+
+const buildFunnelTrafficPayload = (
+  traffic: Record<string, string> | undefined,
+  trafficTypes: Record<string, string>
+) => {
+  if (!traffic) return {}
+
+  const payload: Record<string, unknown> = {}
+  for (const name of FUNNEL_TRAFFIC_PROPERTY_NAMES) {
+    const type = trafficTypes[name]
+    if (!type) continue
+    const property = buildTrafficTextProperty(type, traffic[name] || "")
+    if (property) payload[name] = property
+  }
+  return payload
+}
+
 const getFunnelDatabaseSchema = async () => {
   const notionApiKey = process.env.NOTION_API_KEY
   const databaseId = process.env.NOTION_FUNNEL_DATABASE_ID?.trim()
 
   if (!notionApiKey || !databaseId) {
     console.error("[퍼널 Notion] 환경 변수가 설정되지 않았습니다")
-    return { success: false, titleName: "", dateType: "", videoType: "" }
+    return {
+      success: false,
+      titleName: "",
+      dateType: "",
+      videoType: "",
+      trafficTypes: {} as Record<string, string>,
+    }
   }
 
   const response = await fetch(
@@ -439,7 +484,13 @@ const getFunnelDatabaseSchema = async () => {
       status: response.status,
       error: errorData,
     })
-    return { success: false, titleName: "", dateType: "", videoType: "" }
+    return {
+      success: false,
+      titleName: "",
+      dateType: "",
+      videoType: "",
+      trafficTypes: {} as Record<string, string>,
+    }
   }
 
   const schema = await response.json()
@@ -450,13 +501,20 @@ const getFunnelDatabaseSchema = async () => {
   const dateType = properties["기준 날짜"]?.type || ""
   const videoType = properties["video"]?.type || ""
 
+  // 유입경로 세부 항목은 퍼널 DB에 칸이 있을 때만 저장합니다
+  const trafficTypes: Record<string, string> = {}
+  for (const name of FUNNEL_TRAFFIC_PROPERTY_NAMES) {
+    if (properties[name]?.type) trafficTypes[name] = properties[name].type
+  }
+
   console.log("[퍼널 Notion] 스키마 확인:", {
     titleName,
     dateType,
     videoType,
+    trafficTypes,
   })
 
-  return { success: true, titleName, dateType, videoType }
+  return { success: true, titleName, dateType, videoType, trafficTypes }
 }
 
 const buildFunnelVideoFilter = (video: string, videoType: string) => {
@@ -581,6 +639,8 @@ export async function getFunnelDailyTotals(date: string, video = "") {
 export async function upsertFunnelDailyTotals(data: {
   date: string
   video?: string
+  /** 유입경로 세부값 (퍼널 DB에 해당 칸이 있을 때만 저장) */
+  traffic?: Record<string, string>
   totals: FunnelTotals
 }) {
   try {
@@ -595,6 +655,10 @@ export async function upsertFunnelDailyTotals(data: {
     const schema = await getFunnelDatabaseSchema()
     const titleName = schema.titleName || "제목"
     const videoPayload = buildFunnelVideoPayload(data.video || "", schema.videoType)
+    const trafficPayload = buildFunnelTrafficPayload(
+      data.traffic,
+      schema.trafficTypes
+    )
     const datePayload =
       schema.dateType === "date"
         ? { "기준 날짜": { date: { start: data.date } } }
@@ -622,6 +686,7 @@ export async function upsertFunnelDailyTotals(data: {
               },
               ...datePayload,
               ...videoPayload,
+              ...trafficPayload,
               "0. 유입": { number: data.totals[0] },
               "1. 선택": { number: data.totals[1] },
               "2. 개인 정보 입력": { number: data.totals[2] },
@@ -659,6 +724,7 @@ export async function upsertFunnelDailyTotals(data: {
           },
           ...datePayload,
           ...videoPayload,
+          ...trafficPayload,
           "0. 유입": { number: data.totals[0] },
           "1. 선택": { number: data.totals[1] },
           "2. 개인 정보 입력": { number: data.totals[2] },
@@ -903,16 +969,6 @@ const getTrafficPropertyTypes = async (
     console.warn("[유입경로] Notion 스키마 조회 예외:", error)
     return {}
   }
-}
-
-const buildTrafficTextProperty = (type: string, value: string) => {
-  if (!value) return null
-  if (type === "rich_text") return { rich_text: [{ text: { content: value } }] }
-  if (type === "select") return { select: { name: value } }
-  if (type === "multi_select") return { multi_select: [{ name: value }] }
-  if (type === "title") return { title: [{ text: { content: value } }] }
-  if (type === "url") return { url: value }
-  return null
 }
 
 const buildTrafficProperties = async (

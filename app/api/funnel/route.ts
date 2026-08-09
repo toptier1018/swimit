@@ -67,6 +67,10 @@ export async function POST(req: NextRequest) {
   const store = getStore();
   const body = await req.json().catch(() => ({}));
   const video = String(body?.video || "").trim();
+  const traffic =
+    body?.traffic && typeof body.traffic === "object"
+      ? (body.traffic as Record<string, string>)
+      : undefined;
   const dateKey = getKoreanDateString();
   const totalsKey = getTotalsKey(dateKey, video);
   const currentStoreTotals = getStoreTotals(store, totalsKey);
@@ -137,6 +141,7 @@ export async function POST(req: NextRequest) {
   await upsertFunnelDailyTotals({
     date: dateKey,
     video,
+    traffic,
     totals: nextTotals,
   });
 

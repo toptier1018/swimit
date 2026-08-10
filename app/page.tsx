@@ -6348,7 +6348,6 @@ export default function SwimmingClassPage() {
                         <ul className="space-y-1 rounded-lg bg-white/90 px-3 py-2.5 text-xs sm:text-sm font-bold leading-5 text-red-950">
                           <li>· 카드에서 돈이 빠져나가지 않습니다</li>
                           <li>· 특강 신청이 되지 않습니다</li>
-                          <li>· 정원·노션에 반영되지 않습니다</li>
                         </ul>
                         <p className="text-center text-xs leading-5 text-red-900">
                           실제 신청은 위 「결제하고 자리 확정하기」(무통장 입금)로

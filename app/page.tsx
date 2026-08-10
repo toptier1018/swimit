@@ -224,9 +224,12 @@ const classes: ClassItem[] = [
     month: 9,
     venue: "조이풀스윔",
     address: "부산광역시 부산진구 백양관문로 20 현대빌딩 지하 1, 2층",
-    spots: "자유형·접영 14명 · 평영 7명",
-    scheduleSummaryLines: ["1부 14:00~16:00", "자유형 · 평영 · 접영"],
-    badge: "부산 첫 특강",
+    spots: "영법 각 7명 · 진단 20명",
+    scheduleSummaryLines: [
+      "1부 특강 · 14:00~16:00 (2시간)",
+      "1부 진단 프로그램 · 14:00~16:00 (4·5레인)",
+    ],
+    badge: "특강 + 진단 동시 운영",
   },
 ];
 
@@ -664,17 +667,25 @@ const TIMETABLE_MOKDONG_AUGUST: TimetableRow[] = [
   },
 ];
 
-/** 조이풀스윔 9/6 특강 (부산 부산진) */
+/** 조이풀스윔 9/6 특강 (부산 부산진) — 1부에 특강과 저항 진단 프로그램(4·5레인) 동시 운영 */
 const TIMETABLE_BUSAN_SEPTEMBER: TimetableRow[] = [
   {
     session: "1부 특강",
     time: "14:00 ~ 16:00",
     lanes: [
       { lane: "1레인", title: "자유형", price: 80000 },
-      { lane: "2레인", title: "자유형", price: 80000 },
-      { lane: "3레인", title: "접영", price: 80000 },
-      { lane: "4레인", title: "접영", price: 80000 },
-      { lane: "5레인", title: "평영", price: 80000 },
+      { lane: "2레인", title: "접영", price: 80000 },
+      { lane: "3레인", title: "평영", price: 80000 },
+      {
+        lane: "4레인",
+        title: DIAGNOSIS_LANE_TITLE,
+        price: PRODUCT_CATALOG.diagnosis.price,
+      },
+      {
+        lane: "5레인",
+        title: DIAGNOSIS_LANE_TITLE,
+        price: PRODUCT_CATALOG.diagnosis.price,
+      },
     ],
   },
 ];
@@ -813,6 +824,7 @@ type DiagnosisOffering = {
  * 특강별 저항 진단 프로그램 운영 정보
  * - 동탄 8/23: 2부에 진단만 단독 운영
  * - 목동 8/30: 1부 특강과 동시 운영 (5·6레인)
+ * - 부산 9/6: 1부 특강과 동시 운영 (4·5레인)
  */
 const getDiagnosisOfferingForClass = (
   classId: number,
@@ -930,9 +942,11 @@ const DEFAULT_WAITLIST_THRESHOLDS_BY_CLASS: Record<string, number> = {
   "[목동 8/30] 1부 특강 평영": 7,
   "[목동 8/30] 1부 특강 접영": 14,
   "[목동 8/30] 1부 진단": DIAGNOSIS_WAITLIST_THRESHOLD,
-  "[부산 9/6] 1부 특강 자유형": 14,
+  // 부산 9/6: 자유형 1 · 접영 2 · 평영 3 · 진단 4·5레인
+  "[부산 9/6] 1부 특강 자유형": 7,
   "[부산 9/6] 1부 특강 평영": 7,
-  "[부산 9/6] 1부 특강 접영": 14,
+  "[부산 9/6] 1부 특강 접영": 7,
+  "[부산 9/6] 1부 진단": DIAGNOSIS_WAITLIST_THRESHOLD,
   // 구 키 호환 (부산 8/30)
   "[부산 8/30] 1부 특강 자유형": 14,
   "[부산 8/30] 1부 특강 평영": 7,
@@ -1999,7 +2013,7 @@ export default function SwimmingClassPage() {
   const activeDongtanDualClass = activeClasses.find((classItem) =>
     isDongtanDualProductClass(classItem.id),
   );
-  /** 저항 진단 프로그램을 모집 중인 일정 (동탄 2부 · 목동 1부 5·6레인) */
+  /** 저항 진단 프로그램을 모집 중인 일정 (동탄 2부 · 목동 1부 5·6 · 부산 1부 4·5) */
   const activeDiagnosisClasses = activeClasses
     .map((classItem) => ({
       classItem,
@@ -3551,10 +3565,11 @@ export default function SwimmingClassPage() {
                   <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-orange-200 bg-orange-50 p-3 sm:p-4">
                     <div>
                       <p className="text-sm sm:text-base font-bold text-orange-900">
-                        📍 부산 첫 특강 오픈 · 9월 6일(일)
+                        📍 부산 첫 특강 + 진단 오픈 · 9월 6일(일)
                       </p>
                       <p className="mt-1 text-xs sm:text-sm text-orange-800">
-                        부산 조이풀스윔에서 14:00~16:00에 진행됩니다.
+                        1부(14:00~16:00)에 영법 특강과 저항 진단 프로그램(4·5레인)을
+                        함께 운영합니다.
                       </p>
                     </div>
                     <button

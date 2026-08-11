@@ -204,16 +204,6 @@ function SuccessContent() {
             </>
           ) : null}
         </p>
-        {enrollSaved ? (
-          <p className="text-sm font-semibold text-teal-800">
-            신청 정보가 Notion·구글시트에 저장되었습니다.
-          </p>
-        ) : (
-          <p className="text-sm font-semibold text-amber-800">
-            결제는 완료됐지만 신청 저장을 확인하지 못했습니다. 고객센터(@스윔잇)로
-            문의해 주세요.
-          </p>
-        )}
         <p className="text-gray-500 text-xs">
           {savedOrderNumber ? (
             <>

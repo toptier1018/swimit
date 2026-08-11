@@ -3196,8 +3196,10 @@ export default function SwimmingClassPage() {
                         ))}
                       </div>
                       <p className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold leading-6 text-white">
-                        문제는 운동신경이 아니라, 내 몸에서 생기는 저항을
-                        제거하지 못했기 때문입니다.
+                        문제는 운동신경이 아니라, 내 몸에서 생기는{" "}
+                        <span className="text-blue-300 underline decoration-blue-300/80 underline-offset-2">
+                          저항을 제거하지 못했기 때문입니다.
+                        </span>
                       </p>
                       <Button
                         size="lg"

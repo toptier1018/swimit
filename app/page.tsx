@@ -3232,16 +3232,22 @@ export default function SwimmingClassPage() {
                       </p>
                     </div>
 
-                    {/* 어항샷 샘플 영상 — 진단 프로그램 설명 */}
+                    {/* 어항샷 · 저항 진단 프로그램 안내 */}
                     <div className="space-y-3 rounded-2xl border border-blue-100 bg-blue-50/50 p-4 shadow-sm">
                       <div>
                         <p className="text-base sm:text-lg font-bold text-gray-950">
-                          어항샷이란?
+                          정밀한 내 수영 상태가 궁금하신가요?
                         </p>
                         <p className="mt-1 text-sm leading-6 text-gray-700">
+                          어항샷기반으로 저항 진단 해드립니다.
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-gray-950">
+                          어항샷이란?
+                        </p>
+                        <p className="mt-0.5 text-sm leading-6 text-gray-700">
                           위·아래를 동시에 찍어 저항이 보이게 촬영합니다.
-                          <br />
-                          영상을 기반으로 저항 분석 리포트를 드립니다.
                         </p>
                       </div>
                       <div
@@ -3263,6 +3269,27 @@ export default function SwimmingClassPage() {
                           }
                         />
                       </div>
+                      <Button
+                        size="lg"
+                        className="w-full text-base font-bold"
+                        onClick={() => {
+                          console.log(
+                            "[CTA] 어항샷 섹션 → 진단 프로그램 신청(일정으로 이동)",
+                          );
+                          document
+                            .getElementById("schedule-section")
+                            ?.scrollIntoView({
+                              behavior: "smooth",
+                              block: "start",
+                            });
+                        }}
+                      >
+                        진단 프로그램 신청 하러가기
+                      </Button>
+                      <p className="text-center text-xs leading-5 text-gray-600 sm:text-sm">
+                        (자유수영 2시간 (개인 촬영 가능)+2가지 영법 어항샷+저항분석리포트
+                        제공)
+                      </p>
                     </div>
 
                     {/* Process Section */}

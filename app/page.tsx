@@ -3195,9 +3195,9 @@ export default function SwimmingClassPage() {
                           </div>
                         ))}
                       </div>
-                      <p className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold leading-6 text-white">
+                      <p className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-bold leading-6 text-gray-900">
                         문제는 운동신경이 아니라, 내 몸에서 생기는{" "}
-                        <span className="text-blue-300 underline decoration-blue-300/80 underline-offset-2">
+                        <span className="text-blue-700 underline decoration-blue-700/70 underline-offset-2">
                           저항을 제거하지 못했기 때문입니다.
                         </span>
                       </p>

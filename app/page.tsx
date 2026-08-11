@@ -3131,7 +3131,7 @@ export default function SwimmingClassPage() {
                       <h3 className="text-[27px] sm:text-[32px] font-bold tracking-tight leading-tight text-gray-950">
                         수영이 힘든 건, 힘이 부족해서가 아니라
                         <br />
-                        힘이 새고 있어서일 수 있습니다.
+                        힘이 새고 있기 때문입니다.
                       </h3>
                       <p className="text-base sm:text-[17px] font-medium text-gray-800 leading-7">
                         더 세게 수영하기 전에, 어디서{" "}

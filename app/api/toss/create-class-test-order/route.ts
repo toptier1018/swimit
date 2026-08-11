@@ -1,36 +1,120 @@
 import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "crypto";
+import { resolveClassPaymentAmount } from "@/lib/class-payment-amount";
+import { encodeCardPendingStatus } from "@/lib/toss-card-order-meta";
+import { updatePaymentInNotion } from "@/app/actions/notion";
 
-/** PG·카드 결제용 주문 생성 (결제 성공 시 Notion·시트 저장과 연동) */
+/**
+ * 특강 카드결제 주문 생성
+ * - 클라이언트 amount는 신뢰하지 않음
+ * - className 기준으로 서버가 금액을 결정
+ * - Notion에 toss orderId·금액·멱등키를 저장
+ */
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
-    const amount = Number(body.amount);
-    const orderName =
-      typeof body.orderName === "string" && body.orderName.trim()
-        ? body.orderName.trim().slice(0, 100)
-        : "스윔잇 수영 특강";
+    const className =
+      typeof body.className === "string" ? body.className.trim() : "";
+    const pageId = typeof body.pageId === "string" ? body.pageId.trim() : "";
+    const orderNumber =
+      typeof body.orderNumber === "string" ? body.orderNumber.trim() : "";
+    const timeSlot =
+      typeof body.timeSlot === "string" ? body.timeSlot.trim() : "";
+    const region = typeof body.region === "string" ? body.region.trim() : "";
+    const paymentStartedAt =
+      typeof body.paymentStartedAt === "string"
+        ? body.paymentStartedAt
+        : new Date().toISOString();
+    const traffic =
+      body.traffic && typeof body.traffic === "object"
+        ? (body.traffic as Record<string, string>)
+        : undefined;
 
-    if (!Number.isFinite(amount) || amount < 1000 || amount > 10_000_000) {
-      console.error("[카드결제] 유효하지 않은 금액:", body.amount);
+    // 클라이언트가 보낸 amount는 참고용 로그만 (최종 금액으로 쓰지 않음)
+    const clientAmountHint = Number(body.amount);
+    console.log("[카드결제] 주문 생성 요청:", {
+      className,
+      pageId: pageId ? `${pageId.slice(0, 8)}…` : "",
+      orderNumber,
+      clientAmountHint: Number.isFinite(clientAmountHint)
+        ? clientAmountHint
+        : null,
+    });
+
+    if (!className || !pageId || !orderNumber) {
       return NextResponse.json(
-        { success: false, error: "결제 금액이 올바르지 않습니다." },
+        {
+          success: false,
+          error: "className, pageId, orderNumber는 필수입니다.",
+        },
         { status: 400 },
       );
     }
 
-    const orderId = `CLASS-TEST-${randomUUID().replace(/-/g, "").slice(0, 16).toUpperCase()}`;
+    const amount = resolveClassPaymentAmount(className);
+    if (!amount) {
+      return NextResponse.json(
+        { success: false, error: "이 클래스는 카드결제가 불가합니다." },
+        { status: 400 },
+      );
+    }
 
-    console.log("[카드결제] 주문 생성:", {
+    if (
+      Number.isFinite(clientAmountHint) &&
+      clientAmountHint > 0 &&
+      clientAmountHint !== amount
+    ) {
+      console.warn("[카드결제] 클라이언트 금액과 서버 금액 불일치 — 서버 금액 사용:", {
+        clientAmountHint,
+        serverAmount: amount,
+        className,
+      });
+    }
+
+    const orderId = `CLASS-${randomUUID().replace(/-/g, "").slice(0, 18).toUpperCase()}`;
+    const idempotencyKey = randomUUID();
+
+    const virtualAccountInfo = encodeCardPendingStatus({
+      status: "CARD_PENDING",
+      tossOrderId: orderId,
+      amount,
+      orderNumber,
+      idempotencyKey,
+    });
+
+    const notionUpdate = await updatePaymentInNotion({
+      pageId,
+      virtualAccountInfo,
+      orderNumber,
+      selectedClass: className,
+      timeSlot: timeSlot || className,
+      region: region || "정보 없음",
+      paymentStartedAt,
+      traffic,
+    });
+
+    if (!notionUpdate.success) {
+      console.error("[카드결제] Notion 대기 주문 저장 실패:", notionUpdate.error);
+      return NextResponse.json(
+        {
+          success: false,
+          error: notionUpdate.error || "주문 저장에 실패했습니다.",
+        },
+        { status: 500 },
+      );
+    }
+
+    console.log("[카드결제] 주문 생성 완료:", {
       orderId,
       amount,
-      orderName,
+      orderNumber,
+      className,
     });
 
     return NextResponse.json({
       success: true,
       orderId,
-      orderName,
+      orderName: className.slice(0, 100),
       amount,
       clientKey: process.env.TOSS_CLIENT_KEY ?? "",
     });

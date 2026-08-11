@@ -1135,6 +1135,97 @@ export async function updatePaymentInNotion(data: {
 }
 
 /**
+ * 토스 orderId가 인코딩된 카드결제 대기/완료 건을 Notion에서 조회
+ */
+export async function findCardOrderByTossOrderId(tossOrderId: string): Promise<{
+  success: boolean
+  pageId?: string
+  virtualAccountInfo?: string
+  orderNumber?: string
+  selectedClass?: string
+  timeSlot?: string
+  region?: string
+  error?: string
+}> {
+  try {
+    const notionApiKey = process.env.NOTION_API_KEY
+    const databaseId = process.env.NOTION_DATABASE_ID
+    if (!notionApiKey || !databaseId) {
+      return { success: false, error: "Notion 환경 변수 미설정" }
+    }
+    if (!tossOrderId) {
+      return { success: false, error: "tossOrderId 누락" }
+    }
+
+    console.log("[카드주문] Notion 조회 시작:", tossOrderId)
+
+    const response = await fetch(
+      `https://api.notion.com/v1/databases/${databaseId}/query`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${notionApiKey}`,
+          "Content-Type": "application/json",
+          "Notion-Version": "2022-06-28",
+        },
+        body: JSON.stringify({
+          page_size: 5,
+          filter: {
+            property: "가상계좌 입금 정보",
+            rich_text: { contains: tossOrderId },
+          },
+        }),
+      },
+    )
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}))
+      console.error("[카드주문] Notion 조회 실패:", err)
+      return { success: false, error: "Notion 주문 조회 실패" }
+    }
+
+    const data = await response.json()
+    const page = data.results?.[0]
+    if (!page?.id) {
+      console.warn("[카드주문] Notion에 해당 tossOrderId 없음:", tossOrderId)
+      return { success: false, error: "주문을 찾을 수 없습니다." }
+    }
+
+    const p = page.properties || {}
+    const rich = (prop: unknown) => {
+      const arr = (prop as { rich_text?: Array<{ plain_text?: string }> })
+        ?.rich_text
+      if (!Array.isArray(arr)) return ""
+      return arr.map((t) => t.plain_text || "").join("").trim()
+    }
+
+    const virtualAccountInfo = rich(p["가상계좌 입금 정보"])
+    console.log("[카드주문] Notion 주문 발견:", {
+      pageId: page.id,
+      tossOrderId,
+      statusPreview: virtualAccountInfo.slice(0, 80),
+    })
+
+    return {
+      success: true,
+      pageId: page.id,
+      virtualAccountInfo,
+      orderNumber: rich(p["주문번호"]),
+      selectedClass: rich(p["선택된 클래스"]),
+      timeSlot: rich(p["시간대"]),
+      region: rich(p["지역"]),
+    }
+  } catch (error) {
+    console.error("[카드주문] Notion 조회 예외:", error)
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "주문 조회 중 오류",
+    }
+  }
+}
+
+/**
  * Notion 데이터베이스에서 클래스별 결제 완료된 건수를 조회하는 서버 액션
  * 배포 후에도 실제 결제 건수를 카운터로 표시하기 위해 사용
  */

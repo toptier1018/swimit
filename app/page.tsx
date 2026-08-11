@@ -2515,26 +2515,6 @@ export default function SwimmingClassPage() {
 
       const notionPageId = pageId;
 
-      const orderRes = await fetch("/api/toss/create-class-test-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount,
-          orderName: selectedTimeSlot.name,
-        }),
-      });
-      const orderData = await orderRes.json();
-
-      if (!orderData.success) {
-        console.error("[카드결제] 주문 생성 실패:", orderData.error);
-        toast({
-          title: "주문 생성 실패",
-          description: orderData.error,
-          variant: "destructive",
-        });
-        return;
-      }
-
       const paymentStartedAt = new Date();
       const newOrderNumber = generateOrderNumber();
       const selectedClassInfo = classes.find(
@@ -2549,12 +2529,58 @@ export default function SwimmingClassPage() {
           )
         : "";
       const trafficRecord = toTrafficRecord(trafficSource);
+      const timeSlotLabel = `${selectedTimeSlot.session} (${selectedTimeSlot.time})`;
+
+      // 서버가 className으로 금액을 확정 — 클라이언트 amount는 힌트만
+      const orderRes = await fetch("/api/toss/create-class-test-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          className: selectedTimeSlot.name,
+          pageId: notionPageId,
+          orderNumber: newOrderNumber,
+          timeSlot: timeSlotLabel,
+          region: selectedRegion,
+          paymentStartedAt: paymentStartedAt.toISOString(),
+          traffic: trafficRecord,
+          amount, // 서버에서 무시·불일치 로그만
+        }),
+      });
+      const orderData = await orderRes.json();
+
+      if (!orderData.success) {
+        console.error("[카드결제] 주문 생성 실패:", orderData.error);
+        toast({
+          title: "주문 생성 실패",
+          description: orderData.error,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const serverAmount = Number(orderData.amount);
+      if (!Number.isFinite(serverAmount) || serverAmount <= 0) {
+        console.error("[카드결제] 서버 금액 없음:", orderData);
+        toast({
+          title: "결제 불가",
+          description: "서버에서 결제 금액을 확인하지 못했습니다.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (serverAmount !== amount) {
+        console.warn("[카드결제] 화면 금액과 서버 금액 다름 — 서버 금액으로 진행:", {
+          uiAmount: amount,
+          serverAmount,
+        });
+      }
 
       const saved = savePendingCardEnrollment({
         tossOrderId: orderData.orderId,
         orderNumber: newOrderNumber,
         pageId: notionPageId,
-        amount: orderData.amount,
+        amount: serverAmount,
         paymentStartedAt: paymentStartedAt.toISOString(),
         sheetTimestamp: formatSheetTimestamp(paymentStartedAt),
         form: {
@@ -2568,7 +2594,7 @@ export default function SwimmingClassPage() {
           message: formData.message || "",
         },
         selectedClassName: selectedTimeSlot.name,
-        timeSlot: `${selectedTimeSlot.session} (${selectedTimeSlot.time})`,
+        timeSlot: timeSlotLabel,
         sessionLabel: formatSheetSession(selectedTimeSlot.session),
         lane: selectedTimeSlot.lane || "",
         classSheetLabel: getSelectedClassSheetLabel(selectedTimeSlot),
@@ -2587,18 +2613,6 @@ export default function SwimmingClassPage() {
         return;
       }
 
-      // 결제창 열기 전에 노션에 결제대기(카드)로 먼저 표시
-      await updatePaymentInNotion({
-        pageId: notionPageId,
-        virtualAccountInfo: "결제대기(카드)",
-        orderNumber: newOrderNumber,
-        selectedClass: selectedTimeSlot.name,
-        timeSlot: `${selectedTimeSlot.session} (${selectedTimeSlot.time})`,
-        region: selectedRegion,
-        paymentStartedAt: paymentStartedAt.toISOString(),
-        traffic: trafficRecord,
-      });
-
       const { loadTossPayments } = await import("@tosspayments/tosspayments-sdk");
       const tossPayments = await loadTossPayments(orderData.clientKey);
       const payment = tossPayments.payment({ customerKey: "ANONYMOUS" });
@@ -2607,11 +2621,12 @@ export default function SwimmingClassPage() {
         tossOrderId: orderData.orderId,
         orderNumber: newOrderNumber,
         pageId: notionPageId,
+        amount: serverAmount,
       });
 
       await payment.requestPayment({
         method: "CARD",
-        amount: { currency: "KRW", value: orderData.amount },
+        amount: { currency: "KRW", value: serverAmount },
         orderId: orderData.orderId,
         orderName: orderData.orderName,
         successUrl: `${window.location.origin}/class-pg-test/success`,

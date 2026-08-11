@@ -2401,7 +2401,7 @@ export default function SwimmingClassPage() {
     ) {
       return "예약하기";
     }
-    return "계좌이체로 신청하기";
+    return "입금 안내받기";
   })();
 
   const cardPaymentLabel = "카드로 결제하기";

@@ -1145,6 +1145,17 @@ export async function findCardOrderByTossOrderId(tossOrderId: string): Promise<{
   selectedClass?: string
   timeSlot?: string
   region?: string
+  /** 웹훅 복구용 — Notion 페이지에 이미 있는 신청자 정보 */
+  applicant?: {
+    name: string
+    phone: string
+    gender: string
+    location: string
+    email: string
+    swimmingExperience: string
+    painAreas: string
+    message: string
+  }
   error?: string
 }> {
   try {
@@ -1198,6 +1209,11 @@ export async function findCardOrderByTossOrderId(tossOrderId: string): Promise<{
       if (!Array.isArray(arr)) return ""
       return arr.map((t) => t.plain_text || "").join("").trim()
     }
+    const title = (prop: unknown) => {
+      const arr = (prop as { title?: Array<{ plain_text?: string }> })?.title
+      if (!Array.isArray(arr)) return ""
+      return arr.map((t) => t.plain_text || "").join("").trim()
+    }
 
     const virtualAccountInfo = rich(p["가상계좌 입금 정보"])
     console.log("[카드주문] Notion 주문 발견:", {
@@ -1214,6 +1230,22 @@ export async function findCardOrderByTossOrderId(tossOrderId: string): Promise<{
       selectedClass: rich(p["선택된 클래스"]),
       timeSlot: rich(p["시간대"]),
       region: rich(p["지역"]),
+      applicant: {
+        name: title(p["이름"]),
+        phone: rich(p["전화번호"]),
+        gender: rich(p["성별"]),
+        location: rich(p["거주지역"]),
+        email: rich(p["이메일 (특강/ 수영 제품 할인 정보를 제공합니다)"]),
+        swimmingExperience: rich(
+          p["수영을 배우신 지 얼마나 되셨나요?"],
+        ),
+        painAreas: rich(
+          p["수영 후 통증이 느껴지거나 불편한 부위가 있나요? (중복 선택 가능)"],
+        ),
+        message: rich(
+          p["이번 특강을 통해 가장 해결하고 싶은 단 하나는 무엇인가요?"],
+        ),
+      },
     }
   } catch (error) {
     console.error("[카드주문] Notion 조회 예외:", error)

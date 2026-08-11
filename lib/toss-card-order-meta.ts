@@ -9,6 +9,8 @@ export type CardPendingMeta = {
   amount: number;
   orderNumber: string;
   idempotencyKey: string;
+  // 향후 관리자 알림 중복 방지용 플래그 자리 (현재는 저장/사용하지 않음)
+  // adminNotified?: boolean;
   paymentKey?: string;
 };
 

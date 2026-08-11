@@ -1994,12 +1994,6 @@ export default function SwimmingClassPage() {
   const activeScheduleClasses = activeClasses.filter(
     (c) => c.month === effectiveScheduleMonth,
   );
-  const activeBusanClass = activeClasses.find(
-    (classItem) => classItem.locationCode === "부산",
-  );
-  const activeDongtanDualClass = activeClasses.find((classItem) =>
-    isDongtanDualProductClass(classItem.id),
-  );
   const selectedClassDiagnosis = Number.isFinite(selectedClassIdNum)
     ? getDiagnosisOfferingForClass(selectedClassIdNum)
     : null;
@@ -2025,35 +2019,6 @@ export default function SwimmingClassPage() {
       console.log("[일정 탭] 다른 월로 전환 — 선택 일정 초기화:", month);
     }
     console.log("[일정 탭] 월별 탭 전환:", month);
-  };
-
-  /** 배너 「일정 보기」: 해당 월로 전환 + 카드 선택 + 스크롤 */
-  const focusScheduleClass = (classItem: ClassItem) => {
-    console.log("[일정] 배너 일정 보기 → 해당 카드로 이동:", {
-      id: classItem.id,
-      location: classItem.locationCode,
-      date: classItem.date,
-    });
-    setActiveScheduleMonth(classItem.month);
-    setCalendarMonth(classItem.month);
-    setCalendarYear(classItem.year);
-    setSelectedClass(String(classItem.id));
-    setSelectedTimeSlot(null);
-    setSelectedProductType(null);
-    setDiagnosisStrokes([]);
-    setPaidPageId(null);
-    setOrderNumber("");
-    setRegionError(false);
-    window.setTimeout(() => {
-      const el = document.getElementById(`schedule-class-${classItem.id}`);
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-        el.focus({ preventScroll: true });
-        console.log("[일정] 카드 스크롤/포커스 완료:", classItem.id);
-      } else {
-        console.warn("[일정] 카드를 찾지 못함:", classItem.id);
-      }
-    }, 120);
   };
 
   const getScheduleShortLabel = (classItem: ClassItem) =>
@@ -3399,49 +3364,6 @@ export default function SwimmingClassPage() {
                     수강 일정 · 지역 안내
                   </h3>
                 </div>
-                {activeDongtanDualClass && (
-                  <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-blue-200 bg-blue-50 p-3 sm:p-4">
-                    <div>
-                      <p className="text-sm sm:text-base font-bold text-blue-900">
-                        📍 동탄 첫 저항 진단 프로그램 오픈 · 8월 23일(일)
-                      </p>
-                      <p className="mt-1 text-xs sm:text-sm text-blue-800">
-                        어항샷 진단 프로그램과 저항 제로 특강을 함께 운영합니다.
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        focusScheduleClass(activeDongtanDualClass);
-                      }}
-                      className="shrink-0 rounded-lg bg-blue-600 px-3 py-2 text-xs sm:text-sm font-bold text-white shadow-sm transition-colors hover:bg-blue-700"
-                    >
-                      일정 보기
-                    </button>
-                  </div>
-                )}
-                {activeBusanClass && (
-                  <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-orange-200 bg-orange-50 p-3 sm:p-4">
-                    <div>
-                      <p className="text-sm sm:text-base font-bold text-orange-900">
-                        📍 부산 첫 특강 + 진단 오픈 · 9월 6일(일)
-                      </p>
-                      <p className="mt-1 text-xs sm:text-sm text-orange-800">
-                        1부(14:00~16:00)에 영법 특강과 저항 진단 프로그램(4·5레인)을
-                        함께 운영합니다.
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        focusScheduleClass(activeBusanClass);
-                      }}
-                      className="shrink-0 rounded-lg bg-orange-500 px-3 py-2 text-xs sm:text-sm font-bold text-white shadow-sm transition-colors hover:bg-orange-600"
-                    >
-                      일정 보기
-                    </button>
-                  </div>
-                )}
                 {scheduleTabMonths.length > 1 && (
                   <div className="mb-4">
                     <div

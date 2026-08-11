@@ -3440,37 +3440,32 @@ export default function SwimmingClassPage() {
                                 {product.couponNote && (
                                   <CouponHighlight note={product.couponNote} />
                                 )}
-                                {productType === "diagnosis" &&
-                                activeDiagnosisClasses.length > 1 ? (
-                                  <div className="mt-3 grid gap-2">
-                                    {activeDiagnosisClasses.map(
-                                      ({ classItem }) => (
-                                        <Button
-                                          key={classItem.id}
-                                          className="w-full font-bold"
-                                          onClick={() =>
-                                            startDiagnosisApplication(
-                                              classItem.id,
-                                            )
-                                          }
-                                        >
-                                          {getScheduleShortLabel(classItem)}{" "}
-                                          진단 신청하기
-                                        </Button>
-                                      ),
-                                    )}
-                                  </div>
+                                {productType === "diagnosis" ? (
+                                  <Button
+                                    className="mt-3 w-full font-bold"
+                                    onClick={() => {
+                                      console.log(
+                                        "[상품] 진단 공통 신청 버튼 클릭",
+                                        {
+                                          activeCount:
+                                            activeDiagnosisClasses.length,
+                                          firstId:
+                                            activeDiagnosisClasses[0]
+                                              ?.classItem.id ?? null,
+                                        },
+                                      );
+                                      startDiagnosisApplication(
+                                        activeDiagnosisClasses[0]?.classItem
+                                          .id ?? DONGTAN_AUGUST_CLASS_ID,
+                                      );
+                                    }}
+                                  >
+                                    {product.buttonLabel}
+                                  </Button>
                                 ) : (
                                   <Button
                                     className="mt-3 w-full font-bold"
                                     onClick={() => {
-                                      if (productType === "diagnosis") {
-                                        startDiagnosisApplication(
-                                          activeDiagnosisClasses[0]?.classItem
-                                            .id ?? DONGTAN_AUGUST_CLASS_ID,
-                                        );
-                                        return;
-                                      }
                                       startDongtanProductApplication(
                                         productType,
                                       );

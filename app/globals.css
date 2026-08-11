@@ -4,14 +4,21 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  /* SwimIt brand */
+  --swimit-light-blue: #71C5E9;
+  --swimit-blue: #0084D5;
+  --swimit-blue-hover: #0070b8;
+  --swimit-light-blue-soft: #e8f7fc;
+  --swimit-navy: #0f172a;
+
   --background: oklch(0.99 0 0);
   --foreground: oklch(0.15 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.15 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.15 0 0);
-  --primary: oklch(0.55 0.15 220);
-  --primary-foreground: oklch(1 0 0);
+  --primary: #0084D5;
+  --primary-foreground: #ffffff;
   --secondary: oklch(0.96 0.01 220);
   --secondary-foreground: oklch(0.15 0 0);
   --muted: oklch(0.97 0.005 240);
@@ -22,7 +29,7 @@
   --destructive-foreground: oklch(1 0 0);
   --border: oklch(0.92 0.005 240);
   --input: oklch(0.95 0.005 240);
-  --ring: oklch(0.55 0.15 220);
+  --ring: #0084D5;
   --radius: 0.75rem;
   --warning: oklch(0.85 0.15 80);
   --warning-foreground: oklch(0.3 0.08 60);
@@ -118,6 +125,11 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-swimit-light-blue: var(--swimit-light-blue);
+  --color-swimit-blue: var(--swimit-blue);
+  --color-swimit-blue-hover: var(--swimit-blue-hover);
+  --color-swimit-light-blue-soft: var(--swimit-light-blue-soft);
+  --color-swimit-navy: var(--swimit-navy);
 }
 
 @layer base {

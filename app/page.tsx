@@ -5,7 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
+  MapPin,
   Clock,
+  ChevronLeft,
+  ChevronRight,
   CheckCircle2,
   AlertTriangle,
   HelpCircle,
@@ -271,7 +274,7 @@ const PRODUCT_CATALOG: Record<
   }
 > = {
   zero: {
-    name: "스윔잇 저항 제로 특강",
+    name: "저항 제로 특강",
     tag: "현장 교정",
     timeLabel: "14:00~16:00 · 2시간",
     time: "14:00 ~ 16:00",
@@ -279,16 +282,17 @@ const PRODUCT_CATALOG: Record<
     price: 80000,
     originalPrice: 150000,
     strokeCount: 1,
-    buttonLabel: "스윔잇 저항 제로 특강 신청하기",
+    buttonLabel: "저항 제로 특강 신청하기",
     description:
-      "코치가 직접 저항 원인을 찾아 실시간으로 반복 교정하는 수업",
+      "코치와 함께 Before/After 수중 촬영으로 직접 교정하는 특강입니다.",
     includes: [
-      "2시간 소수 정예 수업",
+      "영법 1개 집중 교정",
+      "코치 1명당 최대 7명",
       "Before 수중 촬영",
       "저항 원인 진단",
-      "맞춤 드릴 및 실시간 교정",
+      "실시간 현장 교정",
       "After 수중 촬영",
-      "개인별 영상 피드백",
+      "개인 영상 피드백 후 연습 방향 제시",
     ],
     priceBadge: "프리미엄 특가",
   },
@@ -303,7 +307,7 @@ const PRODUCT_CATALOG: Record<
     strokeCount: 2,
     buttonLabel: "내 수영 저항 진단받기",
     description:
-      "어항샷 촬영과 저항 분석을 통해 현재 수영 상태와 연습 방향을 확인하는 프로그램",
+      "어항샷으로 저항 원인을 확인합니다. 교정 수업이 아닙니다.",
     includes: [
       "디테일 어항샷 촬영",
       "저항 분석 리포트",
@@ -339,10 +343,10 @@ const ProductPriceLabel = ({
     <span className="text-xs font-medium text-gray-400 line-through">
       {formatWon(originalPrice)}
     </span>
-    <span className="text-base font-extrabold text-[#0084D5]">
+    <span className="text-base font-extrabold text-blue-800">
       {formatWon(price)}
     </span>
-    <span className="rounded bg-[#0084D5] px-1.5 py-0.5 text-[10px] font-bold text-white">
+    <span className="rounded bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
       {badge}
     </span>
   </span>
@@ -382,33 +386,13 @@ const STROKE_CATALOG: Record<
 
 const PROBLEM_CHECKLIST = [
   "25m만 가도 숨이 찹니다.",
-  "힘은 많이 드는데 앞으로 잘 나가지 않습니다.",
-  "평영 킥을 차도 추진력이 잘 생기지 않습니다.",
-  "접영을 하면 금방 지칩니다.",
-  "유튜브를 봐도 내 문제를 정확히 모르겠습니다.",
-  "팔을 돌릴 때 어깨에 부담이 많이 느껴집니다.",
+  "힘은 많이 드는데 앞으로 안 나갑니다.",
+  "평영 킥을 차도 추진이 없습니다.",
+  "접영을 하면 허리만 아픕니다.",
+  "유튜브를 봐도 내 문제가 무엇인지 모르겠습니다.",
+  "어깨가 항상 아픕니다.",
 ];
 
-/** 저항 제로 특강 핵심 3단계 (랜딩 메인) */
-const ZERO_PROCESS_STEPS = [
-  {
-    step: "01",
-    title: "찾습니다",
-    desc: "Before 수중 촬영을 통해 내 수영에서 가장 큰 저항 원인을 찾습니다.",
-  },
-  {
-    step: "02",
-    title: "바꿉니다",
-    desc: "원인에 맞는 맞춤 드릴과 코치의 실시간 피드백으로 반복 교정합니다.",
-  },
-  {
-    step: "03",
-    title: "확인합니다",
-    desc: "After 촬영으로 변화를 확인하고 수업 이후 혼자 연습해야 할 방향까지 안내합니다.",
-  },
-];
-
-/** 상세 6단계 (아코디언 보조 설명) */
 const CARE_PROCESS_STEPS = [
   { step: "STEP1", title: "사전 문제 체크", desc: "수영 경력, 통증, 가장 답답한 문제를 먼저 확인합니다." },
   { step: "STEP2", title: "Before 수중 촬영", desc: "현재 자세와 물속 움직임을 영상으로 남깁니다." },
@@ -419,13 +403,12 @@ const CARE_PROCESS_STEPS = [
 ];
 
 const TRUST_METRICS = [
-  { value: "데이터", label: "수강생 데이터 기반 진단" },
-  { value: "Before / After", label: "수중 촬영 비교" },
+  { value: "누적", label: "수강생 데이터 기반 진단" },
+  { value: "Before/After", label: "수중 촬영 비교" },
   { value: "1:1", label: "개인별 영상 피드백" },
   { value: "최대 7명", label: "레인당 소수 정예" },
 ];
 
-/** 기존 후기 문구 (임의 생성 없이 사이트에 있던 문장만 사용) */
 const REVIEW_QUOTES = [
   "가라앉는 이유를 처음 알았습니다.",
   "힘을 빼라는 말의 의미를 이해했습니다.",
@@ -1865,14 +1848,27 @@ export default function SwimmingClassPage() {
 
   // 달력: 한국 시간(KST) 기준 현재 연·월로 초기화
   const kstTodayInit = getKoreanTodayParts();
-  const [, setCalendarMonth] = useState(kstTodayInit.month);
+  const initialActiveClasses = getActiveClasses();
+  const initialScheduleMonth =
+    initialActiveClasses.length > 0
+      ? [...initialActiveClasses].sort((a, b) => {
+          if (a.year !== b.year) return a.year - b.year;
+          if (a.month !== b.month) return a.month - b.month;
+          return a.dateNum - b.dateNum;
+        })[0].month
+      : kstTodayInit.month;
+  const [calendarMonth, setCalendarMonth] = useState(kstTodayInit.month);
   const [calendarYear, setCalendarYear] = useState(kstTodayInit.year);
+  const [today, setToday] = useState(kstTodayInit);
+  const [activeScheduleMonth, setActiveScheduleMonth] = useState(
+    initialScheduleMonth,
+  );
   const selectedClassRef = useRef<string | null>(null);
   selectedClassRef.current = selectedClass;
 
   const selectedClassIdNum = selectedClass ? Number(selectedClass) : NaN;
 
-  // selectedClass 변경 시 해당 특강 월로 동기화 (신청 폼 연동용)
+  // selectedClass 변경 시 해당 특강 월로 이동, 미선택 시 KST 현재 월
   useEffect(() => {
     const kst = getKoreanTodayParts();
     if (selectedClass) {
@@ -1883,14 +1879,54 @@ export default function SwimmingClassPage() {
         setCalendarMonth(selectedClassData.month);
         setCalendarYear(selectedClassData.year ?? kst.year);
         console.log(
-          `[일정] 선택 지역 연/월: ${selectedClassData.year ?? kst.year}-${selectedClassData.month}`,
+          `[달력] 선택 지역 연/월: ${selectedClassData.year ?? kst.year}-${selectedClassData.month}`,
         );
       }
     } else {
       setCalendarMonth(kst.month);
       setCalendarYear(kst.year);
+      console.log(`[달력] KST 현재 월로 복귀: ${kst.year}-${kst.month}`);
     }
   }, [selectedClass]);
+
+  useEffect(() => {
+    const syncToday = () => {
+      const nextToday = getKoreanTodayParts();
+      setToday(nextToday);
+      console.log("[달력] KST 오늘 날짜 동기화:", nextToday);
+    };
+
+    syncToday();
+
+    const intervalId = window.setInterval(syncToday, 60 * 1000);
+    return () => window.clearInterval(intervalId);
+  }, []);
+
+  const getDaysInMonth = (year: number, month: number) => {
+    return new Date(year, month, 0).getDate();
+  };
+
+  const getFirstDayOfMonth = (year: number, month: number) => {
+    return new Date(year, month - 1, 1).getDay();
+  };
+
+  const daysInMonth = getDaysInMonth(calendarYear, calendarMonth);
+  const firstDay = getFirstDayOfMonth(calendarYear, calendarMonth);
+  const weekDays = ["일", "월", "화", "수", "목", "금", "토"];
+  const monthNames = [
+    "1월",
+    "2월",
+    "3월",
+    "4월",
+    "5월",
+    "6월",
+    "7월",
+    "8월",
+    "9월",
+    "10월",
+    "11월",
+    "12월",
+  ];
 
   // 전화번호 자동 포맷팅 함수
   const formatPhoneNumber = (value: string): string => {
@@ -1921,21 +1957,73 @@ export default function SwimmingClassPage() {
     }
   };
 
+  // Create calendar grid
+  const calendarDays = [];
+  for (let i = 0; i < firstDay; i++) {
+    calendarDays.push(null);
+  }
+  for (let i = 1; i <= daysInMonth; i++) {
+    calendarDays.push(i);
+  }
+
+  // 선택 전에는 보고 있는 월의 모든 특강, 선택 후에는 선택한 특강 날짜만 표시
+  const highlightedDates = selectedClass
+    ? getActiveClasses()
+        .filter(
+          (c) =>
+            String(c.id) === selectedClass &&
+            c.year === calendarYear &&
+            c.month === calendarMonth,
+        )
+        .map((c) => c.dateNum)
+    : getActiveClasses()
+        .filter((c) => c.year === calendarYear && c.month === calendarMonth)
+        .map((c) => c.dateNum);
+
   const selectedScheduleClass = selectedClass
     ? classes.find((c) => String(c.id) === selectedClass) || null
     : null;
 
   const activeClasses = getActiveClasses();
-  // 날짜 오름차순으로 전체 활성 특강 표시 (월 탭/달력 UI 제거)
-  const activeScheduleClasses = [...activeClasses].sort((a, b) => {
-    if (a.year !== b.year) return a.year - b.year;
-    if (a.month !== b.month) return a.month - b.month;
-    return a.dateNum - b.dateNum;
-  });
-
+  const scheduleTabMonths = Array.from(
+    new Set(activeClasses.map((c) => c.month)),
+  ).sort((a, b) => a - b);
+  const newestScheduleMonth = scheduleTabMonths.at(-1);
+  const newestScheduleCount = newestScheduleMonth
+    ? activeClasses.filter((c) => c.month === newestScheduleMonth).length
+    : 0;
+  const effectiveScheduleMonth = scheduleTabMonths.includes(activeScheduleMonth)
+    ? activeScheduleMonth
+    : (scheduleTabMonths[0] ?? activeScheduleMonth);
+  const activeScheduleClasses = activeClasses.filter(
+    (c) => c.month === effectiveScheduleMonth,
+  );
   const selectedClassDiagnosis = Number.isFinite(selectedClassIdNum)
     ? getDiagnosisOfferingForClass(selectedClassIdNum)
     : null;
+
+  const handleScheduleMonthChange = (month: number) => {
+    setActiveScheduleMonth(month);
+    const classInMonth = activeClasses.find((c) => c.month === month);
+    if (classInMonth) {
+      setCalendarYear(classInMonth.year);
+      setCalendarMonth(month);
+    }
+    const selected = selectedClass
+      ? classes.find((c) => String(c.id) === selectedClass)
+      : null;
+    if (selected && selected.month !== month) {
+      setSelectedClass(null);
+      setSelectedTimeSlot(null);
+      setSelectedProductType(null);
+      setDiagnosisStrokes([]);
+      setPaidPageId(null);
+      setOrderNumber("");
+      setRegionError(false);
+      console.log("[일정 탭] 다른 월로 전환 — 선택 일정 초기화:", month);
+    }
+    console.log("[일정 탭] 월별 탭 전환:", month);
+  };
 
   const getScheduleShortLabel = (classItem: ClassItem) =>
     `${classItem.locationCode} ${classItem.month}/${classItem.dateNum}`;
@@ -1944,39 +2032,12 @@ export default function SwimmingClassPage() {
     ? `${getScheduleShortLabel(selectedScheduleClass)} 특강 신청하기`
     : "먼저 일정을 선택해 주세요";
 
-  const scrollToScheduleSection = (source: string) => {
-    console.log(`[CTA] ${source} → 일정 섹션 스크롤`);
-    document.getElementById("schedule-section")?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
-  };
-
   const handleRegistration = () => {
     incrementFunnelCount(1, "지금 바로 신청하기 클릭");
     markFunnelStep(1);
     lastFunnelActionRef.current = { action: "step1_click", ts: Date.now() };
     setShowRegistrationForm(true);
     setStep(3); // 신청/결제 통합 화면으로 이동
-  };
-
-  /** 일정 카드에서 선택 + 신청 폼 오픈 */
-  const openRegistrationForClass = (classItem: ClassItem) => {
-    setSelectedClass(String(classItem.id));
-    setSelectedTimeSlot(null);
-    setSelectedProductType(null);
-    setDiagnosisStrokes([]);
-    setPaidPageId(null);
-    setOrderNumber("");
-    setRegionError(false);
-    setCalendarMonth(classItem.month);
-    setCalendarYear(classItem.year);
-    console.log("[CTA] 특강 예약하기 클릭:", {
-      id: classItem.id,
-      locationCode: classItem.locationCode,
-      date: classItem.date,
-    });
-    handleRegistration();
   };
 
   useEffect(() => {
@@ -3058,60 +3119,63 @@ export default function SwimmingClassPage() {
         {(
           <>
             <div className="contents">
-              {/* 랜딩 마케팅: 히어로 ~ 신뢰 지표 */}
-              <Card className="order-1 w-full mb-6 border-swimit-light-blue/40 bg-swimit-light-blue-soft shadow-sm">
+              {/* Class Information Section */}
+              <Card className="order-1 w-full mb-6 border-slate-200 bg-slate-50 shadow-sm">
                 <CardContent className="p-4 sm:p-5">
                   <div className="space-y-6 text-sm sm:text-[15px] text-gray-700 leading-6 sm:leading-7">
-                    {/* 1. HERO */}
+                    {/* Main Title */}
                     <div className="space-y-4">
-                      <p className="text-sm font-bold tracking-wide text-[#0084D5]">
-                        스윔잇 저항 제로 특강
-                      </p>
-                      <h3 className="text-[24px] sm:text-[30px] font-bold tracking-tight leading-snug text-swimit-navy">
-                        25m만 가도 숨이 차고 앞으로 안 나간다면,
-                        <br />
-                        더 세게 수영하기 전에{" "}
-                        <span className="text-[#0084D5]">&apos;저항&apos;</span>
-                        부터 찾아보세요.
+                      <div className="inline-flex rounded-full border border-blue-200 bg-white px-3 py-1 text-xs font-bold text-blue-700">
+                        수영 클리닉 · 저항 교정 특강
+                      </div>
+                      <h3 className="text-[27px] sm:text-[32px] font-bold tracking-tight leading-tight text-gray-950">
+                        25m만 가도 숨이 차고 몸이 가라앉는다면,
+                        <br className="hidden sm:block" />
+                        문제는 체력이 아니라{" "}
+                        <span className="text-blue-700">'저항'</span>일 수 있습니다.
                       </h3>
                       <p className="text-base sm:text-[17px] font-medium text-gray-800 leading-7">
-                        수중 촬영으로 내 수영에서 가장 큰 저항 원인을 찾고,
+                        스윔잇은 많이 수영시키는 특강이 아닙니다.
                         <br />
-                        코치가 직접 교정한 뒤
-                        <br />
-                        Before / After 영상으로 변화를 확인합니다.
-                      </p>
-                      <p className="text-sm font-bold text-swimit-navy">
-                        레인당 최대 7명 · 2시간{" "}
-                        <span className="text-[#0084D5]">저항</span> 교정 특강
+                        내 몸에서 왜 저항이 생기는지 직접 찾아 교정하는{" "}
+                        <span className="font-bold text-blue-700">
+                          저항 교정 특강
+                        </span>
+                        입니다.
                       </p>
 
-                      <Button
-                        size="lg"
-                        className="w-full text-base font-bold bg-[#0084D5] hover:bg-[#0070b8]"
-                        onClick={() =>
-                          scrollToScheduleSection("히어로 가까운 특강 일정 보기")
-                        }
-                      >
-                        가까운 특강 일정 보기
-                      </Button>
+                      <div className="grid gap-2">
+                        <Button
+                          size="lg"
+                          className="w-full text-base font-bold"
+                          onClick={() => {
+                            console.log("[CTA] Hero 지역 특강 보기 클릭");
+                            document
+                              .getElementById("schedule-section")
+                              ?.scrollIntoView({
+                                behavior: "smooth",
+                                block: "start",
+                              });
+                          }}
+                        >
+                          가장 가까운 지역 특강 보기
+                        </Button>
+                      </div>
 
-                      <div
-                        className="relative w-full overflow-hidden rounded-xl shadow-md"
-                        style={{ paddingBottom: "56.25%" }}
-                      >
+                      {/* 비포/애프터 영상 */}
+                      <div className="w-full rounded-xl overflow-hidden shadow-md relative" style={{ paddingBottom: "56.25%" }}>
                         <iframe
                           src="https://www.youtube.com/embed/WwNq2mqwM_U?autoplay=1&mute=1&loop=1&playlist=WwNq2mqwM_U&playsinline=1&rel=0"
                           title="스윔잇 특강 전후 비교 영상"
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                           allowFullScreen
-                          className="absolute inset-0 h-full w-full"
+                          className="absolute inset-0 w-full h-full"
                         />
                       </div>
                     </div>
 
-                    {/* 2. Problem Checklist */}
-                    <div className="space-y-3 rounded-2xl border border-[#71C5E9]/50 bg-white p-4 shadow-sm">
+                    {/* Problem Checklist */}
+                    <div className="space-y-3 rounded-2xl border border-blue-100 bg-white p-4 shadow-sm">
                       <p className="text-base sm:text-lg font-bold text-gray-950">
                         혹시 하나라도 해당되나요?
                       </p>
@@ -3119,23 +3183,20 @@ export default function SwimmingClassPage() {
                         {PROBLEM_CHECKLIST.map((item) => (
                           <div
                             key={item}
-                            className="flex items-start gap-2 rounded-xl bg-swimit-light-blue-soft px-3 py-2.5 text-sm font-semibold text-gray-800"
+                            className="flex items-start gap-2 rounded-xl bg-blue-50/70 px-3 py-2.5 text-sm font-semibold text-gray-800"
                           >
-                            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#0084D5]" />
+                            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" />
                             <span>{item}</span>
                           </div>
                         ))}
                       </div>
-                      <p className="rounded-xl bg-swimit-navy px-4 py-3 text-sm font-bold leading-6 text-white">
-                        문제는 운동신경이나 연습량이 아니라,
-                        <br />
-                        내 몸에서 만들어지고 있는{" "}
-                        <span className="text-[#71C5E9]">&apos;저항&apos;</span>
-                        을 아직 정확하게 보지 못했기 때문일 수 있습니다.
+                      <p className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold leading-6 text-white">
+                        문제는 운동신경이 아니라, 내 몸에서 생기는 저항을 아직
+                        정확히 보지 못했기 때문일 수 있습니다.
                       </p>
                     </div>
 
-                    {/* 3. Differentiation VS */}
+                    {/* Differentiation Section */}
                     <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                       <p className="text-base sm:text-lg font-bold text-gray-950">
                         왜 스윔잇은 다른 특강과 다를까요?
@@ -3146,49 +3207,43 @@ export default function SwimmingClassPage() {
                             대부분의 특강
                           </p>
                           <p className="mt-2 text-lg font-bold text-gray-900">
-                            &quot;어떻게 해야 하는지&quot;
+                            "어떻게 해야 하는지"
                           </p>
                           <p className="mt-1 text-sm text-gray-600">
-                            동작과 방법을 먼저 알려줍니다.
+                            동작과 방법을 먼저 설명합니다.
                           </p>
                         </div>
-                        <div className="rounded-xl border-2 border-[#0084D5] bg-swimit-light-blue-soft p-4 shadow-sm">
-                          <p className="text-xs font-bold text-[#0084D5]">
+                        <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
+                          <p className="text-xs font-bold text-blue-600">
                             스윔잇
                           </p>
-                          <p className="mt-2 text-lg font-bold text-[#0084D5]">
-                            &quot;왜 안 되는지&quot;
+                          <p className="mt-2 text-lg font-bold text-blue-900">
+                            "왜 안 되는지"
                           </p>
-                          <p className="mt-1 text-sm text-swimit-navy">
-                            앞으로 나가지 않는 원인부터 찾습니다.
+                          <p className="mt-1 text-sm text-blue-800">
+                            앞으로 안 나가는 원인부터 찾습니다.
                           </p>
                         </div>
                       </div>
-                      <div className="space-y-2 rounded-xl bg-swimit-navy px-4 py-3 text-sm font-bold leading-6 text-white">
-                        <p>
-                          동작을 더 배우기 전에,
-                          <br />
-                          안 되는 원인부터 찾습니다.
-                        </p>
-                        <p className="font-medium text-white/90">
-                          왜 숨이 차는지, 왜 몸이 가라앉는지, 왜 힘을 써도
-                          앞으로 나가지 않는지 알아야 무엇부터 고쳐야 할지
-                          결정할 수 있습니다.
-                        </p>
-                      </div>
-                      <Button
-                        size="lg"
-                        className="w-full text-base font-bold bg-[#0084D5] hover:bg-[#0070b8]"
-                        onClick={() =>
-                          scrollToScheduleSection("차별화 섹션 일정 보기")
-                        }
-                      >
-                        가까운 특강 일정 보기
-                      </Button>
+                      <p className="text-sm sm:text-[15px] leading-6 text-gray-700">
+                        왜 숨이 차는지, 왜 물과 싸우는지, 왜 힘이 많이 드는지
+                        알아야 가장 빠르게 좋아질 수 있습니다. 스윔잇은 수중
+                        촬영과 현장 피드백으로 문제의 원인을 먼저 진단합니다.
+                      </p>
                     </div>
 
-                    {/* 4. Aquarium — 영상 우선 */}
-                    <div className="space-y-3 rounded-2xl border border-[#71C5E9]/40 bg-white p-4 shadow-sm">
+                    {/* 어항샷 샘플 영상 — 진단 프로그램 설명 */}
+                    <div className="space-y-3 rounded-2xl border border-blue-100 bg-blue-50/50 p-4 shadow-sm">
+                      <div>
+                        <p className="text-base sm:text-lg font-bold text-gray-950">
+                          어항샷이란?
+                        </p>
+                        <p className="mt-1 text-sm leading-6 text-gray-700">
+                          위·아래를 동시에 찍어 저항이 보이게 촬영합니다.
+                          <br />
+                          영상을 기반으로 저항 분석 리포트를 드립니다.
+                        </p>
+                      </div>
                       <div
                         className="relative w-full overflow-hidden rounded-xl shadow-md"
                         style={{ paddingBottom: "56.25%" }}
@@ -3208,79 +3263,47 @@ export default function SwimmingClassPage() {
                           }
                         />
                       </div>
-                      <div>
-                        <p className="text-base sm:text-lg font-bold text-gray-950">
-                          물 밖에서는 보이지 않는{" "}
-                          <span className="text-[#0084D5]">저항</span>을 봅니다.
-                        </p>
-                        <p className="mt-1 text-sm leading-6 text-gray-700">
-                          위·아래를 동시에 촬영하는 &apos;어항샷&apos;으로
-                          수면 위 자세와 수중 움직임을 함께 확인합니다.
-                        </p>
-                      </div>
                     </div>
 
-                    {/* 5. 3-step process */}
+                    {/* Process Section */}
                     <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                       <div>
                         <p className="text-base sm:text-lg font-bold text-gray-950">
-                          스윔잇 저항 제로 특강은 이렇게 진행됩니다.
+                          스윔잇 저항 제로 특강 6단계 Process
                         </p>
                         <p className="mt-1 text-sm text-gray-600">
-                          찾고, 바꾸고, 확인합니다.
+                          Before / After를 비교하며, 수업 후 혼자 연습할 방향까지
+                          남깁니다.
                         </p>
                       </div>
-                      <div className="grid gap-3 sm:grid-cols-3">
-                        {ZERO_PROCESS_STEPS.map((item) => (
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        {CARE_PROCESS_STEPS.map((item) => (
                           <div
                             key={item.step}
-                            className="rounded-xl border border-[#71C5E9]/40 bg-swimit-light-blue-soft p-4"
+                            className="rounded-xl border border-slate-200 bg-slate-50 p-3"
                           >
-                            <div className="text-2xl font-black text-[#0084D5]">
+                            <div className="text-xs font-bold text-blue-600">
                               {item.step}
                             </div>
-                            <div className="mt-1 text-lg font-bold text-swimit-navy">
+                            <div className="mt-1 font-bold text-gray-950">
                               {item.title}
                             </div>
-                            <p className="mt-2 text-sm leading-5 text-gray-700">
+                            <p className="mt-1 text-sm leading-5 text-gray-600">
                               {item.desc}
                             </p>
                           </div>
                         ))}
                       </div>
-                      <details className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                        <summary className="cursor-pointer text-sm font-bold text-[#0084D5]">
-                          상세 6단계 과정 보기
-                        </summary>
-                        <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                          {CARE_PROCESS_STEPS.map((item) => (
-                            <div
-                              key={item.step}
-                              className="rounded-lg border border-slate-200 bg-white p-3"
-                            >
-                              <div className="text-xs font-bold text-[#0084D5]">
-                                {item.step}
-                              </div>
-                              <div className="mt-1 font-bold text-gray-950">
-                                {item.title}
-                              </div>
-                              <p className="mt-1 text-sm leading-5 text-gray-600">
-                                {item.desc}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      </details>
                     </div>
 
-                    {/* 6. Trust Metrics */}
-                    <div className="grid gap-3 rounded-2xl border border-[#71C5E9]/40 bg-swimit-light-blue-soft p-4 sm:grid-cols-4">
+                    {/* Trust Metrics */}
+                    <div className="grid gap-3 rounded-2xl border border-blue-100 bg-blue-50 p-4 sm:grid-cols-4">
                       {TRUST_METRICS.map((metric) => (
                         <div
                           key={metric.label}
                           className="rounded-xl bg-white p-3 text-center shadow-sm"
                         >
-                          <div className="text-lg font-black text-[#0084D5]">
+                          <div className="text-lg font-black text-blue-700">
                             {metric.value}
                           </div>
                           <div className="mt-1 text-xs font-semibold leading-4 text-gray-600">
@@ -3293,15 +3316,34 @@ export default function SwimmingClassPage() {
                 </CardContent>
               </Card>
 
-              {/* 7. Reviews */}
-              <section className="order-1 w-full mt-6 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
+              {/* CTA Copy Section */}
+              <div className="order-4 w-full mt-6 rounded-2xl border border-blue-200 bg-blue-50 p-4 sm:p-5 shadow-sm">
+                <p className="text-base sm:text-lg font-bold text-blue-900 mb-2.5">
+                  런칭 특가로 진행 중입니다
+                </p>
+                <p className="text-sm sm:text-[15px] text-gray-900 leading-6">
+                  스윔잇은 많은 인원을 한 번에 돌리는 수업이 아니라, 한 명 한 명
+                  수중 움직임을 보고 직접 교정하는 진단형 특강입니다.
+                </p>
+                <p className="mt-2 text-sm sm:text-[15px] text-gray-700 leading-6">
+                  레인당 최대 7명 기준으로 운영하며, Before / After 촬영과 1:1 영상
+                  피드백까지 포함됩니다.
+                </p>
+                <p className="mt-2.5 text-sm sm:text-[15px] font-bold text-blue-800 leading-6">
+                  단순히 수업을 듣는 것이 아니라, 내 수영의 문제를 진단받는
+                  시간으로 설계했습니다.
+                </p>
+              </div>
+
+              {/* Student Review Section */}
+              <section className="order-5 w-full mt-6 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
                 <div className="mx-auto max-w-2xl">
                   <h3 className="text-lg sm:text-xl font-bold text-gray-900">
                     문제 해결 중심 실제 후기
                   </h3>
                   <p className="mt-1 text-sm text-gray-600">
-                    &quot;좋았다&quot;보다 중요한 것은, 무엇이 문제였는지 알게
-                    됐다는 변화입니다.
+                    "좋았다"보다 중요한 것은, 무엇이 문제였는지 알게 됐다는
+                    변화입니다.
                   </p>
 
                   <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3 sm:p-4">
@@ -3309,13 +3351,13 @@ export default function SwimmingClassPage() {
                       <img
                         src={encodeURI("/써먹을 수 있는 후기.gif")}
                         alt="실제 수강생 후기 GIF"
-                        className="h-auto w-full object-contain"
+                        className="w-full h-auto object-contain"
                         loading="lazy"
                       />
                     </div>
 
                     <div className="mt-4 space-y-3">
-                      <p className="text-base sm:text-lg font-bold leading-tight text-gray-900">
+                      <p className="text-base sm:text-lg font-bold text-gray-900 leading-tight">
                         Before / After의 차이는 원인을 찾는 데서 시작됩니다.
                       </p>
 
@@ -3323,364 +3365,456 @@ export default function SwimmingClassPage() {
                         {REVIEW_QUOTES.map((quote) => (
                           <p
                             key={quote}
-                            className="rounded-xl border border-[#71C5E9]/40 bg-white px-3 py-2.5 font-semibold shadow-sm"
+                            className="rounded-lg bg-white px-3 py-2 font-semibold shadow-sm"
                           >
-                            &quot;{quote}&quot;
+                            "{quote}"
                           </p>
                         ))}
                       </div>
 
                       <p className="text-sm sm:text-[15px] leading-6 text-gray-700">
                         물과 싸우던 분들이 달라지는 이유는 단순 반복이 아니라{" "}
-                        <span className="font-bold text-[#0084D5]">
+                        <span className="font-bold text-red-600">
                           내 몸에서 생기는 저항의 원인
                         </span>
                         을 확인했기 때문입니다.
                       </p>
 
-                      <Button
-                        size="lg"
-                        className="w-full text-base font-bold bg-[#0084D5] hover:bg-[#0070b8]"
-                        onClick={() =>
-                          scrollToScheduleSection("후기 섹션 일정 보기")
-                        }
-                      >
-                        가까운 특강 일정 보기
-                      </Button>
                     </div>
                   </div>
                 </div>
               </section>
 
-              {/* 8. Product / Price */}
-              <section
-                id="product-offer"
-                className="order-1 w-full mt-6 scroll-mt-4 rounded-2xl border border-[#71C5E9]/50 bg-swimit-light-blue-soft p-4 sm:p-5 shadow-sm"
-              >
-                <h3 className="text-lg sm:text-xl font-bold text-swimit-navy">
-                  {PRODUCT_CATALOG.zero.name}
-                </h3>
-                <p className="mt-1 text-sm text-gray-700">
-                  {PRODUCT_CATALOG.zero.description}
-                </p>
-
-                <div className="mt-4 grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-                  <Card className="border-[#0084D5]/40 bg-white shadow-sm">
-                    <CardContent className="space-y-3 p-4">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <p className="font-bold text-swimit-navy">포함 내용</p>
-                        <ProductPriceLabel
-                          price={PRODUCT_CATALOG.zero.price}
-                          originalPrice={PRODUCT_CATALOG.zero.originalPrice}
-                          badge={PRODUCT_CATALOG.zero.priceBadge}
-                        />
-                      </div>
-                      <ul className="space-y-1.5 text-sm text-gray-700">
-                        {PRODUCT_CATALOG.zero.includes.map((item) => (
-                          <li key={item} className="flex items-start gap-2">
-                            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#0084D5]" />
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-[#71C5E9]/50 bg-white/80 shadow-sm">
-                    <CardContent className="space-y-2 p-4">
-                      <p className="text-xs font-bold text-[#0084D5]">
-                        {PRODUCT_CATALOG.diagnosis.tag}
-                      </p>
-                      <p className="font-bold text-swimit-navy">
-                        {PRODUCT_CATALOG.diagnosis.name}
-                      </p>
-                      <p className="text-sm leading-5 text-gray-600">
-                        {PRODUCT_CATALOG.diagnosis.description}
-                      </p>
-                      <ProductPriceLabel
-                        price={PRODUCT_CATALOG.diagnosis.price}
-                        originalPrice={PRODUCT_CATALOG.diagnosis.originalPrice}
-                        badge={PRODUCT_CATALOG.diagnosis.priceBadge}
-                      />
-                    </CardContent>
-                  </Card>
-                </div>
-
-                <Button
-                  size="lg"
-                  className="mt-4 w-full text-base font-bold bg-[#0084D5] hover:bg-[#0070b8]"
-                  onClick={() =>
-                    scrollToScheduleSection("상품 가격 섹션 일정 확인")
-                  }
-                >
-                  특강 일정 확인하기
-                </Button>
-              </section>
-
-              {/* 9. Schedule — 달력/월탭 제거, 날짜순 카드 */}
+              {/* Schedule & Region Notice (Step 1) */}
               <section
                 id="schedule-section"
-                className="order-2 w-full mt-6 scroll-mt-4 rounded-2xl border border-[#71C5E9]/40 bg-swimit-light-blue-soft/60 p-4 sm:p-5"
+                className="order-2 w-full mt-6 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5 scroll-mt-4"
               >
-                <div className="mb-4">
-                  <h3 className="text-lg sm:text-xl font-bold text-swimit-navy">
+                <div className="mb-3 sm:mb-4">
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-900 flex items-center gap-2">
+                    📌{" "}
+                    {scheduleTabMonths.length > 1
+                      ? `${scheduleTabMonths.map((m) => `${m}월`).join("·")} `
+                      : scheduleTabMonths.length === 1
+                        ? `${scheduleTabMonths[0]}월 `
+                        : ""}
                     수강 일정 · 지역 안내
                   </h3>
-                  <p className="mt-1 text-sm text-gray-600">
-                    가까운 일정부터 날짜순으로 확인하세요.
-                  </p>
                 </div>
+                {scheduleTabMonths.length > 1 && (
+                  <div className="mb-4">
+                    <div
+                      className="flex rounded-xl border border-slate-200 bg-white p-1 shadow-sm"
+                      role="tablist"
+                      aria-label="월별 일정"
+                    >
+                      {scheduleTabMonths.map((month) => {
+                        const isActive = effectiveScheduleMonth === month;
+                        const count = activeClasses.filter(
+                          (c) => c.month === month,
+                        ).length;
+                        return (
+                          <button
+                            key={month}
+                            type="button"
+                            role="tab"
+                            aria-selected={isActive}
+                            onClick={() => handleScheduleMonthChange(month)}
+                            className={`flex-1 rounded-lg py-3 text-sm sm:text-base font-bold transition-all ${
+                              isActive
+                                ? "bg-primary text-primary-foreground shadow-md"
+                                : "text-gray-600 hover:bg-slate-50"
+                            }`}
+                          >
+                            {month}월 일정
+                              {scheduleTabMonths.length > 1 &&
+                                month === newestScheduleMonth && (
+                                <span
+                                  className={`ml-1.5 rounded-full px-1.5 py-0.5 text-[10px] font-extrabold tracking-wide ${
+                                    isActive
+                                      ? "bg-white text-primary"
+                                      : "bg-orange-500 text-white"
+                                  }`}
+                                >
+                                  NEW
+                                </span>
+                              )}
+                            <span
+                              className={`ml-1 text-xs sm:text-sm font-semibold ${
+                                isActive
+                                  ? "text-primary-foreground/85"
+                                  : "text-gray-400"
+                              }`}
+                            >
+                              ({count})
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {newestScheduleMonth && (
+                      <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-orange-200 bg-orange-50 px-3 py-2.5 text-sm leading-5 text-orange-900">
+                        <p>
+                          ✨ <strong>{newestScheduleMonth}월 특강 {newestScheduleCount}개 일정</strong>을
+                          모집 중입니다.
+                        </p>
+                        {effectiveScheduleMonth !== newestScheduleMonth && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleScheduleMonthChange(newestScheduleMonth)
+                            }
+                            className="shrink-0 font-bold text-orange-700 underline underline-offset-2"
+                          >
+                            {newestScheduleMonth}월 보기
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+                <div className="grid md:grid-cols-[300px_1fr] gap-4 md:gap-6">
+                  {/* Left: Calendar */}
+                  <div>
+                    <Card>
+                      <CardContent className="p-4 sm:p-5">
+                        <div className="mb-4">
+                          <div className="flex items-center justify-between mb-1">
+                            <h3 className="text-sm sm:text-base font-semibold text-primary">
+                              📅 수강 일정 달력
+                            </h3>
+                          </div>
+                        </div>
 
-                <div className="space-y-3">
-                  {activeScheduleClasses.map((classItem) => {
-                    const isSelectedSchedule =
-                      selectedClass === String(classItem.id);
-                    const diagnosisOffering = getDiagnosisOfferingForClass(
-                      classItem.id,
-                    );
-                    const selectScheduleCard = () => {
-                      setSelectedClass(String(classItem.id));
-                      setSelectedTimeSlot(null);
-                      setSelectedProductType(null);
-                      setDiagnosisStrokes([]);
-                      setPaidPageId(null);
-                      setOrderNumber("");
-                      setRegionError(false);
-                      setCalendarMonth(classItem.month);
-                      setCalendarYear(classItem.year);
-                      console.log("[일정 선택] 랜딩 일정 카드 선택:", {
-                        id: classItem.id,
-                        location: classItem.locationCode,
-                        date: classItem.date,
-                      });
-                    };
-                    return (
-                      <Card
-                        key={classItem.id}
-                        id={`schedule-class-${classItem.id}`}
-                        role="button"
-                        tabIndex={0}
-                        onClick={selectScheduleCard}
-                        onKeyDown={(event) => {
-                          if (event.key === "Enter" || event.key === " ") {
-                            event.preventDefault();
-                            selectScheduleCard();
-                          }
-                        }}
-                        className={`scroll-mt-24 cursor-pointer transition-all shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-[#0084D5] ${
-                          isSelectedSchedule
-                            ? "border-2 border-[#0084D5] bg-white shadow-md"
-                            : "border border-slate-200 bg-white hover:border-[#0084D5]/50 hover:shadow-md"
-                        }`}
-                      >
-                        <CardContent className="space-y-3 p-4 sm:p-5">
-                          <div className="flex items-start justify-between gap-2">
-                            <div>
-                              <p className="text-base sm:text-lg font-bold text-swimit-navy">
-                                {classItem.date}
-                                <span className="mx-1.5 text-gray-300">·</span>
-                                {classItem.locationCode}
-                              </p>
-                              <p className="mt-0.5 text-sm text-gray-600">
-                                {classItem.location}
-                              </p>
+                        {/* Calendar Header */}
+                        <div className="flex items-center justify-between mb-4">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => {
+                              if (calendarMonth > 1) {
+                                setCalendarMonth(calendarMonth - 1);
+                              } else {
+                                setCalendarMonth(12);
+                                setCalendarYear(calendarYear - 1);
+                              }
+                              console.log(`[달력] 이전 월`);
+                            }}
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                          </Button>
+                          <span className="font-semibold">
+                            {calendarYear}년 {monthNames[calendarMonth - 1]}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => {
+                              if (calendarMonth < 12) {
+                                setCalendarMonth(calendarMonth + 1);
+                              } else {
+                                setCalendarMonth(1);
+                                setCalendarYear(calendarYear + 1);
+                              }
+                              console.log(`[달력] 다음 월`);
+                            }}
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+
+                        {/* Weekday Headers */}
+                        <div className="grid grid-cols-7 gap-1 mb-2">
+                          {weekDays.map((day, i) => (
+                            <div
+                              key={day}
+                              className={`text-center text-xs font-medium py-1 ${
+                                i === 0
+                                  ? "text-red-500"
+                                  : i === 6
+                                    ? "text-blue-500"
+                                    : "text-muted-foreground"
+                              }`}
+                            >
+                              {day}
                             </div>
-                            <div className="flex flex-col items-end gap-1">
+                          ))}
+                        </div>
+
+                        {/* Calendar Days */}
+                        <div className="grid grid-cols-7 gap-1">
+                          {calendarDays.map((day, index) => {
+                            const isHighlighted =
+                              day && highlightedDates.includes(day);
+                            const dayOfWeek = index % 7;
+                            const isToday =
+                              day &&
+                              calendarYear === today.year &&
+                              calendarMonth === today.month &&
+                              day === today.day;
+
+                            return (
+                              <div
+                                key={index}
+                                className="aspect-square flex items-center justify-center"
+                              >
+                                {day ? (
+                                  <button
+                                    className={`w-full h-full flex items-center justify-center text-sm rounded-lg transition-colors ${
+                                      isHighlighted
+                                        ? "bg-primary text-primary-foreground font-semibold shadow-sm"
+                                        : isToday
+                                          ? "bg-gray-300 text-gray-700 font-medium"
+                                          : dayOfWeek === 0
+                                            ? "text-red-500 hover:bg-muted"
+                                            : dayOfWeek === 6
+                                              ? "text-blue-500 hover:bg-muted"
+                                              : "text-foreground hover:bg-muted"
+                                    }`}
+                                  >
+                                    {day}
+                                  </button>
+                                ) : (
+                                  <div />
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Legend */}
+                        <div className="mt-4 pt-4 border-t flex items-center justify-center gap-4 text-xs text-muted-foreground flex-wrap">
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-3 h-3 rounded-full bg-primary" />
+                            <span>특강 일정</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-3 h-3 rounded bg-gray-300" />
+                            <span>오늘</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Right: Region Notice */}
+                  <div>
+                    <div className="mb-3">
+                      <h3 className="text-lg sm:text-xl font-bold text-primary">
+                        📍 지역 안내
+                      </h3>
+                    </div>
+                    <div className="space-y-3">
+                      {activeScheduleClasses.map((classItem) => {
+                        const isSelectedSchedule =
+                          selectedClass === String(classItem.id);
+                        return (
+                          <Card
+                            key={classItem.id}
+                            id={`schedule-class-${classItem.id}`}
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => {
+                              setSelectedClass(String(classItem.id));
+                              setSelectedTimeSlot(null);
+                              setSelectedProductType(null);
+                              setDiagnosisStrokes([]);
+                              setPaidPageId(null);
+                              setOrderNumber("");
+                              setRegionError(false);
+                              setCalendarMonth(classItem.month);
+                              setCalendarYear(classItem.year);
+                              // 카드 클릭은 선택만 — 신청창은 아래 CTA에서 열림 (중복 패널 최소화)
+                              console.log("[일정 선택] 랜딩 일정 카드 선택(신청창 미오픈):", {
+                                id: classItem.id,
+                                location: classItem.location,
+                                date: classItem.date,
+                              });
+                            }}
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter" || event.key === " ") {
+                                event.preventDefault();
+                                setSelectedClass(String(classItem.id));
+                                setSelectedTimeSlot(null);
+                                setSelectedProductType(null);
+                                setDiagnosisStrokes([]);
+                                setPaidPageId(null);
+                                setOrderNumber("");
+                                setRegionError(false);
+                                setCalendarMonth(classItem.month);
+                                setCalendarYear(classItem.year);
+                                console.log("[일정 선택] 키보드로 일정 카드 선택(신청창 미오픈):", {
+                                  id: classItem.id,
+                                  location: classItem.location,
+                                  date: classItem.date,
+                                });
+                              }
+                            }}
+                            className={`scroll-mt-24 cursor-pointer transition-all shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                              isSelectedSchedule
+                                ? "border-primary border-2 bg-primary/5 shadow-md"
+                                : "hover:border-primary/40 hover:shadow-md"
+                            }`}
+                          >
+                          <CardContent className="p-4 sm:p-5">
+                            <div className="mb-3 flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <MapPin className="h-5 w-5 text-blue-500 fill-blue-500/10" />
+                                <span className="font-bold text-base sm:text-lg">
+                                  {classItem.location}
+                                </span>
+                                {classItem.badge && (
+                                  <span className="rounded-full bg-orange-500 px-2 py-0.5 text-xs font-bold text-white">
+                                    {classItem.badge}
+                                  </span>
+                                )}
+                              </div>
                               {isSelectedSchedule && (
-                                <span className="rounded-full bg-[#0084D5] px-2.5 py-1 text-xs font-bold text-white">
+                                <span className="rounded-full bg-primary px-2.5 py-1 text-xs font-bold text-white">
                                   선택됨
                                 </span>
                               )}
-                              {classItem.badge && (
-                                <span className="rounded-full bg-[#0084D5]/10 px-2 py-0.5 text-xs font-bold text-[#0084D5]">
-                                  {classItem.badge}
+                            </div>
+
+                            <div className="bg-blue-50 rounded-lg p-4 mb-4 border border-blue-100">
+                              <div className="flex items-center gap-2 mb-1">
+                                <Calendar className="h-5 w-5 text-blue-600" />
+                                <span className="font-bold text-base sm:text-lg text-blue-900">
+                                  {classItem.date}
                                 </span>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="space-y-2">
-                            <div className="rounded-lg border border-[#0084D5]/30 bg-swimit-light-blue-soft px-3 py-2.5">
-                              <div className="flex flex-wrap items-center justify-between gap-2">
-                                <div>
-                                  <p className="text-xs font-bold text-[#0084D5]">
-                                    저항 제로 특강
-                                  </p>
-                                  <p className="text-sm font-semibold text-swimit-navy">
-                                    {classItem.scheduleSummaryLines[0] ??
-                                      PRODUCT_CATALOG.zero.timeLabel}
-                                  </p>
-                                </div>
-                                <ProductPriceLabel
-                                  price={PRODUCT_CATALOG.zero.price}
-                                  originalPrice={PRODUCT_CATALOG.zero.originalPrice}
-                                  badge={PRODUCT_CATALOG.zero.priceBadge}
-                                />
                               </div>
-                            </div>
-                            {diagnosisOffering && (
-                              <div className="rounded-lg border border-[#71C5E9]/50 bg-white px-3 py-2.5">
-                                <div className="flex flex-wrap items-center justify-between gap-2">
-                                  <div>
-                                    <p className="text-xs font-bold text-[#71C5E9]">
-                                      저항 진단 프로그램
-                                    </p>
-                                    <p className="text-sm font-semibold text-gray-800">
-                                      {diagnosisOffering.time}
-                                    </p>
-                                  </div>
-                                  <ProductPriceLabel
-                                    price={PRODUCT_CATALOG.diagnosis.price}
-                                    originalPrice={
-                                      PRODUCT_CATALOG.diagnosis.originalPrice
-                                    }
-                                    badge={PRODUCT_CATALOG.diagnosis.priceBadge}
-                                  />
-                                </div>
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="space-y-1.5 text-sm text-gray-700">
-                            <p>
-                              <span className="font-bold text-gray-900">수영장</span>{" "}
-                              {classItem.venue}
-                            </p>
-                            <p>
-                              <span className="font-bold text-gray-900">주소</span>{" "}
-                              {classItem.address}
-                            </p>
-                            {classItem.parking && (
-                              <p>
-                                <span className="font-bold text-gray-900">주차</span>{" "}
-                                {classItem.parking}
+                              <p className="ml-7 text-sm sm:text-[15px] font-semibold leading-6 text-blue-700">
+                                수영 특강 일정
                               </p>
-                            )}
-                          </div>
+                              <div className="ml-0 mt-2 space-y-1.5 sm:ml-7">
+                                {classItem.scheduleSummaryLines.map((line) => (
+                                  <p
+                                    key={line}
+                                    className="rounded-md bg-white/80 px-2.5 py-1.5 text-[13px] font-semibold leading-5 text-blue-800 sm:text-sm"
+                                  >
+                                    {line}
+                                  </p>
+                                ))}
+                              </div>
+                            </div>
 
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4 text-[#0084D5]" />
-                            <span className="rounded-full bg-swimit-light-blue-soft px-2.5 py-1 text-xs sm:text-sm font-bold text-[#0084D5]">
-                              예약 가능 · 레인당 최대 7명
-                            </span>
-                          </div>
-
-                          <Button
-                            size="lg"
-                            className="w-full text-base font-bold bg-[#0084D5] hover:bg-[#0070b8]"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              openRegistrationForClass(classItem);
-                            }}
-                          >
-                            {classItem.locationCode} 특강 예약하기
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
+                            <div className="space-y-3">
+                              <div className="flex items-start gap-4">
+                                <span className="text-sm sm:text-[15px] font-bold text-gray-900 min-w-[45px]">
+                                  수영장
+                                </span>
+                                <span className="text-sm sm:text-[15px] text-gray-600 leading-6">
+                                  {classItem.venue}
+                                </span>
+                              </div>
+                              <div className="flex items-start gap-4">
+                                <span className="text-sm sm:text-[15px] font-bold text-gray-900 min-w-[45px]">
+                                  주소
+                                </span>
+                                <span className="text-sm sm:text-[15px] text-gray-600 leading-6">
+                                  {classItem.address}
+                                </span>
+                              </div>
+                              {classItem.parking && (
+                                <div className="flex items-start gap-4">
+                                  <span className="text-sm sm:text-[15px] font-bold text-gray-900 min-w-[45px]">
+                                    주차
+                                  </span>
+                                  <span className="text-sm sm:text-[15px] text-gray-600 leading-6">
+                                    {classItem.parking}
+                                  </span>
+                                </div>
+                              )}
+                              <div className="flex items-center gap-2 pt-2">
+                                <Clock className="h-4 w-4 text-green-600" />
+                                <span className="text-sm sm:text-[15px] font-bold text-green-600">
+                                  예약 가능 · 코치 1명 당 최대 7명 소수 정예 클래스
+                                </span>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
-
+                
                 {!showRegistrationForm && (
-                  <div className="mt-4 rounded-xl border border-[#71C5E9]/40 bg-white p-4 sm:p-5">
-                    <p className="mb-2 text-base sm:text-lg font-bold text-gray-900">
-                      일정 확인 후 자리를 확보하세요
-                    </p>
+                <div className="mt-4 rounded-xl border border-orange-200 bg-orange-50 p-4 sm:p-5">
+                  <p className="text-base sm:text-lg font-bold text-gray-900 mb-2">
+                    📌 일정 확인하셨다면, 지금 바로 자리 확보하세요
+                  </p>
+                  <div className="mt-3">
                     <Button
                       onClick={() => {
                         console.log("[CTA] 일정 안내 아래 자리 선점 CTA 클릭");
                         handleScheduleRegistration();
                       }}
                       disabled={!selectedScheduleClass}
-                      className="w-full bg-[#0084D5] py-3 text-base font-semibold hover:bg-[#0070b8] disabled:cursor-not-allowed disabled:opacity-60 sm:py-4 sm:text-lg"
+                      className="w-full py-3 sm:py-4 text-base sm:text-lg font-semibold leading-tight disabled:cursor-not-allowed disabled:opacity-60"
                       size="lg"
                     >
                       {scheduleApplyButtonText}
                     </Button>
                     {!selectedScheduleClass && (
-                      <p className="mt-2 text-center text-xs sm:text-sm text-[#0084D5]">
+                      <p className="mt-2 text-center text-xs sm:text-sm text-orange-700">
                         위 일정 카드 중 신청할 특강을 먼저 선택해 주세요.
                       </p>
                     )}
-                    <div className="mt-3 space-y-1 text-xs sm:text-sm leading-5 text-gray-700">
-                      <p>※ 소수 정예 운영 / 모집 인원 도달 시 예약대기 전환</p>
-                      <p>※ 신청 후 상세 위치 안내됩니다</p>
-                    </div>
                   </div>
+                  <div className="mt-3 space-y-1 text-xs sm:text-sm text-gray-700 leading-5">
+                    <p>※ 소수 정예 운영 / 모집 인원 도달 시 예약대기 전환</p>
+                    <p>※ 신청 후 상세 위치 안내됩니다</p>
+                  </div>
+                </div>
                 )}
               </section>
 
-              {/* 10. Warning */}
-              <Alert className="order-6 mt-6 w-full border-[#71C5E9]/50 bg-swimit-light-blue-soft shadow-sm">
-                <AlertTriangle className="h-4 w-4 text-[#0084D5]" />
+              {/* Action Button (hidden when showRegistrationForm is true) */}
+              {/* Warning Section */}
+              <Alert className="order-6 w-full mt-6 bg-red-50 border-red-200 shadow-sm">
+                <AlertTriangle className="h-4 w-4 text-red-600" />
                 <AlertDescription className="ml-2">
-                  <h3 className="mb-2.5 text-base sm:text-lg font-bold text-swimit-navy">
-                    수강 전 확인해주세요.
+                  <h3 className="font-bold text-red-900 mb-2.5 text-base sm:text-lg">
+                    ⚠️ 주의사항
                   </h3>
-                  <ul className="space-y-2.5 text-sm sm:text-[15px] leading-6 text-gray-700">
+                  <ul className="space-y-2.5 text-sm sm:text-[15px] text-gray-700 leading-6">
+                    <li>• 본 특강은 마법이 아닌 '정확한 기술'을 전수합니다.</li>
                     <li>
-                      • 한 번의 수업으로 모든 수영 습관이 바뀌는 것은 아닙니다.
+                      단 한 번으로 국가대표가 될 수는 없지만, 무엇이 문제인지
+                      확실히 깨닫고 교정할 수 있는 '방향키'를 쥐여드립니다.
                     </li>
                     <li>
-                      • 대신 현재 가장 큰 저항 원인을 찾고, 무엇부터 연습해야
-                      하는지 명확하게 가져가실 수 있도록 수업합니다.
-                    </li>
-                    <li>
-                      • 개인별 교정을 진행하기 때문에 일반적인 강습보다 대기
-                      시간이 발생할 수 있습니다.
+                      • 디테일한 교정을 위해 평소 운동량보다 대기 시간이 있을 수
+                      있습니다.
                     </li>
                     <li>• 만 19세 미만은 참여가 제한됩니다.</li>
                   </ul>
                 </AlertDescription>
               </Alert>
-
-              {/* 11. Bottom CTA + Kakao */}
-              <Alert className="order-7 mt-6 w-full border-[#0084D5]/30 bg-white shadow-sm">
-                <HelpCircle className="h-4 w-4 text-[#0084D5]" />
+              {/* Refund Policy Section */}
+              <Alert className="order-7 w-full mt-6 bg-yellow-50 border-yellow-200 shadow-sm">
+                <HelpCircle className="h-4 w-4 text-yellow-600" />
                 <AlertDescription className="ml-2">
-                  <h3 className="mb-2 text-base sm:text-lg font-bold text-swimit-navy">
-                    더 많이 수영한다고
-                    <br />
-                    항상 더 편해지는 것은 아닙니다.
+                  <h3 className="font-bold text-yellow-900 mb-2 text-base sm:text-lg">
+                    💬 특강 관련 문의
                   </h3>
-                  <p className="mb-2 text-sm sm:text-[15px] leading-6 text-gray-700">
-                    지금 내 수영을 가장 방해하고 있는{" "}
-                    <span className="font-bold text-[#0084D5]">
-                      &apos;저항&apos;
-                    </span>
-                    부터 찾아보세요.
+                  <p className="text-sm sm:text-[15px] text-gray-700 mb-3 leading-6">
+                    특강에 대해 궁금한 점이 있으신가요? 카카오톡으로 편하게
+                    문의해주세요!
                   </p>
-                  <p className="mb-4 text-sm sm:text-[15px] font-bold leading-6 text-swimit-navy">
-                    힘으로 버티는 수영에서,
-                    <br />
-                    <span className="text-[#0084D5]">저항을 줄이는 수영</span>
-                    으로.
-                  </p>
-                  <div className="flex flex-col gap-2 sm:flex-row">
-                    <Button
-                      size="lg"
-                      className="w-full flex-1 bg-[#0084D5] font-semibold hover:bg-[#0070b8] sm:w-auto"
-                      onClick={() =>
-                        scrollToScheduleSection("하단 CTA 가까운 특강 찾기")
-                      }
-                    >
-                      가까운 스윔잇 특강 찾기
-                    </Button>
-                    <Button
-                      size="lg"
-                      variant="outline"
-                      className="w-full flex-1 border-[#0084D5] font-semibold text-[#0084D5] hover:bg-swimit-light-blue-soft sm:w-auto"
-                      onClick={() => {
-                        console.log("[CTA] 카카오톡 문의 클릭");
-                        window.open(
-                          "https://pf.kakao.com/_dXUgn/chat",
-                          "_blank",
-                        );
-                      }}
-                    >
-                      카카오톡 문의하기
-                    </Button>
-                  </div>
+                  <Button
+                    size="sm"
+                    className="w-full sm:w-auto bg-yellow-500 hover:bg-yellow-600 text-white font-semibold"
+                    onClick={() =>
+                      window.open("https://pf.kakao.com/_dXUgn/chat", "_blank")
+                    }
+                  >
+                    ☎️ 카카오톡 문의하기
+                  </Button>
                 </AlertDescription>
               </Alert>
             </div>

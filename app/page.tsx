@@ -24,6 +24,8 @@ import {
   Check,
   MessageCircle,
   RefreshCw,
+  Shield,
+  Lock,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -323,6 +325,44 @@ const AQUARIUM_SHOT_YOUTUBE_ID = "d3UT4FzduME";
 const AQUARIUM_SHOT_EMBED_URL = `https://www.youtube.com/embed/${AQUARIUM_SHOT_YOUTUBE_ID}?autoplay=1&mute=1&loop=1&playlist=${AQUARIUM_SHOT_YOUTUBE_ID}&playsinline=1&rel=0&modestbranding=1`;
 
 const formatWon = (amount: number) => `₩${amount.toLocaleString()}`;
+
+/** 결제 화면 쿠폰 (코드는 대소문자 무시) */
+type CouponDefinition = {
+  code: string;
+  discountWon: number;
+  label: string;
+  /**
+   * 적용 대상
+   * - zero: 저항 제로 특강
+   * - diagnosis: 저항 진단
+   * - regular: productType 없는 일반 특강
+   */
+  allow: Array<ProductType | "regular">;
+};
+
+const COUPON_CATALOG: CouponDefinition[] = [
+  {
+    code: "SWIMIT10",
+    discountWon: 10000,
+    label: "저항 제로·특강 1만원 할인",
+    // 진단 후 제로 특강용 + 일반 특강에도 동일 금액 할인
+    allow: ["zero", "regular"],
+  },
+];
+
+const normalizeCouponCode = (code: string) => code.trim().toUpperCase();
+
+const findCouponDefinition = (rawCode: string) => {
+  const code = normalizeCouponCode(rawCode);
+  return COUPON_CATALOG.find((c) => c.code === code) ?? null;
+};
+
+const getCouponSlotKind = (
+  productType?: ProductType | null,
+): ProductType | "regular" => productType ?? "regular";
+
+const getPayableAmount = (basePrice: number, discountWon: number) =>
+  Math.max(0, basePrice - Math.max(0, discountWon));
 
 /** 정가 취소선 + 할인가 표시 */
 const ProductPriceLabel = ({
@@ -1189,6 +1229,16 @@ export default function SwimmingClassPage() {
   } | null>(null);
 
   const [paymentMethod, setPaymentMethod] = useState("card");
+  const [couponInput, setCouponInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<{
+    code: string;
+    discountWon: number;
+    label: string;
+  } | null>(null);
+  const [couponMessage, setCouponMessage] = useState<{
+    type: "ok" | "error";
+    text: string;
+  } | null>(null);
   const [finalAgree, setFinalAgree] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentDate, setPaymentDate] = useState<Date | null>(null);
@@ -2371,7 +2421,9 @@ export default function SwimmingClassPage() {
     ) {
       return "예약하기";
     }
-    const price = selectedTimeSlot.price.toLocaleString();
+    const discount = appliedCoupon?.discountWon ?? 0;
+    const payable = getPayableAmount(selectedTimeSlot.price, discount);
+    const price = payable.toLocaleString();
     if (selectedTimeSlot.productType === "zero") {
       return `₩${price} 결제하고 저항 제로 특강 신청하기`;
     }
@@ -2380,6 +2432,84 @@ export default function SwimmingClassPage() {
     }
     return `₩${price} 결제하고 자리 확정하기`;
   })();
+
+  const clearAppliedCoupon = (reason: string) => {
+    if (appliedCoupon || couponInput || couponMessage) {
+      console.log("[쿠폰] 초기화:", reason);
+    }
+    setAppliedCoupon(null);
+    setCouponInput("");
+    setCouponMessage(null);
+  };
+
+  const applyCouponCode = () => {
+    if (!selectedTimeSlot) {
+      setCouponMessage({
+        type: "error",
+        text: "클래스를 먼저 선택해 주세요.",
+      });
+      return;
+    }
+
+    const def = findCouponDefinition(couponInput);
+    if (!def) {
+      console.log("[쿠폰] 유효하지 않은 코드:", couponInput);
+      setAppliedCoupon(null);
+      setCouponMessage({
+        type: "error",
+        text: "유효하지 않은 쿠폰 코드입니다.",
+      });
+      return;
+    }
+
+    const slotKind = getCouponSlotKind(selectedTimeSlot.productType);
+    if (!def.allow.includes(slotKind)) {
+      console.log("[쿠폰] 적용 불가 상품:", {
+        code: def.code,
+        slotKind,
+        allow: def.allow,
+      });
+      setAppliedCoupon(null);
+      setCouponMessage({
+        type: "error",
+        text: "이 클래스에는 사용할 수 없는 쿠폰입니다.",
+      });
+      return;
+    }
+
+    if (selectedTimeSlot.price <= def.discountWon) {
+      setAppliedCoupon(null);
+      setCouponMessage({
+        type: "error",
+        text: "결제 금액보다 할인 금액이 커서 적용할 수 없습니다.",
+      });
+      return;
+    }
+
+    const next = {
+      code: def.code,
+      discountWon: def.discountWon,
+      label: def.label,
+    };
+    setAppliedCoupon(next);
+    setCouponInput(def.code);
+    setCouponMessage({
+      type: "ok",
+      text: `${def.label} 적용되었습니다. (-${formatWon(def.discountWon)})`,
+    });
+    console.log("[쿠폰] 적용 완료:", {
+      ...next,
+      className: selectedTimeSlot.name,
+      basePrice: selectedTimeSlot.price,
+      payable: getPayableAmount(selectedTimeSlot.price, def.discountWon),
+    });
+  };
+
+  useEffect(() => {
+    // 클래스 바꾸면 쿠폰은 다시 적용해야 함
+    clearAppliedCoupon("클래스 변경");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTimeSlot?.name]);
 
   const copyDepositAccount = async () => {
     try {
@@ -2419,10 +2549,11 @@ export default function SwimmingClassPage() {
 
   const handleClassPgTestPayment = async () => {
     if (isClassPgTestLoading || !selectedTimeSlot) return;
-    const amount = selectedTimeSlot.price;
+    const discount = appliedCoupon?.discountWon ?? 0;
+    const amount = getPayableAmount(selectedTimeSlot.price, discount);
     if (!amount || amount <= 0) {
       toast({
-        title: "테스트 결제 불가",
+        title: "결제 불가",
         description: "선택한 클래스에 결제 금액이 없습니다.",
         variant: "destructive",
       });
@@ -2432,7 +2563,10 @@ export default function SwimmingClassPage() {
     setIsClassPgTestLoading(true);
     console.log("[결제] 카드 결제 시작:", {
       className: selectedTimeSlot.name,
+      basePrice: selectedTimeSlot.price,
+      discount,
       amount,
+      coupon: appliedCoupon?.code ?? null,
     });
 
     try {
@@ -4034,7 +4168,12 @@ export default function SwimmingClassPage() {
                           ? ` · ${PRODUCT_CATALOG[selectedProductType].timeLabel}`
                           : ""}
                       {selectedTimeSlot?.price
-                        ? ` · ₩${selectedTimeSlot.price.toLocaleString()}`
+                        ? ` · ${formatWon(
+                            getPayableAmount(
+                              selectedTimeSlot.price,
+                              appliedCoupon?.discountWon ?? 0,
+                            ),
+                          )}`
                         : ""}
                     </div>
                   )}
@@ -5538,16 +5677,58 @@ export default function SwimmingClassPage() {
                   <div className="text-center py-6 border-t">
                     <div className="inline-flex items-center gap-2 mb-2">
                       <span className="text-2xl">💳</span>
-                      <h2 className="text-2xl font-bold">결제 금액 확인</h2>
+                      <h2 className="text-2xl font-bold">결제하기</h2>
                     </div>
                     <p className="text-sm text-gray-600">
-                      신청 정보를 저장한 뒤 결제를 진행합니다
+                      안전한 결제 시스템으로 강의를 신청하세요
                     </p>
                   </div>
 
                   <div className="flex justify-center">
-                    {/* Order Summary - Centered and Wide */}
                     <div className="space-y-6 w-full max-w-2xl">
+                      {/* 결제 방법 */}
+                      <div>
+                        <h3 className="text-lg font-bold mb-3">결제 방법</h3>
+                        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                          <div className="flex items-start gap-3">
+                            <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-teal-100 text-teal-700">
+                              <Shield className="h-5 w-5" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <p className="font-bold text-gray-900">
+                                  안전한 결제
+                                </p>
+                                <span className="inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-[11px] font-semibold text-teal-700 border border-teal-200">
+                                  <Lock className="h-3 w-3" />
+                                  SSL
+                                </span>
+                              </div>
+                              <p className="mt-1 text-sm leading-relaxed text-gray-600">
+                                SSL 암호화 통신과 PG사 인증을 통해 안전하게
+                                보호됩니다.
+                              </p>
+                              <RadioGroup
+                                value={paymentMethod}
+                                onValueChange={(value) => {
+                                  setPaymentMethod(value);
+                                  console.log("[결제] 결제 방법 표시 선택:", value);
+                                }}
+                                className="mt-3 space-y-2"
+                              >
+                                <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-teal-200 bg-white px-3 py-2.5">
+                                  <RadioGroupItem value="card" id="pay-card" />
+                                  <CreditCard className="h-4 w-4 text-teal-700" />
+                                  <span className="text-sm font-semibold text-gray-800">
+                                    카드·간편결제 / 무통장 입금 안내
+                                  </span>
+                                </label>
+                              </RadioGroup>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
                       {/* Order Summary */}
                       <div>
                         <h3 className="text-lg font-bold mb-4">주문 요약</h3>
@@ -5555,21 +5736,28 @@ export default function SwimmingClassPage() {
                           <div className="flex items-center gap-2">
                             <MapPin className="h-4 w-4 text-red-500" />
                             <span className="text-gray-700">
-                              {classes.find(
-                                (c) => String(c.id) === selectedClass,
-                              )?.location || "정보 없음"}
+                              {(() => {
+                                const classItem = classes.find(
+                                  (c) => String(c.id) === selectedClass,
+                                );
+                                if (!classItem) return "정보 없음";
+                                return `${classItem.location} (${classItem.month}.${classItem.dateNum}) 특강`;
+                              })()}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 text-gray-500" />
                             <span className="text-gray-700">
-                              {selectedTimeSlot?.time.split("(")[0] ||
-                                "날짜 정보 없음"}
+                              {classes.find(
+                                (c) => String(c.id) === selectedClass,
+                              )?.date || "날짜 정보 없음"}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
                             <Users className="h-4 w-4 text-gray-500" />
-                            <span className="text-gray-700">어른</span>
+                            <span className="text-gray-700">
+                              {formData.name.trim() || "신청자 미입력"}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -5621,36 +5809,101 @@ export default function SwimmingClassPage() {
                         </div>
                       </div>
 
+                      {/* Coupon */}
+                      <div>
+                        <h3 className="text-lg font-bold mb-3">쿠폰 코드 입력</h3>
+                        <div className="flex gap-2">
+                          <Input
+                            value={couponInput}
+                            onChange={(e) => {
+                              setCouponInput(e.target.value);
+                              if (couponMessage?.type === "error") {
+                                setCouponMessage(null);
+                              }
+                            }}
+                            placeholder="쿠폰 코드를 입력하세요"
+                            className="flex-1"
+                            aria-label="쿠폰 코드"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="shrink-0 font-bold"
+                            onClick={applyCouponCode}
+                          >
+                            적용
+                          </Button>
+                        </div>
+                        {couponMessage && (
+                          <p
+                            className={`mt-2 text-sm font-semibold ${
+                              couponMessage.type === "ok"
+                                ? "text-teal-700"
+                                : "text-red-600"
+                            }`}
+                          >
+                            {couponMessage.text}
+                          </p>
+                        )}
+                        {appliedCoupon && (
+                          <button
+                            type="button"
+                            className="mt-2 text-xs font-semibold text-gray-500 underline"
+                            onClick={() => clearAppliedCoupon("사용자 취소")}
+                          >
+                            쿠폰 적용 취소
+                          </button>
+                        )}
+                        <p className="mt-2 text-xs text-gray-500">
+                          진단 후 제로 특강 할인은{" "}
+                          <span className="font-mono font-bold">SWIMIT10</span>{" "}
+                          (1만원)
+                        </p>
+                      </div>
+
                       {/* Total Amount */}
                       <div>
                         <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
                           <h3 className="text-lg font-bold">총 결제 금액</h3>
-                          {selectedTimeSlot?.productType &&
-                          PRODUCT_CATALOG[selectedTimeSlot.productType] ? (
-                            <div className="text-right">
-                              <div className="text-sm text-gray-400 line-through">
-                                {formatWon(
-                                  PRODUCT_CATALOG[selectedTimeSlot.productType]
-                                    .originalPrice,
+                          {(() => {
+                            const base = selectedTimeSlot?.price ?? 0;
+                            const discount = appliedCoupon?.discountWon ?? 0;
+                            const payable = getPayableAmount(base, discount);
+                            const catalog =
+                              selectedTimeSlot?.productType &&
+                              PRODUCT_CATALOG[selectedTimeSlot.productType]
+                                ? PRODUCT_CATALOG[selectedTimeSlot.productType]
+                                : null;
+
+                            return (
+                              <div className="text-right">
+                                {catalog && (
+                                  <div className="text-sm text-gray-400 line-through">
+                                    {formatWon(catalog.originalPrice)}
+                                  </div>
+                                )}
+                                {discount > 0 && (
+                                  <div className="text-sm font-semibold text-orange-600">
+                                    쿠폰 할인 -{formatWon(discount)}
+                                  </div>
+                                )}
+                                <div className="text-2xl font-bold text-primary">
+                                  {formatWon(payable)}
+                                </div>
+                                {catalog && (
+                                  <div className="text-xs font-bold text-red-600">
+                                    {catalog.priceBadge} · 2시간
+                                  </div>
                                 )}
                               </div>
-                              <div className="text-2xl font-bold text-primary">
-                                {formatWon(selectedTimeSlot.price)}
-                              </div>
-                              <div className="text-xs font-bold text-red-600">
-                                {
-                                  PRODUCT_CATALOG[selectedTimeSlot.productType]
-                                    .priceBadge
-                                }{" "}
-                                · 2시간
-                              </div>
-                            </div>
-                          ) : (
-                            <span className="text-2xl font-bold text-primary">
-                              ₩{(selectedTimeSlot?.price ?? 0).toLocaleString()}
-                            </span>
-                          )}
+                            );
+                          })()}
                         </div>
+
+                        <p className="mb-3 text-sm font-semibold text-gray-700">
+                          신청 완료 후 입금(또는 카드 결제)이 확인되면 강의가
+                          확정됩니다
+                        </p>
 
                         {selectedTimeSlot &&
                           !selectedTimeSlot.isWaitlist &&
@@ -5773,7 +6026,18 @@ export default function SwimmingClassPage() {
 
                         // 결제 처리 시작 - 버튼 비활성화
                         setIsSubmitting(true);
-                        console.log("[결제] 결제 처리 시작 - 버튼 비활성화");
+                        console.log("[결제] 결제 처리 시작 - 버튼 비활성화", {
+                          className: selectedTimeSlot?.name,
+                          basePrice: selectedTimeSlot?.price,
+                          coupon: appliedCoupon?.code ?? null,
+                          discount: appliedCoupon?.discountWon ?? 0,
+                          payable: selectedTimeSlot
+                            ? getPayableAmount(
+                                selectedTimeSlot.price,
+                                appliedCoupon?.discountWon ?? 0,
+                              )
+                            : 0,
+                        });
 
                         if (selectedTimeSlot) {
                           const paymentStartedAt = new Date();
@@ -8197,7 +8461,13 @@ export default function SwimmingClassPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">입금금액</span>
-                  <span className="font-bold text-lg">₩{(selectedTimeSlot?.price ?? 0).toLocaleString()}</span>
+                  <span className="font-bold text-lg">
+                    ₩
+                    {getPayableAmount(
+                      selectedTimeSlot?.price ?? 0,
+                      appliedCoupon?.discountWon ?? 0,
+                    ).toLocaleString()}
+                  </span>
                 </div>
                 <div className="flex justify-between pt-2 border-t">
                   <span className="text-gray-600">입금기한</span>

@@ -3327,7 +3327,7 @@ export default function SwimmingClassPage() {
               </Card>
 
               {/* CTA Copy Section */}
-              <div className="order-4 w-full mt-6 rounded-2xl border border-blue-200 bg-blue-50 p-4 sm:p-5 shadow-sm">
+              <div className="order-5 w-full mt-6 rounded-2xl border border-blue-200 bg-blue-50 p-4 sm:p-5 shadow-sm">
                 <p className="text-base sm:text-lg font-bold text-blue-900 mb-2.5">
                   런칭 특가로 진행 중입니다
                 </p>
@@ -3346,7 +3346,7 @@ export default function SwimmingClassPage() {
               </div>
 
               {/* Student Review Section */}
-              <section className="order-5 w-full mt-6 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
+              <section className="order-3 w-full mt-6 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
                 <div className="mx-auto max-w-2xl">
                   <h3 className="text-lg sm:text-xl font-bold text-gray-900">
                     실제 카톡 후기
@@ -3469,7 +3469,7 @@ export default function SwimmingClassPage() {
               {/* Schedule & Region Notice (Step 1) */}
               <section
                 id="schedule-section"
-                className="order-3 w-full mt-6 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5 scroll-mt-4"
+                className="order-4 w-full mt-6 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5 scroll-mt-4"
               >
                 <div className="mb-3 sm:mb-4">
                   <h3 className="text-lg sm:text-xl font-bold text-gray-900 flex items-center gap-2">

@@ -2430,7 +2430,7 @@ export default function SwimmingClassPage() {
     }
 
     setIsClassPgTestLoading(true);
-    console.log("[PG테스트] 특강 테스트 결제 시작:", {
+    console.log("[결제] 카드 결제 시작:", {
       className: selectedTimeSlot.name,
       amount,
     });
@@ -2447,9 +2447,9 @@ export default function SwimmingClassPage() {
       const orderData = await orderRes.json();
 
       if (!orderData.success) {
-        console.error("[PG테스트] 주문 생성 실패:", orderData.error);
+        console.error("[결제] 주문 생성 실패:", orderData.error);
         toast({
-          title: "테스트 주문 실패",
+          title: "주문 생성 실패",
           description: orderData.error,
           variant: "destructive",
         });
@@ -2460,7 +2460,7 @@ export default function SwimmingClassPage() {
       const tossPayments = await loadTossPayments(orderData.clientKey);
       const payment = tossPayments.payment({ customerKey: "ANONYMOUS" });
 
-      console.log("[PG테스트] 토스 결제창 호출:", orderData.orderId);
+      console.log("[결제] 토스 결제창 호출:", orderData.orderId);
 
       await payment.requestPayment({
         method: "CARD",
@@ -2471,9 +2471,9 @@ export default function SwimmingClassPage() {
         failUrl: `${window.location.origin}/class-pg-test/fail`,
       });
     } catch (error) {
-      console.error("[PG테스트] 결제 오류:", error);
+      console.error("[결제] 결제 오류:", error);
       toast({
-        title: "테스트 결제 오류",
+        title: "결제 오류",
         description: "결제 처리 중 오류가 발생했습니다.",
         variant: "destructive",
       });
@@ -6334,41 +6334,40 @@ export default function SwimmingClassPage() {
                     </div>
                     {showPgTest && selectedTimeSlot && (
                       <div
-                        className="rounded-xl border-2 border-red-500 bg-red-50 p-4 sm:p-5 space-y-3 shadow-sm"
+                        className="rounded-xl border-2 border-teal-500 bg-teal-50 p-4 sm:p-5 space-y-3 shadow-sm"
                         role="complementary"
-                        aria-label="PG 심사용 토스 테스트 결제 — 실제 결제되지 않음"
+                        aria-label="토스페이먼츠 카드 결제"
                       >
-                        <p className="flex items-center justify-center gap-1.5 text-center text-lg sm:text-xl font-extrabold leading-snug text-red-700">
+                        <p className="flex items-center justify-center gap-1.5 text-center text-lg sm:text-xl font-extrabold leading-snug text-teal-800">
                           <AlertTriangle className="h-5 w-5 shrink-0" />
-                          실제 결제가 되지 않습니다
+                          카드 결제 (실제 출금)
                         </p>
-                        <p className="text-center text-sm font-bold leading-relaxed text-red-900">
-                          PG·카드사 심사용 테스트 버튼입니다.
+                        <p className="text-center text-sm font-bold leading-relaxed text-teal-900">
+                          토스페이먼츠 카드 결제로 진행합니다.
                         </p>
-                        <ul className="space-y-1 rounded-lg bg-white/90 px-3 py-2.5 text-xs sm:text-sm font-bold leading-5 text-red-950">
-                          <li>· 카드에서 돈이 빠져나가지 않습니다</li>
-                          <li>· 특강 신청이 되지 않습니다</li>
+                        <ul className="space-y-1 rounded-lg bg-white/90 px-3 py-2.5 text-xs sm:text-sm font-bold leading-5 text-teal-950">
+                          <li>· 결제 완료 시 카드에서 실제로 출금됩니다</li>
+                          <li>· 위 무통장 입금 신청과는 별도 흐름입니다</li>
                         </ul>
-                        <p className="text-center text-xs leading-5 text-red-900">
-                          실제 신청은 위 「결제하고 자리 확정하기」(무통장 입금)로
-                          진행해 주세요.
-                        </p>
                         <Button
                           type="button"
-                          variant="outline"
-                          className="w-full py-3 text-sm sm:text-base border-2 border-red-500 text-red-800 bg-white hover:bg-red-100 font-bold"
+                          className="w-full py-3 text-sm sm:text-base bg-teal-600 hover:bg-teal-700 text-white font-bold"
                           disabled={isClassPgTestLoading}
                           onClick={() => {
                             console.log(
-                              "[PG테스트] 결제하기 버튼 클릭 — 토스 스테이징 결제창 요청 (실제 결제 아님)",
+                              "[결제] 카드 결제 버튼 클릭 — 토스 라이브 결제창 요청",
+                              {
+                                className: selectedTimeSlot.name,
+                                price: selectedTimeSlot.price,
+                              },
                             );
                             void handleClassPgTestPayment();
                           }}
-                          aria-label="토스페이먼츠 테스트 결제하기 — 실제 결제되지 않음"
+                          aria-label="토스페이먼츠 카드 결제하기"
                         >
                           {isClassPgTestLoading
                             ? "결제창 여는 중..."
-                            : "테스트 결제하기 (실제 결제 안 됨)"}
+                            : "카드로 결제하기"}
                         </Button>
                       </div>
                     )}

@@ -1230,9 +1230,8 @@ export default function SwimmingClassPage() {
 
   // 개발자/관리자 모드 (URL: ?debug=true 또는 ?admin=true)
   const [showDebug, setShowDebug] = useState(false);
-  // PG 심사용 토스 테스트 결제창 (NEXT_PUBLIC_PG_REVIEW=true 또는 ?pgtest=1)
+  // PG 심사 플래그(로그용). 카드 결제는 정식 노출로 전환됨.
   const pgReviewFromEnv = process.env.NEXT_PUBLIC_PG_REVIEW === "true";
-  const [showPgTest, setShowPgTest] = useState(pgReviewFromEnv);
   const [isClassPgTestLoading, setIsClassPgTestLoading] = useState(false);
 
   // 현재 활성 특강의 클래스 키 목록 (지난 특강 제거용)
@@ -1278,7 +1277,6 @@ export default function SwimmingClassPage() {
       params.get("debug") === "true" || params.get("admin") === "true";
     setShowDebug(adminMode);
     const pgTestOn = params.get("pgtest") === "1";
-    setShowPgTest(pgReviewFromEnv || pgTestOn);
     const nextVideoCode = params.get("video")?.trim() || "";
     setVideoCode(nextVideoCode);
 
@@ -1311,7 +1309,7 @@ export default function SwimmingClassPage() {
       adminMode,
       pgReview: pgReviewFromEnv,
       pgtest: pgTestOn,
-      showPgTest: pgReviewFromEnv || pgTestOn,
+      cardPayment: "always-on",
       video: nextVideoCode,
     });
     console.log("[유입경로] 수집 결과:", {
@@ -1323,7 +1321,9 @@ export default function SwimmingClassPage() {
 
   useEffect(() => {
     if (pgReviewFromEnv) {
-      console.log("[PG테스트] 심사 모드 ON — 메인 URL에서 테스트 결제창 표시");
+      console.log(
+        "[PG] NEXT_PUBLIC_PG_REVIEW=true — 카드 결제는 이미 일반 노출입니다",
+      );
     }
   }, [pgReviewFromEnv]);
 
@@ -2364,6 +2364,35 @@ export default function SwimmingClassPage() {
     }, 120);
   };
 
+  const selectedScheduleForPayment = selectedClass
+    ? classes.find((c) => String(c.id) === selectedClass)
+    : null;
+
+  const isReservationOnly = Boolean(
+    selectedTimeSlot &&
+      (isClassFull(selectedTimeSlot.name) ||
+        hasEnrollment(selectedTimeSlot.name) ||
+        selectedTimeSlot.isWaitlist),
+  );
+
+  const canSubmitApplication = Boolean(
+    selectedTimeSlot &&
+      formData.name &&
+      formData.phone &&
+      formData.swimmingExperience &&
+      agreeAll,
+  );
+
+  const paymentAmountLabel = selectedTimeSlot
+    ? selectedTimeSlot.price.toLocaleString()
+    : "0";
+
+  const paymentClassLabel = selectedTimeSlot
+    ? selectedTimeSlot.productName ||
+      selectedTimeSlot.title ||
+      getClassDisplayName(selectedTimeSlot.name)
+    : "";
+
   const paymentCtaLabel = (() => {
     if (!selectedTimeSlot) return "일정을 선택해 주세요";
     if (
@@ -2372,15 +2401,10 @@ export default function SwimmingClassPage() {
     ) {
       return "예약하기";
     }
-    const price = selectedTimeSlot.price.toLocaleString();
-    if (selectedTimeSlot.productType === "zero") {
-      return `₩${price} 결제하고 저항 제로 특강 신청하기`;
-    }
-    if (selectedTimeSlot.productType === "diagnosis") {
-      return `₩${price} 결제하고 저항 진단 신청하기`;
-    }
-    return `₩${price} 결제하고 자리 확정하기`;
+    return "계좌이체로 신청하기";
   })();
+
+  const cardPaymentLabel = `카드로 ₩${paymentAmountLabel} 결제하기`;
 
   const copyDepositAccount = async () => {
     try {
@@ -5657,218 +5681,151 @@ export default function SwimmingClassPage() {
                     </CardContent>
                   </Card>
 
-                  {/* Payment Header */}
-                  <div className="text-center py-6 border-t">
-                    <div className="inline-flex items-center gap-2 mb-2">
-                      <span className="text-2xl">💳</span>
-                      <h2 className="text-2xl font-bold">결제 금액 확인</h2>
+                  {/* 신청내용·결제 확인 (모바일 우선) */}
+                  <div className="border-t pt-6">
+                    <div className="mb-4 text-center">
+                      <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">
+                        신청내용 확인
+                      </h2>
+                      <p className="mt-1 text-sm text-gray-600">
+                        선택하신 특강과 결제금액을 확인한 뒤 결제해 주세요
+                      </p>
                     </div>
-                    <p className="text-sm text-gray-600">
-                      신청 정보를 저장한 뒤 결제를 진행합니다
-                    </p>
-                  </div>
 
-                  <div className="flex justify-center">
-                    {/* Order Summary - Centered and Wide */}
-                    <div className="space-y-6 w-full max-w-2xl">
-                      {/* Order Summary */}
-                      <div>
-                        <h3 className="text-lg font-bold mb-4">주문 요약</h3>
-                        <div className="space-y-2.5 text-sm">
-                          <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-red-500" />
-                            <span className="text-gray-700">
-                              {classes.find(
-                                (c) => String(c.id) === selectedClass,
-                              )?.location || "정보 없음"}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-gray-500" />
-                            <span className="text-gray-700">
-                              {selectedTimeSlot?.time.split("(")[0] ||
-                                "날짜 정보 없음"}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Users className="h-4 w-4 text-gray-500" />
-                            <span className="text-gray-700">어른</span>
-                          </div>
+                    <div className="mx-auto w-full max-w-2xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                      <div className="divide-y divide-slate-100">
+                        <div className="flex items-start justify-between gap-3 px-4 py-3.5 sm:px-5">
+                          <span className="shrink-0 text-sm font-semibold text-gray-500">
+                            선택한 특강
+                          </span>
+                          <span className="text-right text-sm font-bold leading-snug text-gray-900">
+                            {selectedScheduleForPayment
+                              ? `${selectedScheduleForPayment.locationCode} · ${selectedScheduleForPayment.date}`
+                              : "특강을 선택해 주세요"}
+                          </span>
                         </div>
-                      </div>
-
-                      {/* Selected Class */}
-                      <div>
-                        <h3 className="text-lg font-bold mb-3">
-                          선택된 클래스
-                        </h3>
-                        <div className="border border-dashed border-gray-300 rounded-lg p-6 bg-gray-50">
-                          {selectedTimeSlot ? (
-                            <div>
-                              <p className="text-sm font-medium text-gray-800 mb-1">
-                                {selectedTimeSlot.productName ||
-                                  getClassDisplayName(selectedTimeSlot.name)}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                시간대: {selectedTimeSlot.session} (
-                                {selectedTimeSlot.time})
-                              </p>
-                              {selectedTimeSlot.strokes &&
-                                selectedTimeSlot.strokes.length > 0 && (
-                                  <p className="text-xs text-gray-500">
-                                    영법: {selectedTimeSlot.strokes.join(" · ")}
-                                  </p>
-                                )}
-                              <p className="text-xs text-gray-500">
-                                지역:{" "}
-                                {classes.find(
-                                  (c) => String(c.id) === selectedClass,
-                                )?.location || "정보 없음"}
-                              </p>
-                              {selectedTimeSlot.isWaitlist && (
-                                <span className="inline-block mt-2 px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded">
-                                  대기신청
+                        <div className="flex items-start justify-between gap-3 px-4 py-3.5 sm:px-5">
+                          <span className="shrink-0 text-sm font-semibold text-gray-500">
+                            선택 클래스
+                          </span>
+                          <span className="text-right text-sm font-bold leading-snug text-gray-900">
+                            {selectedTimeSlot ? (
+                              <>
+                                {paymentClassLabel}
+                                {selectedTimeSlot.strokes &&
+                                selectedTimeSlot.strokes.length > 0 ? (
+                                  <span className="mt-0.5 block text-xs font-medium text-gray-500">
+                                    {selectedTimeSlot.strokes.join(" · ")}
+                                  </span>
+                                ) : null}
+                                <span className="mt-0.5 block text-xs font-medium text-gray-500">
+                                  {selectedTimeSlot.session} ·{" "}
+                                  {selectedTimeSlot.time}
                                 </span>
-                              )}
-                            </div>
-                          ) : (
-                            <div className="text-center">
-                              <p className="text-sm text-gray-500 mb-1">
-                                아직 클래스를 선택하지 않았습니다
-                              </p>
-                              <p className="text-xs text-gray-400">
-                                위 시간표에서 클래스를 선택해주세요
-                              </p>
-                            </div>
-                          )}
+                              </>
+                            ) : (
+                              "클래스를 선택해 주세요"
+                            )}
+                          </span>
                         </div>
-                      </div>
-
-                      {/* Total Amount */}
-                      <div>
-                        <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
-                          <h3 className="text-lg font-bold">총 결제 금액</h3>
-                          {selectedTimeSlot?.productType &&
-                          PRODUCT_CATALOG[selectedTimeSlot.productType] ? (
-                            <div className="text-right">
-                              <div className="text-sm text-gray-400 line-through">
+                        <div className="flex items-start justify-between gap-3 px-4 py-3.5 sm:px-5">
+                          <span className="shrink-0 text-sm font-semibold text-gray-500">
+                            신청자
+                          </span>
+                          <span className="text-right text-sm font-bold text-gray-900">
+                            {formData.name.trim() || "이름 미입력"}
+                            {formData.phone ? (
+                              <span className="mt-0.5 block text-xs font-medium text-gray-500">
+                                {formData.phone}
+                              </span>
+                            ) : null}
+                          </span>
+                        </div>
+                        <div className="flex items-end justify-between gap-3 bg-slate-50 px-4 py-4 sm:px-5">
+                          <span className="text-sm font-semibold text-gray-600">
+                            결제금액
+                          </span>
+                          <div className="text-right">
+                            {selectedTimeSlot?.productType &&
+                            PRODUCT_CATALOG[selectedTimeSlot.productType] ? (
+                              <div className="text-xs text-gray-400 line-through">
                                 {formatWon(
                                   PRODUCT_CATALOG[selectedTimeSlot.productType]
                                     .originalPrice,
                                 )}
                               </div>
-                              <div className="text-2xl font-bold text-primary">
-                                {formatWon(selectedTimeSlot.price)}
-                              </div>
-                              <div className="text-xs font-bold text-red-600">
-                                {
-                                  PRODUCT_CATALOG[selectedTimeSlot.productType]
-                                    .priceBadge
-                                }{" "}
-                                · 2시간
-                              </div>
+                            ) : null}
+                            <div className="text-2xl font-extrabold tracking-tight text-primary">
+                              {selectedTimeSlot
+                                ? `${paymentAmountLabel}원`
+                                : "0원"}
                             </div>
-                          ) : (
-                            <span className="text-2xl font-bold text-primary">
-                              ₩{(selectedTimeSlot?.price ?? 0).toLocaleString()}
-                            </span>
-                          )}
+                          </div>
                         </div>
-
-                        {selectedTimeSlot &&
-                          !selectedTimeSlot.isWaitlist &&
-                          selectedTimeSlot.available && (
-                            <div className="mb-3 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm leading-6 text-blue-900">
-                              {selectedTimeSlot.productType === "diagnosis" ? (
-                                <>
-                                  <div className="font-bold">
-                                    저항 진단 프로그램 · 런칭특가
-                                  </div>
-                                  <div>
-                                    정가{" "}
-                                    {formatWon(
-                                      PRODUCT_CATALOG.diagnosis.originalPrice,
-                                    )}{" "}
-                                    → {formatWon(PRODUCT_CATALOG.diagnosis.price)}{" "}
-                                    (2시간).
-                                    <br />
-                                    촬영 자유수영+어항샷+분석 리포트+연습 PDF
-                                    포함.
-                                    <br />
-                                    <span className="mt-1.5 inline-flex items-center gap-1.5 rounded-md border-2 border-orange-400 bg-orange-50 px-2 py-1 text-sm font-extrabold text-orange-950">
-                                      <span className="rounded bg-orange-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
-                                        쿠폰
-                                      </span>
-                                      이후 저항 제로 특강 수강 시 1만원 할인
-                                      쿠폰 제공
-                                    </span>
-                                    <br />
-                                    교정 수업이 아닙니다.
-                                  </div>
-                                </>
-                              ) : selectedTimeSlot.productType === "zero" ? (
-                                <>
-                                  <div className="font-bold">
-                                    저항 제로 특강 · 프리미엄 특가
-                                  </div>
-                                  <div>
-                                    정가{" "}
-                                    {formatWon(PRODUCT_CATALOG.zero.originalPrice)}{" "}
-                                    → {formatWon(PRODUCT_CATALOG.zero.price)}{" "}
-                                    (2시간). Before/After 수중 촬영·현장
-                                    교정·영상 피드백 포함.
-                                  </div>
-                                </>
-                              ) : (
-                                <>
-                                  <div className="font-bold">런칭 특가 적용</div>
-                                  <div>
-                                    사전 문제 체크, Before / After 수중 촬영,
-                                    현장 교정, 1:1 영상 피드백이 포함됩니다.
-                                  </div>
-                                </>
-                              )}
-                            </div>
-                          )}
                       </div>
                     </div>
                   </div>
 
                   {/* Navigation Buttons */}
                   {regionError && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 mt-4">
                       <p className="text-red-600 font-bold text-center">
                         지역을 선택해주세요
                       </p>
                     </div>
                   )}
-                  <div className="space-y-3 pt-4">
-                    <div className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm leading-6 text-blue-900">
-                      <p>스윔잇 특강은 결제 완료 순으로 자리가 확정됩니다.</p>
-                      <p>결제 전까지는 예약이 확정되지 않습니다.</p>
-                    </div>
+                  <div className="sticky bottom-0 z-20 -mx-4 mt-6 border-t border-slate-200 bg-white/95 px-4 py-4 shadow-[0_-8px_24px_rgba(15,23,42,0.08)] backdrop-blur sm:static sm:mx-0 sm:rounded-2xl sm:border sm:shadow-sm">
+                    <p className="mb-3 text-center text-xs font-medium leading-5 text-gray-500">
+                      결제 완료 순으로 자리가 확정됩니다. 카드는 즉시 결제, 계좌이체는
+                      입금 확인 후 확정됩니다.
+                    </p>
+
+                    {!isReservationOnly && selectedTimeSlot && (
+                      <Button
+                        type="button"
+                        className="mb-3 w-full py-6 text-base font-extrabold bg-primary hover:bg-primary/90 text-primary-foreground shadow-md"
+                        disabled={!canSubmitApplication || isClassPgTestLoading}
+                        onClick={() => {
+                          console.log("[결제UX] 카드 결제 버튼 클릭", {
+                            className: selectedTimeSlot.name,
+                            price: selectedTimeSlot.price,
+                            canSubmit: canSubmitApplication,
+                          });
+                          void handleClassPgTestPayment();
+                        }}
+                        aria-label={cardPaymentLabel}
+                      >
+                        {isClassPgTestLoading
+                          ? "결제창 여는 중..."
+                          : cardPaymentLabel}
+                      </Button>
+                    )}
+
                     <div className="flex gap-3">
                     <Button
                       variant="outline"
-                      className="px-8 border-gray-300 text-gray-700 bg-transparent"
+                      className="px-5 border-gray-300 text-gray-700 bg-white"
                       onClick={handleBackToSchedule}
                     >
                       ← 이전
                     </Button>
                     <Button
-                      className={`flex-1 text-white ${
+                      className={`flex-1 font-bold ${
                         selectedTimeSlot &&
                         (isClassFull(selectedTimeSlot.name) ||
                           hasEnrollment(selectedTimeSlot.name))
-                          ? "bg-orange-500 hover:bg-orange-600"
-                          : "bg-[#10B981] hover:bg-[#059669]"
+                          ? "bg-orange-500 hover:bg-orange-600 text-white"
+                          : "bg-white hover:bg-slate-50 text-slate-800 border-2 border-slate-300"
                       }`}
+                      variant={
+                        selectedTimeSlot &&
+                        (isClassFull(selectedTimeSlot.name) ||
+                          hasEnrollment(selectedTimeSlot.name))
+                          ? "default"
+                          : "outline"
+                      }
                       disabled={
-                        !selectedTimeSlot ||
-                        !formData.name ||
-                        !formData.phone ||
-                        !formData.swimmingExperience ||
-                        !agreeAll ||
+                        !canSubmitApplication ||
                         isSubmitting
                       }
                       onClick={async () => {
@@ -6455,44 +6412,11 @@ export default function SwimmingClassPage() {
                         : paymentCtaLabel}
                     </Button>
                     </div>
-                    {showPgTest && selectedTimeSlot && (
-                      <div
-                        className="rounded-xl border-2 border-teal-500 bg-teal-50 p-4 sm:p-5 space-y-3 shadow-sm"
-                        role="complementary"
-                        aria-label="토스페이먼츠 카드 결제"
-                      >
-                        <p className="flex items-center justify-center gap-1.5 text-center text-lg sm:text-xl font-extrabold leading-snug text-teal-800">
-                          <AlertTriangle className="h-5 w-5 shrink-0" />
-                          카드 결제 (실제 출금)
-                        </p>
-                        <p className="text-center text-sm font-bold leading-relaxed text-teal-900">
-                          토스페이먼츠 카드 결제로 진행합니다.
-                        </p>
-                        <ul className="space-y-1 rounded-lg bg-white/90 px-3 py-2.5 text-xs sm:text-sm font-bold leading-5 text-teal-950">
-                          <li>· 결제 완료 시 카드에서 실제로 출금됩니다</li>
-                          <li>· 결제 성공 시 Notion·구글시트에 신청이 저장됩니다</li>
-                        </ul>
-                        <Button
-                          type="button"
-                          className="w-full py-3 text-sm sm:text-base bg-teal-600 hover:bg-teal-700 text-white font-bold"
-                          disabled={isClassPgTestLoading}
-                          onClick={() => {
-                            console.log(
-                              "[결제] 카드 결제 버튼 클릭 — 토스 라이브 결제창 요청",
-                              {
-                                className: selectedTimeSlot.name,
-                                price: selectedTimeSlot.price,
-                              },
-                            );
-                            void handleClassPgTestPayment();
-                          }}
-                          aria-label="토스페이먼츠 카드 결제하기"
-                        >
-                          {isClassPgTestLoading
-                            ? "결제창 여는 중..."
-                            : "카드로 결제하기"}
-                        </Button>
-                      </div>
+                    {!isReservationOnly && (
+                      <p className="mt-2 text-center text-[11px] leading-4 text-gray-400">
+                        계좌이체는 입금 안내 계좌로 송금하는 신청입니다. 카드 결제와
+                        다릅니다.
+                      </p>
                     )}
                   </div>
                 </div>

@@ -319,6 +319,10 @@ const PRODUCT_CATALOG: Record<
   },
 };
 
+/** 어항샷 샘플 영상 (유튜브) */
+const AQUARIUM_SHOT_YOUTUBE_ID = "d3UT4FzduME";
+const AQUARIUM_SHOT_EMBED_URL = `https://www.youtube.com/embed/${AQUARIUM_SHOT_YOUTUBE_ID}?autoplay=1&mute=1&loop=1&playlist=${AQUARIUM_SHOT_YOUTUBE_ID}&playsinline=1&rel=0&modestbranding=1`;
+
 const formatWon = (amount: number) => `₩${amount.toLocaleString()}`;
 
 /** 정가 취소선 + 할인가 표시 */
@@ -3226,6 +3230,39 @@ export default function SwimmingClassPage() {
                         알아야 가장 빠르게 좋아질 수 있습니다. 스윔잇은 수중
                         촬영과 현장 피드백으로 문제의 원인을 먼저 진단합니다.
                       </p>
+                    </div>
+
+                    {/* 어항샷 샘플 영상 — 진단 프로그램 설명 */}
+                    <div className="space-y-3 rounded-2xl border border-blue-100 bg-blue-50/50 p-4 shadow-sm">
+                      <div>
+                        <p className="text-base sm:text-lg font-bold text-gray-950">
+                          어항샷이란?
+                        </p>
+                        <p className="mt-1 text-sm leading-6 text-gray-700">
+                          위·아래를 동시에 찍어 저항이 보이게 촬영합니다.
+                          <br />
+                          영상을 기반으로 저항 분석 리포트를 드립니다.
+                        </p>
+                      </div>
+                      <div
+                        className="relative w-full overflow-hidden rounded-xl shadow-md"
+                        style={{ paddingBottom: "56.25%" }}
+                      >
+                        <iframe
+                          src={AQUARIUM_SHOT_EMBED_URL}
+                          title="스윔잇 어항샷 샘플"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allowFullScreen
+                          referrerPolicy="strict-origin-when-cross-origin"
+                          className="absolute inset-0 h-full w-full"
+                          onLoad={() =>
+                            console.log(
+                              "[어항샷] 샘플 영상 로드:",
+                              AQUARIUM_SHOT_YOUTUBE_ID,
+                            )
+                          }
+                        />
+                      </div>
                     </div>
 
                     {/* Process Section */}

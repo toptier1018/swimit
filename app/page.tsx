@@ -3194,6 +3194,23 @@ export default function SwimmingClassPage() {
                         문제는 운동신경이 아니라, 내 몸에서 생기는 저항을 아직
                         정확히 보지 못했기 때문일 수 있습니다.
                       </p>
+                      <Button
+                        size="lg"
+                        className="w-full text-base font-bold"
+                        onClick={() => {
+                          console.log(
+                            "[CTA] 문제 체크리스트 → 저항 없애러 가기(일정으로 이동)",
+                          );
+                          document
+                            .getElementById("schedule-section")
+                            ?.scrollIntoView({
+                              behavior: "smooth",
+                              block: "start",
+                            });
+                        }}
+                      >
+                        저항 없애러 가기
+                      </Button>
                     </div>
 
                     {/* Differentiation Section */}
@@ -3264,20 +3281,39 @@ export default function SwimmingClassPage() {
                     </div>
 
                     {/* Trust Metrics */}
-                    <div className="grid gap-3 rounded-2xl border border-blue-100 bg-blue-50 p-4 sm:grid-cols-4">
-                      {TRUST_METRICS.map((metric) => (
-                        <div
-                          key={metric.label}
-                          className="rounded-xl bg-white p-3 text-center shadow-sm"
-                        >
-                          <div className="text-lg font-black text-blue-700">
-                            {metric.value}
+                    <div className="space-y-3">
+                      <div className="grid gap-3 rounded-2xl border border-blue-100 bg-blue-50 p-4 sm:grid-cols-4">
+                        {TRUST_METRICS.map((metric) => (
+                          <div
+                            key={metric.label}
+                            className="rounded-xl bg-white p-3 text-center shadow-sm"
+                          >
+                            <div className="text-lg font-black text-blue-700">
+                              {metric.value}
+                            </div>
+                            <div className="mt-1 text-xs font-semibold leading-4 text-gray-600">
+                              {metric.label}
+                            </div>
                           </div>
-                          <div className="mt-1 text-xs font-semibold leading-4 text-gray-600">
-                            {metric.label}
-                          </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
+                      <Button
+                        size="lg"
+                        className="w-full text-base font-bold"
+                        onClick={() => {
+                          console.log(
+                            "[CTA] 신뢰 지표 → 저항 제로 특강 신청하기(일정으로 이동)",
+                          );
+                          document
+                            .getElementById("schedule-section")
+                            ?.scrollIntoView({
+                              behavior: "smooth",
+                              block: "start",
+                            });
+                        }}
+                      >
+                        저항 제로 특강 신청하기
+                      </Button>
                     </div>
                   </div>
                 </CardContent>

@@ -3970,12 +3970,12 @@ export default function SwimmingClassPage() {
                               setRegionError(false);
                               setCalendarMonth(classItem.month);
                               setCalendarYear(classItem.year);
-                              console.log("[일정 선택] 랜딩 일정 카드 선택:", {
+                              // 카드 클릭은 선택만 — 신청창은 아래 CTA에서 열림 (중복 패널 최소화)
+                              console.log("[일정 선택] 랜딩 일정 카드 선택(신청창 미오픈):", {
                                 id: classItem.id,
                                 location: classItem.location,
                                 date: classItem.date,
                               });
-                              handleRegistration();
                             }}
                             onKeyDown={(event) => {
                               if (event.key === "Enter" || event.key === " ") {
@@ -3989,7 +3989,11 @@ export default function SwimmingClassPage() {
                                 setRegionError(false);
                                 setCalendarMonth(classItem.month);
                                 setCalendarYear(classItem.year);
-                                handleRegistration();
+                                console.log("[일정 선택] 키보드로 일정 카드 선택(신청창 미오픈):", {
+                                  id: classItem.id,
+                                  location: classItem.location,
+                                  date: classItem.date,
+                                });
                               }
                             }}
                             className={`scroll-mt-24 cursor-pointer transition-all shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-primary ${
@@ -4177,17 +4181,15 @@ export default function SwimmingClassPage() {
               </button>
 
               {selectedScheduleClass && (
-                <div className="sticky top-0 z-[1] mb-4 rounded-xl border border-blue-100 bg-white/95 p-4 pr-12 shadow-sm backdrop-blur">
-                  <div className="text-xs font-bold text-primary">
-                    선택한 일정
-                  </div>
-                  <div className="mt-1 font-bold text-gray-900">
-                    {selectedScheduleClass.location}
-                  </div>
-                  {(selectedTimeSlot?.productName ||
-                    selectedProductType) && (
-                    <div className="mt-2 rounded-lg bg-blue-50 px-3 py-2 text-sm font-bold text-blue-900">
-                      상품:{" "}
+                <div className="mb-4 pr-10 text-sm leading-6 text-gray-800">
+                  <p className="font-semibold text-gray-900">
+                    <span className="text-primary">선택한 일정</span>
+                    <span className="mx-1.5 text-gray-300">·</span>
+                    {selectedScheduleClass.locationCode}{" "}
+                    {selectedScheduleClass.date}
+                  </p>
+                  {(selectedTimeSlot?.productName || selectedProductType) && (
+                    <p className="mt-0.5 text-gray-600">
                       {selectedTimeSlot?.productName ||
                         PRODUCT_CATALOG[selectedProductType!].name}
                       {selectedTimeSlot?.time
@@ -4198,30 +4200,8 @@ export default function SwimmingClassPage() {
                       {selectedTimeSlot?.price
                         ? ` · ₩${selectedTimeSlot.price.toLocaleString()}`
                         : ""}
-                    </div>
+                    </p>
                   )}
-                  <div className="mt-2 grid gap-1 text-sm text-gray-700 sm:grid-cols-2">
-                    <div>수영장: {selectedScheduleClass.venue}</div>
-                    <div>날짜: {selectedScheduleClass.date}</div>
-                    <div className="sm:col-span-2">
-                      <span className="font-semibold text-gray-900">시간</span>
-                      <div className="mt-1 space-y-1">
-                        {selectedScheduleClass.scheduleSummaryLines.map(
-                          (line) => (
-                            <p
-                              key={line}
-                              className="rounded-md bg-slate-50 px-2 py-1 text-sm leading-5 text-gray-800"
-                            >
-                              {line}
-                            </p>
-                          ),
-                        )}
-                      </div>
-                    </div>
-                    <div className="sm:col-span-2">
-                      주소: {selectedScheduleClass.address}
-                    </div>
-                  </div>
                 </div>
               )}
             <div className="mb-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4">

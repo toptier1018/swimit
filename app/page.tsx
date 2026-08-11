@@ -4658,30 +4658,11 @@ export default function SwimmingClassPage() {
                                         <p className="mt-2 text-sm leading-5 text-gray-600">
                                           {product.description}
                                         </p>
-                                        <details
-                                          className="mt-2"
-                                          onClick={(e) => e.stopPropagation()}
-                                          onToggle={(e) => {
-                                            console.log(
-                                              "[상품] 클래스 선택 자세히 보기:",
-                                              {
-                                                productType,
-                                                open: (
-                                                  e.target as HTMLDetailsElement
-                                                ).open,
-                                              },
-                                            );
-                                          }}
-                                        >
-                                          <summary className="cursor-pointer text-xs font-semibold text-blue-700">
-                                            포함 내용 자세히 보기
-                                          </summary>
-                                          <ul className="mt-1.5 space-y-0.5 text-xs leading-5 text-gray-600">
-                                            {product.includes.map((item) => (
-                                              <li key={item}>· {item}</li>
-                                            ))}
-                                          </ul>
-                                        </details>
+                                        <ul className="mt-2 space-y-0.5 text-xs leading-5 text-gray-600">
+                                          {product.includes.map((item) => (
+                                            <li key={item}>· {item}</li>
+                                          ))}
+                                        </ul>
                                         {product.couponNote ? (
                                           <p className="mt-2 text-xs font-semibold leading-5 text-orange-800">
                                             {product.couponNote}

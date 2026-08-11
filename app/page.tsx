@@ -3349,12 +3349,8 @@ export default function SwimmingClassPage() {
               <section className="order-5 w-full mt-6 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
                 <div className="mx-auto max-w-2xl">
                   <h3 className="text-lg sm:text-xl font-bold text-gray-900">
-                    문제 해결 중심 실제 후기
+                    실제 카톡 후기
                   </h3>
-                  <p className="mt-1 text-sm text-gray-600">
-                    "좋았다"보다 중요한 것은, 무엇이 문제였는지 알게 됐다는
-                    변화입니다.
-                  </p>
 
                   <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3 sm:p-4">
                     <div className="overflow-hidden rounded-xl bg-white">

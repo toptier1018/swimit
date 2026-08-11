@@ -1,18 +1,66 @@
 import { NextRequest, NextResponse } from "next/server";
-import { findCardOrderByTossOrderId } from "@/app/actions/notion";
+import {
+  findCardOrderByTossOrderId,
+  updatePaymentInNotion,
+} from "@/app/actions/notion";
 import {
   finalizeCardEnrollmentCore,
   isSwimmitClassCardOrderId,
 } from "@/lib/finalize-card-enrollment";
 import { notifyAdminPayment } from "@/lib/notify-admin-payment";
-import { parseCardPendingStatus } from "@/lib/toss-card-order-meta";
+import {
+  encodeCardPendingStatus,
+  parseCardPendingStatus,
+  shouldSkipAdminNotify,
+  type CardPendingMeta,
+} from "@/lib/toss-card-order-meta";
 import { fetchTossPaymentByKey } from "@/lib/toss-payment-query";
+
+/**
+ * Notion 카드 메타의 관리자 알림 상태만 갱신 (결제/시트와 분리)
+ */
+async function patchAdminNotifyMeta(params: {
+  pageId: string;
+  meta: CardPendingMeta;
+  selectedClass: string;
+  timeSlot: string;
+  region: string;
+  adminNotify?: CardPendingMeta["adminNotify"];
+  adminNotifyAt?: string;
+}): Promise<boolean> {
+  const next: CardPendingMeta = {
+    ...params.meta,
+    adminNotify: params.adminNotify,
+    adminNotifyAt: params.adminNotifyAt,
+  };
+  // 실패 시 ADMIN_NOTIFYING 제거용 — adminNotify undefined면 토큰 생략
+  if (!params.adminNotify) {
+    delete next.adminNotify;
+    delete next.adminNotifyAt;
+  }
+
+  const mark = await updatePaymentInNotion({
+    pageId: params.pageId,
+    virtualAccountInfo: encodeCardPendingStatus(next),
+    orderNumber: next.orderNumber,
+    selectedClass: params.selectedClass || next.tossOrderId,
+    timeSlot: params.timeSlot || "",
+    region: params.region || "",
+  });
+
+  if (!mark.success) {
+    console.error("[웹훅] 관리자알림 메타 저장 실패:", mark.error);
+    return false;
+  }
+  return true;
+}
 
 /**
  * Toss Payments 웹훅
  * - PAYMENT_STATUS_CHANGED
  * - 본문 미신뢰 → paymentKey로 GET /v1/payments/{paymentKey} 재조회
  * - 서명 헤더 검증 없음 (일반 결제 웹훅에는 해당 서명 방식 없음)
+ * - 관리자 카카오 알림은 이 라우트에서만 (success 페이지 미호출)
  */
 export async function POST(req: NextRequest) {
   const started = Date.now();
@@ -83,6 +131,7 @@ export async function POST(req: NextRequest) {
       status,
       totalAmount,
       paymentKeyPrefix: `${paymentKey.slice(0, 10)}…`,
+      hasApprovedAt: Boolean(payment.approvedAt),
     });
 
     // 2) 특강 카드 주문만
@@ -108,7 +157,7 @@ export async function POST(req: NextRequest) {
 
     // 4) Notion 주문·금액 검증
     const found = await findCardOrderByTossOrderId(orderId);
-    if (!found.success || !found.virtualAccountInfo) {
+    if (!found.success || !found.virtualAccountInfo || !found.pageId) {
       console.error("[웹훅] Notion 주문 없음 — 재시도:", orderId);
       return NextResponse.json(
         { received: false, error: "notion_order_not_found" },
@@ -140,12 +189,13 @@ export async function POST(req: NextRequest) {
     }
 
     // 5) 멱등 후처리 (sessionStorage 없이 Notion 복구)
+    //    approvedAt: 후처리 보조용 — 알림 표시는 payment.approvedAt만 사용
     const finalize = await finalizeCardEnrollmentCore({
       orderId,
       paymentKey,
       enrollment: null,
       allowMarkDoneFromWebhook: true,
-      approvedAt: payment.approvedAt || createdAt || new Date().toISOString(),
+      approvedAt: payment.approvedAt || createdAt || undefined,
     });
 
     console.log("[웹훅] 후처리 결과:", {
@@ -157,20 +207,145 @@ export async function POST(req: NextRequest) {
       elapsedMs: Date.now() - started,
     });
 
-    // 6) 관리자 알림 준비 (실제 발송 없음, NOTIFIED 상태 저장 안 함)
-    //    success 페이지에서는 호출하지 않음 — 웹훅만
+    // 6) 관리자 카카오 알림 (부가 기능 — 실패해도 웹훅 200, 결제 성공 유지)
+    let adminNotify: "sent" | "skipped" | "failed" | "not_attempted" =
+      "not_attempted";
+
     if (finalize.success && status === "DONE") {
-      await notifyAdminPayment({
-        customerName: finalize.customerName || found.applicant?.name || "",
-        phone: finalize.phone || found.applicant?.phone || "",
-        location: finalize.location || found.region || "",
-        classDate: finalize.classDate || "",
-        className: finalize.className || found.selectedClass || "",
-        amount: totalAmount,
-        approvedAt: payment.approvedAt || createdAt || new Date().toISOString(),
-        orderId,
-        paymentKey,
-      });
+      try {
+        // finalize가 메타를 다시 쓸 수 있으므로 최신 Notion 재조회
+        const latest = await findCardOrderByTossOrderId(orderId);
+        if (
+          !latest.success ||
+          !latest.pageId ||
+          !latest.virtualAccountInfo
+        ) {
+          console.error("[웹훅] 알림 전 Notion 재조회 실패 — 알림만 스킵");
+          adminNotify = "failed";
+        } else {
+          const latestMeta = parseCardPendingStatus(
+            latest.virtualAccountInfo,
+          );
+          if (!latestMeta || latestMeta.tossOrderId !== orderId) {
+            console.error("[웹훅] 알림 전 메타 파싱 실패 — 알림만 스킵");
+            adminNotify = "failed";
+          } else {
+            const skipCheck = shouldSkipAdminNotify(latestMeta);
+            if (skipCheck.skip) {
+              console.log("[웹훅] 관리자 알림 스킵:", {
+                reason: skipCheck.reason,
+                orderId,
+                orderNumber: latestMeta.orderNumber,
+              });
+              adminNotify = "skipped";
+            } else {
+              const notifyingAt = new Date().toISOString();
+              const locked = await patchAdminNotifyMeta({
+                pageId: latest.pageId,
+                meta: latestMeta,
+                selectedClass:
+                  latest.selectedClass ||
+                  finalize.className ||
+                  latestMeta.tossOrderId,
+                timeSlot: latest.timeSlot || "",
+                region:
+                  latest.region ||
+                  finalize.location ||
+                  "",
+                adminNotify: "ADMIN_NOTIFYING",
+                adminNotifyAt: notifyingAt,
+              });
+
+              if (!locked) {
+                console.error(
+                  "[웹훅] ADMIN_NOTIFYING 기록 실패 — 발송은 시도하지 않음(중복 위험 완화)",
+                );
+                adminNotify = "failed";
+              } else {
+                // 알 수 없는 특강 날짜는 추측하지 않고 생략
+                const classDate = (finalize.classDate || "").trim();
+
+                const notifyResult = await notifyAdminPayment({
+                  customerName:
+                    finalize.customerName ||
+                    latest.applicant?.name ||
+                    "",
+                  phone:
+                    finalize.phone || latest.applicant?.phone || "",
+                  location:
+                    finalize.location ||
+                    latest.region ||
+                    latest.applicant?.location ||
+                    "",
+                  classDate,
+                  className:
+                    finalize.className || latest.selectedClass || "",
+                  amount: totalAmount,
+                  // 승인 시각: Toss approvedAt만 (없으면 메시지에서 시간 줄 생략)
+                  approvedAt: payment.approvedAt || "",
+                  orderId,
+                  paymentKey,
+                  orderNumber: latestMeta.orderNumber,
+                });
+
+                if (notifyResult.success) {
+                  const notifiedAt = new Date().toISOString();
+                  const saved = await patchAdminNotifyMeta({
+                    pageId: latest.pageId,
+                    meta: {
+                      ...latestMeta,
+                      paymentKey:
+                        paymentKey || latestMeta.paymentKey,
+                    },
+                    selectedClass:
+                      latest.selectedClass ||
+                      finalize.className ||
+                      latestMeta.tossOrderId,
+                    timeSlot: latest.timeSlot || "",
+                    region:
+                      latest.region || finalize.location || "",
+                    adminNotify: "ADMIN_NOTIFIED",
+                    adminNotifyAt: notifiedAt,
+                  });
+                  if (!saved) {
+                    console.error(
+                      "[웹훅] 카카오는 성공했지만 ADMIN_NOTIFIED 저장 실패 — 재전송 시 중복 알림 가능",
+                      { orderId, orderNumber: latestMeta.orderNumber },
+                    );
+                  }
+                  adminNotify = "sent";
+                } else {
+                  // ADMIN_NOTIFIED 저장 금지 — NOTIFYING 해제해 재시도 가능하게
+                  await patchAdminNotifyMeta({
+                    pageId: latest.pageId,
+                    meta: latestMeta,
+                    selectedClass:
+                      latest.selectedClass ||
+                      finalize.className ||
+                      latestMeta.tossOrderId,
+                    timeSlot: latest.timeSlot || "",
+                    region:
+                      latest.region || finalize.location || "",
+                    adminNotify: undefined,
+                    adminNotifyAt: undefined,
+                  });
+                  console.error(
+                    "[웹훅] 관리자 알림 실패 (결제는 성공 유지):",
+                    notifyResult.error,
+                  );
+                  adminNotify = "failed";
+                }
+              }
+            }
+          }
+        }
+      } catch (notifyError) {
+        console.error(
+          "[웹훅] 관리자 알림 예외 (결제는 성공 유지):",
+          notifyError,
+        );
+        adminNotify = "failed";
+      }
     }
 
     return NextResponse.json({
@@ -179,6 +354,7 @@ export async function POST(req: NextRequest) {
       orderId,
       status,
       enrollSaved: finalize.enrollSaved,
+      adminNotify,
       elapsedMs: Date.now() - started,
     });
   } catch (error) {

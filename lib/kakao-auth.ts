@@ -72,7 +72,7 @@ export async function getKakaoAccessTokenFromRefresh(): Promise<KakaoAccessToken
   const refreshTokenRotated = typeof json.refresh_token === "string";
   if (refreshTokenRotated) {
     console.warn(
-      "[카카오토큰] 카카오 Refresh Token 갱신이 필요합니다. Vercel의 KAKAO_REFRESH_TOKEN을 새 값으로 교체하세요. (토큰 값은 로그에 출력하지 않음)",
+      "[카카오토큰] KAKAO_REFRESH_TOKEN_ROTATION_REQUIRED — Vercel의 KAKAO_REFRESH_TOKEN을 새 값으로 교체하세요. (토큰 값은 로그에 출력하지 않음)",
     );
   } else {
     console.log("[카카오토큰] Access Token 발급 성공", {

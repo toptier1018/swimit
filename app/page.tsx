@@ -307,7 +307,7 @@ const PRODUCT_CATALOG: Record<
     strokeCount: 2,
     buttonLabel: "내 수영 저항 진단받기",
     description:
-      "어항샷으로 저항 원인을 확인합니다. 교정 수업이 아닙니다.",
+      "어항샷으로 저항 원인을 확인합니다.",
     includes: [
       "디테일 어항샷 촬영",
       "저항 분석 리포트",
@@ -3402,11 +3402,16 @@ export default function SwimmingClassPage() {
               >
                 <div className="space-y-4">
                   <div className="space-y-1.5">
+                    <p className="text-xs font-bold tracking-wide text-blue-700 sm:text-sm">
+                      스윔잇 저항 진단 프로그램 OPEN
+                    </p>
                     <p className="text-[17px] font-bold leading-snug text-gray-950 sm:text-lg">
-                      내 수영 상태가 궁금하신가요?
+                      내 수영 저항 상태 부터 보고 싶으신가요?
                     </p>
                     <p className="text-sm leading-6 text-gray-700 sm:text-[15px]">
-                      정밀한 어항샷 기반으로 저항 진단 해드립니다.
+                      정밀 어항샷 기반으로
+                      <br />
+                      저항 진단 리포트를 제공합니다.
                     </p>
                   </div>
 
@@ -3454,7 +3459,7 @@ export default function SwimmingClassPage() {
                         });
                     }}
                   >
-                    진단 프로그램 신청 하러가기
+                    저항 진단 프로그램 신청하기
                   </Button>
 
                   <ul className="space-y-1.5 rounded-xl border border-blue-100 bg-blue-50/60 px-3.5 py-3 text-sm font-bold leading-6 text-blue-700">
@@ -5098,8 +5103,7 @@ export default function SwimmingClassPage() {
                                           {selectedClassDiagnosis.lanes.join(
                                             "·",
                                           )}{" "}
-                                          어항샷 촬영 + 저항 분석 리포트.
-                                          교정 수업이 아닙니다.
+                                          어항샷으로 저항 원인을 확인합니다.
                                         </div>
                                       </div>
                                       <div className="mt-4 flex flex-wrap items-center justify-between gap-2">

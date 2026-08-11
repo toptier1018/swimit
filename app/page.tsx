@@ -5770,31 +5770,10 @@ export default function SwimmingClassPage() {
                     </div>
                   )}
                   <div className="sticky bottom-0 z-20 -mx-4 mt-6 border-t border-slate-200 bg-white/95 px-4 py-4 shadow-[0_-8px_24px_rgba(15,23,42,0.08)] backdrop-blur sm:static sm:mx-0 sm:rounded-2xl sm:border sm:shadow-sm">
-                    <p className="mb-3 text-center text-xs font-medium leading-5 text-gray-500">
-                      결제 완료 순으로 자리가 확정됩니다. 카드는 즉시 결제, 계좌이체는
-                      입금 확인 후 확정됩니다.
+                    <p className="mb-3 text-center text-xs font-medium leading-5 text-gray-600">
+                      계좌이체 신청을 먼저 권장합니다. 입금 확인 후 자리가 확정되며,
+                      카드 결제도 가능합니다.
                     </p>
-
-                    {!isReservationOnly && selectedTimeSlot && (
-                      <Button
-                        type="button"
-                        className="mb-3 w-full py-6 text-base font-extrabold bg-primary hover:bg-primary/90 text-primary-foreground shadow-md"
-                        disabled={!canSubmitApplication || isClassPgTestLoading}
-                        onClick={() => {
-                          console.log("[결제UX] 카드 결제 버튼 클릭", {
-                            className: selectedTimeSlot.name,
-                            price: selectedTimeSlot.price,
-                            canSubmit: canSubmitApplication,
-                          });
-                          void handleClassPgTestPayment();
-                        }}
-                        aria-label={cardPaymentLabel}
-                      >
-                        {isClassPgTestLoading
-                          ? "결제창 여는 중..."
-                          : cardPaymentLabel}
-                      </Button>
-                    )}
 
                     <div className="flex gap-3">
                     <Button
@@ -5805,20 +5784,14 @@ export default function SwimmingClassPage() {
                       ← 이전
                     </Button>
                     <Button
-                      className={`flex-1 font-bold ${
+                      className={`flex-1 py-6 text-base font-extrabold shadow-md ${
                         selectedTimeSlot &&
                         (isClassFull(selectedTimeSlot.name) ||
                           hasEnrollment(selectedTimeSlot.name))
                           ? "bg-orange-500 hover:bg-orange-600 text-white"
-                          : "bg-white hover:bg-slate-50 text-slate-800 border-2 border-slate-300"
+                          : "bg-primary hover:bg-primary/90 text-primary-foreground"
                       }`}
-                      variant={
-                        selectedTimeSlot &&
-                        (isClassFull(selectedTimeSlot.name) ||
-                          hasEnrollment(selectedTimeSlot.name))
-                          ? "default"
-                          : "outline"
-                      }
+                      variant="default"
                       disabled={
                         !canSubmitApplication ||
                         isSubmitting
@@ -5843,6 +5816,11 @@ export default function SwimmingClassPage() {
                         }
                         setRegionError(false);
 
+                        console.log("[결제UX] 계좌이체(우선) 버튼 클릭", {
+                          className: selectedTimeSlot?.name,
+                          price: selectedTimeSlot?.price,
+                          label: paymentCtaLabel,
+                        });
                         incrementFunnelCount(3, "결제하기 버튼 클릭");
                         markFunnelStep(3);
 
@@ -6407,10 +6385,32 @@ export default function SwimmingClassPage() {
                         : paymentCtaLabel}
                     </Button>
                     </div>
+
+                    {!isReservationOnly && selectedTimeSlot && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="mt-3 w-full border-2 border-slate-300 bg-white py-5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                        disabled={!canSubmitApplication || isClassPgTestLoading}
+                        onClick={() => {
+                          console.log("[결제UX] 카드 결제(보조) 버튼 클릭", {
+                            className: selectedTimeSlot.name,
+                            price: selectedTimeSlot.price,
+                            canSubmit: canSubmitApplication,
+                          });
+                          void handleClassPgTestPayment();
+                        }}
+                        aria-label={cardPaymentLabel}
+                      >
+                        {isClassPgTestLoading
+                          ? "결제창 여는 중..."
+                          : cardPaymentLabel}
+                      </Button>
+                    )}
                     {!isReservationOnly && (
                       <p className="mt-2 text-center text-[11px] leading-4 text-gray-400">
-                        계좌이체는 입금 안내 계좌로 송금하는 신청입니다. 카드 결제와
-                        다릅니다.
+                        카드는 즉시 결제됩니다. 가능하면 위의 계좌이체를 이용해
+                        주세요.
                       </p>
                     )}
                   </div>

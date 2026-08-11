@@ -319,10 +319,6 @@ const PRODUCT_CATALOG: Record<
   },
 };
 
-/** 어항샷 샘플 영상 (유튜브) */
-const AQUARIUM_SHOT_YOUTUBE_ID = "d3UT4FzduME";
-const AQUARIUM_SHOT_EMBED_URL = `https://www.youtube.com/embed/${AQUARIUM_SHOT_YOUTUBE_ID}?autoplay=1&mute=1&loop=1&playlist=${AQUARIUM_SHOT_YOUTUBE_ID}&playsinline=1&rel=0&modestbranding=1`;
-
 const formatWon = (amount: number) => `₩${amount.toLocaleString()}`;
 
 /** 정가 취소선 + 할인가 표시 */
@@ -350,16 +346,6 @@ const ProductPriceLabel = ({
       {badge}
     </span>
   </span>
-);
-
-/** 1만원 쿠폰 강조 배지 (모바일에서도 잘 보이게) */
-const CouponHighlight = ({ note }: { note: string }) => (
-  <div className="mt-2.5 rounded-lg border-2 border-orange-400 bg-orange-50 px-3 py-2.5 text-sm font-extrabold leading-5 text-orange-950 shadow-sm">
-    <span className="mr-1.5 inline-block rounded bg-orange-500 px-1.5 py-0.5 text-[11px] font-bold text-white">
-      쿠폰
-    </span>
-    {note}
-  </div>
 );
 
 const getDongtanDiagnosisEnrollmentKey = () => "[동탄 8/23] 2부 진단";
@@ -2014,16 +2000,6 @@ export default function SwimmingClassPage() {
   const activeDongtanDualClass = activeClasses.find((classItem) =>
     isDongtanDualProductClass(classItem.id),
   );
-  /** 저항 진단 프로그램을 모집 중인 일정 (동탄 2부 · 목동 1부 5·6 · 부산 1부 4·5) */
-  const activeDiagnosisClasses = activeClasses
-    .map((classItem) => ({
-      classItem,
-      offering: getDiagnosisOfferingForClass(classItem.id),
-    }))
-    .filter(
-      (entry): entry is { classItem: ClassItem; offering: DiagnosisOffering } =>
-        entry.offering !== null,
-    );
   const selectedClassDiagnosis = Number.isFinite(selectedClassIdNum)
     ? getDiagnosisOfferingForClass(selectedClassIdNum)
     : null;
@@ -2208,51 +2184,6 @@ export default function SwimmingClassPage() {
     console.log("[상품] 신청 영역 닫기 — 상품·영법 선택 초기화");
   };
 
-  const startDongtanProductApplication = (productType: ProductType) => {
-    const dongtan = getActiveClasses().find((c) =>
-      isDongtanDualProductClass(c.id),
-    );
-    if (!dongtan) {
-      toast({
-        title: "동탄 일정을 찾을 수 없습니다",
-        description: "모집 중인 동탄 특강이 없습니다.",
-        variant: "destructive",
-      });
-      return;
-    }
-    console.log("[상품] 동탄 상품 전환:", {
-      from: selectedProductType,
-      to: productType,
-      prevSlot: selectedTimeSlot?.name ?? null,
-    });
-    setSelectedClass(String(dongtan.id));
-    setPaidPageId(null);
-    setOrderNumber("");
-    setRegionError(false);
-    setCalendarMonth(dongtan.month);
-    setCalendarYear(dongtan.year);
-    setActiveScheduleMonth(dongtan.month);
-    setDiagnosisStrokes([]);
-
-    // 이전 상품(제로↔진단) 선택을 완전히 비운 뒤 새 상품 적용
-    if (productType === "diagnosis") {
-      applyDiagnosisProductSelection(dongtan.id);
-    } else {
-      setSelectedProductType("zero");
-      setSelectedTimeSlot(null);
-      console.log("[상품] 저항 제로 특강으로 전환 — 영법 선택 대기");
-    }
-
-    handleRegistration();
-    window.setTimeout(() => {
-      applicationSectionRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-      console.log("[상품] 신청 영역으로 스크롤:", productType);
-    }, 120);
-  };
-
   const applyZeroStrokeSelection = (stroke: StrokeType) => {
     const product = PRODUCT_CATALOG.zero;
     const classKey = makeClassKey(
@@ -2317,51 +2248,6 @@ export default function SwimmingClassPage() {
       strokes: [],
     });
     setStep(3);
-  };
-
-  /** 진단 프로그램 신청 시작 (동탄=2부 단독, 목동=1부 5·6레인) */
-  const startDiagnosisApplication = (classId: number) => {
-    const classItem = getActiveClasses().find((c) => c.id === classId);
-    const offering = getDiagnosisOfferingForClass(classId);
-    if (!classItem || !offering) {
-      toast({
-        title: "진단 일정을 찾을 수 없습니다",
-        description: "모집 중인 저항 진단 프로그램이 없습니다.",
-        variant: "destructive",
-      });
-      console.warn("[상품] 진단 일정 없음:", classId);
-      return;
-    }
-
-    if (isDongtanDualProductClass(classId)) {
-      startDongtanProductApplication("diagnosis");
-      return;
-    }
-
-    console.log("[상품] 진단 프로그램 신청 시작:", {
-      classId,
-      location: classItem.locationCode,
-      date: classItem.date,
-      session: offering.session,
-      lanes: offering.lanes,
-      classKey: offering.enrollmentKey,
-    });
-    setSelectedClass(String(classId));
-    setPaidPageId(null);
-    setOrderNumber("");
-    setRegionError(false);
-    setCalendarMonth(classItem.month);
-    setCalendarYear(classItem.year);
-    setActiveScheduleMonth(classItem.month);
-    applyDiagnosisProductSelection(classId);
-    handleRegistration();
-    window.setTimeout(() => {
-      applicationSectionRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-      console.log("[상품] 신청 영역으로 스크롤:", classItem.locationCode);
-    }, 120);
   };
 
   const selectedScheduleForPayment = selectedClass
@@ -3289,7 +3175,7 @@ export default function SwimmingClassPage() {
                         입니다.
                       </p>
 
-                      <div className="grid gap-2 sm:grid-cols-2">
+                      <div className="grid gap-2">
                         <Button
                           size="lg"
                           className="w-full text-base font-bold"
@@ -3304,22 +3190,6 @@ export default function SwimmingClassPage() {
                           }}
                         >
                           가장 가까운 지역 특강 보기
-                        </Button>
-                        <Button
-                          size="lg"
-                          variant="outline"
-                          className="w-full border-blue-200 bg-white text-base font-bold text-blue-700 hover:bg-blue-50"
-                          onClick={() => {
-                            console.log("[CTA] Hero 상품 선택으로 이동");
-                            document
-                              .getElementById("product-section")
-                              ?.scrollIntoView({
-                                behavior: "smooth",
-                                block: "start",
-                              });
-                          }}
-                        >
-                          어떤 도움이 필요하신가요?
                         </Button>
                       </div>
 
@@ -3354,174 +3224,6 @@ export default function SwimmingClassPage() {
                       <p className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold leading-6 text-white">
                         문제는 운동신경이 아니라, 내 몸에서 생기는 저항을 아직
                         정확히 보지 못했기 때문일 수 있습니다.
-                      </p>
-                    </div>
-
-                    {/* Product picker — 동탄 이중 상품 안내 */}
-                    <div
-                      id="product-section"
-                      className="scroll-mt-4 space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5"
-                    >
-                      <div>
-                        <h3 className="text-xl font-bold text-gray-950 sm:text-2xl">
-                          어떤 도움이 필요하신가요?
-                        </h3>
-                        <p className="mt-1 text-sm text-gray-600">
-                          어항샷 저항 진단 프로그램은{" "}
-                          {activeDiagnosisClasses.length > 0
-                            ? activeDiagnosisClasses
-                                .map(({ classItem }) =>
-                                  getScheduleShortLabel(classItem),
-                                )
-                                .join(" · ")
-                            : "동탄"}{" "}
-                          일정에서 신청할 수 있습니다.
-                        </p>
-                      </div>
-                      <div className="grid gap-3">
-                        {(["zero", "diagnosis"] as ProductType[]).map(
-                          (productType) => {
-                            const product = PRODUCT_CATALOG[productType];
-                            return (
-                              <div
-                                key={productType}
-                                className={`flex flex-col rounded-xl border p-3.5 sm:p-4 ${
-                                  selectedProductType === productType
-                                    ? "border-primary border-2 bg-primary/5 shadow-sm"
-                                    : "border-slate-200 bg-slate-50/80"
-                                }`}
-                              >
-                                <div className="flex flex-wrap items-center gap-2">
-                                  <span className="rounded-full bg-blue-600 px-2 py-0.5 text-[11px] font-bold text-white">
-                                    {product.tag}
-                                  </span>
-                                  <span className="text-base font-extrabold text-gray-950">
-                                    {product.name}
-                                  </span>
-                                </div>
-                                {productType === "diagnosis" &&
-                                activeDiagnosisClasses.length > 0 ? (
-                                  <div className="mt-1.5 space-y-0.5">
-                                    {activeDiagnosisClasses.map(
-                                      ({ classItem, offering }) => (
-                                        <p
-                                          key={classItem.id}
-                                          className="text-sm font-bold text-blue-800"
-                                        >
-                                          {getScheduleShortLabel(classItem)} ·{" "}
-                                          {getSessionNumberLabel(
-                                            offering.session,
-                                          )}{" "}
-                                          {offering.time.replace(/\s/g, "")}
-                                        </p>
-                                      ),
-                                    )}
-                                  </div>
-                                ) : (
-                                  <p className="mt-1.5 text-sm font-bold text-blue-800">
-                                    {product.timeLabel}
-                                  </p>
-                                )}
-                                <div className="mt-1">
-                                  <ProductPriceLabel
-                                    price={product.price}
-                                    originalPrice={product.originalPrice}
-                                    badge={product.priceBadge}
-                                  />
-                                </div>
-                                <p className="mt-2 text-sm leading-5 text-gray-700">
-                                  {product.description}
-                                </p>
-                                <ul className="mt-2.5 space-y-0.5 text-xs leading-5 text-gray-600">
-                                  {product.includes.map((item) => (
-                                    <li key={item}>· {item}</li>
-                                  ))}
-                                </ul>
-                                {product.couponNote && (
-                                  <CouponHighlight note={product.couponNote} />
-                                )}
-                                {productType === "diagnosis" ? (
-                                  <Button
-                                    className="mt-3 w-full font-bold"
-                                    onClick={() => {
-                                      console.log(
-                                        "[상품] 진단 공통 신청 버튼 클릭",
-                                        {
-                                          activeCount:
-                                            activeDiagnosisClasses.length,
-                                          firstId:
-                                            activeDiagnosisClasses[0]
-                                              ?.classItem.id ?? null,
-                                        },
-                                      );
-                                      startDiagnosisApplication(
-                                        activeDiagnosisClasses[0]?.classItem
-                                          .id ?? DONGTAN_AUGUST_CLASS_ID,
-                                      );
-                                    }}
-                                  >
-                                    {product.buttonLabel}
-                                  </Button>
-                                ) : (
-                                  <Button
-                                    className="mt-3 w-full font-bold"
-                                    onClick={() => {
-                                      startDongtanProductApplication(
-                                        productType,
-                                      );
-                                    }}
-                                  >
-                                    {product.buttonLabel}
-                                  </Button>
-                                )}
-                              </div>
-                            );
-                          },
-                        )}
-                      </div>
-
-                      {/* 어항샷 샘플 영상 — 진단 프로그램용 */}
-                      <div className="space-y-2 rounded-xl border border-blue-100 bg-blue-50/50 p-3">
-                        <div>
-                          <p className="text-sm font-bold text-gray-950">
-                            어항샷이란?
-                          </p>
-                          <p className="mt-0.5 text-xs leading-5 text-gray-700 sm:text-sm">
-                            위·아래를 동시에 찍어 저항이 보이게 촬영합니다.
-                            <br />
-                            영상을 기반으로 저항 분석 리포트를 드립니다.
-                          </p>
-                        </div>
-                        <div
-                          className="relative w-full overflow-hidden rounded-lg shadow-md"
-                          style={{ paddingBottom: "56.25%" }}
-                        >
-                          <iframe
-                            src={AQUARIUM_SHOT_EMBED_URL}
-                            title="스윔잇 어항샷 샘플"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                            allowFullScreen
-                            referrerPolicy="strict-origin-when-cross-origin"
-                            className="absolute inset-0 h-full w-full"
-                            onLoad={() =>
-                              console.log(
-                                "[어항샷] 샘플 영상 로드:",
-                                AQUARIUM_SHOT_YOUTUBE_ID,
-                              )
-                            }
-                          />
-                        </div>
-                      </div>
-
-                      <div className="rounded-lg border-2 border-orange-400 bg-orange-50 px-3 py-2.5 text-sm font-extrabold leading-5 text-orange-950">
-                        <span className="mr-1.5 inline-block rounded bg-orange-500 px-1.5 py-0.5 text-[11px] font-bold text-white">
-                          쿠폰
-                        </span>
-                        이후 저항 제로 특강 수강 시 1만원 할인 쿠폰 제공
-                      </div>
-                      <p className="text-xs leading-5 text-gray-600 sm:text-sm">
-                        진단은 어항샷 분석, 제로는 Before/After 수중 촬영
-                        교정입니다.
                       </p>
                     </div>
 
@@ -4983,8 +4685,9 @@ export default function SwimmingClassPage() {
                           if (!selectedProductType) {
                             return (
                               <div className="space-y-4">
-                                <p className="text-sm text-gray-700">
-                                  동탄 일정은 상품을 먼저 선택해주세요.
+                                <p className="text-sm font-medium text-gray-700">
+                                  영법 특강 또는 저항 진단 프로그램을
+                                  선택해주세요.
                                 </p>
                                 <div className="grid gap-3 sm:grid-cols-2">
                                   {(
@@ -4998,7 +4701,7 @@ export default function SwimmingClassPage() {
                                         type="button"
                                         onClick={() => {
                                           console.log(
-                                            "[상품] 신청폼에서 상품 선택:",
+                                            "[상품] 클래스 선택에서 상품 선택:",
                                             productType,
                                           );
                                           if (productType === "diagnosis") {
@@ -5030,19 +4733,41 @@ export default function SwimmingClassPage() {
                                             badge={product.priceBadge}
                                           />
                                         </div>
-                                        <p className="mt-2 text-sm text-gray-600">
+                                        <p className="mt-2 text-sm leading-5 text-gray-600">
                                           {product.description}
                                         </p>
+                                        <details
+                                          className="mt-2"
+                                          onClick={(e) => e.stopPropagation()}
+                                          onToggle={(e) => {
+                                            console.log(
+                                              "[상품] 클래스 선택 자세히 보기:",
+                                              {
+                                                productType,
+                                                open: (
+                                                  e.target as HTMLDetailsElement
+                                                ).open,
+                                              },
+                                            );
+                                          }}
+                                        >
+                                          <summary className="cursor-pointer text-xs font-semibold text-blue-700">
+                                            포함 내용 자세히 보기
+                                          </summary>
+                                          <ul className="mt-1.5 space-y-0.5 text-xs leading-5 text-gray-600">
+                                            {product.includes.map((item) => (
+                                              <li key={item}>· {item}</li>
+                                            ))}
+                                          </ul>
+                                        </details>
+                                        {product.couponNote ? (
+                                          <p className="mt-2 text-xs font-semibold leading-5 text-orange-800">
+                                            {product.couponNote}
+                                          </p>
+                                        ) : null}
                                       </button>
                                     );
                                   })}
-                                </div>
-                                <div className="rounded-lg border-2 border-orange-400 bg-orange-50 px-3 py-2.5 text-sm font-extrabold leading-5 text-orange-950">
-                                  <span className="mr-1.5 inline-block rounded bg-orange-500 px-1.5 py-0.5 text-[11px] font-bold text-white">
-                                    쿠폰
-                                  </span>
-                                  이후 저항 제로 특강 수강 시 1만원 할인 쿠폰
-                                  제공
                                 </div>
                                 <p className="text-xs leading-5 text-gray-600 sm:text-sm">
                                   진단은 어항샷 분석, 제로는 Before/After 수중
@@ -5213,6 +4938,18 @@ export default function SwimmingClassPage() {
 
                         return (
                           <div className="space-y-4">
+                            {selectedClassDiagnosis ? (
+                              <div className="space-y-1">
+                                <p className="text-sm font-medium text-gray-700">
+                                  영법 특강 또는 저항 진단 프로그램을
+                                  선택해주세요.
+                                </p>
+                                <p className="text-xs leading-5 text-gray-600 sm:text-sm">
+                                  진단은 어항샷 분석, 제로는 Before/After 수중
+                                  촬영 교정입니다.
+                                </p>
+                              </div>
+                            ) : null}
                             <div className="rounded-lg bg-slate-50 px-4 py-3 text-sm text-gray-700">
                               <span className="font-bold text-gray-900">
                                 {strokeSchedule.session}

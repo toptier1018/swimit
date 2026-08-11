@@ -4,6 +4,11 @@ import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { updatePaymentInNotion } from "@/app/actions/notion";
+import {
+  clearPendingCardEnrollment,
+  loadPendingCardEnrollment,
+} from "@/lib/card-enrollment";
 
 function SuccessContent() {
   const params = useSearchParams();
@@ -14,6 +19,8 @@ function SuccessContent() {
   const [status, setStatus] = useState<"loading" | "ok" | "error">("loading");
   const [errorMsg, setErrorMsg] = useState("");
   const [orderName, setOrderName] = useState("");
+  const [savedOrderNumber, setSavedOrderNumber] = useState("");
+  const [enrollSaved, setEnrollSaved] = useState(false);
 
   useEffect(() => {
     if (!paymentKey || !orderId || !amount) {
@@ -36,24 +43,128 @@ function SuccessContent() {
       });
       const data = await res.json();
 
-      if (data.success) {
-        const name =
-          typeof data.payment?.orderName === "string"
-            ? data.payment.orderName
-            : "";
-        console.log("[결제완료] 결제 승인 완료:", {
-          orderId: data.payment?.orderId,
-          status: data.payment?.status,
-          method: data.payment?.method,
-          totalAmount: data.payment?.totalAmount,
-          orderName: name,
-        });
-        setOrderName(name);
-        setStatus("ok");
-      } else {
+      if (!data.success) {
         console.error("[결제완료] 승인 실패:", data.error);
         setStatus("error");
         setErrorMsg(data.error ?? "승인 처리 중 오류가 발생했습니다.");
+        return;
+      }
+
+      const name =
+        typeof data.payment?.orderName === "string"
+          ? data.payment.orderName
+          : "";
+      console.log("[결제완료] 결제 승인 완료:", {
+        orderId: data.payment?.orderId,
+        status: data.payment?.status,
+        method: data.payment?.method,
+        totalAmount: data.payment?.totalAmount,
+        orderName: name,
+      });
+      setOrderName(name);
+
+      const pending = loadPendingCardEnrollment(orderId);
+      if (!pending) {
+        console.warn(
+          "[카드신청] 결제 승인은 됐지만 신청 임시 데이터가 없어 Notion/시트 저장을 건너뜁니다.",
+        );
+        setEnrollSaved(false);
+        setStatus("ok");
+        return;
+      }
+
+      try {
+        console.log("[카드신청] Notion·시트 저장 시작:", {
+          pageId: pending.pageId,
+          orderNumber: pending.orderNumber,
+          className: pending.selectedClassName,
+        });
+
+        const notionUpdate = await updatePaymentInNotion({
+          pageId: pending.pageId,
+          virtualAccountInfo: "결제완료",
+          orderNumber: pending.orderNumber,
+          selectedClass: pending.selectedClassName,
+          timeSlot: pending.timeSlot,
+          region: pending.region,
+          paymentStartedAt: pending.paymentStartedAt,
+          traffic: pending.traffic,
+        });
+
+        if (!notionUpdate.success) {
+          console.error("[카드신청] Notion 업데이트 실패:", notionUpdate.error);
+          setEnrollSaved(false);
+          setSavedOrderNumber(pending.orderNumber);
+          setStatus("ok");
+          setErrorMsg("");
+          // 결제는 됐으므로 ok로 두되 안내
+          console.warn("[카드신청] 결제는 완료, Notion 저장만 실패");
+        } else {
+          console.log("[카드신청] Notion 결제완료 반영:", pending.orderNumber);
+        }
+
+        const sheetResponse = await fetch("/api/sheets/append", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            접수일시: pending.sheetTimestamp,
+            신청번호: pending.orderNumber,
+            이름: pending.form.name,
+            전화번호: "'" + pending.form.phone.replace(/-/g, ""),
+            이메일: pending.form.email || "",
+            성별: pending.form.gender === "male" ? "남성" : "여성",
+            거주지역: pending.form.location,
+            수영경력: pending.form.swimmingExperience || "",
+            통증부위: (pending.form.painAreas || []).join(", "),
+            해결문제: pending.form.message || "",
+            클래스: pending.classSheetLabel,
+            회차: pending.sessionLabel,
+            레인: pending.lane,
+            날짜: pending.classDate,
+            특강지역: pending.region,
+            예약상태: "결제완료",
+            ...pending.traffic,
+          }),
+        });
+        const sheetResult = await sheetResponse.json().catch(() => null);
+
+        if (!sheetResponse.ok || !sheetResult?.success) {
+          console.error(
+            "[카드신청] 구글시트 저장 실패:",
+            sheetResult?.error || sheetResponse.status,
+          );
+          setEnrollSaved(Boolean(notionUpdate.success));
+        } else {
+          console.log("[카드신청] 구글시트 저장 완료:", pending.orderNumber);
+          setEnrollSaved(true);
+        }
+
+        // 정원 카운터(로컬) 증가 — 메인과 동일 키
+        try {
+          const raw = localStorage.getItem("class_enrollment_counts");
+          const counts = raw ? (JSON.parse(raw) as Record<string, number>) : {};
+          const className = pending.selectedClassName;
+          counts[className] = (counts[className] || 0) + 1;
+          localStorage.setItem(
+            "class_enrollment_counts",
+            JSON.stringify(counts),
+          );
+          console.log("[카드신청] 로컬 정원 카운트 +1:", {
+            className,
+            count: counts[className],
+          });
+        } catch (countError) {
+          console.warn("[카드신청] 로컬 정원 카운트 갱신 실패:", countError);
+        }
+
+        setSavedOrderNumber(pending.orderNumber);
+        clearPendingCardEnrollment();
+        setStatus("ok");
+      } catch (error) {
+        console.error("[카드신청] Notion/시트 저장 예외:", error);
+        setEnrollSaved(false);
+        setSavedOrderNumber(pending.orderNumber);
+        setStatus("ok");
       }
     };
 
@@ -63,7 +174,9 @@ function SuccessContent() {
   if (status === "loading")
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-50 to-blue-50">
-        <p className="text-gray-500 text-sm animate-pulse">결제 확인 중...</p>
+        <p className="text-gray-500 text-sm animate-pulse">
+          결제 확인 및 신청 저장 중...
+        </p>
       </div>
     );
 
@@ -91,8 +204,25 @@ function SuccessContent() {
             </>
           ) : null}
         </p>
+        {enrollSaved ? (
+          <p className="text-sm font-semibold text-teal-800">
+            신청 정보가 Notion·구글시트에 저장되었습니다.
+          </p>
+        ) : (
+          <p className="text-sm font-semibold text-amber-800">
+            결제는 완료됐지만 신청 저장을 확인하지 못했습니다. 고객센터(@스윔잇)로
+            문의해 주세요.
+          </p>
+        )}
         <p className="text-gray-500 text-xs">
-          주문번호: <span className="font-mono font-bold">{orderId}</span>
+          {savedOrderNumber ? (
+            <>
+              신청번호:{" "}
+              <span className="font-mono font-bold">{savedOrderNumber}</span>
+              <br />
+            </>
+          ) : null}
+          결제 주문번호: <span className="font-mono font-bold">{orderId}</span>
           <br />
           결제금액: ₩{amount.toLocaleString()}
         </p>
@@ -100,7 +230,11 @@ function SuccessContent() {
       <Button
         className="w-full max-w-xs bg-teal-600 hover:bg-teal-700 text-white font-semibold"
         onClick={() => {
-          console.log("[결제완료] 홈으로 이동:", orderId);
+          console.log("[결제완료] 홈으로 이동:", {
+            orderId,
+            savedOrderNumber,
+            enrollSaved,
+          });
           window.location.href = "/";
         }}
       >

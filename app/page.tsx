@@ -56,6 +56,7 @@ import {
   toTrafficRecord,
   type TrafficSource,
 } from "@/lib/traffic-source";
+import { savePendingCardEnrollment } from "@/lib/card-enrollment";
 
 type ClassItem = {
   id: number;
@@ -2419,10 +2420,15 @@ export default function SwimmingClassPage() {
 
   const handleClassPgTestPayment = async () => {
     if (isClassPgTestLoading || !selectedTimeSlot) return;
+
+    if (!validateApplicationForPayment()) {
+      return;
+    }
+
     const amount = selectedTimeSlot.price;
     if (!amount || amount <= 0) {
       toast({
-        title: "테스트 결제 불가",
+        title: "결제 불가",
         description: "선택한 클래스에 결제 금액이 없습니다.",
         variant: "destructive",
       });
@@ -2430,12 +2436,61 @@ export default function SwimmingClassPage() {
     }
 
     setIsClassPgTestLoading(true);
-    console.log("[결제] 카드 결제 시작:", {
+    console.log("[카드결제] 신청 저장 후 결제창 준비:", {
       className: selectedTimeSlot.name,
       amount,
+      name: formData.name,
     });
 
     try {
+      const duplicateCheck = await checkDuplicateForSameClass({
+        name: formData.name,
+        phone: formData.phone,
+        selectedClass: selectedTimeSlot.name,
+      });
+      if (duplicateCheck.success && duplicateCheck.hasDuplicate) {
+        console.log("[카드결제] 중복 신청 차단:", {
+          className: selectedTimeSlot.name,
+          statuses: duplicateCheck.matchedStatuses,
+        });
+        toast({
+          title: "중복 신청 방지",
+          description: `같은 성함/연락처로 이미 ${getClassDisplayName(selectedTimeSlot.name)}를 신청하셨습니다.`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      let pageId = paidPageId;
+      if (!pageId) {
+        const notionResult = await submitPaidToNotion(formData);
+        if (!notionResult.success || !notionResult.pageId) {
+          console.error("[카드결제] Notion 사전 저장 실패:", notionResult.error);
+          toast({
+            title: "저장 실패",
+            description:
+              notionResult.error ||
+              "신청 정보 저장 중 오류가 발생했습니다. 다시 시도해 주세요.",
+            variant: "destructive",
+          });
+          return;
+        }
+        pageId = notionResult.pageId;
+        setPaidPageId(pageId);
+        console.log("[카드결제] Notion 수강자 페이지 생성:", pageId);
+      }
+
+      if (!pageId) {
+        toast({
+          title: "저장 실패",
+          description: "신청 페이지를 준비하지 못했습니다.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const notionPageId = pageId;
+
       const orderRes = await fetch("/api/toss/create-class-test-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -2447,7 +2502,7 @@ export default function SwimmingClassPage() {
       const orderData = await orderRes.json();
 
       if (!orderData.success) {
-        console.error("[결제] 주문 생성 실패:", orderData.error);
+        console.error("[카드결제] 주문 생성 실패:", orderData.error);
         toast({
           title: "주문 생성 실패",
           description: orderData.error,
@@ -2456,11 +2511,79 @@ export default function SwimmingClassPage() {
         return;
       }
 
+      const paymentStartedAt = new Date();
+      const newOrderNumber = generateOrderNumber();
+      const selectedClassInfo = classes.find(
+        (c) => String(c.id) === selectedClass,
+      );
+      const selectedRegion = selectedClassInfo?.location || "정보 없음";
+      const classDate = selectedClassInfo
+        ? formatSheetClassDate(
+            calendarYear,
+            selectedClassInfo.month,
+            selectedClassInfo.dateNum,
+          )
+        : "";
+      const trafficRecord = toTrafficRecord(trafficSource);
+
+      const saved = savePendingCardEnrollment({
+        tossOrderId: orderData.orderId,
+        orderNumber: newOrderNumber,
+        pageId: notionPageId,
+        amount: orderData.amount,
+        paymentStartedAt: paymentStartedAt.toISOString(),
+        sheetTimestamp: formatSheetTimestamp(paymentStartedAt),
+        form: {
+          name: formData.name,
+          phone: formData.phone,
+          email: formData.email || "",
+          gender: formData.gender,
+          location: formData.location,
+          swimmingExperience: formData.swimmingExperience || "",
+          painAreas: formData.painAreas,
+          message: formData.message || "",
+        },
+        selectedClassName: selectedTimeSlot.name,
+        timeSlot: `${selectedTimeSlot.session} (${selectedTimeSlot.time})`,
+        sessionLabel: formatSheetSession(selectedTimeSlot.session),
+        lane: selectedTimeSlot.lane || "",
+        classSheetLabel: getSelectedClassSheetLabel(selectedTimeSlot),
+        classDate,
+        region: selectedRegion,
+        traffic: trafficRecord,
+      });
+
+      if (!saved) {
+        toast({
+          title: "저장 오류",
+          description:
+            "결제 전 신청 정보를 브라우저에 저장하지 못했습니다. 다시 시도해 주세요.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // 결제창 열기 전에 노션에 결제대기(카드)로 먼저 표시
+      await updatePaymentInNotion({
+        pageId: notionPageId,
+        virtualAccountInfo: "결제대기(카드)",
+        orderNumber: newOrderNumber,
+        selectedClass: selectedTimeSlot.name,
+        timeSlot: `${selectedTimeSlot.session} (${selectedTimeSlot.time})`,
+        region: selectedRegion,
+        paymentStartedAt: paymentStartedAt.toISOString(),
+        traffic: trafficRecord,
+      });
+
       const { loadTossPayments } = await import("@tosspayments/tosspayments-sdk");
       const tossPayments = await loadTossPayments(orderData.clientKey);
       const payment = tossPayments.payment({ customerKey: "ANONYMOUS" });
 
-      console.log("[결제] 토스 결제창 호출:", orderData.orderId);
+      console.log("[카드결제] 토스 결제창 호출:", {
+        tossOrderId: orderData.orderId,
+        orderNumber: newOrderNumber,
+        pageId: notionPageId,
+      });
 
       await payment.requestPayment({
         method: "CARD",
@@ -2471,7 +2594,7 @@ export default function SwimmingClassPage() {
         failUrl: `${window.location.origin}/class-pg-test/fail`,
       });
     } catch (error) {
-      console.error("[결제] 결제 오류:", error);
+      console.error("[카드결제] 결제 오류:", error);
       toast({
         title: "결제 오류",
         description: "결제 처리 중 오류가 발생했습니다.",
@@ -6347,7 +6470,7 @@ export default function SwimmingClassPage() {
                         </p>
                         <ul className="space-y-1 rounded-lg bg-white/90 px-3 py-2.5 text-xs sm:text-sm font-bold leading-5 text-teal-950">
                           <li>· 결제 완료 시 카드에서 실제로 출금됩니다</li>
-                          <li>· 위 무통장 입금 신청과는 별도 흐름입니다</li>
+                          <li>· 결제 성공 시 Notion·구글시트에 신청이 저장됩니다</li>
                         </ul>
                         <Button
                           type="button"

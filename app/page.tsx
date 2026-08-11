@@ -3391,25 +3391,27 @@ export default function SwimmingClassPage() {
               {/* 어항샷 · 저항 진단 — 수강 일정 바로 위 */}
               <section
                 id="diagnosis-intro-section"
-                className="order-2 w-full mt-6 scroll-mt-4 rounded-2xl border border-blue-100 bg-white p-4 shadow-sm sm:p-5"
+                className="order-2 mt-6 w-full scroll-mt-4 rounded-2xl border border-blue-100 bg-white p-4 shadow-sm sm:p-5"
               >
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-base sm:text-lg font-bold text-gray-950">
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
+                    <p className="text-[17px] font-bold leading-snug text-gray-950 sm:text-lg">
                       내 수영 상태가 궁금하신가요?
                     </p>
-                    <p className="mt-1 text-sm leading-6 text-gray-700">
-                      정밀한 어항샷기반으로 저항 진단 해드립니다.
+                    <p className="text-sm leading-6 text-gray-700 sm:text-[15px]">
+                      정밀한 어항샷 기반으로 저항 진단 해드립니다.
                     </p>
                   </div>
-                  <div>
+
+                  <div className="rounded-xl bg-blue-50/80 px-3.5 py-3">
                     <p className="text-sm font-bold text-gray-950">
                       어항샷이란?
                     </p>
-                    <p className="mt-0.5 text-sm leading-6 text-gray-700">
+                    <p className="mt-1 text-sm leading-6 text-gray-700">
                       위·아래를 동시에 찍어 저항이 보이게 촬영합니다.
                     </p>
                   </div>
+
                   <div
                     className="relative w-full overflow-hidden rounded-xl shadow-md"
                     style={{ paddingBottom: "56.25%" }}
@@ -3429,9 +3431,10 @@ export default function SwimmingClassPage() {
                       }
                     />
                   </div>
+
                   <Button
                     size="lg"
-                    className="w-full text-base font-bold"
+                    className="h-12 w-full text-[15px] font-bold sm:h-11 sm:text-base"
                     onClick={() => {
                       console.log(
                         "[CTA] 어항샷 섹션 → 진단 프로그램 신청(일정으로 이동)",
@@ -3446,10 +3449,12 @@ export default function SwimmingClassPage() {
                   >
                     진단 프로그램 신청 하러가기
                   </Button>
-                  <p className="text-center text-sm font-bold leading-5 text-blue-700 sm:text-[15px]">
-                    (자유수영 2시간 (개인 촬영 가능)+2가지 영법
-                    어항샷+저항분석리포트 제공)
-                  </p>
+
+                  <ul className="space-y-1.5 rounded-xl border border-blue-100 bg-blue-50/60 px-3.5 py-3 text-sm font-bold leading-6 text-blue-700">
+                    <li>· 자유수영 2시간 (개인 촬영 가능)</li>
+                    <li>· 2가지 영법 어항샷</li>
+                    <li>· 저항분석리포트 제공</li>
+                  </ul>
                 </div>
               </section>
 

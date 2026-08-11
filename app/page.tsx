@@ -3129,17 +3129,22 @@ export default function SwimmingClassPage() {
                         수영 클리닉 · 저항 교정 특강
                       </div>
                       <h3 className="text-[27px] sm:text-[32px] font-bold tracking-tight leading-tight text-gray-950">
-                        25m만 가도 숨이 차고 몸이 가라앉는다면,
-                        <br className="hidden sm:block" />
-                        문제는 체력이 아니라{" "}
-                        <span className="text-blue-700">'저항'</span>일 수 있습니다.
+                        수영이 힘든 건, 힘이 부족해서가 아니라
+                        <br />
+                        힘이 새고 있어서일 수 있습니다.
                       </h3>
                       <p className="text-base sm:text-[17px] font-medium text-gray-800 leading-7">
-                        스윔잇은 많이 수영시키는 특강이 아닙니다.
+                        더 세게 수영하기 전에, 어디서{" "}
+                        <span className="font-bold text-blue-700">저항</span>이
+                        생기는지부터 찾아보세요.
+                      </p>
+                      <p className="text-base sm:text-[17px] font-medium text-gray-800 leading-7">
+                        스윔잇은 수중 촬영으로 내 수영을 방해하는 가장 큰 저항을
+                        찾아
                         <br />
-                        내 몸에서 왜 저항이 생기는지 직접 찾아 교정하는{" "}
+                        코치가 직접 교정하는{" "}
                         <span className="font-bold text-blue-700">
-                          저항 교정 특강
+                          저항 제로 특강
                         </span>
                         입니다.
                       </p>

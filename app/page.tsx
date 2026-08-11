@@ -3396,10 +3396,10 @@ export default function SwimmingClassPage() {
                 <div className="space-y-3">
                   <div>
                     <p className="text-base sm:text-lg font-bold text-gray-950">
-                      정밀한 내 수영 상태가 궁금하신가요?
+                      내 수영 상태가 궁금하신가요?
                     </p>
                     <p className="mt-1 text-sm leading-6 text-gray-700">
-                      어항샷기반으로 저항 진단 해드립니다.
+                      정밀한 어항샷기반으로 저항 진단 해드립니다.
                     </p>
                   </div>
                   <div>

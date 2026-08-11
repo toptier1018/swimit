@@ -3446,7 +3446,7 @@ export default function SwimmingClassPage() {
                   >
                     진단 프로그램 신청 하러가기
                   </Button>
-                  <p className="text-center text-xs leading-5 text-gray-600 sm:text-sm">
+                  <p className="text-center text-sm font-bold leading-5 text-blue-700 sm:text-[15px]">
                     (자유수영 2시간 (개인 촬영 가능)+2가지 영법
                     어항샷+저항분석리포트 제공)
                   </p>

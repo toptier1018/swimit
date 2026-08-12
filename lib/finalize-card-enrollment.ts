@@ -11,6 +11,7 @@ import {
   parseCardPendingStatus,
   type CardPendingMeta,
 } from "@/lib/toss-card-order-meta";
+import { guessClassDate } from "@/lib/notion-sheet-sync";
 
 export type FinalizeEnrollmentInput = {
   orderId: string;
@@ -235,8 +236,18 @@ export async function finalizeCardEnrollmentCore(
     classSheetLabelFromSelected(selectedClassName);
   const sessionLabel =
     enrollment?.sessionLabel?.trim() || sessionFromTimeSlot(timeSlot);
-  const lane = enrollment?.lane?.trim() || "";
-  const classDate = enrollment?.classDate?.trim() || "";
+  // 웹훅만 먼저 오면 enrollment가 없어 날짜/레인이 비기 쉬움 → Notion 클래스로 보완
+  const lane = enrollment?.lane?.trim() || "미배정";
+  const classDate =
+    enrollment?.classDate?.trim() ||
+    guessClassDate(region, selectedClassName) ||
+    "";
+  console.log("[카드후처리] 시트 날짜/레인:", {
+    orderNumber,
+    classDate,
+    lane,
+    fromEnrollment: Boolean(enrollment?.classDate?.trim()),
+  });
   const sheetTimestamp =
     enrollment?.sheetTimestamp?.trim() ||
     new Date().toISOString().replace("T", " ").slice(0, 19);

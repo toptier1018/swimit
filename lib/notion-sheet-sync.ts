@@ -127,7 +127,8 @@ const CLASS_DATES_BY_REGION: Record<string, string> = {
   스윔스튜디오제이: "2026-07-19",
 };
 
-function guessClassDate(region: string, selectedClass: string): string {
+/** 지역·선택된 클래스 문자열에서 특강 날짜(YYYY-MM-DD) 추정 */
+export function guessClassDate(region: string, selectedClass: string): string {
   const datedClassLabel = selectedClass.match(/^\[[^\]]*?(\d{1,2})\/(\d{1,2})\]/);
   if (datedClassLabel) {
     const month = datedClassLabel[1].padStart(2, "0");

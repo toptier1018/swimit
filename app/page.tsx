@@ -232,6 +232,75 @@ const classes: ClassItem[] = [
     ],
     badge: "특강 + 진단 동시 운영",
   },
+  {
+    id: 16,
+    year: 2026,
+    location: "서울 은평구 · 삼정스포츠 수영장",
+    locationCode: "은평",
+    date: "9월 13일 (일)",
+    dateNum: 13,
+    month: 9,
+    venue: "삼정스포츠 수영장",
+    address: "서울 은평구 서오릉로 94 삼성타운아파트 지하2층",
+    spots: "영법 각 7명 · 진단 20명",
+    scheduleSummaryLines: [
+      "1부 특강 · 11:00~13:00 (2시간)",
+      "1부 진단 프로그램 · 11:00~13:00",
+    ],
+    badge: "특강 + 진단 동시 운영",
+  },
+  {
+    id: 17,
+    year: 2026,
+    location: "경기 동탄 · 스윔스튜디오제이",
+    locationCode: "동탄",
+    date: "9월 19일 (토)",
+    dateNum: 19,
+    month: 9,
+    venue: "스윔스튜디오제이",
+    address:
+      "경기도 화성시 동탄구 동탄신리천로 414 경서타워 4층 스윔스튜디오제이",
+    spots: "영법 각 7명 · 진단 20명",
+    scheduleSummaryLines: [
+      "1부 특강 · 14:00~16:00 (2시간)",
+      "1부 진단 프로그램 · 14:00~16:00",
+    ],
+    badge: "특강 + 진단 동시 운영",
+  },
+  {
+    id: 18,
+    year: 2026,
+    location: "서울 목동 · 목동스포츠센터",
+    locationCode: "목동",
+    date: "9월 20일 (일)",
+    dateNum: 20,
+    month: 9,
+    venue: "목동스포츠센터",
+    address: "서울특별시 양천구 목동서로 130 목동스포츠센터",
+    spots: "영법 각 7명 · 진단 20명",
+    scheduleSummaryLines: [
+      "1부 특강 · 14:00~16:00 (2시간)",
+      "1부 진단 프로그램 · 14:00~16:00",
+    ],
+    badge: "특강 + 진단 동시 운영",
+  },
+  {
+    id: 19,
+    year: 2026,
+    location: "인천 청라 · 청라스카이스위밍",
+    locationCode: "청라",
+    date: "9월 27일 (일)",
+    dateNum: 27,
+    month: 9,
+    venue: "청라스카이스위밍",
+    address: "인천 서구 청라한내로 90 MK뷰 8층",
+    spots: "영법 각 7명 · 진단 20명",
+    scheduleSummaryLines: [
+      "1부 특강 · 14:00~16:00 (2시간)",
+      "1부 진단 프로그램 · 14:00~16:00",
+    ],
+    badge: "특강 + 진단 동시 운영",
+  },
 ];
 
 const DEPOSIT_BANK_NAME = "농협";
@@ -694,6 +763,77 @@ const TIMETABLE_BUSAN_SEPTEMBER: TimetableRow[] = [
   },
 ];
 
+/** 삼정스포츠 수영장 9/13 특강 (은평) — 특강+진단 동시, 레인 미표시 */
+const TIMETABLE_EUNPYEONG_SEPTEMBER: TimetableRow[] = [
+  {
+    session: "1부 특강",
+    time: "11:00 ~ 13:00",
+    lanes: [
+      { lane: UNASSIGNED_LANE, title: "자유형", price: 80000 },
+      { lane: UNASSIGNED_LANE, title: "평영", price: 80000 },
+      { lane: UNASSIGNED_LANE, title: "접영", price: 80000 },
+      {
+        lane: UNASSIGNED_LANE,
+        title: DIAGNOSIS_LANE_TITLE,
+        price: PRODUCT_CATALOG.diagnosis.price,
+      },
+    ],
+  },
+];
+
+/** 스윔스튜디오제이 9/19 특강 (동탄) — 평영 없음, 특강+진단 동시 */
+const TIMETABLE_DONGTAN_SEPTEMBER: TimetableRow[] = [
+  {
+    session: "1부 특강",
+    time: "14:00 ~ 16:00",
+    lanes: [
+      { lane: UNASSIGNED_LANE, title: "자유형", price: 80000 },
+      { lane: UNASSIGNED_LANE, title: "접영", price: 80000 },
+      {
+        lane: UNASSIGNED_LANE,
+        title: DIAGNOSIS_LANE_TITLE,
+        price: PRODUCT_CATALOG.diagnosis.price,
+      },
+    ],
+  },
+];
+
+/** 목동스포츠센터 9/20 특강 — 특강+진단 동시, 레인 미표시 */
+const TIMETABLE_MOKDONG_SEPTEMBER: TimetableRow[] = [
+  {
+    session: "1부 특강",
+    time: "14:00 ~ 16:00",
+    lanes: [
+      { lane: UNASSIGNED_LANE, title: "자유형", price: 80000 },
+      { lane: UNASSIGNED_LANE, title: "접영", price: 80000 },
+      { lane: UNASSIGNED_LANE, title: "평영", price: 80000 },
+      {
+        lane: UNASSIGNED_LANE,
+        title: DIAGNOSIS_LANE_TITLE,
+        price: PRODUCT_CATALOG.diagnosis.price,
+      },
+    ],
+  },
+];
+
+/** 청라스카이스위밍 9/27 특강 — 특강+진단 동시, 레인 미표시 */
+const TIMETABLE_CHEONGNA_SEPTEMBER: TimetableRow[] = [
+  {
+    session: "1부 특강",
+    time: "14:00 ~ 16:00",
+    lanes: [
+      { lane: UNASSIGNED_LANE, title: "자유형", price: 80000 },
+      { lane: UNASSIGNED_LANE, title: "접영", price: 80000 },
+      { lane: UNASSIGNED_LANE, title: "평영", price: 80000 },
+      {
+        lane: UNASSIGNED_LANE,
+        title: DIAGNOSIS_LANE_TITLE,
+        price: PRODUCT_CATALOG.diagnosis.price,
+      },
+    ],
+  },
+];
+
 const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   3: TIMETABLE_SEOCHO,   // 5/31 서초
   4: TIMETABLE_KIMPO,    // 6/14 김포
@@ -706,6 +846,10 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   13: TIMETABLE_DONGTAN_AUGUST, // 8/23 동탄
   14: TIMETABLE_MOKDONG_AUGUST, // 8/30 목동
   15: TIMETABLE_BUSAN_SEPTEMBER, // 9/6 부산
+  16: TIMETABLE_EUNPYEONG_SEPTEMBER, // 9/13 은평
+  17: TIMETABLE_DONGTAN_SEPTEMBER, // 9/19 동탄
+  18: TIMETABLE_MOKDONG_SEPTEMBER, // 9/20 목동
+  19: TIMETABLE_CHEONGNA_SEPTEMBER, // 9/27 청라
 };
 
 const getAvailableStrokesForClass = (classId: number) => {
@@ -827,8 +971,8 @@ type DiagnosisOffering = {
 /**
  * 특강별 저항 진단 프로그램 운영 정보
  * - 동탄 8/23: 2부에 진단만 단독 운영
- * - 목동 8/30: 1부 특강과 동시 운영 (5·6레인)
- * - 부산 9/6: 1부 특강과 동시 운영 (4·5레인)
+ * - 목동 8/30·부산 9/6: 1부 특강과 동시 운영 (레인 표기)
+ * - 은평 9/13·동탄 9/19·목동 9/20·청라 9/27: 1부 특강과 동시 운영 (레인 미표시)
  */
 const getDiagnosisOfferingForClass = (
   classId: number,
@@ -951,6 +1095,25 @@ const DEFAULT_WAITLIST_THRESHOLDS_BY_CLASS: Record<string, number> = {
   "[부산 9/6] 1부 특강 평영": 7,
   "[부산 9/6] 1부 특강 접영": 7,
   "[부산 9/6] 1부 진단": DIAGNOSIS_WAITLIST_THRESHOLD,
+  // 은평 9/13
+  "[은평 9/13] 1부 특강 자유형": 7,
+  "[은평 9/13] 1부 특강 평영": 7,
+  "[은평 9/13] 1부 특강 접영": 7,
+  "[은평 9/13] 1부 진단": DIAGNOSIS_WAITLIST_THRESHOLD,
+  // 동탄 9/19 (평영 없음)
+  "[동탄 9/19] 1부 특강 자유형": 7,
+  "[동탄 9/19] 1부 특강 접영": 7,
+  "[동탄 9/19] 1부 진단": DIAGNOSIS_WAITLIST_THRESHOLD,
+  // 목동 9/20
+  "[목동 9/20] 1부 특강 자유형": 7,
+  "[목동 9/20] 1부 특강 평영": 7,
+  "[목동 9/20] 1부 특강 접영": 7,
+  "[목동 9/20] 1부 진단": DIAGNOSIS_WAITLIST_THRESHOLD,
+  // 청라 9/27
+  "[청라 9/27] 1부 특강 자유형": 7,
+  "[청라 9/27] 1부 특강 평영": 7,
+  "[청라 9/27] 1부 특강 접영": 7,
+  "[청라 9/27] 1부 진단": DIAGNOSIS_WAITLIST_THRESHOLD,
   // 구 키 호환 (부산 8/30)
   "[부산 8/30] 1부 특강 자유형": 14,
   "[부산 8/30] 1부 특강 평영": 7,

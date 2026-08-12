@@ -3707,12 +3707,12 @@ export default function SwimmingClassPage() {
                               setRegionError(false);
                               setCalendarMonth(classItem.month);
                               setCalendarYear(classItem.year);
-                              // 카드 클릭은 선택만 — 신청창은 아래 CTA에서 열림 (중복 패널 최소화)
-                              console.log("[일정 선택] 랜딩 일정 카드 선택(신청창 미오픈):", {
+                              console.log("[일정 선택] 지역 카드 터치 → 신청 단계:", {
                                 id: classItem.id,
                                 location: classItem.location,
                                 date: classItem.date,
                               });
+                              handleRegistration();
                             }}
                             onKeyDown={(event) => {
                               if (event.key === "Enter" || event.key === " ") {
@@ -3726,11 +3726,12 @@ export default function SwimmingClassPage() {
                                 setRegionError(false);
                                 setCalendarMonth(classItem.month);
                                 setCalendarYear(classItem.year);
-                                console.log("[일정 선택] 키보드로 일정 카드 선택(신청창 미오픈):", {
+                                console.log("[일정 선택] 키보드로 지역 카드 선택 → 신청 단계:", {
                                   id: classItem.id,
                                   location: classItem.location,
                                   date: classItem.date,
                                 });
+                                handleRegistration();
                               }
                             }}
                             className={`scroll-mt-24 cursor-pointer transition-all shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-primary ${

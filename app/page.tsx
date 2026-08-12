@@ -4702,7 +4702,7 @@ export default function SwimmingClassPage() {
                           : selectedProductType === "zero"
                             ? "영법 1개를 선택해주세요."
                             : selectedClassDiagnosis
-                              ? "영법 특강 또는 저항 진단 프로그램을 선택해주세요."
+                              ? "두가지 프로그램 중 하나를 선택해주세요."
                               : "신청 시에는 원하시는 영법만 선택해주세요."}
                       </p>
                     </div>
@@ -4726,10 +4726,6 @@ export default function SwimmingClassPage() {
                           if (!selectedProductType) {
                             return (
                               <div className="space-y-4">
-                                <p className="text-sm font-medium text-gray-700">
-                                  영법 특강 또는 저항 진단 프로그램을
-                                  선택해주세요.
-                                </p>
                                 <div className="grid gap-3 sm:grid-cols-2">
                                   {(
                                     ["zero", "diagnosis"] as ProductType[]
@@ -4961,16 +4957,10 @@ export default function SwimmingClassPage() {
                         return (
                           <div className="space-y-4">
                             {selectedClassDiagnosis ? (
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium text-gray-700">
-                                  영법 특강 또는 저항 진단 프로그램을
-                                  선택해주세요.
-                                </p>
-                                <p className="text-xs leading-5 text-gray-600 sm:text-sm">
-                                  진단은 어항샷 분석, 제로는 Before/After 수중
-                                  촬영 교정입니다.
-                                </p>
-                              </div>
+                              <p className="text-xs leading-5 text-gray-600 sm:text-sm">
+                                진단은 어항샷 분석, 제로는 Before/After 수중
+                                촬영 교정입니다.
+                              </p>
                             ) : null}
                             <div className="rounded-lg bg-slate-50 px-4 py-3 text-sm text-gray-700">
                               <span className="font-bold text-gray-900">
@@ -5097,9 +5087,6 @@ export default function SwimmingClassPage() {
                                           🔍 저항 진단 프로그램
                                         </div>
                                         <div className="mt-2 text-sm leading-5 text-gray-600">
-                                          {selectedClassDiagnosis.lanes.join(
-                                            "·",
-                                          )}{" "}
                                           어항샷으로 저항 원인을 확인합니다.
                                         </div>
                                       </div>
@@ -5117,19 +5104,17 @@ export default function SwimmingClassPage() {
                                             : availabilityBadge.label}
                                         </span>
                                       </div>
+                                      <div className="mt-3 rounded-lg border-2 border-orange-400 bg-orange-50 px-3 py-2 text-xs font-extrabold leading-5 text-orange-950">
+                                        <span className="mr-1.5 inline-block rounded bg-orange-500 px-1.5 py-0.5 text-[11px] font-bold text-white">
+                                          쿠폰
+                                        </span>
+                                        진단 후 저항 제로 특강 수강 시 1만원
+                                        할인 쿠폰 제공
+                                      </div>
                                     </button>
                                   );
                                 })()}
                             </div>
-                            {selectedClassDiagnosis && (
-                              <div className="rounded-lg border-2 border-orange-400 bg-orange-50 px-3 py-2.5 text-sm font-extrabold leading-5 text-orange-950">
-                                <span className="mr-1.5 inline-block rounded bg-orange-500 px-1.5 py-0.5 text-[11px] font-bold text-white">
-                                  쿠폰
-                                </span>
-                                진단 후 저항 제로 특강 수강 시 1만원 할인 쿠폰
-                                제공
-                              </div>
-                            )}
                             <p className="text-xs leading-5 text-gray-500">
                               ※ 세부 반과 레인은 당일 수영 실력과 목표를 확인한
                               뒤 배정될 수 있습니다.

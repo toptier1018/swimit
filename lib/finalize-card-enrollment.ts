@@ -7,8 +7,8 @@ import {
   getSheetOrderNumbers,
 } from "@/lib/google-sheets";
 import {
-  encodeCardPendingStatus,
   parseCardPendingStatus,
+  toNotionCardStatusFields,
   type CardPendingMeta,
 } from "@/lib/toss-card-order-meta";
 import { guessClassDate } from "@/lib/notion-sheet-sync";
@@ -124,7 +124,7 @@ export async function finalizeCardEnrollmentCore(
   }
 
   const found = await findCardOrderByTossOrderId(orderId);
-  if (!found.success || !found.pageId || !found.virtualAccountInfo) {
+  if (!found.success || !found.pageId || !found.cardMetaRaw) {
     return {
       success: false,
       orderId,
@@ -135,7 +135,7 @@ export async function finalizeCardEnrollmentCore(
     };
   }
 
-  let meta = parseCardPendingStatus(found.virtualAccountInfo);
+  let meta = parseCardPendingStatus(found.cardMetaRaw);
   if (!meta || meta.tossOrderId !== orderId) {
     return {
       success: false,
@@ -161,7 +161,7 @@ export async function finalizeCardEnrollmentCore(
     };
     const mark = await updatePaymentInNotion({
       pageId: found.pageId,
-      virtualAccountInfo: encodeCardPendingStatus(doneMeta),
+      ...toNotionCardStatusFields(doneMeta),
       orderNumber: meta.orderNumber,
       selectedClass: found.selectedClass || meta.tossOrderId,
       timeSlot: found.timeSlot || "",
@@ -261,7 +261,7 @@ export async function finalizeCardEnrollmentCore(
   if (selectedClassName) {
     const mark = await updatePaymentInNotion({
       pageId: found.pageId,
-      virtualAccountInfo: encodeCardPendingStatus({
+      ...toNotionCardStatusFields({
         ...meta,
         status: "CARD_DONE",
         paymentKey: paymentKey || meta.paymentKey,

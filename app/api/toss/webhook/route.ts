@@ -9,9 +9,9 @@ import {
 } from "@/lib/finalize-card-enrollment";
 import { notifyAdminPayment } from "@/lib/notify-admin-payment";
 import {
-  encodeCardPendingStatus,
   parseCardPendingStatus,
   shouldSkipAdminNotify,
+  toNotionCardStatusFields,
   type CardPendingMeta,
 } from "@/lib/toss-card-order-meta";
 import { fetchTossPaymentByKey } from "@/lib/toss-payment-query";
@@ -41,7 +41,7 @@ async function patchAdminNotifyMeta(params: {
 
   const mark = await updatePaymentInNotion({
     pageId: params.pageId,
-    virtualAccountInfo: encodeCardPendingStatus(next),
+    ...toNotionCardStatusFields(next),
     orderNumber: next.orderNumber,
     selectedClass: params.selectedClass || next.tossOrderId,
     timeSlot: params.timeSlot || "",
@@ -157,7 +157,7 @@ export async function POST(req: NextRequest) {
 
     // 4) Notion 주문·금액 검증
     const found = await findCardOrderByTossOrderId(orderId);
-    if (!found.success || !found.virtualAccountInfo || !found.pageId) {
+    if (!found.success || !found.cardMetaRaw || !found.pageId) {
       console.error("[웹훅] Notion 주문 없음 — 재시도:", orderId);
       return NextResponse.json(
         { received: false, error: "notion_order_not_found" },
@@ -165,7 +165,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const meta = parseCardPendingStatus(found.virtualAccountInfo);
+    const meta = parseCardPendingStatus(found.cardMetaRaw);
     if (!meta || meta.tossOrderId !== orderId) {
       console.error("[웹훅] 주문 메타 불일치 — 후처리 중단");
       return NextResponse.json({
@@ -218,13 +218,13 @@ export async function POST(req: NextRequest) {
         if (
           !latest.success ||
           !latest.pageId ||
-          !latest.virtualAccountInfo
+          !latest.cardMetaRaw
         ) {
           console.error("[웹훅] 알림 전 Notion 재조회 실패 — 알림만 스킵");
           adminNotify = "failed";
         } else {
           const latestMeta = parseCardPendingStatus(
-            latest.virtualAccountInfo,
+            latest.cardMetaRaw,
           );
           if (!latestMeta || latestMeta.tossOrderId !== orderId) {
             console.error("[웹훅] 알림 전 메타 파싱 실패 — 알림만 스킵");

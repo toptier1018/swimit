@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { resolveClassPaymentAmount } from "@/lib/class-payment-amount";
-import { encodeCardPendingStatus } from "@/lib/toss-card-order-meta";
+import { toNotionCardStatusFields } from "@/lib/toss-card-order-meta";
 import { updatePaymentInNotion } from "@/app/actions/notion";
 
 /**
@@ -74,17 +74,18 @@ export async function POST(req: NextRequest) {
     const orderId = `CLASS-${randomUUID().replace(/-/g, "").slice(0, 18).toUpperCase()}`;
     const idempotencyKey = randomUUID();
 
-    const virtualAccountInfo = encodeCardPendingStatus({
-      status: "CARD_PENDING",
+    const pendingMeta = {
+      status: "CARD_PENDING" as const,
       tossOrderId: orderId,
       amount,
       orderNumber,
       idempotencyKey,
-    });
+    };
+    const statusFields = toNotionCardStatusFields(pendingMeta);
 
     const notionUpdate = await updatePaymentInNotion({
       pageId,
-      virtualAccountInfo,
+      ...statusFields,
       orderNumber,
       selectedClass: className,
       timeSlot: timeSlot || className,
@@ -92,6 +93,8 @@ export async function POST(req: NextRequest) {
       paymentStartedAt,
       traffic,
     });
+
+    console.log("[카드결제] Notion 사람용 상태:", statusFields.virtualAccountInfo);
 
     if (!notionUpdate.success) {
       console.error("[카드결제] Notion 대기 주문 저장 실패:", notionUpdate.error);

@@ -1,6 +1,7 @@
 /**
- * 카드결제 대기 주문을 Notion「가상계좌 입금 정보」에 안전하게 인코딩
- * (스키마 추가 없이 orderId·금액·멱등키·관리자알림 상태를 서버에서 다시 읽기 위함)
+ * 카드결제 주문 메타
+ * - 사람용 상태: Notion「가상계좌 입금 정보」→ 결제대기 / 결제완료
+ * - 기계용 메타: Notion「카드결제 메타」→ orderId·금액·멱등키·관리자알림 등
  */
 
 export type AdminNotifyStatus = "ADMIN_NOTIFYING" | "ADMIN_NOTIFIED";
@@ -18,17 +19,23 @@ export type CardPendingMeta = {
   adminNotifyAt?: string;
 };
 
+export const CARD_META_PROPERTY_NAME = "카드결제 메타";
+
 const META_PREFIX = "SWIMIT_CARD";
 
 /** ADMIN_NOTIFYING 소프트락 TTL — 이 시간이 지나면 재시도 허용 (영구 잠금 방지) */
 export const ADMIN_NOTIFYING_TTL_MS = 90_000;
 
+/** 노션「가상계좌 입금 정보」에 넣을 짧은 상태 */
+export function humanCardPaymentLabel(
+  meta: Pick<CardPendingMeta, "status">,
+): string {
+  return meta.status === "CARD_DONE" ? "결제완료" : "결제대기";
+}
+
+/** 노션「카드결제 메타」에 넣을 기계용 문자열 */
 export function encodeCardPendingStatus(meta: CardPendingMeta): string {
-  // 사람이 읽기 쉬운 앞부분 + 파싱용 토큰
-  const label =
-    meta.status === "CARD_DONE" ? "결제완료" : "결제대기(카드)";
   const parts = [
-    label,
     META_PREFIX,
     meta.status,
     `toss=${meta.tossOrderId}`,
@@ -46,6 +53,31 @@ export function encodeCardPendingStatus(meta: CardPendingMeta): string {
     parts.push(`ant=${meta.adminNotifyAt}`);
   }
   return parts.join("|");
+}
+
+/** updatePaymentInNotion용 — 사람용 + 기계용 한 번에 */
+export function toNotionCardStatusFields(meta: CardPendingMeta): {
+  virtualAccountInfo: string;
+  cardPaymentMeta: string;
+} {
+  return {
+    virtualAccountInfo: humanCardPaymentLabel(meta),
+    cardPaymentMeta: encodeCardPendingStatus(meta),
+  };
+}
+
+/**
+ * 새 컬럼(카드결제 메타) 우선, 없으면 예전처럼「가상계좌 입금 정보」에서 파싱
+ */
+export function resolveCardMetaRaw(
+  cardPaymentMeta?: string | null,
+  virtualAccountInfo?: string | null,
+): string {
+  const metaCol = String(cardPaymentMeta || "").trim();
+  if (metaCol.includes(META_PREFIX)) return metaCol;
+  const statusCol = String(virtualAccountInfo || "").trim();
+  if (statusCol.includes(META_PREFIX)) return statusCol;
+  return metaCol || statusCol;
 }
 
 export function parseCardPendingStatus(

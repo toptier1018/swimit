@@ -4,8 +4,8 @@ import {
   updatePaymentInNotion,
 } from "@/app/actions/notion";
 import {
-  encodeCardPendingStatus,
   parseCardPendingStatus,
+  toNotionCardStatusFields,
 } from "@/lib/toss-card-order-meta";
 
 const DONE_STATUSES = new Set(["DONE"]);
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
 
     if (isClassCardOrder) {
       const found = await findCardOrderByTossOrderId(orderId);
-      if (!found.success || !found.pageId || !found.virtualAccountInfo) {
+      if (!found.success || !found.pageId || !found.cardMetaRaw) {
         console.error("[결제승인] Notion 주문 없음 — 승인 거부:", orderId);
         return NextResponse.json(
           {
@@ -79,9 +79,9 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      pendingMeta = parseCardPendingStatus(found.virtualAccountInfo);
+      pendingMeta = parseCardPendingStatus(found.cardMetaRaw);
       if (!pendingMeta || pendingMeta.tossOrderId !== orderId) {
-        console.error("[결제승인] 주문 메타 파싱 실패:", found.virtualAccountInfo);
+        console.error("[결제승인] 주문 메타 파싱 실패:", found.cardMetaRaw);
         return NextResponse.json(
           { success: false, error: "주문 정보가 손상되었습니다.", code: "ORDER_META_INVALID" },
           { status: 400 },
@@ -252,17 +252,17 @@ export async function POST(req: NextRequest) {
 
     // Notion에 승인 완료 메타 기록 (멱등: 이미 DONE이어도 덮어씀)
     if (isClassCardOrder && notionPageId && pendingMeta && notionFields) {
-      const doneInfo = encodeCardPendingStatus({
-        status: "CARD_DONE",
+      const doneMeta = {
+        status: "CARD_DONE" as const,
         tossOrderId: orderId,
         amount: amountToConfirm,
         orderNumber: pendingMeta.orderNumber,
         idempotencyKey: pendingMeta.idempotencyKey,
         paymentKey,
-      });
+      };
       const mark = await updatePaymentInNotion({
         pageId: notionPageId,
-        virtualAccountInfo: doneInfo,
+        ...toNotionCardStatusFields(doneMeta),
         orderNumber: pendingMeta.orderNumber,
         selectedClass:
           notionFields.selectedClass || pendingMeta.tossOrderId,
@@ -275,7 +275,7 @@ export async function POST(req: NextRequest) {
           mark.error,
         );
       } else {
-        console.log("[결제승인] Notion CARD_DONE 표시 완료:", orderId);
+        console.log("[결제승인] Notion 결제완료 표시 완료:", orderId);
       }
     }
 

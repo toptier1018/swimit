@@ -990,9 +990,81 @@ const buildTrafficProperties = async (
   return properties
 }
 
+/** Notion「카드결제 메타」텍스트 속성 — 없으면 생성 */
+let cardMetaPropertyReady: { databaseId: string; ok: boolean } | null = null
+
+async function ensureCardMetaProperty(databaseId: string): Promise<boolean> {
+  const { CARD_META_PROPERTY_NAME } = await import("@/lib/toss-card-order-meta")
+  const notionApiKey = process.env.NOTION_API_KEY
+  if (!notionApiKey || !databaseId) return false
+
+  if (
+    cardMetaPropertyReady &&
+    cardMetaPropertyReady.databaseId === databaseId &&
+    cardMetaPropertyReady.ok
+  ) {
+    return true
+  }
+
+  try {
+    const getRes = await fetch(
+      `https://api.notion.com/v1/databases/${databaseId}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${notionApiKey}`,
+          "Content-Type": "application/json",
+          "Notion-Version": "2022-06-28",
+        },
+      },
+    )
+    if (!getRes.ok) {
+      console.warn("[카드메타] Notion DB 조회 실패:", getRes.status)
+      return false
+    }
+    const schema = await getRes.json()
+    if (schema?.properties?.[CARD_META_PROPERTY_NAME]?.type === "rich_text") {
+      cardMetaPropertyReady = { databaseId, ok: true }
+      return true
+    }
+
+    console.log("[카드메타] Notion에「카드결제 메타」속성 생성 시도")
+    const patchRes = await fetch(
+      `https://api.notion.com/v1/databases/${databaseId}`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${notionApiKey}`,
+          "Content-Type": "application/json",
+          "Notion-Version": "2022-06-28",
+        },
+        body: JSON.stringify({
+          properties: {
+            [CARD_META_PROPERTY_NAME]: { rich_text: {} },
+          },
+        }),
+      },
+    )
+    if (!patchRes.ok) {
+      const err = await patchRes.json().catch(() => ({}))
+      console.error("[카드메타] 속성 생성 실패 — 노션 DB에 텍스트 속성「카드결제 메타」를 직접 만들어 주세요:", err)
+      cardMetaPropertyReady = { databaseId, ok: false }
+      return false
+    }
+    console.log("[카드메타]「카드결제 메타」속성 생성 완료")
+    cardMetaPropertyReady = { databaseId, ok: true }
+    return true
+  } catch (error) {
+    console.error("[카드메타] 속성 확인/생성 예외:", error)
+    return false
+  }
+}
+
 export async function updatePaymentInNotion(data: {
   pageId: string
   virtualAccountInfo: string
+  /** 카드결제 기계용 메타 — 있으면「카드결제 메타」에 저장 */
+  cardPaymentMeta?: string
   orderNumber: string
   selectedClass: string
   timeSlot: string
@@ -1003,6 +1075,7 @@ export async function updatePaymentInNotion(data: {
 }) {
   try {
     const notionApiKey = process.env.NOTION_API_KEY
+    const databaseId = process.env.NOTION_DATABASE_ID || ""
 
     if (!notionApiKey) {
       console.error("[Notion 결제 업데이트] 환경 변수가 설정되지 않았습니다")
@@ -1013,7 +1086,7 @@ export async function updatePaymentInNotion(data: {
     }
 
     const trafficProperties = await buildTrafficProperties(
-      process.env.NOTION_DATABASE_ID || "",
+      databaseId,
       data.traffic
     )
     if (data.traffic) {
@@ -1023,6 +1096,36 @@ export async function updatePaymentInNotion(data: {
         유입경로: data.traffic["유입경로"],
         저장된속성: Object.keys(trafficProperties),
       })
+    }
+
+    const { CARD_META_PROPERTY_NAME } = await import("@/lib/toss-card-order-meta")
+    const cardMetaProperties: Record<string, unknown> = {}
+    let humanStatus = data.virtualAccountInfo
+    if (typeof data.cardPaymentMeta === "string") {
+      const metaOk = await ensureCardMetaProperty(databaseId)
+      if (metaOk) {
+        cardMetaProperties[CARD_META_PROPERTY_NAME] = {
+          rich_text: [
+            {
+              text: {
+                content: data.cardPaymentMeta.slice(0, 2000),
+              },
+            },
+          ],
+        }
+        console.log("[카드메타] 기계용 메타 저장:", {
+          pageId: data.pageId,
+          orderNumber: data.orderNumber,
+          humanStatus,
+          metaLen: data.cardPaymentMeta.length,
+        })
+      } else {
+        // 컬럼 없으면 예전처럼 가상계좌 칸에 메타를 넣어 결제 흐름 유지
+        console.warn(
+          "[카드메타]「카드결제 메타」없음 — 가상계좌 입금 정보에 메타를 임시 저장합니다",
+        )
+        humanStatus = data.cardPaymentMeta
+      }
     }
 
     const response = await fetch(
@@ -1037,12 +1140,13 @@ export async function updatePaymentInNotion(data: {
         body: JSON.stringify({
           properties: {
             ...trafficProperties,
-            // 가상계좌 입금 정보 (Rich Text)
+            ...cardMetaProperties,
+            // 가상계좌 입금 정보 (Rich Text) — 사람용 짧은 상태
             "가상계좌 입금 정보": {
               rich_text: [
                 {
                   text: {
-                    content: data.virtualAccountInfo,
+                    content: humanStatus,
                   },
                 },
               ],
@@ -1136,11 +1240,15 @@ export async function updatePaymentInNotion(data: {
 
 /**
  * 토스 orderId가 인코딩된 카드결제 대기/완료 건을 Notion에서 조회
+ * (신규:「카드결제 메타」 / 구버전:「가상계좌 입금 정보」에 toss id 포함)
  */
 export async function findCardOrderByTossOrderId(tossOrderId: string): Promise<{
   success: boolean
   pageId?: string
+  /** 사람용 상태 (가상계좌 입금 정보) */
   virtualAccountInfo?: string
+  /** 기계용 메타 원문 (카드결제 메타 우선, 없으면 가상계좌 칸의 구버전 문자열) */
+  cardMetaRaw?: string
   orderNumber?: string
   selectedClass?: string
   timeSlot?: string
@@ -1170,6 +1278,30 @@ export async function findCardOrderByTossOrderId(tossOrderId: string): Promise<{
 
     console.log("[카드주문] Notion 조회 시작:", tossOrderId)
 
+    const {
+      CARD_META_PROPERTY_NAME,
+      resolveCardMetaRaw,
+    } = await import("@/lib/toss-card-order-meta")
+
+    const hasMetaCol = await ensureCardMetaProperty(databaseId)
+    const filter = hasMetaCol
+      ? {
+          or: [
+            {
+              property: CARD_META_PROPERTY_NAME,
+              rich_text: { contains: tossOrderId },
+            },
+            {
+              property: "가상계좌 입금 정보",
+              rich_text: { contains: tossOrderId },
+            },
+          ],
+        }
+      : {
+          property: "가상계좌 입금 정보",
+          rich_text: { contains: tossOrderId },
+        }
+
     const response = await fetch(
       `https://api.notion.com/v1/databases/${databaseId}/query`,
       {
@@ -1181,10 +1313,7 @@ export async function findCardOrderByTossOrderId(tossOrderId: string): Promise<{
         },
         body: JSON.stringify({
           page_size: 5,
-          filter: {
-            property: "가상계좌 입금 정보",
-            rich_text: { contains: tossOrderId },
-          },
+          filter,
         }),
       },
     )
@@ -1216,16 +1345,23 @@ export async function findCardOrderByTossOrderId(tossOrderId: string): Promise<{
     }
 
     const virtualAccountInfo = rich(p["가상계좌 입금 정보"])
+    const cardPaymentMeta = rich(p[CARD_META_PROPERTY_NAME])
+    const cardMetaRaw = resolveCardMetaRaw(cardPaymentMeta, virtualAccountInfo)
     console.log("[카드주문] Notion 주문 발견:", {
       pageId: page.id,
       tossOrderId,
-      statusPreview: virtualAccountInfo.slice(0, 80),
+      humanStatus: virtualAccountInfo.slice(0, 40),
+      metaFrom: cardPaymentMeta.includes("SWIMIT_CARD")
+        ? "카드결제 메타"
+        : "가상계좌(구버전)",
+      metaPreview: cardMetaRaw.slice(0, 80),
     })
 
     return {
       success: true,
       pageId: page.id,
       virtualAccountInfo,
+      cardMetaRaw,
       orderNumber: rich(p["주문번호"]),
       selectedClass: rich(p["선택된 클래스"]),
       timeSlot: rich(p["시간대"]),
@@ -1345,10 +1481,12 @@ export async function getClassEnrollmentCounts(classNames?: string[]) {
           "결제대기",
           "결제완료",
         ])
-        if (
-          normalizedClass &&
-          countableStatuses.has(normalizedStatus)
-        ) {
+        // 구버전 카드결제: 「결제완료|SWIMIT_CARD|...」도 카운트
+        const isCountable =
+          countableStatuses.has(normalizedStatus) ||
+          normalizedStatus.startsWith("결제완료") ||
+          normalizedStatus.startsWith("결제대기")
+        if (normalizedClass && isCountable) {
           // 클라이언트에서 구 클래스명([목동])을 날짜 포함 키([목동 6/28])로
           // 마이그레이션하므로, 요청 목록에 없는 기존 신청 키도 함께 반환합니다.
           counts[normalizedClass] = (counts[normalizedClass] || 0) + 1

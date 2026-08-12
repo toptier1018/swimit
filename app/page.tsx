@@ -352,6 +352,19 @@ const ProductPriceLabel = ({
   </span>
 );
 
+/** 저항 진단 프로그램 전용 쿠폰 안내 (모든 센터 공통) */
+const DiagnosisCouponBanner = () => {
+  console.log("[진단쿠폰] 저항 진단 프로그램 쿠폰 배너 표시");
+  return (
+    <div className="rounded-lg border-2 border-orange-400 bg-orange-50 px-3 py-2.5 text-sm font-extrabold leading-5 text-orange-950">
+      <span className="mr-1.5 inline-block rounded bg-orange-500 px-1.5 py-0.5 text-[11px] font-bold text-white">
+        쿠폰
+      </span>
+      진단 후 저항 제로 특강 수강 시 1만원 할인 쿠폰 제공
+    </div>
+  );
+};
+
 const getDongtanDiagnosisEnrollmentKey = () => "[동탄 8/23] 2부 진단";
 
 /** 시간표 안에서 진단 프로그램 레인을 표시하는 이름 (목동 8/30 5·6레인 등) */
@@ -4778,10 +4791,10 @@ export default function SwimmingClassPage() {
                                             <li key={item}>· {item}</li>
                                           ))}
                                         </ul>
-                                        {product.couponNote ? (
-                                          <p className="mt-2 text-xs font-semibold leading-5 text-orange-800">
-                                            {product.couponNote}
-                                          </p>
+                                        {productType === "diagnosis" ? (
+                                          <div className="mt-3">
+                                            <DiagnosisCouponBanner />
+                                          </div>
                                         ) : null}
                                       </button>
                                     );
@@ -4854,6 +4867,7 @@ export default function SwimmingClassPage() {
                                         : sharedBadge.label}
                                     </div>
                                   )}
+                                  <DiagnosisCouponBanner />
                                   <p className="rounded-lg border border-dashed border-blue-200 bg-blue-50/60 px-3 py-3 text-sm leading-6 text-blue-900">
                                     아래 정보를 입력하고 결제해 주세요.
                                     <br />
@@ -5104,17 +5118,16 @@ export default function SwimmingClassPage() {
                                             : availabilityBadge.label}
                                         </span>
                                       </div>
-                                      <div className="mt-3 rounded-lg border-2 border-orange-400 bg-orange-50 px-3 py-2 text-xs font-extrabold leading-5 text-orange-950">
-                                        <span className="mr-1.5 inline-block rounded bg-orange-500 px-1.5 py-0.5 text-[11px] font-bold text-white">
-                                          쿠폰
-                                        </span>
-                                        진단 후 저항 제로 특강 수강 시 1만원
-                                        할인 쿠폰 제공
+                                      <div className="mt-3">
+                                        <DiagnosisCouponBanner />
                                       </div>
                                     </button>
                                   );
                                 })()}
                             </div>
+                            {selectedTimeSlot?.productType === "diagnosis" ? (
+                              <DiagnosisCouponBanner />
+                            ) : null}
                             <p className="text-xs leading-5 text-gray-500">
                               ※ 세부 반과 레인은 당일 수영 실력과 목표를 확인한
                               뒤 배정될 수 있습니다.

@@ -1399,6 +1399,7 @@ export default function SwimmingClassPage() {
   // PG 심사 플래그(로그용). 카드 결제는 정식 노출로 전환됨.
   const pgReviewFromEnv = process.env.NEXT_PUBLIC_PG_REVIEW === "true";
   const [isClassPgTestLoading, setIsClassPgTestLoading] = useState(false);
+  const classPgTestLockRef = useRef(false);
 
   // 현재 활성 특강의 클래스 키 목록 (지난 특강 제거용)
   const activeClassKeys = new Set(
@@ -2474,7 +2475,9 @@ export default function SwimmingClassPage() {
   };
 
   const handleClassPgTestPayment = async () => {
-    if (isClassPgTestLoading || !selectedTimeSlot) return;
+    if (classPgTestLockRef.current || isClassPgTestLoading || !selectedTimeSlot)
+      return;
+    classPgTestLockRef.current = true;
 
     if (!validateApplicationForPayment()) {
       return;
@@ -2671,6 +2674,7 @@ export default function SwimmingClassPage() {
         variant: "destructive",
       });
     } finally {
+      classPgTestLockRef.current = false;
       setIsClassPgTestLoading(false);
     }
   };

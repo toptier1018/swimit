@@ -252,13 +252,24 @@ export async function POST(req: NextRequest) {
 
     // Notion에 승인 완료 메타 기록 (멱등: 이미 DONE이어도 덮어씀)
     if (isClassCardOrder && notionPageId && pendingMeta && notionFields) {
+      const latest = await findCardOrderByTossOrderId(orderId);
+      const latestMeta = parseCardPendingStatus(latest.cardMetaRaw);
       const doneMeta = {
+        ...pendingMeta,
+        ...latestMeta,
         status: "CARD_DONE" as const,
         tossOrderId: orderId,
         amount: amountToConfirm,
         orderNumber: pendingMeta.orderNumber,
         idempotencyKey: pendingMeta.idempotencyKey,
         paymentKey,
+        sheetWrite: latestMeta?.sheetWrite ?? pendingMeta.sheetWrite,
+        sheetWriteClaim:
+          latestMeta?.sheetWriteClaim ?? pendingMeta.sheetWriteClaim,
+        sheetWriteAt: latestMeta?.sheetWriteAt ?? pendingMeta.sheetWriteAt,
+        adminNotify: latestMeta?.adminNotify ?? pendingMeta.adminNotify,
+        adminNotifyAt:
+          latestMeta?.adminNotifyAt ?? pendingMeta.adminNotifyAt,
       };
       const mark = await updatePaymentInNotion({
         pageId: notionPageId,

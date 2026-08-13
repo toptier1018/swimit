@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import {
   findCardOrderByTossOrderId,
   updatePaymentInNotion,
@@ -12,6 +13,13 @@ import {
   type CardPendingMeta,
 } from "@/lib/toss-card-order-meta";
 import { guessClassDate } from "@/lib/notion-sheet-sync";
+
+/** 같은 서버 인스턴스에서 웹훅+success가 겹치면 한 줄로 줄임 */
+const sheetWriteInFlight = new Map<string, Promise<void>>();
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 export type FinalizeEnrollmentInput = {
   orderId: string;
@@ -102,6 +110,154 @@ function classSheetLabelFromSelected(selectedClass: string): string {
   return stroke || selectedClass;
 }
 
+async function persistCardMeta(params: {
+  pageId: string;
+  meta: CardPendingMeta;
+  selectedClass: string;
+  timeSlot: string;
+  region: string;
+  paymentStartedAt?: string;
+  traffic?: Record<string, string>;
+  /** true면 이미 저장된 시트/알림 잠금을 덮어쓰지 않음 */
+  preserveLocks?: boolean;
+}) {
+  let meta = params.meta;
+  if (params.preserveLocks) {
+    const latest = await findCardOrderByTossOrderId(meta.tossOrderId);
+    const latestMeta = parseCardPendingStatus(latest.cardMetaRaw);
+    if (latestMeta) {
+      if (latestMeta.sheetWrite === "SHEET_WRITTEN") {
+        meta = {
+          ...meta,
+          sheetWrite: "SHEET_WRITTEN",
+          sheetWriteClaim: latestMeta.sheetWriteClaim,
+          sheetWriteAt: latestMeta.sheetWriteAt,
+        };
+      } else if (!meta.sheetWrite && latestMeta.sheetWrite) {
+        meta = {
+          ...meta,
+          sheetWrite: latestMeta.sheetWrite,
+          sheetWriteClaim: latestMeta.sheetWriteClaim,
+          sheetWriteAt: latestMeta.sheetWriteAt,
+        };
+      }
+      if (latestMeta.adminNotify === "ADMIN_NOTIFIED") {
+        meta = {
+          ...meta,
+          adminNotify: "ADMIN_NOTIFIED",
+          adminNotifyAt: latestMeta.adminNotifyAt,
+        };
+      } else if (!meta.adminNotify && latestMeta.adminNotify) {
+        meta = {
+          ...meta,
+          adminNotify: latestMeta.adminNotify,
+          adminNotifyAt: latestMeta.adminNotifyAt,
+        };
+      }
+    }
+  }
+
+  return updatePaymentInNotion({
+    pageId: params.pageId,
+    ...toNotionCardStatusFields(meta),
+    orderNumber: meta.orderNumber,
+    selectedClass: params.selectedClass,
+    timeSlot: params.timeSlot,
+    region: params.region,
+    paymentStartedAt: params.paymentStartedAt,
+    traffic: params.traffic,
+  });
+}
+
+/**
+ * 웹훅·success가 동시에 돌 때 시트에 한 줄만 넣기
+ * - 노션에 쓰기 클레임을 남기고, 마지막 클레임만 append
+ * - 시트에 이미 신청번호가 있으면 skip
+ */
+async function claimSheetWrite(params: {
+  orderId: string;
+  pageId: string;
+  meta: CardPendingMeta;
+  selectedClass: string;
+  timeSlot: string;
+  region: string;
+}): Promise<{ action: "write" | "skip"; meta: CardPendingMeta; reason: string }> {
+  let meta = params.meta;
+
+  if (meta.sheetWrite === "SHEET_WRITTEN") {
+    return { action: "skip", meta, reason: "already_written" };
+  }
+
+  const existing = await getSheetOrderNumbers();
+  if (existing.success && existing.orderNumbers.has(meta.orderNumber)) {
+    const written: CardPendingMeta = {
+      ...meta,
+      sheetWrite: "SHEET_WRITTEN",
+    };
+    await persistCardMeta({
+      ...params,
+      meta: written,
+    });
+    console.log("[카드후처리] 시트에 이미 있음 — 중복 스킵:", meta.orderNumber);
+    return { action: "skip", meta: written, reason: "sheet_has_order" };
+  }
+
+  const claim = randomUUID();
+  const writing: CardPendingMeta = {
+    ...meta,
+    sheetWrite: "SHEET_WRITING",
+    sheetWriteClaim: claim,
+    sheetWriteAt: new Date().toISOString(),
+  };
+  await persistCardMeta({
+    ...params,
+    meta: writing,
+  });
+  console.log("[카드후처리] 시트 쓰기 클레임:", {
+    orderNumber: meta.orderNumber,
+    claimPrefix: `${claim.slice(0, 8)}…`,
+  });
+
+  await sleep(300);
+
+  const latest = await findCardOrderByTossOrderId(params.orderId);
+  const latestMeta = parseCardPendingStatus(latest.cardMetaRaw);
+  if (latestMeta?.sheetWrite === "SHEET_WRITTEN") {
+    return { action: "skip", meta: latestMeta, reason: "lost_to_written" };
+  }
+  if (
+    latestMeta?.sheetWrite === "SHEET_WRITING" &&
+    latestMeta.sheetWriteClaim &&
+    latestMeta.sheetWriteClaim !== claim
+  ) {
+    console.log("[카드후처리] 시트 클레임 패배 — 스킵:", meta.orderNumber);
+    return {
+      action: "skip",
+      meta: latestMeta,
+      reason: "lost_claim",
+    };
+  }
+
+  const existingAgain = await getSheetOrderNumbers();
+  if (
+    existingAgain.success &&
+    existingAgain.orderNumbers.has(meta.orderNumber)
+  ) {
+    const written: CardPendingMeta = {
+      ...(latestMeta || writing),
+      sheetWrite: "SHEET_WRITTEN",
+    };
+    await persistCardMeta({
+      ...params,
+      meta: written,
+    });
+    console.log("[카드후처리] 재확인 시 시트에 있음 — 스킵:", meta.orderNumber);
+    return { action: "skip", meta: written, reason: "sheet_has_order_retry" };
+  }
+
+  return { action: "write", meta: latestMeta || writing, reason: "claimed" };
+}
+
 /**
  * Confirm 이후(또는 웹훅 DONE) Notion/시트 멱등 후처리
  * success·webhook 공통
@@ -159,13 +315,13 @@ export async function finalizeCardEnrollmentCore(
       status: "CARD_DONE",
       paymentKey,
     };
-    const mark = await updatePaymentInNotion({
+    const mark = await persistCardMeta({
       pageId: found.pageId,
-      ...toNotionCardStatusFields(doneMeta),
-      orderNumber: meta.orderNumber,
+      meta: doneMeta,
       selectedClass: found.selectedClass || meta.tossOrderId,
       timeSlot: found.timeSlot || "",
       region: found.region || "",
+      preserveLocks: true,
     });
     if (!mark.success) {
       console.error("[카드후처리] PENDING→DONE 승격 실패:", mark.error);
@@ -258,20 +414,22 @@ export async function finalizeCardEnrollmentCore(
   let sheetSkippedDuplicate = false;
   let notionSkipped = false;
 
+  meta = {
+    ...meta,
+    status: "CARD_DONE",
+    paymentKey: paymentKey || meta.paymentKey,
+  };
+
   if (selectedClassName) {
-    const mark = await updatePaymentInNotion({
+    const mark = await persistCardMeta({
       pageId: found.pageId,
-      ...toNotionCardStatusFields({
-        ...meta,
-        status: "CARD_DONE",
-        paymentKey: paymentKey || meta.paymentKey,
-      }),
-      orderNumber,
+      meta,
       selectedClass: selectedClassName,
       timeSlot: timeSlot || found.timeSlot || "",
       region: region || found.region || "",
       paymentStartedAt: enrollment?.paymentStartedAt,
       traffic: Object.keys(traffic).length ? traffic : undefined,
+      preserveLocks: true,
     });
     if (!mark.success) {
       notionOk = false;
@@ -285,12 +443,27 @@ export async function finalizeCardEnrollmentCore(
   }
 
   if (customerName && phone) {
-    const existing = await getSheetOrderNumbers();
-    if (existing.success && existing.orderNumbers.has(orderNumber)) {
-      sheetSkippedDuplicate = true;
-      sheetOk = true;
-      console.log("[카드후처리] 시트 중복 스킵:", orderNumber);
-    } else {
+    const runSheetWrite = async () => {
+      const claim = await claimSheetWrite({
+        orderId,
+        pageId: found.pageId,
+        meta,
+        selectedClass: selectedClassName || found.selectedClass || meta.tossOrderId,
+        timeSlot: timeSlot || found.timeSlot || "",
+        region: region || found.region || "",
+      });
+      meta = claim.meta;
+
+      if (claim.action === "skip") {
+        sheetSkippedDuplicate = true;
+        sheetOk = true;
+        console.log("[카드후처리] 시트 중복 스킵:", {
+          orderNumber,
+          reason: claim.reason,
+        });
+        return;
+      }
+
       const sheetResult = await appendRowToGoogleSheet({
         접수일시: sheetTimestamp,
         신청번호: orderNumber,
@@ -313,9 +486,47 @@ export async function finalizeCardEnrollmentCore(
       if (!sheetResult.success) {
         sheetOk = false;
         console.error("[카드후처리] 시트 저장 실패:", sheetResult.error);
-      } else {
-        console.log("[카드후처리] 시트 저장 완료:", orderNumber);
+        return;
       }
+
+      const written: CardPendingMeta = {
+        ...meta,
+        sheetWrite: "SHEET_WRITTEN",
+      };
+      const markWritten = await persistCardMeta({
+        pageId: found.pageId,
+        meta: written,
+        selectedClass:
+          selectedClassName || found.selectedClass || meta.tossOrderId,
+        timeSlot: timeSlot || found.timeSlot || "",
+        region: region || found.region || "",
+      });
+      if (!markWritten.success) {
+        console.error(
+          "[카드후처리] 시트는 저장됐지만 WRITTEN 표시 실패:",
+          markWritten.error,
+        );
+      } else {
+        meta = written;
+      }
+      console.log("[카드후처리] 시트 저장 완료:", orderNumber);
+    };
+
+    const prev = sheetWriteInFlight.get(orderNumber) ?? Promise.resolve();
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    sheetWriteInFlight.set(
+      orderNumber,
+      prev.then(() => gate),
+    );
+    await prev;
+    try {
+      console.log("[카드후처리] 시트 쓰기 시작:", orderNumber);
+      await runSheetWrite();
+    } finally {
+      release();
     }
   } else {
     console.warn("[카드후처리] 이름/전화 부족 — 시트 저장 스킵", {

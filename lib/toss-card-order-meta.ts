@@ -5,6 +5,7 @@
  */
 
 export type AdminNotifyStatus = "ADMIN_NOTIFYING" | "ADMIN_NOTIFIED";
+export type SheetWriteStatus = "SHEET_WRITING" | "SHEET_WRITTEN";
 
 export type CardPendingMeta = {
   status: "CARD_PENDING" | "CARD_DONE";
@@ -17,6 +18,12 @@ export type CardPendingMeta = {
   adminNotify?: AdminNotifyStatus;
   /** ADMIN_NOTIFYING 시작 또는 ADMIN_NOTIFIED 시각 (ISO) */
   adminNotifyAt?: string;
+  /** 시트 중복 저장 방지 */
+  sheetWrite?: SheetWriteStatus;
+  /** 시트 쓰기 클레임 ID — 마지막 기록만 실제 append */
+  sheetWriteClaim?: string;
+  /** SHEET_WRITING 시작 시각 (ISO) */
+  sheetWriteAt?: string;
 };
 
 export const CARD_META_PROPERTY_NAME = "카드결제 메타";
@@ -25,6 +32,8 @@ const META_PREFIX = "SWIMIT_CARD";
 
 /** ADMIN_NOTIFYING 소프트락 TTL — 이 시간이 지나면 재시도 허용 (영구 잠금 방지) */
 export const ADMIN_NOTIFYING_TTL_MS = 90_000;
+/** SHEET_WRITING 소프트락 TTL */
+export const SHEET_WRITING_TTL_MS = 30_000;
 
 /** 노션「가상계좌 입금 정보」에 넣을 짧은 상태 */
 export function humanCardPaymentLabel(
@@ -51,6 +60,15 @@ export function encodeCardPendingStatus(meta: CardPendingMeta): string {
   }
   if (meta.adminNotifyAt) {
     parts.push(`ant=${meta.adminNotifyAt}`);
+  }
+  if (meta.sheetWrite) {
+    parts.push(`sw=${meta.sheetWrite}`);
+  }
+  if (meta.sheetWriteClaim) {
+    parts.push(`sc=${meta.sheetWriteClaim}`);
+  }
+  if (meta.sheetWriteAt) {
+    parts.push(`swt=${meta.sheetWriteAt}`);
   }
   return parts.join("|");
 }
@@ -93,6 +111,9 @@ export function parseCardPendingStatus(
   const pk = text.match(/pk=([^|]+)/)?.[1]?.trim();
   const anRaw = text.match(/an=([^|]+)/)?.[1]?.trim();
   const ant = text.match(/ant=([^|]+)/)?.[1]?.trim();
+  const swRaw = text.match(/sw=([^|]+)/)?.[1]?.trim();
+  const sc = text.match(/sc=([^|]+)/)?.[1]?.trim();
+  const swt = text.match(/swt=([^|]+)/)?.[1]?.trim();
   const status: CardPendingMeta["status"] = text.includes("CARD_DONE")
     ? "CARD_DONE"
     : "CARD_PENDING";
@@ -107,6 +128,11 @@ export function parseCardPendingStatus(
       ? anRaw
       : undefined;
 
+  const sheetWrite: SheetWriteStatus | undefined =
+    swRaw === "SHEET_WRITTEN" || swRaw === "SHEET_WRITING"
+      ? swRaw
+      : undefined;
+
   return {
     status,
     tossOrderId: toss,
@@ -116,6 +142,9 @@ export function parseCardPendingStatus(
     paymentKey: pk || undefined,
     adminNotify,
     adminNotifyAt: ant || undefined,
+    sheetWrite,
+    sheetWriteClaim: sc || undefined,
+    sheetWriteAt: swt || undefined,
   };
 }
 
@@ -147,6 +176,35 @@ export function shouldSkipAdminNotify(meta: CardPendingMeta): {
     }
     // 시각 없으면 안전하게 재시도 허용 (영구 잠금 방지)
     return { skip: false, reason: "notifying_without_timestamp" };
+  }
+  return { skip: false };
+}
+
+/**
+ * 시트에 이미 썼거나, 다른 프로세스가 쓰는 중이면 skip
+ * WRITING이 TTL을 넘으면 재시도 허용
+ */
+export function shouldSkipSheetWrite(meta: CardPendingMeta): {
+  skip: boolean;
+  reason?: string;
+} {
+  if (meta.sheetWrite === "SHEET_WRITTEN") {
+    return { skip: true, reason: "already_written" };
+  }
+  if (meta.sheetWrite === "SHEET_WRITING") {
+    const started = meta.sheetWriteAt ? Date.parse(meta.sheetWriteAt) : NaN;
+    if (Number.isFinite(started)) {
+      const age = Date.now() - started;
+      if (age >= 0 && age < SHEET_WRITING_TTL_MS) {
+        return { skip: true, reason: "write_in_progress" };
+      }
+      console.warn("[카드후처리] SHEET_WRITING TTL 만료 — 재시도 허용:", {
+        orderNumber: meta.orderNumber,
+        ageMs: age,
+      });
+      return { skip: false, reason: "writing_stale" };
+    }
+    return { skip: false, reason: "writing_without_timestamp" };
   }
   return { skip: false };
 }

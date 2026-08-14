@@ -3304,25 +3304,26 @@ export default function SwimmingClassPage() {
                 <CardContent className="p-4 sm:p-5">
                   <div className="space-y-6 text-sm sm:text-[15px] text-gray-700 leading-6 sm:leading-7">
                     {/* Main Title */}
-                    <div className="space-y-4">
+                    <div className="space-y-4 sm:space-y-5">
                       <div className="inline-flex rounded-full border border-blue-200 bg-white px-3 py-1 text-xs font-bold text-blue-700">
                         수영 클리닉 · 저항 교정 특강
                       </div>
-                      <h3 className="text-[27px] sm:text-[32px] font-bold tracking-tight leading-tight text-gray-950">
-                        수영이 힘든 건, 힘이 부족해서가 아니라
-                        <br />
-                        힘이 새고 있기 때문입니다.
+                      <h3 className="text-[1.625rem] sm:text-[2rem] font-bold tracking-tight text-gray-950 leading-[1.35] sm:leading-tight text-balance break-keep-all">
+                        <span className="block">
+                          수영이 힘든 건, 힘이 부족해서가 아니라
+                        </span>
+                        <span className="block">
+                          힘이 새고 있기 때문입니다.
+                        </span>
                       </h3>
-                      <p className="text-base sm:text-[17px] font-medium text-gray-800 leading-7">
+                      <p className="text-[15px] sm:text-[17px] font-medium text-gray-800 leading-[1.7] sm:leading-7 break-keep-all">
                         더 세게 수영하기 전에, 어디서{" "}
                         <span className="font-bold text-blue-700">저항</span>이
                         생기는지부터 찾아보세요.
                       </p>
-                      <p className="text-base sm:text-[17px] font-medium text-gray-800 leading-7">
-                        스윔잇은 수중 촬영으로 내 수영을 방해하는 가장 큰 저항을
-                        찾아
-                        <br />
-                        코치가 직접 교정하는{" "}
+                      <p className="text-[15px] sm:text-[17px] font-medium text-gray-800 leading-[1.7] sm:leading-7 break-keep-all">
+                        스윔잇은 수중 촬영으로 내 수영을 방해하는 가장 큰
+                        저항을 찾아, 코치가 직접 교정하는{" "}
                         <span className="font-bold text-blue-700">
                           저항 제로 특강
                         </span>

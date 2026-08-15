@@ -1137,14 +1137,58 @@ const getEffectiveEnrollmentCount = (
   return total;
 };
 
+type AvailabilityTone = "waitlist" | "critical" | "warning" | "info";
+
+/** 3자리 이상일 때 클래스마다 고정으로 하나를 골라 깜빡임을 막음 */
+const SCARCITY_LABELS = ["잔여 소수", "곧 마감", "마감임박"] as const;
+
+const pickStableScarcityLabel = (className: string) => {
+  let hash = 0;
+  for (let i = 0; i < className.length; i += 1) {
+    hash = (hash * 31 + className.charCodeAt(i)) >>> 0;
+  }
+  return SCARCITY_LABELS[hash % SCARCITY_LABELS.length];
+};
+
+const getAvailabilityBadgeClassName = (tone: AvailabilityTone) => {
+  const base = "rounded px-2 py-1 text-[11px] font-bold text-white";
+  if (tone === "waitlist") return `${base} bg-gray-500`;
+  if (tone === "critical") return `${base} bg-red-500`;
+  if (tone === "warning") return `${base} bg-orange-500`;
+  return `${base} bg-blue-600`;
+};
+
+const getAvailabilityBannerClassName = (tone: AvailabilityTone) => {
+  if (tone === "waitlist") {
+    return "rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800";
+  }
+  if (tone === "critical") {
+    return "rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900";
+  }
+  if (tone === "warning") {
+    return "rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-sm text-orange-900";
+  }
+  return "rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-900";
+};
+
 const getClassAvailabilityBadge = (
   className: string,
   counts: Record<string, number>,
   thresholds: Record<string, number>,
   manualWaitlist: Set<string>,
-): { label: string; isWaitlist: boolean; remaining: number } => {
+): {
+  label: string;
+  isWaitlist: boolean;
+  remaining: number;
+  tone: AvailabilityTone;
+} => {
   if (FORCE_ALL_WAITLIST || manualWaitlist.has(className)) {
-    return { label: "예약대기", isWaitlist: true, remaining: 0 };
+    return {
+      label: "예약대기",
+      isWaitlist: true,
+      remaining: 0,
+      tone: "waitlist",
+    };
   }
 
   const threshold = resolveWaitlistThreshold(className, thresholds);
@@ -1152,15 +1196,37 @@ const getClassAvailabilityBadge = (
   const remaining = Math.max(0, threshold - count);
 
   if (remaining <= 0) {
-    return { label: "예약대기", isWaitlist: true, remaining: 0 };
+    return {
+      label: "예약대기",
+      isWaitlist: true,
+      remaining: 0,
+      tone: "waitlist",
+    };
   }
   if (remaining === 1) {
-    return { label: "1자리 남음", isWaitlist: false, remaining: 1 };
+    return {
+      label: "1자리 남음",
+      isWaitlist: false,
+      remaining: 1,
+      tone: "critical",
+    };
   }
   if (remaining === 2) {
-    return { label: "2자리 남음", isWaitlist: false, remaining: 2 };
+    return {
+      label: "2자리 남음",
+      isWaitlist: false,
+      remaining: 2,
+      tone: "warning",
+    };
   }
-  return { label: "마감임박", isWaitlist: false, remaining };
+
+  const label = pickStableScarcityLabel(className);
+  return {
+    label,
+    isWaitlist: false,
+    remaining,
+    tone: "info",
+  };
 };
 
 const normalizeEnrollmentCounts = (
@@ -5017,10 +5083,12 @@ export default function SwimmingClassPage() {
                               {selectedProductType === "diagnosis" ? (
                                 <div className="space-y-2">
                                   {sharedBadge && (
-                                    <div className="rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-sm text-orange-900">
-                                      {sharedBadge.isWaitlist
-                                        ? "예약대기"
-                                        : sharedBadge.label}
+                                    <div
+                                      className={getAvailabilityBannerClassName(
+                                        sharedBadge.tone,
+                                      )}
+                                    >
+                                      {sharedBadge.label}
                                     </div>
                                   )}
                                   <DiagnosisCouponBanner />
@@ -5076,15 +5144,13 @@ export default function SwimmingClassPage() {
                                               }
                                               badge={product.priceBadge}
                                             />
-                                            {availabilityBadge.isWaitlist ? (
-                                              <span className="rounded bg-orange-500 px-2 py-1 text-[11px] font-bold text-white">
-                                                예약대기
-                                              </span>
-                                            ) : (
-                                              <span className="rounded bg-orange-500 px-2 py-1 text-[11px] font-bold text-white">
-                                                {availabilityBadge.label}
-                                              </span>
-                                            )}
+                                            <span
+                                              className={getAvailabilityBadgeClassName(
+                                                availabilityBadge.tone,
+                                              )}
+                                            >
+                                              {availabilityBadge.label}
+                                            </span>
                                           </div>
                                         </button>
                                       );
@@ -5206,15 +5272,13 @@ export default function SwimmingClassPage() {
                                         <span className="text-sm font-bold text-gray-900">
                                           ₩{price.toLocaleString()}
                                         </span>
-                                        {availabilityBadge.isWaitlist ? (
-                                          <span className="rounded bg-orange-500 px-2 py-1 text-[11px] font-bold text-white">
-                                            예약대기
-                                          </span>
-                                        ) : (
-                                          <span className="rounded bg-orange-500 px-2 py-1 text-[11px] font-bold text-white">
-                                            {availabilityBadge.label}
-                                          </span>
-                                        )}
+                                        <span
+                                          className={getAvailabilityBadgeClassName(
+                                            availabilityBadge.tone,
+                                          )}
+                                        >
+                                          {availabilityBadge.label}
+                                        </span>
                                       </div>
                                     </button>
                                   );
@@ -5268,10 +5332,12 @@ export default function SwimmingClassPage() {
                                           }
                                           badge={diagnosisProduct.priceBadge}
                                         />
-                                        <span className="rounded bg-orange-500 px-2 py-1 text-[11px] font-bold text-white">
-                                          {availabilityBadge.isWaitlist
-                                            ? "예약대기"
-                                            : availabilityBadge.label}
+                                        <span
+                                          className={getAvailabilityBadgeClassName(
+                                            availabilityBadge.tone,
+                                          )}
+                                        >
+                                          {availabilityBadge.label}
                                         </span>
                                       </div>
                                       <div className="mt-3">

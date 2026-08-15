@@ -2278,26 +2278,36 @@ export default function SwimmingClassPage() {
   ) => {
     setSelectedClass(String(classItem.id));
     setSelectedTimeSlot(null);
-    setSelectedProductType(null);
     setDiagnosisStrokes([]);
     setPaidPageId(null);
     setOrderNumber("");
     setRegionError(false);
     setCalendarMonth(classItem.month);
     setCalendarYear(classItem.year);
+    // 특강 버튼: 제로를 바로 열어 영법 선택 → 결제로 이어지게 함
+    setSelectedProductType(preferDiagnosis ? null : "zero");
     console.log("[일정 선택] 신청 단계 진입:", {
       id: classItem.id,
       location: classItem.location,
       date: classItem.date,
       preferDiagnosis,
       landingEntry,
+      productHint: preferDiagnosis ? "diagnosis" : "zero",
     });
     handleRegistration();
-    if (preferDiagnosis) {
-      window.setTimeout(() => {
+    window.setTimeout(() => {
+      if (preferDiagnosis) {
         applyDiagnosisProductSelection(classItem.id);
-      }, 0);
-    }
+      } else {
+        setSelectedProductType("zero");
+        setSelectedTimeSlot(null);
+        console.log("[상품] 제로 특강 경로 — 영법 선택 화면:", classItem.id);
+      }
+      applicationSectionRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 50);
   };
 
   const handleRegistration = () => {
@@ -2426,22 +2436,45 @@ export default function SwimmingClassPage() {
     console.log("[상품] 신청 영역 닫기 — 상품·영법 선택 초기화");
   };
 
-  const applyZeroStrokeSelection = (stroke: StrokeType) => {
+  const applyZeroStrokeSelection = (
+    stroke: StrokeType,
+    classId?: number,
+  ) => {
     const product = PRODUCT_CATALOG.zero;
+    const resolvedClassId =
+      Number.isFinite(classId) && (classId as number) > 0
+        ? (classId as number)
+        : Number.isFinite(selectedClassIdNum) && selectedClassIdNum > 0
+          ? selectedClassIdNum
+          : DONGTAN_AUGUST_CLASS_ID;
     const classKey = makeClassKey(
-      DONGTAN_AUGUST_CLASS_ID,
+      resolvedClassId,
       product.session,
       stroke,
     );
+    const strokeInfo = getAvailableStrokesForClass(resolvedClassId).strokes.find(
+      (s) => s.stroke === stroke,
+    );
+    const time =
+      getAvailableStrokesForClass(resolvedClassId).time || product.time;
+    const price = strokeInfo?.price ?? product.price;
     const isFull = isClassFull(classKey);
-    console.log("[상품] 저항 제로 영법 선택:", { stroke, classKey, isFull });
+    console.log("[상품] 저항 제로 영법 선택:", {
+      stroke,
+      classId: resolvedClassId,
+      classKey,
+      isFull,
+      price,
+      time,
+    });
+    setSelectedProductType("zero");
     setSelectedTimeSlot({
       name: classKey,
       session: product.session,
       lane: UNASSIGNED_LANE,
       title: stroke,
-      time: product.time,
-      price: product.price,
+      time,
+      price,
       isWaitlist: isFull,
       available: !isFull,
       productType: "zero",
@@ -5412,7 +5445,10 @@ export default function SwimmingClassPage() {
                                           key={stroke}
                                           type="button"
                                           onClick={() =>
-                                            applyZeroStrokeSelection(stroke)
+                                            applyZeroStrokeSelection(
+                                              stroke,
+                                              selectedClassIdNum,
+                                            )
                                           }
                                           className={`relative flex min-h-[140px] flex-col justify-between rounded-xl border p-4 text-left transition-all ${
                                             isSelected

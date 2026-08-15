@@ -1985,21 +1985,11 @@ export default function SwimmingClassPage() {
 
   // 달력: 한국 시간(KST) 기준 현재 연·월로 초기화
   const kstTodayInit = getKoreanTodayParts();
-  const initialActiveClasses = getActiveClasses();
-  const initialScheduleMonth =
-    initialActiveClasses.length > 0
-      ? [...initialActiveClasses].sort((a, b) => {
-          if (a.year !== b.year) return a.year - b.year;
-          if (a.month !== b.month) return a.month - b.month;
-          return a.dateNum - b.dateNum;
-        })[0].month
-      : kstTodayInit.month;
   const [calendarMonth, setCalendarMonth] = useState(kstTodayInit.month);
   const [calendarYear, setCalendarYear] = useState(kstTodayInit.year);
   const [today, setToday] = useState(kstTodayInit);
-  const [activeScheduleMonth, setActiveScheduleMonth] = useState(
-    initialScheduleMonth,
-  );
+  /** 일정 섹션: 지역 칩 필터 ("" = 전체) */
+  const [selectedScheduleRegion, setSelectedScheduleRegion] = useState("");
   const selectedClassRef = useRef<string | null>(null);
   selectedClassRef.current = selectedClass;
 
@@ -2103,7 +2093,7 @@ export default function SwimmingClassPage() {
     calendarDays.push(i);
   }
 
-  // 선택 전에는 보고 있는 월의 모든 특강, 선택 후에는 선택한 특강 날짜만 표시
+  // 선택 전에는 보고 있는 월(+선택 지역)의 특강, 선택 후에는 선택한 특강 날짜만
   const highlightedDates = selectedClass
     ? getActiveClasses()
         .filter(
@@ -2114,7 +2104,13 @@ export default function SwimmingClassPage() {
         )
         .map((c) => c.dateNum)
     : getActiveClasses()
-        .filter((c) => c.year === calendarYear && c.month === calendarMonth)
+        .filter(
+          (c) =>
+            c.year === calendarYear &&
+            c.month === calendarMonth &&
+            (!selectedScheduleRegion ||
+              c.locationCode === selectedScheduleRegion),
+        )
         .map((c) => c.dateNum);
 
   const selectedScheduleClass = selectedClass
@@ -2122,34 +2118,50 @@ export default function SwimmingClassPage() {
     : null;
 
   const activeClasses = getActiveClasses();
-  const scheduleTabMonths = Array.from(
-    new Set(activeClasses.map((c) => c.month)),
-  ).sort((a, b) => a - b);
-  const newestScheduleMonth = scheduleTabMonths.at(-1);
-  const newestScheduleCount = newestScheduleMonth
-    ? activeClasses.filter((c) => c.month === newestScheduleMonth).length
-    : 0;
-  const effectiveScheduleMonth = scheduleTabMonths.includes(activeScheduleMonth)
-    ? activeScheduleMonth
-    : (scheduleTabMonths[0] ?? activeScheduleMonth);
-  const activeScheduleClasses = activeClasses.filter(
-    (c) => c.month === effectiveScheduleMonth,
+  const sortClassesByDate = (a: ClassItem, b: ClassItem) => {
+    if (a.year !== b.year) return a.year - b.year;
+    if (a.month !== b.month) return a.month - b.month;
+    if (a.dateNum !== b.dateNum) return a.dateNum - b.dateNum;
+    return a.id - b.id;
+  };
+  const scheduleRegions = Array.from(
+    new Map(
+      [...activeClasses]
+        .sort(sortClassesByDate)
+        .map((c) => [c.locationCode, c] as const),
+    ).keys(),
   );
+  const activeScheduleClasses = activeClasses
+    .filter(
+      (c) =>
+        !selectedScheduleRegion || c.locationCode === selectedScheduleRegion,
+    )
+    .sort(sortClassesByDate);
   const selectedClassDiagnosis = Number.isFinite(selectedClassIdNum)
     ? getDiagnosisOfferingForClass(selectedClassIdNum)
     : null;
 
-  const handleScheduleMonthChange = (month: number) => {
-    setActiveScheduleMonth(month);
-    const classInMonth = activeClasses.find((c) => c.month === month);
-    if (classInMonth) {
-      setCalendarYear(classInMonth.year);
-      setCalendarMonth(month);
+  const handleScheduleRegionChange = (regionCode: string) => {
+    setSelectedScheduleRegion(regionCode);
+    console.log("[일정] 지역 칩 선택:", regionCode || "전체");
+
+    const regionClasses = activeClasses
+      .filter((c) => !regionCode || c.locationCode === regionCode)
+      .sort(sortClassesByDate);
+    const nextFocus = regionClasses[0];
+    if (nextFocus) {
+      setCalendarYear(nextFocus.year);
+      setCalendarMonth(nextFocus.month);
     }
+
     const selected = selectedClass
       ? classes.find((c) => String(c.id) === selectedClass)
       : null;
-    if (selected && selected.month !== month) {
+    if (
+      selected &&
+      regionCode &&
+      selected.locationCode !== regionCode
+    ) {
       setSelectedClass(null);
       setSelectedTimeSlot(null);
       setSelectedProductType(null);
@@ -2157,9 +2169,8 @@ export default function SwimmingClassPage() {
       setPaidPageId(null);
       setOrderNumber("");
       setRegionError(false);
-      console.log("[일정 탭] 다른 월로 전환 — 선택 일정 초기화:", month);
+      console.log("[일정] 다른 지역 선택 — 기존 일정 선택 초기화:", regionCode);
     }
-    console.log("[일정 탭] 월별 탭 전환:", month);
   };
 
   const getScheduleShortLabel = (classItem: ClassItem) =>
@@ -3614,55 +3625,64 @@ export default function SwimmingClassPage() {
               >
                 <div className="mb-3 sm:mb-4">
                   <h3 className="text-lg sm:text-xl font-bold text-gray-900 flex items-center gap-2">
-                    📌{" "}
-                    {scheduleTabMonths.length > 1
-                      ? `${scheduleTabMonths.map((m) => `${m}월`).join("·")} `
-                      : scheduleTabMonths.length === 1
-                        ? `${scheduleTabMonths[0]}월 `
-                        : ""}
-                    수강 일정 · 지역 안내
+                    📌 수강 지역 · 일정 안내
                   </h3>
+                  <p className="mt-1.5 text-sm sm:text-[15px] font-medium leading-6 text-gray-600">
+                    지역을 먼저 선택한 뒤, 일정을 확인하세요.
+                  </p>
                 </div>
-                {scheduleTabMonths.length > 1 && (
+                {scheduleRegions.length > 0 && (
                   <div className="mb-4">
                     <div
-                      className="flex rounded-xl border border-slate-200 bg-white p-1 shadow-sm"
+                      className="flex flex-wrap gap-2"
                       role="tablist"
-                      aria-label="월별 일정"
+                      aria-label="지역 선택"
                     >
-                      {scheduleTabMonths.map((month) => {
-                        const isActive = effectiveScheduleMonth === month;
+                      <button
+                        type="button"
+                        role="tab"
+                        aria-selected={!selectedScheduleRegion}
+                        onClick={() => handleScheduleRegionChange("")}
+                        className={`rounded-full px-3.5 py-2 text-sm font-bold transition-all ${
+                          !selectedScheduleRegion
+                            ? "bg-primary text-primary-foreground shadow-md"
+                            : "border border-slate-200 bg-white text-gray-700 hover:border-primary/40"
+                        }`}
+                      >
+                        전체
+                        <span
+                          className={`ml-1 text-xs font-semibold ${
+                            !selectedScheduleRegion
+                              ? "text-primary-foreground/85"
+                              : "text-gray-400"
+                          }`}
+                        >
+                          ({activeClasses.length})
+                        </span>
+                      </button>
+                      {scheduleRegions.map((regionCode) => {
+                        const isActive = selectedScheduleRegion === regionCode;
                         const count = activeClasses.filter(
-                          (c) => c.month === month,
+                          (c) => c.locationCode === regionCode,
                         ).length;
                         return (
                           <button
-                            key={month}
+                            key={regionCode}
                             type="button"
                             role="tab"
                             aria-selected={isActive}
-                            onClick={() => handleScheduleMonthChange(month)}
-                            className={`flex-1 rounded-lg py-3 text-sm sm:text-base font-bold transition-all ${
+                            onClick={() =>
+                              handleScheduleRegionChange(regionCode)
+                            }
+                            className={`rounded-full px-3.5 py-2 text-sm font-bold transition-all ${
                               isActive
                                 ? "bg-primary text-primary-foreground shadow-md"
-                                : "text-gray-600 hover:bg-slate-50"
+                                : "border border-slate-200 bg-white text-gray-700 hover:border-primary/40"
                             }`}
                           >
-                            {month}월 일정
-                              {scheduleTabMonths.length > 1 &&
-                                month === newestScheduleMonth && (
-                                <span
-                                  className={`ml-1.5 rounded-full px-1.5 py-0.5 text-[10px] font-extrabold tracking-wide ${
-                                    isActive
-                                      ? "bg-white text-primary"
-                                      : "bg-orange-500 text-white"
-                                  }`}
-                                >
-                                  NEW
-                                </span>
-                              )}
+                            {regionCode}
                             <span
-                              className={`ml-1 text-xs sm:text-sm font-semibold ${
+                              className={`ml-1 text-xs font-semibold ${
                                 isActive
                                   ? "text-primary-foreground/85"
                                   : "text-gray-400"
@@ -3674,25 +3694,22 @@ export default function SwimmingClassPage() {
                         );
                       })}
                     </div>
-                    {newestScheduleMonth && (
-                      <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-orange-200 bg-orange-50 px-3 py-2.5 text-sm leading-5 text-orange-900">
-                        <p>
-                          ✨ <strong>{newestScheduleMonth}월 특강 {newestScheduleCount}개 일정</strong>을
-                          모집 중입니다.
-                        </p>
-                        {effectiveScheduleMonth !== newestScheduleMonth && (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleScheduleMonthChange(newestScheduleMonth)
-                            }
-                            className="shrink-0 font-bold text-orange-700 underline underline-offset-2"
-                          >
-                            {newestScheduleMonth}월 보기
-                          </button>
-                        )}
-                      </div>
-                    )}
+                    <p className="mt-3 rounded-lg border border-blue-100 bg-blue-50 px-3 py-2.5 text-sm leading-5 text-blue-900">
+                      {selectedScheduleRegion
+                        ? (
+                            <>
+                              <strong>{selectedScheduleRegion}</strong> 지역
+                              일정 {activeScheduleClasses.length}개를 보고
+                              있습니다.
+                            </>
+                          )
+                        : (
+                            <>
+                              전체 지역 일정 {activeScheduleClasses.length}개 ·
+                              원하는 지역 칩을 눌러 주세요.
+                            </>
+                          )}
+                    </p>
                   </div>
                 )}
                 <div className="grid md:grid-cols-[300px_1fr] gap-4 md:gap-6">
@@ -3821,15 +3838,25 @@ export default function SwimmingClassPage() {
                     </Card>
                   </div>
 
-                  {/* Right: Region Notice */}
+                  {/* Right: Region schedules */}
                   <div>
                     <div className="mb-3">
                       <h3 className="text-lg sm:text-xl font-bold text-primary">
-                        📍 지역 안내
+                        📅{" "}
+                        {selectedScheduleRegion
+                          ? `${selectedScheduleRegion} 일정`
+                          : "일정 안내"}
                       </h3>
                     </div>
                     <div className="space-y-3">
-                      {activeScheduleClasses.map((classItem) => {
+                      {activeScheduleClasses.length === 0 ? (
+                        <div className="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-gray-600">
+                          선택한 지역에 모집 중인 일정이 없습니다.
+                          <br />
+                          다른 지역을 선택해 주세요.
+                        </div>
+                      ) : (
+                        activeScheduleClasses.map((classItem) => {
                         const isSelectedSchedule =
                           selectedClass === String(classItem.id);
                         return (
@@ -3960,7 +3987,8 @@ export default function SwimmingClassPage() {
                           </CardContent>
                         </Card>
                         );
-                      })}
+                      })
+                      )}
                     </div>
                   </div>
                 </div>

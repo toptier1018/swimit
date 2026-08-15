@@ -3563,10 +3563,75 @@ export default function SwimmingClassPage() {
                       </div>
                     ) : null}
 
+                    {/* fishtank: 진단 다음에 특강 소개로 자연스럽게 연결 */}
+                    {isFishtankEntry ? (
+                      <div
+                        id="zero-class-intro-section"
+                        className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5"
+                      >
+                        <div className="space-y-3">
+                          <div className="inline-flex rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">
+                            수영 클리닉 · 저항 교정 특강
+                          </div>
+                          <p className="text-sm font-bold leading-6 text-blue-800">
+                            어항샷으로 원인을 확인했다면, 같은 날·같은 센터에서
+                            저항 제로 특강으로 바로 교정할 수도 있습니다.
+                          </p>
+                          <h3 className="text-[1.375rem] sm:text-[1.625rem] font-bold tracking-tight text-gray-950 leading-[1.35] break-keep-all">
+                            <span className="block">
+                              수영이 힘든 건, 힘이 부족해서가 아니라
+                            </span>
+                            <span className="block">
+                              힘이 새고 있기 때문입니다.
+                            </span>
+                          </h3>
+                          <p className="text-[15px] sm:text-[16px] font-medium text-gray-800 leading-[1.7] break-keep-all">
+                            더 세게 수영하기 전에, 어디서{" "}
+                            <span className="font-bold text-blue-700">저항</span>
+                            이 생기는지부터 찾아보세요.
+                          </p>
+                          <p className="text-[15px] sm:text-[16px] font-medium text-gray-800 leading-[1.7] break-keep-all">
+                            스윔잇은 수중 촬영으로 내 수영을 방해하는 가장 큰
+                            저항을 찾아, 코치가 직접 교정하는{" "}
+                            <span className="font-bold text-blue-700">
+                              저항 제로 특강
+                            </span>
+                            입니다.
+                          </p>
+                          <div
+                            className="relative w-full overflow-hidden rounded-xl shadow-md"
+                            style={{ paddingBottom: "56.25%" }}
+                          >
+                            <iframe
+                              src="https://www.youtube.com/embed/WwNq2mqwM_U?autoplay=1&mute=1&loop=1&playlist=WwNq2mqwM_U&playsinline=1&rel=0"
+                              title="스윔잇 특강 전후 비교 영상"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                              className="absolute inset-0 h-full w-full"
+                            />
+                          </div>
+                          <Button
+                            size="lg"
+                            className="w-full text-base font-bold"
+                            onClick={() => {
+                              console.log(
+                                "[CTA] fishtank → 특강 소개에서 일정 이동",
+                              );
+                              scrollToScheduleSection("fishtank-zero-intro");
+                            }}
+                          >
+                            가장 가까운 지역 특강 보기
+                          </Button>
+                        </div>
+                      </div>
+                    ) : null}
+
                     {/* Problem Checklist */}
                     <div className="space-y-3 rounded-2xl border border-blue-100 bg-white p-4 shadow-sm">
                       <p className="text-base sm:text-lg font-bold text-gray-950">
-                        혹시 하나라도 해당되나요?
+                        {isFishtankEntry
+                          ? "특강이 필요한 분들, 혹시 하나라도 해당되나요?"
+                          : "혹시 하나라도 해당되나요?"}
                       </p>
                       <div className="grid gap-2 sm:grid-cols-2">
                         {PROBLEM_CHECKLIST.map((item) => (
@@ -3591,12 +3656,13 @@ export default function SwimmingClassPage() {
                         onClick={() => {
                           console.log(
                             "[CTA] 문제 체크리스트 → 일정으로 이동",
+                            isFishtankEntry ? "특강" : "clinic",
                           );
                           scrollToScheduleSection("problem-checklist");
                         }}
                       >
                         {isFishtankEntry
-                          ? "어항샷 진단 예약하기"
+                          ? "저항 제로 특강 신청하기"
                           : "저항 없애러 가기"}
                       </Button>
                     </div>
@@ -3604,7 +3670,9 @@ export default function SwimmingClassPage() {
                     {/* Differentiation Section */}
                     <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                       <p className="text-base sm:text-lg font-bold text-gray-950">
-                        왜 스윔잇은 다른 특강과 다를까요?
+                        {isFishtankEntry
+                          ? "저항 제로 특강은 왜 다를까요?"
+                          : "왜 스윔잇은 다른 특강과 다를까요?"}
                       </p>
                       <div className="grid gap-3 sm:grid-cols-2">
                         <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
@@ -3691,14 +3759,12 @@ export default function SwimmingClassPage() {
                         onClick={() => {
                           console.log(
                             "[CTA] 신뢰 지표 → 일정으로 이동",
-                            isFishtankEntry ? "fishtank" : "clinic",
+                            isFishtankEntry ? "특강" : "clinic",
                           );
                           scrollToScheduleSection("trust-metrics");
                         }}
                       >
-                        {isFishtankEntry
-                          ? "어항샷 진단 예약하기"
-                          : "저항 제로 특강 신청하기"}
+                        저항 제로 특강 신청하기
                       </Button>
                     </div>
                   </div>
@@ -3852,7 +3918,9 @@ export default function SwimmingClassPage() {
                     📌 수강 지역 · 일정 안내
                   </h3>
                   <p className="mt-1.5 text-sm sm:text-[15px] font-medium leading-6 text-gray-600">
-                    지역을 먼저 선택한 뒤, 일정을 확인하세요.
+                    {isFishtankEntry
+                      ? "지역을 고른 뒤, 어항샷 진단 또는 저항 제로 특강 중 원하는 프로그램을 신청하세요."
+                      : "지역을 먼저 선택한 뒤, 일정을 확인하세요."}
                   </p>
                 </div>
                 {scheduleRegions.length > 0 && (

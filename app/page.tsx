@@ -250,24 +250,6 @@ const classes: ClassItem[] = [
     badge: "특강 + 진단 동시 운영",
   },
   {
-    id: 17,
-    year: 2026,
-    location: "경기 동탄 · 스윔스튜디오제이",
-    locationCode: "동탄",
-    date: "9월 19일 (토)",
-    dateNum: 19,
-    month: 9,
-    venue: "스윔스튜디오제이",
-    address:
-      "경기도 화성시 동탄구 동탄신리천로 414 경서타워 4층 스윔스튜디오제이",
-    spots: "영법 각 7명 · 진단 20명",
-    scheduleSummaryLines: [
-      "1부 특강 · 14:00~16:00 (2시간)",
-      "1부 진단 프로그램 · 14:00~16:00",
-    ],
-    badge: "특강 + 진단 동시 운영",
-  },
-  {
     id: 18,
     year: 2026,
     location: "서울 목동 · 목동스포츠센터",
@@ -781,23 +763,6 @@ const TIMETABLE_EUNPYEONG_SEPTEMBER: TimetableRow[] = [
   },
 ];
 
-/** 스윔스튜디오제이 9/19 특강 (동탄) — 평영 없음, 특강+진단 동시 */
-const TIMETABLE_DONGTAN_SEPTEMBER: TimetableRow[] = [
-  {
-    session: "1부 특강",
-    time: "14:00 ~ 16:00",
-    lanes: [
-      { lane: UNASSIGNED_LANE, title: "자유형", price: 80000 },
-      { lane: UNASSIGNED_LANE, title: "접영", price: 80000 },
-      {
-        lane: UNASSIGNED_LANE,
-        title: DIAGNOSIS_LANE_TITLE,
-        price: PRODUCT_CATALOG.diagnosis.price,
-      },
-    ],
-  },
-];
-
 /** 목동스포츠센터 9/20 특강 — 특강+진단 동시, 레인 미표시 */
 const TIMETABLE_MOKDONG_SEPTEMBER: TimetableRow[] = [
   {
@@ -847,7 +812,6 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   14: TIMETABLE_MOKDONG_AUGUST, // 8/30 목동
   15: TIMETABLE_BUSAN_SEPTEMBER, // 9/6 부산
   16: TIMETABLE_EUNPYEONG_SEPTEMBER, // 9/13 은평
-  17: TIMETABLE_DONGTAN_SEPTEMBER, // 9/19 동탄
   18: TIMETABLE_MOKDONG_SEPTEMBER, // 9/20 목동
   19: TIMETABLE_CHEONGNA_SEPTEMBER, // 9/27 청라
 };
@@ -972,7 +936,7 @@ type DiagnosisOffering = {
  * 특강별 저항 진단 프로그램 운영 정보
  * - 동탄 8/23: 2부에 진단만 단독 운영
  * - 목동 8/30·부산 9/6: 1부 특강과 동시 운영 (레인 표기)
- * - 은평 9/13·동탄 9/19·목동 9/20·청라 9/27: 1부 특강과 동시 운영 (레인 미표시)
+ * - 은평 9/13·목동 9/20·청라 9/27: 1부 특강과 동시 운영 (레인 미표시)
  */
 const getDiagnosisOfferingForClass = (
   classId: number,
@@ -1100,10 +1064,6 @@ const DEFAULT_WAITLIST_THRESHOLDS_BY_CLASS: Record<string, number> = {
   "[은평 9/13] 1부 특강 평영": 7,
   "[은평 9/13] 1부 특강 접영": 7,
   "[은평 9/13] 1부 진단": DIAGNOSIS_WAITLIST_THRESHOLD,
-  // 동탄 9/19 (평영 없음)
-  "[동탄 9/19] 1부 특강 자유형": 7,
-  "[동탄 9/19] 1부 특강 접영": 7,
-  "[동탄 9/19] 1부 진단": DIAGNOSIS_WAITLIST_THRESHOLD,
   // 목동 9/20
   "[목동 9/20] 1부 특강 자유형": 7,
   "[목동 9/20] 1부 특강 평영": 7,

@@ -1422,6 +1422,11 @@ export default function SwimmingClassPage() {
 
   // 개발자/관리자 모드 (URL: ?debug=true 또는 ?admin=true)
   const [showDebug, setShowDebug] = useState(false);
+  /** URL entry=fishtank → 어항샷 광고 유입 / 기본·clinic → 특강 랜딩 */
+  const [landingEntry, setLandingEntry] = useState<"clinic" | "fishtank">(
+    "clinic",
+  );
+  const isFishtankEntry = landingEntry === "fishtank";
   // PG 심사 플래그(로그용). 카드 결제는 정식 노출로 전환됨.
   const pgReviewFromEnv = process.env.NEXT_PUBLIC_PG_REVIEW === "true";
   const [isClassPgTestLoading, setIsClassPgTestLoading] = useState(false);
@@ -1496,10 +1501,19 @@ export default function SwimmingClassPage() {
     }
     setTrafficSource(nextTraffic);
 
+    const entryRaw = (params.get("entry") || "").trim().toLowerCase();
+    const nextEntry = entryRaw === "fishtank" ? "fishtank" : "clinic";
+    setLandingEntry(nextEntry);
+    console.log("[랜딩] entry 모드:", {
+      raw: entryRaw || "(없음)",
+      landingEntry: nextEntry,
+    });
+
     console.log("[퍼널] URL 파라미터 확인:", {
       debug: params.get("debug") === "true",
       admin: params.get("admin") === "true",
       adminMode,
+      entry: nextEntry,
       pgReview: pgReviewFromEnv,
       pgtest: pgTestOn,
       cardPayment: "always-on",
@@ -2243,8 +2257,48 @@ export default function SwimmingClassPage() {
     `${classItem.locationCode} ${classItem.month}/${classItem.dateNum}`;
 
   const scheduleApplyButtonText = selectedScheduleClass
-    ? `${getScheduleShortLabel(selectedScheduleClass)} 특강 신청하기`
-    : "먼저 일정을 선택해 주세요";
+    ? isFishtankEntry
+      ? `${getScheduleShortLabel(selectedScheduleClass)} 어항샷 진단 예약하기`
+      : `${getScheduleShortLabel(selectedScheduleClass)} 특강 신청하기`
+    : isFishtankEntry
+      ? "먼저 지역 일정을 선택해 주세요"
+      : "먼저 일정을 선택해 주세요";
+
+  const scrollToScheduleSection = (reason: string) => {
+    console.log("[CTA] 일정 섹션으로 이동:", reason);
+    document.getElementById("schedule-section")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
+
+  const openScheduleRegistration = (
+    classItem: ClassItem,
+    preferDiagnosis: boolean,
+  ) => {
+    setSelectedClass(String(classItem.id));
+    setSelectedTimeSlot(null);
+    setSelectedProductType(null);
+    setDiagnosisStrokes([]);
+    setPaidPageId(null);
+    setOrderNumber("");
+    setRegionError(false);
+    setCalendarMonth(classItem.month);
+    setCalendarYear(classItem.year);
+    console.log("[일정 선택] 신청 단계 진입:", {
+      id: classItem.id,
+      location: classItem.location,
+      date: classItem.date,
+      preferDiagnosis,
+      landingEntry,
+    });
+    handleRegistration();
+    if (preferDiagnosis) {
+      window.setTimeout(() => {
+        applyDiagnosisProductSelection(classItem.id);
+      }, 0);
+    }
+  };
 
   const handleRegistration = () => {
     incrementFunnelCount(1, "지금 바로 신청하기 클릭");
@@ -2283,8 +2337,13 @@ export default function SwimmingClassPage() {
       id: selectedScheduleClass.id,
       location: selectedScheduleClass.location,
       date: selectedScheduleClass.date,
+      preferDiagnosis: isFishtankEntry,
     });
-    handleRegistration();
+    if (isFishtankEntry) {
+      openScheduleRegistration(selectedScheduleClass, true);
+    } else {
+      handleRegistration();
+    }
   };
 
   const validateApplicationForPayment = () => {
@@ -2717,7 +2776,11 @@ export default function SwimmingClassPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
+    <div
+      className={`min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 ${
+        isFishtankEntry && !showRegistrationForm ? "pb-24" : ""
+      }`}
+    >
       <main className="container mx-auto py-8 px-4 max-w-4xl flex flex-col">
         {/* 개발자 모드: 카운터 표시 (모든 단계에서 표시) */}
         {showDebug && (
@@ -3342,60 +3405,163 @@ export default function SwimmingClassPage() {
                   <div className="space-y-6 text-sm sm:text-[15px] text-gray-700 leading-6 sm:leading-7">
                     {/* Main Title */}
                     <div className="space-y-4 sm:space-y-5">
-                      <div className="inline-flex rounded-full border border-blue-200 bg-white px-3 py-1 text-xs font-bold text-blue-700">
-                        수영 클리닉 · 저항 교정 특강
-                      </div>
-                      <h3 className="text-[1.625rem] sm:text-[2rem] font-bold tracking-tight text-gray-950 leading-[1.35] sm:leading-tight text-balance break-keep-all">
-                        <span className="block">
-                          수영이 힘든 건, 힘이 부족해서가 아니라
-                        </span>
-                        <span className="block">
-                          힘이 새고 있기 때문입니다.
-                        </span>
-                      </h3>
-                      <p className="text-[15px] sm:text-[17px] font-medium text-gray-800 leading-[1.7] sm:leading-7 break-keep-all">
-                        더 세게 수영하기 전에, 어디서{" "}
-                        <span className="font-bold text-blue-700">저항</span>이
-                        생기는지부터 찾아보세요.
-                      </p>
-                      <p className="text-[15px] sm:text-[17px] font-medium text-gray-800 leading-[1.7] sm:leading-7 break-keep-all">
-                        스윔잇은 수중 촬영으로 내 수영을 방해하는 가장 큰
-                        저항을 찾아, 코치가 직접 교정하는{" "}
-                        <span className="font-bold text-blue-700">
-                          저항 제로 특강
-                        </span>
-                        입니다.
-                      </p>
+                      {isFishtankEntry ? (
+                        <>
+                          <div className="inline-flex rounded-full border border-blue-200 bg-white px-3 py-1 text-xs font-bold text-blue-700">
+                            어항샷 · 저항 진단
+                          </div>
+                          <h3 className="text-[1.625rem] sm:text-[2rem] font-bold tracking-tight text-gray-950 leading-[1.35] sm:leading-tight text-balance break-keep-all">
+                            내 수영이 왜 힘든지, 물속에서 직접 확인하세요.
+                          </h3>
+                          <p className="text-[17px] sm:text-xl font-extrabold text-blue-800 leading-snug break-keep-all">
+                            스윔잇 어항샷 저항 진단 프로그램
+                          </p>
+                          <div className="rounded-xl border border-blue-100 bg-white p-4 shadow-sm space-y-3">
+                            <ProductPriceLabel
+                              price={PRODUCT_CATALOG.diagnosis.price}
+                              originalPrice={
+                                PRODUCT_CATALOG.diagnosis.originalPrice
+                              }
+                              badge={PRODUCT_CATALOG.diagnosis.priceBadge}
+                              className="text-base"
+                            />
+                            <ul className="space-y-1.5 text-sm sm:text-[15px] font-semibold leading-6 text-gray-800">
+                              <li>· 2영법 어항샷 촬영</li>
+                              <li>· 저항 분석 리포트</li>
+                              <li>· 2시간 자유수영</li>
+                              <li>· 이후 저항 제로 특강 1만원 쿠폰</li>
+                            </ul>
+                            <DiagnosisCouponBanner />
+                          </div>
+                          <div className="grid gap-2">
+                            <Button
+                              size="lg"
+                              className="w-full text-base font-bold"
+                              onClick={() =>
+                                scrollToScheduleSection("fishtank-hero")
+                              }
+                            >
+                              어항샷 진단 예약하기
+                            </Button>
+                          </div>
+                          <div
+                            className="relative w-full overflow-hidden rounded-xl shadow-md"
+                            style={{ paddingBottom: "56.25%" }}
+                          >
+                            <iframe
+                              src={AQUARIUM_SHOT_EMBED_URL}
+                              title="스윔잇 어항샷 샘플"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                              allowFullScreen
+                              referrerPolicy="strict-origin-when-cross-origin"
+                              className="absolute inset-0 h-full w-full"
+                            />
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="inline-flex rounded-full border border-blue-200 bg-white px-3 py-1 text-xs font-bold text-blue-700">
+                            수영 클리닉 · 저항 교정 특강
+                          </div>
+                          <h3 className="text-[1.625rem] sm:text-[2rem] font-bold tracking-tight text-gray-950 leading-[1.35] sm:leading-tight text-balance break-keep-all">
+                            <span className="block">
+                              수영이 힘든 건, 힘이 부족해서가 아니라
+                            </span>
+                            <span className="block">
+                              힘이 새고 있기 때문입니다.
+                            </span>
+                          </h3>
+                          <p className="text-[15px] sm:text-[17px] font-medium text-gray-800 leading-[1.7] sm:leading-7 break-keep-all">
+                            더 세게 수영하기 전에, 어디서{" "}
+                            <span className="font-bold text-blue-700">저항</span>
+                            이 생기는지부터 찾아보세요.
+                          </p>
+                          <p className="text-[15px] sm:text-[17px] font-medium text-gray-800 leading-[1.7] sm:leading-7 break-keep-all">
+                            스윔잇은 수중 촬영으로 내 수영을 방해하는 가장 큰
+                            저항을 찾아, 코치가 직접 교정하는{" "}
+                            <span className="font-bold text-blue-700">
+                              저항 제로 특강
+                            </span>
+                            입니다.
+                          </p>
 
-                      <div className="grid gap-2">
+                          <div className="grid gap-2">
+                            <Button
+                              size="lg"
+                              className="w-full text-base font-bold"
+                              onClick={() => {
+                                console.log("[CTA] Hero 지역 특강 보기 클릭");
+                                scrollToScheduleSection("clinic-hero");
+                              }}
+                            >
+                              가장 가까운 지역 특강 보기
+                            </Button>
+                          </div>
+
+                          <div
+                            className="w-full rounded-xl overflow-hidden shadow-md relative"
+                            style={{ paddingBottom: "56.25%" }}
+                          >
+                            <iframe
+                              src="https://www.youtube.com/embed/WwNq2mqwM_U?autoplay=1&mute=1&loop=1&playlist=WwNq2mqwM_U&playsinline=1&rel=0"
+                              title="스윔잇 특강 전후 비교 영상"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                              className="absolute inset-0 w-full h-full"
+                            />
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    {/* fishtank: 어항샷 섹션을 특강 설명보다 위(히어로 직후)에 배치 */}
+                    {isFishtankEntry ? (
+                      <div
+                        id="diagnosis-intro-section"
+                        className="space-y-4 rounded-2xl border border-blue-100 bg-white p-4 shadow-sm"
+                      >
+                        <div className="space-y-1.5">
+                          <p className="text-xs font-bold tracking-wide text-blue-700 sm:text-sm">
+                            스윔잇 어항샷 저항 진단 프로그램
+                          </p>
+                          <p className="text-[17px] font-bold leading-snug text-gray-950 sm:text-lg">
+                            내 수영 저항 상태부터 보고 싶으신가요?
+                          </p>
+                          <p className="text-sm leading-6 text-gray-700 sm:text-[15px]">
+                            정밀 어항샷 기반으로
+                            <br />
+                            저항 진단 리포트를 제공합니다.
+                          </p>
+                        </div>
+                        <div className="rounded-xl bg-blue-50/80 px-3.5 py-3">
+                          <p className="text-sm font-bold text-gray-950">
+                            어항샷이란?
+                          </p>
+                          <p className="mt-1 text-sm leading-6 text-gray-700">
+                            위·아래를 동시에 찍어 저항이 보이게 촬영합니다.
+                          </p>
+                        </div>
+                        <p className="rounded-xl border border-orange-200 bg-orange-50 px-3.5 py-3 text-sm font-bold leading-6 text-orange-950">
+                          진단 후 직접 교정까지 원한다면 저항 제로 특강으로
+                          이어갈 수 있습니다
+                        </p>
                         <Button
                           size="lg"
-                          className="w-full text-base font-bold"
-                          onClick={() => {
-                            console.log("[CTA] Hero 지역 특강 보기 클릭");
-                            document
-                              .getElementById("schedule-section")
-                              ?.scrollIntoView({
-                                behavior: "smooth",
-                                block: "start",
-                              });
-                          }}
+                          className="h-12 w-full text-[15px] font-bold sm:h-11 sm:text-base"
+                          onClick={() =>
+                            scrollToScheduleSection("fishtank-diagnosis-block")
+                          }
                         >
-                          가장 가까운 지역 특강 보기
+                          어항샷 진단 예약하기
                         </Button>
+                        <ul className="space-y-1.5 rounded-xl border border-blue-100 bg-blue-50/60 px-3.5 py-3 text-sm font-bold leading-6 text-blue-700">
+                          <li>· 자유수영 2시간 (개인 촬영 가능)</li>
+                          <li>· 2가지 영법 어항샷</li>
+                          <li>· 저항분석리포트 제공</li>
+                          <li>· 이후 저항 제로 특강 1만원 쿠폰</li>
+                        </ul>
                       </div>
-
-                      {/* 비포/애프터 영상 */}
-                      <div className="w-full rounded-xl overflow-hidden shadow-md relative" style={{ paddingBottom: "56.25%" }}>
-                        <iframe
-                          src="https://www.youtube.com/embed/WwNq2mqwM_U?autoplay=1&mute=1&loop=1&playlist=WwNq2mqwM_U&playsinline=1&rel=0"
-                          title="스윔잇 특강 전후 비교 영상"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                          className="absolute inset-0 w-full h-full"
-                        />
-                      </div>
-                    </div>
+                    ) : null}
 
                     {/* Problem Checklist */}
                     <div className="space-y-3 rounded-2xl border border-blue-100 bg-white p-4 shadow-sm">
@@ -3424,17 +3590,14 @@ export default function SwimmingClassPage() {
                         className="w-full text-base font-bold"
                         onClick={() => {
                           console.log(
-                            "[CTA] 문제 체크리스트 → 저항 없애러 가기(일정으로 이동)",
+                            "[CTA] 문제 체크리스트 → 일정으로 이동",
                           );
-                          document
-                            .getElementById("schedule-section")
-                            ?.scrollIntoView({
-                              behavior: "smooth",
-                              block: "start",
-                            });
+                          scrollToScheduleSection("problem-checklist");
                         }}
                       >
-                        저항 없애러 가기
+                        {isFishtankEntry
+                          ? "어항샷 진단 예약하기"
+                          : "저항 없애러 가기"}
                       </Button>
                     </div>
 
@@ -3527,17 +3690,15 @@ export default function SwimmingClassPage() {
                         className="w-full text-base font-bold"
                         onClick={() => {
                           console.log(
-                            "[CTA] 신뢰 지표 → 저항 제로 특강 신청하기(일정으로 이동)",
+                            "[CTA] 신뢰 지표 → 일정으로 이동",
+                            isFishtankEntry ? "fishtank" : "clinic",
                           );
-                          document
-                            .getElementById("schedule-section")
-                            ?.scrollIntoView({
-                              behavior: "smooth",
-                              block: "start",
-                            });
+                          scrollToScheduleSection("trust-metrics");
                         }}
                       >
-                        저항 제로 특강 신청하기
+                        {isFishtankEntry
+                          ? "어항샷 진단 예약하기"
+                          : "저항 제로 특강 신청하기"}
                       </Button>
                     </div>
                   </div>
@@ -3609,7 +3770,8 @@ export default function SwimmingClassPage() {
                 </div>
               </section>
 
-              {/* 어항샷 · 저항 진단 — 수강 일정 바로 위 */}
+              {/* 어항샷 · 저항 진단 — clinic만 별도 섹션 (fishtank는 히어로 직후에 이미 표시) */}
+              {!isFishtankEntry ? (
               <section
                 id="diagnosis-intro-section"
                 className="order-2 mt-6 w-full scroll-mt-4 rounded-2xl border border-blue-100 bg-white p-4 shadow-sm sm:p-5"
@@ -3665,12 +3827,7 @@ export default function SwimmingClassPage() {
                       console.log(
                         "[CTA] 어항샷 섹션 → 진단 프로그램 신청(일정으로 이동)",
                       );
-                      document
-                        .getElementById("schedule-section")
-                        ?.scrollIntoView({
-                          behavior: "smooth",
-                          block: "start",
-                        });
+                      scrollToScheduleSection("clinic-diagnosis-section");
                     }}
                   >
                     저항 진단 프로그램 신청하기
@@ -3683,6 +3840,7 @@ export default function SwimmingClassPage() {
                   </ul>
                 </div>
               </section>
+              ) : null}
 
               {/* Schedule & Region Notice (Step 1) */}
               <section
@@ -3929,46 +4087,42 @@ export default function SwimmingClassPage() {
                           <Card
                             key={classItem.id}
                             id={`schedule-class-${classItem.id}`}
-                            role="button"
-                            tabIndex={0}
-                            onClick={() => {
-                              setSelectedClass(String(classItem.id));
-                              setSelectedTimeSlot(null);
-                              setSelectedProductType(null);
-                              setDiagnosisStrokes([]);
-                              setPaidPageId(null);
-                              setOrderNumber("");
-                              setRegionError(false);
-                              setCalendarMonth(classItem.month);
-                              setCalendarYear(classItem.year);
-                              console.log("[일정 선택] 지역 카드 터치 → 신청 단계:", {
-                                id: classItem.id,
-                                location: classItem.location,
-                                date: classItem.date,
-                              });
-                              handleRegistration();
-                            }}
-                            onKeyDown={(event) => {
-                              if (event.key === "Enter" || event.key === " ") {
-                                event.preventDefault();
-                                setSelectedClass(String(classItem.id));
-                                setSelectedTimeSlot(null);
-                                setSelectedProductType(null);
-                                setDiagnosisStrokes([]);
-                                setPaidPageId(null);
-                                setOrderNumber("");
-                                setRegionError(false);
-                                setCalendarMonth(classItem.month);
-                                setCalendarYear(classItem.year);
-                                console.log("[일정 선택] 키보드로 지역 카드 선택 → 신청 단계:", {
-                                  id: classItem.id,
-                                  location: classItem.location,
-                                  date: classItem.date,
-                                });
-                                handleRegistration();
-                              }
-                            }}
-                            className={`scroll-mt-24 cursor-pointer transition-all shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                            role={isFishtankEntry ? "group" : "button"}
+                            tabIndex={isFishtankEntry ? undefined : 0}
+                            onClick={
+                              isFishtankEntry
+                                ? () => {
+                                    setSelectedClass(String(classItem.id));
+                                    setCalendarMonth(classItem.month);
+                                    setCalendarYear(classItem.year);
+                                    setRegionError(false);
+                                    console.log(
+                                      "[일정 선택] fishtank 카드 하이라이트:",
+                                      classItem.id,
+                                    );
+                                  }
+                                : () =>
+                                    openScheduleRegistration(classItem, false)
+                            }
+                            onKeyDown={
+                              isFishtankEntry
+                                ? undefined
+                                : (event) => {
+                                    if (
+                                      event.key === "Enter" ||
+                                      event.key === " "
+                                    ) {
+                                      event.preventDefault();
+                                      openScheduleRegistration(
+                                        classItem,
+                                        false,
+                                      );
+                                    }
+                                  }
+                            }
+                            className={`scroll-mt-24 transition-all shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                              isFishtankEntry ? "" : "cursor-pointer"
+                            } ${
                               isSelectedSchedule
                                 ? "border-primary border-2 bg-primary/5 shadow-md"
                                 : "hover:border-primary/40 hover:shadow-md"
@@ -4049,6 +4203,39 @@ export default function SwimmingClassPage() {
                                   예약 가능 · 코치 1명 당 최대 7명 소수 정예 클래스
                                 </span>
                               </div>
+                              {isFishtankEntry ? (
+                                <div className="mt-4 grid gap-2">
+                                  <Button
+                                    type="button"
+                                    size="lg"
+                                    className="w-full text-sm sm:text-base font-bold"
+                                    onClick={(event) => {
+                                      event.stopPropagation();
+                                      openScheduleRegistration(
+                                        classItem,
+                                        true,
+                                      );
+                                    }}
+                                  >
+                                    어항샷 진단 예약하기
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    size="lg"
+                                    variant="outline"
+                                    className="w-full text-sm sm:text-base font-bold"
+                                    onClick={(event) => {
+                                      event.stopPropagation();
+                                      openScheduleRegistration(
+                                        classItem,
+                                        false,
+                                      );
+                                    }}
+                                  >
+                                    저항 제로 특강 신청하기
+                                  </Button>
+                                </div>
+                              ) : null}
                             </div>
                           </CardContent>
                         </Card>
@@ -4062,12 +4249,16 @@ export default function SwimmingClassPage() {
                 {!showRegistrationForm && (
                 <div className="mt-4 rounded-xl border border-orange-200 bg-orange-50 p-4 sm:p-5">
                   <p className="text-base sm:text-lg font-bold text-gray-900 mb-2">
-                    📌 일정 확인하셨다면, 지금 바로 자리 확보하세요
+                    {isFishtankEntry
+                      ? "📌 일정을 고르셨다면, 어항샷 진단을 예약하세요"
+                      : "📌 일정 확인하셨다면, 지금 바로 자리 확보하세요"}
                   </p>
                   <div className="mt-3">
                     <Button
                       onClick={() => {
-                        console.log("[CTA] 일정 안내 아래 자리 선점 CTA 클릭");
+                        console.log("[CTA] 일정 안내 아래 자리 선점 CTA 클릭", {
+                          isFishtankEntry,
+                        });
                         handleScheduleRegistration();
                       }}
                       disabled={!selectedScheduleClass}
@@ -4081,6 +4272,18 @@ export default function SwimmingClassPage() {
                         위 일정 카드 중 신청할 특강을 먼저 선택해 주세요.
                       </p>
                     )}
+                    {isFishtankEntry && selectedScheduleClass ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="mt-2 w-full font-bold"
+                        onClick={() =>
+                          openScheduleRegistration(selectedScheduleClass, false)
+                        }
+                      >
+                        저항 제로 특강 신청하기
+                      </Button>
+                    ) : null}
                   </div>
                   <div className="mt-3 space-y-1 text-xs sm:text-sm text-gray-700 leading-5">
                     <p>※ 소수 정예 운영 / 모집 인원 도달 시 예약대기 전환</p>
@@ -4089,6 +4292,27 @@ export default function SwimmingClassPage() {
                 </div>
                 )}
               </section>
+
+              {isFishtankEntry && !showRegistrationForm ? (
+                <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200 bg-white/95 p-3 shadow-[0_-8px_24px_rgba(15,23,42,0.12)] backdrop-blur safe-area-pb">
+                  <div className="mx-auto max-w-4xl">
+                    <Button
+                      size="lg"
+                      className="h-12 w-full text-base font-extrabold"
+                      onClick={() => {
+                        console.log("[CTA] fishtank 하단 고정 버튼 클릭");
+                        if (selectedScheduleClass) {
+                          openScheduleRegistration(selectedScheduleClass, true);
+                        } else {
+                          scrollToScheduleSection("fishtank-fixed-bottom");
+                        }
+                      }}
+                    >
+                      어항샷 진단 예약하기
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
 
               {/* Action Button (hidden when showRegistrationForm is true) */}
               {/* Warning Section */}

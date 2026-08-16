@@ -59,25 +59,22 @@ export type GoogleSheetRowInput = {
   특강지역: string;
   /** P: 예약상태 */
   예약상태: string;
-  /** Q: 유입경로 (source → video → utm_source → direct) */
-  유입경로?: string;
-  /** R: video */
-  video?: string;
-  /** S: source */
-  source?: string;
-  /** T: utm_source */
-  utm_source?: string;
-  /** U: utm_medium */
-  utm_medium?: string;
-  /** V: utm_campaign */
-  utm_campaign?: string;
+  /** Q: 링크 */
+  링크?: string;
+  /** R: 입금기한 (무통장 홀드용, 예: 2026. 8. 17 오후 2:00:00) */
+  입금기한?: string;
+  /** S: 대기순번 */
+  대기순번?: string;
 };
 
-/** 시트 B열(신청번호) 목록 — 중복 복구 방지 */
-export async function getSheetOrderNumbers(): Promise<{
-  success: true;
-  orderNumbers: Set<string>;
-} | { success: false; error: string }> {
+/** B열(신청번호) 목록 — 중복 복구 방지 */
+export async function getSheetOrderNumbers(): Promise<
+  | {
+      success: true;
+      orderNumbers: Set<string>;
+    }
+  | { success: false; error: string }
+> {
   try {
     if (!env.spreadsheetId || !env.sheetName) {
       return {
@@ -126,13 +123,14 @@ export async function appendRowToGoogleSheet(
     console.log("[Google Sheets] 행 추가 시작:", {
       신청번호: row["신청번호"],
       예약상태: row["예약상태"],
-      유입경로: row["유입경로"] ?? "",
+      입금기한: row["입금기한"] ?? "",
       시트명: env.sheetName,
     });
 
     const auth = getAuthClient();
     const sheets = google.sheets({ version: "v4", auth });
 
+    // 실제 시트: A~P 기본 + Q 링크 + R 입금기한 + S 대기순번
     const values: string[][] = [
       [
         row["접수일시"],
@@ -151,18 +149,15 @@ export async function appendRowToGoogleSheet(
         row["날짜"],
         row["특강지역"],
         row["예약상태"],
-        row["유입경로"] ?? "",
-        row["video"] ?? "",
-        row["source"] ?? "",
-        row["utm_source"] ?? "",
-        row["utm_medium"] ?? "",
-        row["utm_campaign"] ?? "",
+        row["링크"] ?? "",
+        row["입금기한"] ?? "",
+        row["대기순번"] ?? "",
       ],
     ];
 
     await sheets.spreadsheets.values.append({
       spreadsheetId: env.spreadsheetId,
-      range: `'${env.sheetName}'!A:V`,
+      range: `'${env.sheetName}'!A:S`,
       valueInputOption: "USER_ENTERED",
       insertDataOption: "INSERT_ROWS",
       requestBody: { values },
@@ -171,6 +166,7 @@ export async function appendRowToGoogleSheet(
     console.log("[Google Sheets] 행 추가 성공:", {
       신청번호: row["신청번호"],
       예약상태: row["예약상태"],
+      입금기한: row["입금기한"] ?? "",
     });
 
     return { success: true };

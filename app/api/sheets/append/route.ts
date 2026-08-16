@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
       신청번호: body?.신청번호,
       예약상태: body?.예약상태,
       이름: body?.이름,
-      유입경로: body?.유입경로,
+      입금기한: body?.입금기한,
     });
 
     if (!body?.이름 || !body?.전화번호 || !body?.예약상태) {
@@ -39,40 +39,25 @@ export async function POST(request: NextRequest) {
       날짜: body.날짜 ?? "",
       특강지역: body.특강지역 ?? "",
       예약상태: body.예약상태 ?? "",
-      유입경로: body.유입경로 ?? "",
-      video: body.video ?? "",
-      source: body.source ?? "",
-      utm_source: body.utm_source ?? "",
-      utm_medium: body.utm_medium ?? "",
-      utm_campaign: body.utm_campaign ?? "",
+      링크: body.링크 ?? "",
+      입금기한: body.입금기한 ?? "",
+      대기순번: body.대기순번 ?? "",
     });
 
     if (!result.success) {
-      console.error("[Google Sheets API] 행 추가 실패:", result.error);
       return NextResponse.json(
-        {
-          success: false,
-          error: result.error,
-        },
+        { success: false, error: result.error },
         { status: 500 },
       );
     }
 
-    console.log("[Google Sheets API] 행 추가 성공:", {
-      신청번호: body?.신청번호,
-      예약상태: body?.예약상태,
-    });
-
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("[Google Sheets API] 예외 발생:", error);
+    console.error("[Google Sheets API] 예외:", error);
     return NextResponse.json(
       {
         success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : "알 수 없는 오류가 발생했습니다.",
+        error: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 },
     );

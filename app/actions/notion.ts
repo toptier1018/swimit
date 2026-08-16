@@ -1395,7 +1395,10 @@ export async function findCardOrderByTossOrderId(tossOrderId: string): Promise<{
 
 /**
  * 클래스별 정원 카운트
- * 1순위: 구글「스윔잇 수강자 운영」시트 R열(확정예약상태)=예약확정
+ * 1순위: 구글「스윔잇 수강자 운영」
+ *        - R열 확정예약상태=예약확정
+ *        - 또는 Q열 예약상태=결제대기|입금대기 (입금기한 전, R이 만료/취소 아님)
+ *        - 수강자 시트의 결제대기도 홀드(운영에 없는 신청번호)
  * 2순위(폴백): Notion 결제대기/완료 건수
  */
 export async function getClassEnrollmentCounts(classNames?: string[]) {
@@ -1424,8 +1427,9 @@ export async function getClassEnrollmentCounts(classNames?: string[]) {
       for (const [key, value] of Object.entries(ops.counts)) {
         counts[key] = (counts[key] || 0) + (Number(value) || 0)
       }
-      console.log("[카운터] 운영 시트 예약확정 기준 집계:", {
+      console.log("[카운터] 운영 시트 예약확정+결제대기(기한내) 집계:", {
         confirmedRows: ops.confirmedRows,
+        holdRows: ops.holdRows,
         keys: Object.keys(ops.counts).length,
       })
       return {

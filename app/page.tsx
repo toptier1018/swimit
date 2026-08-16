@@ -57,6 +57,7 @@ import {
   type TrafficSource,
 } from "@/lib/traffic-source";
 import { savePendingCardEnrollment } from "@/lib/card-enrollment";
+import { formatBankTransferDeadline } from "@/lib/deposit-deadline";
 
 type ClassItem = {
   id: number;
@@ -1589,7 +1590,7 @@ export default function SwimmingClassPage() {
 
   // 기본 모집 인원은 7명이며, 관리자 모드에서 클래스별 자유 설정 가능
 
-  /** 정원 카운트: 운영 시트「확정예약상태=예약확정」기준 (실패 시 Notion 폴백) */
+  /** 정원 카운트: 운영 시트 예약확정 + 기한 내 결제대기 홀드 */
   const syncClassEnrollmentFromNotion = async () => {
     try {
       console.log("[카운터] 운영 시트/서버 카운터 동기화 시작");
@@ -2050,23 +2051,15 @@ export default function SwimmingClassPage() {
     return matched?.[0] ?? session;
   };
 
-  // 입금기한 계산 함수 (결제 시점 + 2일)
+  // 입금기한: 접수일 기준 익일 오후 2시 (KST) — 자리 홀드·시트 입금기한과 동일
   const getDepositDeadline = () => {
     if (!paymentDate) return "";
-    const deadline = new Date(paymentDate);
-    deadline.setDate(deadline.getDate() + 2);
-
-    const year = deadline.getFullYear();
-    const month = deadline.getMonth() + 1;
-    const day = deadline.getDate();
-    const hours = deadline.getHours();
-    const minutes = deadline.getMinutes();
-
-    const ampm = hours < 12 ? "오전" : "오후";
-    const displayHours = hours % 12 || 12;
-    const displayMinutes = minutes.toString().padStart(2, "0");
-
-    return `${year}년 ${month}월 ${day}일 ${ampm} ${displayHours}시 ${displayMinutes}분`;
+    const formatted = formatBankTransferDeadline(new Date(paymentDate));
+    const matched = formatted.match(
+      /(\d+)\.\s*(\d+)\.\s*(\d+)\s*(오전|오후)\s*(\d+):(\d+)/,
+    );
+    if (!matched) return formatted;
+    return `${matched[1]}년 ${matched[2]}월 ${matched[3]}일 ${matched[4]} ${matched[5]}시 ${matched[6]}분`;
   };
 
   // 달력: 한국 시간(KST) 기준 현재 연·월로 초기화
@@ -6304,7 +6297,6 @@ export default function SwimmingClassPage() {
                                         날짜: classDate,
                                         특강지역: selectedRegion,
                                         예약상태: "예약대기",
-                                        ...toTrafficRecord(trafficSource),
                                       }),
                                     },
                                   );
@@ -6512,7 +6504,10 @@ export default function SwimmingClassPage() {
                                         날짜: classDate,
                                         특강지역: selectedRegion,
                                         예약상태: "결제대기",
-                                        ...toTrafficRecord(trafficSource),
+                                        입금기한:
+                                          formatBankTransferDeadline(
+                                            paymentStartedAt,
+                                          ),
                                       }),
                                     },
                                   );

@@ -481,7 +481,6 @@ export async function finalizeCardEnrollmentCore(
         날짜: classDate,
         특강지역: region,
         예약상태: "결제완료",
-        ...traffic,
       });
       if (!sheetResult.success) {
         sheetOk = false;

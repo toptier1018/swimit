@@ -1394,34 +1394,64 @@ export async function findCardOrderByTossOrderId(tossOrderId: string): Promise<{
 }
 
 /**
- * Notion 데이터베이스에서 클래스별 결제 완료된 건수를 조회하는 서버 액션
- * 배포 후에도 실제 결제 건수를 카운터로 표시하기 위해 사용
+ * 클래스별 정원 카운트
+ * 1순위: 구글「스윔잇 수강자 운영」시트 R열(확정예약상태)=예약확정
+ * 2순위(폴백): Notion 결제대기/완료 건수
  */
 export async function getClassEnrollmentCounts(classNames?: string[]) {
+  const baseClassNames =
+    Array.isArray(classNames) && classNames.length > 0
+      ? classNames
+      : [
+          "자유형 A (초급)",
+          "평영 A (초급)",
+          "접영 A (초급)",
+          "자유형 B (중급)",
+          "평영 B (중급)",
+        ]
+
+  const emptyCounts: Record<string, number> = Object.fromEntries(
+    baseClassNames.map((name) => [name, 0])
+  ) as Record<string, number>
+
+  try {
+    const { getOpsSheetEnrollmentCounts } = await import(
+      "@/lib/ops-sheet-enrollment"
+    )
+    const ops = await getOpsSheetEnrollmentCounts()
+    if (ops.success) {
+      const counts: Record<string, number> = { ...emptyCounts }
+      for (const [key, value] of Object.entries(ops.counts)) {
+        counts[key] = (counts[key] || 0) + (Number(value) || 0)
+      }
+      console.log("[카운터] 운영 시트 예약확정 기준 집계:", {
+        confirmedRows: ops.confirmedRows,
+        keys: Object.keys(ops.counts).length,
+      })
+      return {
+        success: true,
+        counts,
+        source: "ops-sheet" as const,
+      }
+    }
+    console.warn(
+      "[카운터] 운영 시트 조회 실패 → Notion 폴백:",
+      ops.error
+    )
+  } catch (opsError) {
+    console.warn("[카운터] 운영 시트 예외 → Notion 폴백:", opsError)
+  }
+
   try {
     const notionApiKey = process.env.NOTION_API_KEY
     const databaseId = process.env.NOTION_DATABASE_ID
-
-    const baseClassNames =
-      Array.isArray(classNames) && classNames.length > 0
-        ? classNames
-        : [
-            "자유형 A (초급)",
-            "평영 A (초급)",
-            "접영 A (초급)",
-            "자유형 B (중급)",
-            "평영 B (중급)",
-          ]
-
-    const emptyCounts: Record<string, number> = Object.fromEntries(
-      baseClassNames.map((name) => [name, 0])
-    ) as Record<string, number>
 
     if (!notionApiKey || !databaseId) {
       console.warn("[Notion 카운터 조회] 환경 변수가 설정되지 않았습니다. 기본값 0을 반환합니다.")
       return {
         success: true,
         counts: emptyCounts,
+        source: "empty" as const,
       }
     }
 
@@ -1529,11 +1559,12 @@ export async function getClassEnrollmentCounts(classNames?: string[]) {
       nextCursor = nextResult.next_cursor
     }
 
-    console.log("[Notion 카운터 조회] 클래스별 결제 건수:", counts)
+    console.log("[Notion 카운터 조회] 클래스별 결제 건수(폴백):", counts)
 
     return {
       success: true,
       counts,
+      source: "notion" as const,
     }
   } catch (error) {
     console.error("[Notion 카운터 조회] 예외 발생:", error)
@@ -1541,6 +1572,7 @@ export async function getClassEnrollmentCounts(classNames?: string[]) {
       success: false,
       error: error instanceof Error ? error.message : "알 수 없는 오류",
       counts: emptyCounts,
+      source: "error" as const,
     }
   }
 }

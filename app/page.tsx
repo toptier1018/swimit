@@ -1589,9 +1589,10 @@ export default function SwimmingClassPage() {
 
   // 기본 모집 인원은 7명이며, 관리자 모드에서 클래스별 자유 설정 가능
 
+  /** 정원 카운트: 운영 시트「확정예약상태=예약확정」기준 (실패 시 Notion 폴백) */
   const syncClassEnrollmentFromNotion = async () => {
     try {
-      console.log("[카운터] Notion 카운터 동기화 시작");
+      console.log("[카운터] 운영 시트/서버 카운터 동기화 시작");
       const result = await getClassEnrollmentCounts(
         Object.keys(INITIAL_ENROLLMENT),
       );
@@ -1606,12 +1607,17 @@ export default function SwimmingClassPage() {
         } catch (error) {
           console.log("[카운터] 로컬 저장 실패:", error);
         }
-        console.log("[카운터] Notion 카운터 동기화 완료:", merged);
+        console.log("[카운터] 서버 카운터 동기화 완료:", {
+          source: (result as { source?: string }).source ?? "unknown",
+          sample: Object.entries(merged)
+            .filter(([, n]) => n > 0)
+            .slice(0, 12),
+        });
       } else {
-        console.warn("[카운터] Notion 카운터 조회 실패:", result.error);
+        console.warn("[카운터] 서버 카운터 조회 실패:", result.error);
       }
     } catch (error) {
-      console.error("[카운터] Notion 카운터 동기화 오류:", error);
+      console.error("[카운터] 서버 카운터 동기화 오류:", error);
     }
   };
 

@@ -8,7 +8,7 @@ import { updatePaymentInNotion } from "@/app/actions/notion";
  * 특강 카드결제 주문 생성
  * - 클라이언트 amount는 신뢰하지 않음
  * - className 기준으로 서버가 금액을 결정
- * - Notion에 toss orderId·금액·멱등키를 저장
+ * - 주문번호 = 토스 orderId (CLASS-…) — 시트·노션·취소에 동일 키 사용
  */
 export async function POST(req: NextRequest) {
   try {
@@ -16,8 +16,6 @@ export async function POST(req: NextRequest) {
     const className =
       typeof body.className === "string" ? body.className.trim() : "";
     const pageId = typeof body.pageId === "string" ? body.pageId.trim() : "";
-    const orderNumber =
-      typeof body.orderNumber === "string" ? body.orderNumber.trim() : "";
     const timeSlot =
       typeof body.timeSlot === "string" ? body.timeSlot.trim() : "";
     const region = typeof body.region === "string" ? body.region.trim() : "";
@@ -35,17 +33,16 @@ export async function POST(req: NextRequest) {
     console.log("[카드결제] 주문 생성 요청:", {
       className,
       pageId: pageId ? `${pageId.slice(0, 8)}…` : "",
-      orderNumber,
       clientAmountHint: Number.isFinite(clientAmountHint)
         ? clientAmountHint
         : null,
     });
 
-    if (!className || !pageId || !orderNumber) {
+    if (!className || !pageId) {
       return NextResponse.json(
         {
           success: false,
-          error: "className, pageId, orderNumber는 필수입니다.",
+          error: "className, pageId는 필수입니다.",
         },
         { status: 400 },
       );
@@ -72,6 +69,8 @@ export async function POST(req: NextRequest) {
     }
 
     const orderId = `CLASS-${randomUUID().replace(/-/g, "").slice(0, 18).toUpperCase()}`;
+    // 카드: 신청번호/주문번호 = 토스 orderId (WC 별도 발급 없음)
+    const orderNumber = orderId;
     const idempotencyKey = randomUUID();
 
     const pendingMeta = {
@@ -117,6 +116,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       orderId,
+      orderNumber,
       orderName: className.slice(0, 100),
       amount,
       clientKey: process.env.TOSS_CLIENT_KEY ?? "",

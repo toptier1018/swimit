@@ -11,6 +11,7 @@ export type CardPendingMeta = {
   status: "CARD_PENDING" | "CARD_DONE";
   tossOrderId: string;
   amount: number;
+  /** 시트·노션 주문번호 — 신규 카드는 tossOrderId(CLASS-…)와 동일 */
   orderNumber: string;
   idempotencyKey: string;
   paymentKey?: string;
@@ -118,7 +119,7 @@ export function parseCardPendingStatus(
     ? "CARD_DONE"
     : "CARD_PENDING";
 
-  if (!toss || !wc || !ik || !Number.isFinite(amt) || amt <= 0) {
+  if (!toss || !ik || !Number.isFinite(amt) || amt <= 0) {
     console.warn("[카드주문] 메타 파싱 실패:", text.slice(0, 120));
     return null;
   }
@@ -137,7 +138,8 @@ export function parseCardPendingStatus(
     status,
     tossOrderId: toss,
     amount: amt,
-    orderNumber: wc,
+    // 구버전: wc=WC-… / 신규: wc=CLASS-… 또는 wc 없음 → toss와 동일
+    orderNumber: wc || toss,
     idempotencyKey: ik,
     paymentKey: pk || undefined,
     adminNotify,

@@ -2007,6 +2007,7 @@ export default function SwimmingClassPage() {
   );
 
   // 주문번호 생성 함수 (겹치지 않도록)
+  /** 무통장·예약대기용 신청번호 (WC-…). 카드는 토스 CLASS-… 를 주문번호로 씀 */
   const generateOrderNumber = () => {
     const timestamp = Date.now();
     const random = Math.floor(Math.random() * 10000);
@@ -2678,7 +2679,6 @@ export default function SwimmingClassPage() {
       const notionPageId = pageId;
 
       const paymentStartedAt = new Date();
-      const newOrderNumber = generateOrderNumber();
       const selectedClassInfo = classes.find(
         (c) => String(c.id) === selectedClass,
       );
@@ -2693,14 +2693,13 @@ export default function SwimmingClassPage() {
       const trafficRecord = toTrafficRecord(trafficSource);
       const timeSlotLabel = `${selectedTimeSlot.session} (${selectedTimeSlot.time})`;
 
-      // 서버가 className으로 금액을 확정 — 클라이언트 amount는 힌트만
+      // 서버가 className으로 금액을 확정 — 주문번호는 토스 orderId(CLASS-…)
       const orderRes = await fetch("/api/toss/create-class-test-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           className: selectedTimeSlot.name,
           pageId: notionPageId,
-          orderNumber: newOrderNumber,
           timeSlot: timeSlotLabel,
           region: selectedRegion,
           paymentStartedAt: paymentStartedAt.toISOString(),
@@ -2719,6 +2718,26 @@ export default function SwimmingClassPage() {
         });
         return;
       }
+
+      const tossOrderId = String(orderData.orderId || "").trim();
+      const cardOrderNumber = String(
+        orderData.orderNumber || orderData.orderId || "",
+      ).trim();
+      if (!tossOrderId || !cardOrderNumber) {
+        console.error("[카드결제] 토스 주문번호 없음:", orderData);
+        toast({
+          title: "결제 불가",
+          description: "주문번호를 받지 못했습니다. 다시 시도해 주세요.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setOrderNumber(cardOrderNumber);
+      console.log("[카드결제] 주문번호=토스 orderId:", {
+        tossOrderId,
+        orderNumber: cardOrderNumber,
+      });
 
       const serverAmount = Number(orderData.amount);
       if (!Number.isFinite(serverAmount) || serverAmount <= 0) {
@@ -2739,8 +2758,8 @@ export default function SwimmingClassPage() {
       }
 
       const saved = savePendingCardEnrollment({
-        tossOrderId: orderData.orderId,
-        orderNumber: newOrderNumber,
+        tossOrderId,
+        orderNumber: cardOrderNumber,
         pageId: notionPageId,
         amount: serverAmount,
         paymentStartedAt: paymentStartedAt.toISOString(),
@@ -2780,8 +2799,8 @@ export default function SwimmingClassPage() {
       const payment = tossPayments.payment({ customerKey: "ANONYMOUS" });
 
       console.log("[카드결제] 토스 결제창 호출:", {
-        tossOrderId: orderData.orderId,
-        orderNumber: newOrderNumber,
+        tossOrderId,
+        orderNumber: cardOrderNumber,
         pageId: notionPageId,
         amount: serverAmount,
       });
@@ -2789,7 +2808,7 @@ export default function SwimmingClassPage() {
       await payment.requestPayment({
         method: "CARD",
         amount: { currency: "KRW", value: serverAmount },
-        orderId: orderData.orderId,
+        orderId: tossOrderId,
         orderName: orderData.orderName,
         successUrl: `${window.location.origin}/class-pg-test/success`,
         failUrl: `${window.location.origin}/class-pg-test/fail`,

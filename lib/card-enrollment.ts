@@ -4,6 +4,7 @@ export const CARD_ENROLLMENT_STORAGE_KEY = "swimit_card_enrollment_pending";
 
 export type PendingCardEnrollment = {
   tossOrderId: string;
+  /** 시트·노션 주문번호 — 토스 orderId(CLASS-…)와 동일 */
   orderNumber: string;
   pageId: string;
   amount: number;

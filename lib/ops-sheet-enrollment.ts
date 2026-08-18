@@ -54,7 +54,7 @@ function isReservationConfirmed(value: string): boolean {
 
 function isClosedOpsStatus(value: string): boolean {
   const c = compactStatus(value);
-  return c === "만료" || c === "취소" || c === "환불";
+  return c.includes("만료") || c.includes("취소") || c.includes("환불");
 }
 
 function isPendingPaymentStatus(value: string): boolean {
@@ -357,6 +357,8 @@ export async function getOpsSheetEnrollmentCounts(): Promise<{
 
     const counts: Record<string, number> = {};
     const countedOrders = new Set<string>();
+    // 운영 시트가 정본: 취소·만료 행도 원본 시트보다 우선합니다.
+    const allOpsOrders = new Set<string>();
     let confirmedRows = 0;
     let holdRows = 0;
     let skipped = 0;
@@ -400,9 +402,19 @@ export async function getOpsSheetEnrollmentCounts(): Promise<{
           colOrder >= 0 ? String(row[colOrder] ?? "").trim() : "";
         const confirmedRaw = String(row[colConfirmed] ?? "");
         const statusRaw = String(row[colStatus] ?? "");
+        if (order) allOpsOrders.add(order);
 
         let kind: CountableKind | null = null;
-        if (isReservationConfirmed(confirmedRaw)) {
+        if (
+          isClosedOpsStatus(confirmedRaw) ||
+          isClosedOpsStatus(statusRaw)
+        ) {
+          console.log("[운영시트카운트] 취소·만료 제외:", {
+            order,
+            confirmedStatus: confirmedRaw,
+            reservationStatus: statusRaw,
+          });
+        } else if (isReservationConfirmed(confirmedRaw)) {
           kind = "confirmed";
         } else if (
           isPendingPaymentStatus(statusRaw) &&
@@ -462,6 +474,8 @@ export async function getOpsSheetEnrollmentCounts(): Promise<{
         const row = rawRows[i] || [];
         const order =
           colOrder >= 0 ? String(row[colOrder] ?? "").trim() : "";
+        // 운영 시트에 한 번이라도 들어온 신청은 취소·만료 여부까지 운영 시트를 따릅니다.
+        if (order && allOpsOrders.has(order)) continue;
         if (order && countedOrders.has(order)) continue;
 
         const statusRaw =

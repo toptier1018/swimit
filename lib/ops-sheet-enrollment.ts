@@ -120,6 +120,7 @@ function resolveRegionCode(
   const ordered = [
     "동탄",
     "목동",
+    "중구",
     "은평",
     "김포",
     "화성",

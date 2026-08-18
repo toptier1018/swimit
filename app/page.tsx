@@ -1171,15 +1171,25 @@ const getEffectiveEnrollmentCount = (
 
 type AvailabilityTone = "waitlist" | "critical" | "warning" | "info";
 
-/** 3자리 이상일 때 클래스마다 고정으로 하나를 골라 깜빡임을 막음 */
+/** 3자리 이상일 때 클래스·잔여석마다 고정 랜덤으로 골라 깜빡임을 막음 */
 const SCARCITY_LABELS = ["잔여 소수", "곧 마감", "마감임박"] as const;
 
-const pickStableScarcityLabel = (className: string) => {
-  let hash = 0;
-  for (let i = 0; i < className.length; i += 1) {
-    hash = (hash * 31 + className.charCodeAt(i)) >>> 0;
+const pickStableScarcityLabel = (className: string, remaining: number) => {
+  const stroke = STROKE_ORDER.find((item) => className.includes(item));
+  const strokeOffset = stroke ? STROKE_ORDER.indexOf(stroke) : 0;
+  const classGroup = className
+    .replace(/(자유형|평영|접영).*$/, "")
+    .trim();
+  const seed = `${classGroup}|${remaining}`;
+  // 비슷한 클래스명이 같은 문구에 몰리지 않도록 FNV-1a 방식으로 분산
+  let hash = 2166136261;
+  for (let i = 0; i < seed.length; i += 1) {
+    hash ^= seed.charCodeAt(i);
+    hash = Math.imul(hash, 16777619) >>> 0;
   }
-  return SCARCITY_LABELS[hash % SCARCITY_LABELS.length];
+  return SCARCITY_LABELS[
+    (hash + strokeOffset) % SCARCITY_LABELS.length
+  ];
 };
 
 const getAvailabilityBadgeClassName = (tone: AvailabilityTone) => {
@@ -1252,12 +1262,18 @@ const getClassAvailabilityBadge = (
     };
   }
 
-  const label = pickStableScarcityLabel(className);
+  const label = pickStableScarcityLabel(className, remaining);
+  const tone: AvailabilityTone =
+    label === "마감임박"
+      ? "critical"
+      : label === "곧 마감"
+        ? "warning"
+        : "info";
   return {
     label,
     isWaitlist: false,
     remaining,
-    tone: "info",
+    tone,
   };
 };
 

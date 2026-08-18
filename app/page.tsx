@@ -236,15 +236,19 @@ const classes: ClassItem[] = [
   {
     id: 16,
     year: 2026,
-    location: "서울 중구 · 스포빌키즈쿠아",
-    locationCode: "중구",
+    location: "서울 은평구 · 삼정스포츠 수영장",
+    locationCode: "은평",
     date: "9월 13일 (일)",
     dateNum: 13,
     month: 9,
-    venue: "스포빌키즈쿠아",
-    address: "서울특별시 중구 황학동 2545 롯데캐슬베네치아 지하 1층",
-    spots: "자유형 14명 · 평영·접영 각 7명",
-    scheduleSummaryLines: ["1부 특강 · 14:00~16:00 (2시간)"],
+    venue: "삼정스포츠 수영장",
+    address: "서울 은평구 서오릉로 94 삼성타운아파트 지하2층",
+    spots: "영법 각 7명 · 진단 20명",
+    scheduleSummaryLines: [
+      "1부 특강 · 11:00~13:00 (2시간)",
+      "1부 진단 프로그램 · 11:00~13:00",
+    ],
+    badge: "특강 + 진단 동시 운영",
   },
   {
     id: 18,
@@ -742,15 +746,20 @@ const TIMETABLE_BUSAN_SEPTEMBER: TimetableRow[] = [
   },
 ];
 
-/** 스포빌키즈쿠아 9/13 특강 (서울 중구) — 은평 9/13 대체, 진단 없음 */
-const TIMETABLE_JUNGGU_SEPTEMBER: TimetableRow[] = [
+/** 삼정스포츠 수영장 9/13 특강 (은평) — 특강+진단 동시, 레인 미표시 */
+const TIMETABLE_EUNPYEONG_SEPTEMBER: TimetableRow[] = [
   {
     session: "1부 특강",
-    time: "14:00 ~ 16:00",
+    time: "11:00 ~ 13:00",
     lanes: [
       { lane: UNASSIGNED_LANE, title: "자유형", price: 80000 },
       { lane: UNASSIGNED_LANE, title: "평영", price: 80000 },
       { lane: UNASSIGNED_LANE, title: "접영", price: 80000 },
+      {
+        lane: UNASSIGNED_LANE,
+        title: DIAGNOSIS_LANE_TITLE,
+        price: PRODUCT_CATALOG.diagnosis.price,
+      },
     ],
   },
 ];
@@ -803,7 +812,7 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   13: TIMETABLE_DONGTAN_AUGUST, // 8/23 동탄
   14: TIMETABLE_MOKDONG_AUGUST, // 8/30 목동
   15: TIMETABLE_BUSAN_SEPTEMBER, // 9/6 부산
-  16: TIMETABLE_JUNGGU_SEPTEMBER, // 9/13 중구 (은평 취소)
+  16: TIMETABLE_EUNPYEONG_SEPTEMBER, // 9/13 은평
   18: TIMETABLE_MOKDONG_SEPTEMBER, // 9/20 목동
   19: TIMETABLE_CHEONGNA_SEPTEMBER, // 9/27 청라
 };
@@ -928,8 +937,7 @@ type DiagnosisOffering = {
  * 특강별 저항 진단 프로그램 운영 정보
  * - 동탄 8/23: 2부에 진단만 단독 운영
  * - 목동 8/30·부산 9/6: 1부 특강과 동시 운영 (레인 표기)
- * - 목동 9/20·청라 9/27: 1부 특강과 동시 운영 (레인 미표시)
- * - 중구 9/13: 특강만 (진단 없음)
+ * - 은평 9/13·목동 9/20·청라 9/27: 1부 특강과 동시 운영 (레인 미표시)
  */
 const getDiagnosisOfferingForClass = (
   classId: number,
@@ -1052,11 +1060,7 @@ const DEFAULT_WAITLIST_THRESHOLDS_BY_CLASS: Record<string, number> = {
   "[부산 9/6] 1부 특강 평영": 7,
   "[부산 9/6] 1부 특강 접영": 7,
   "[부산 9/6] 1부 진단": DIAGNOSIS_WAITLIST_THRESHOLD,
-  // 중구 9/13 (은평 9/13 대체)
-  "[중구 9/13] 1부 특강 자유형": 14,
-  "[중구 9/13] 1부 특강 평영": 7,
-  "[중구 9/13] 1부 특강 접영": 7,
-  // 구 키 호환 (은평 9/13 취소)
+  // 은평 9/13
   "[은평 9/13] 1부 특강 자유형": 7,
   "[은평 9/13] 1부 특강 평영": 7,
   "[은평 9/13] 1부 특강 접영": 7,
@@ -1539,19 +1543,6 @@ export default function SwimmingClassPage() {
         date: `${c.month}/${c.dateNum}`,
       })),
       enrollmentKeys: Object.keys(INITIAL_ENROLLMENT).length,
-    });
-    console.log("[특강일정] 9/13 중구 대체 확인", {
-      classId: 16,
-      location: getClassById(16)?.location,
-      locationCode: getClassById(16)?.locationCode,
-      time: TIMETABLE_BY_CLASS_ID[16]?.[0]?.time,
-      strokes: getAvailableStrokesForClass(16).strokes.map((s) => s.stroke),
-      diagnosis: getDiagnosisOfferingForClass(16),
-      정원: {
-        자유형: resolveWaitlistThreshold("[중구 9/13] 1부 특강 자유형", {}),
-        평영: resolveWaitlistThreshold("[중구 9/13] 1부 특강 평영", {}),
-        접영: resolveWaitlistThreshold("[중구 9/13] 1부 특강 접영", {}),
-      },
     });
     console.log(
       "[카운터] 진단 프로그램 집계 키·정원",

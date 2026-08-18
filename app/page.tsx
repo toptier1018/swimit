@@ -5662,9 +5662,15 @@ export default function SwimmingClassPage() {
                                         </div>
                                       </div>
                                       <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
-                                        <span className="text-sm font-bold text-gray-900">
-                                          ₩{price.toLocaleString()}
-                                        </span>
+                                        <ProductPriceLabel
+                                          price={price}
+                                          originalPrice={
+                                            PRODUCT_CATALOG.zero.originalPrice
+                                          }
+                                          badge={
+                                            PRODUCT_CATALOG.zero.priceBadge
+                                          }
+                                        />
                                         <span
                                           className={getAvailabilityBadgeClassName(
                                             availabilityBadge.tone,
@@ -6107,12 +6113,12 @@ export default function SwimmingClassPage() {
                             결제금액
                           </span>
                           <div className="text-right">
-                            {selectedTimeSlot?.productType &&
-                            PRODUCT_CATALOG[selectedTimeSlot.productType] ? (
+                            {selectedTimeSlot ? (
                               <div className="text-xs text-gray-400 line-through">
                                 {formatWon(
-                                  PRODUCT_CATALOG[selectedTimeSlot.productType]
-                                    .originalPrice,
+                                  selectedTimeSlot.productType === "diagnosis"
+                                    ? PRODUCT_CATALOG.diagnosis.originalPrice
+                                    : PRODUCT_CATALOG.zero.originalPrice,
                                 )}
                               </div>
                             ) : null}

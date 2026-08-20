@@ -192,6 +192,12 @@ export function notionPageToSheetRow(page: NotionPage): GoogleSheetRowInput | nu
     날짜: guessClassDate(region, selectedClass),
     특강지역: region,
     예약상태: status,
+    유입경로: anyText(p["유입경로"]) || "direct",
+    video: anyText(p["video"]),
+    source: anyText(p["source"]),
+    utm_source: anyText(p["utm_source"]),
+    utm_medium: anyText(p["utm_medium"]),
+    utm_campaign: anyText(p["utm_campaign"]),
   };
 }
 

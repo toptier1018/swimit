@@ -10,6 +10,7 @@ export async function POST(request: NextRequest) {
       예약상태: body?.예약상태,
       이름: body?.이름,
       입금기한: body?.입금기한,
+      유입경로: body?.유입경로,
     });
 
     if (!body?.이름 || !body?.전화번호 || !body?.예약상태) {
@@ -42,6 +43,12 @@ export async function POST(request: NextRequest) {
       링크: body.링크 ?? "",
       입금기한: body.입금기한 ?? "",
       대기순번: body.대기순번 ?? "",
+      유입경로: body.유입경로 ?? "",
+      video: body.video ?? "",
+      source: body.source ?? "",
+      utm_source: body.utm_source ?? "",
+      utm_medium: body.utm_medium ?? "",
+      utm_campaign: body.utm_campaign ?? "",
     });
 
     if (!result.success) {

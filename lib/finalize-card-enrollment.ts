@@ -481,6 +481,12 @@ export async function finalizeCardEnrollmentCore(
         날짜: classDate,
         특강지역: region,
         예약상태: "결제완료",
+        유입경로: traffic["유입경로"] || "",
+        video: traffic.video || "",
+        source: traffic.source || "",
+        utm_source: traffic.utm_source || "",
+        utm_medium: traffic.utm_medium || "",
+        utm_campaign: traffic.utm_campaign || "",
       });
       if (!sheetResult.success) {
         sheetOk = false;

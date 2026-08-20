@@ -65,6 +65,18 @@ export type GoogleSheetRowInput = {
   입금기한?: string;
   /** S: 대기순번 */
   대기순번?: string;
+  /** U: 유입경로 (T열은 운영용 여백으로 유지) */
+  유입경로?: string;
+  /** V: video */
+  video?: string;
+  /** W: source */
+  source?: string;
+  /** X: utm_source */
+  utm_source?: string;
+  /** Y: utm_medium */
+  utm_medium?: string;
+  /** Z: utm_campaign */
+  utm_campaign?: string;
 };
 
 /** B열(신청번호) 목록 — 중복 복구 방지 */
@@ -124,13 +136,37 @@ export async function appendRowToGoogleSheet(
       신청번호: row["신청번호"],
       예약상태: row["예약상태"],
       입금기한: row["입금기한"] ?? "",
+      유입경로: row["유입경로"] ?? "",
       시트명: env.sheetName,
     });
 
     const auth = getAuthClient();
     const sheets = google.sheets({ version: "v4", auth });
 
-    // 실제 시트: A~P 기본 + Q 링크 + R 입금기한 + S 대기순번
+    // A~S 운영 필드 + T 여백 + U~Z 퍼널 추적 필드
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: env.spreadsheetId,
+      range: `'${env.sheetName}'!Q1:Z1`,
+      valueInputOption: "RAW",
+      requestBody: {
+        values: [
+          [
+            "링크",
+            "입금기한",
+            "대기순번",
+            "",
+            "유입경로",
+            "video",
+            "source",
+            "utm_source",
+            "utm_medium",
+            "utm_campaign",
+          ],
+        ],
+      },
+    });
+    console.log("[Google Sheets] Q~Z 헤더 확인 완료 (퍼널 U열부터)");
+
     const values: string[][] = [
       [
         row["접수일시"],
@@ -152,12 +188,19 @@ export async function appendRowToGoogleSheet(
         row["링크"] ?? "",
         row["입금기한"] ?? "",
         row["대기순번"] ?? "",
+        "", // T: 운영 시트에서 자유롭게 사용하는 여백
+        row["유입경로"] ?? "",
+        row["video"] ?? "",
+        row["source"] ?? "",
+        row["utm_source"] ?? "",
+        row["utm_medium"] ?? "",
+        row["utm_campaign"] ?? "",
       ],
     ];
 
     await sheets.spreadsheets.values.append({
       spreadsheetId: env.spreadsheetId,
-      range: `'${env.sheetName}'!A:S`,
+      range: `'${env.sheetName}'!A:Z`,
       valueInputOption: "USER_ENTERED",
       insertDataOption: "INSERT_ROWS",
       requestBody: { values },
@@ -167,6 +210,7 @@ export async function appendRowToGoogleSheet(
       신청번호: row["신청번호"],
       예약상태: row["예약상태"],
       입금기한: row["입금기한"] ?? "",
+      유입경로: row["유입경로"] ?? "",
     });
 
     return { success: true };

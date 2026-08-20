@@ -6369,6 +6369,7 @@ export default function SwimmingClassPage() {
                                         날짜: classDate,
                                         특강지역: selectedRegion,
                                         예약상태: "예약대기",
+                                        ...toTrafficRecord(trafficSource),
                                       }),
                                     },
                                   );
@@ -6580,6 +6581,7 @@ export default function SwimmingClassPage() {
                                           formatBankTransferDeadline(
                                             paymentStartedAt,
                                           ),
+                                        ...toTrafficRecord(trafficSource),
                                       }),
                                     },
                                   );

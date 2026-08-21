@@ -143,31 +143,9 @@ export async function appendRowToGoogleSheet(
     const auth = getAuthClient();
     const sheets = google.sheets({ version: "v4", auth });
 
-    // A~S 운영 필드 + T 여백 + U~Z 퍼널 추적 필드
-    await sheets.spreadsheets.values.update({
-      spreadsheetId: env.spreadsheetId,
-      range: `'${env.sheetName}'!Q1:Z1`,
-      valueInputOption: "RAW",
-      requestBody: {
-        values: [
-          [
-            "링크",
-            "입금기한",
-            "대기순번",
-            "",
-            "유입경로",
-            "video",
-            "source",
-            "utm_source",
-            "utm_medium",
-            "utm_campaign",
-          ],
-        ],
-      },
-    });
-    console.log("[Google Sheets] Q~Z 헤더 확인 완료 (퍼널 U열부터)");
-
-    const values: string[][] = [
+    // U~Z에 과거 퍼널 데이터만 남은 행이 있어도 주문 행 위치에 영향을 주지 않도록
+    // 주문 데이터(A~S)를 먼저 추가한 뒤, 반환된 같은 행의 U~Z에 퍼널을 기록한다.
+    const coreValues: string[][] = [
       [
         row["접수일시"],
         row["신청번호"],
@@ -188,29 +166,64 @@ export async function appendRowToGoogleSheet(
         row["링크"] ?? "",
         row["입금기한"] ?? "",
         row["대기순번"] ?? "",
-        "", // T: 운영 시트에서 자유롭게 사용하는 여백
-        row["유입경로"] ?? "",
-        row["video"] ?? "",
-        row["source"] ?? "",
-        row["utm_source"] ?? "",
-        row["utm_medium"] ?? "",
-        row["utm_campaign"] ?? "",
       ],
     ];
 
-    await sheets.spreadsheets.values.append({
+    const appendResult = await sheets.spreadsheets.values.append({
       spreadsheetId: env.spreadsheetId,
-      range: `'${env.sheetName}'!A:Z`,
+      range: `'${env.sheetName}'!A:S`,
       valueInputOption: "USER_ENTERED",
       insertDataOption: "INSERT_ROWS",
-      requestBody: { values },
+      requestBody: { values: coreValues },
     });
+
+    const updatedRange = appendResult.data.updates?.updatedRange ?? "";
+    const appendedRow = updatedRange.match(/!A(\d+):S\d+$/)?.[1];
+    const funnelValues = [
+      row["유입경로"] ?? "",
+      row["video"] ?? "",
+      row["source"] ?? "",
+      row["utm_source"] ?? "",
+      row["utm_medium"] ?? "",
+      row["utm_campaign"] ?? "",
+    ];
+    const hasFunnelValue = funnelValues.some((value) => value.trim().length > 0);
+
+    if (appendedRow && hasFunnelValue) {
+      try {
+        await sheets.spreadsheets.values.update({
+          spreadsheetId: env.spreadsheetId,
+          range: `'${env.sheetName}'!U${appendedRow}:Z${appendedRow}`,
+          valueInputOption: "USER_ENTERED",
+          requestBody: { values: [funnelValues] },
+        });
+        console.log("[Google Sheets] 퍼널 기록 성공:", {
+          신청번호: row["신청번호"],
+          행: appendedRow,
+        });
+      } catch (funnelError) {
+        console.error("[Google Sheets] 주문은 저장됐지만 퍼널 기록 실패:", {
+          신청번호: row["신청번호"],
+          행: appendedRow,
+          error:
+            funnelError instanceof Error
+              ? funnelError.message
+              : String(funnelError),
+        });
+      }
+    } else if (hasFunnelValue) {
+      console.warn("[Google Sheets] 추가된 행 번호를 확인하지 못해 퍼널 기록 생략:", {
+        신청번호: row["신청번호"],
+        updatedRange,
+      });
+    }
 
     console.log("[Google Sheets] 행 추가 성공:", {
       신청번호: row["신청번호"],
       예약상태: row["예약상태"],
       입금기한: row["입금기한"] ?? "",
       유입경로: row["유입경로"] ?? "",
+      행: appendedRow ?? "확인 불가",
     });
 
     return { success: true };

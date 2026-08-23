@@ -307,6 +307,214 @@ function isHoldStillValid(deadlineMs: number | null, nowMs: number): boolean {
   return deadlineMs >= nowMs;
 }
 
+function normalizeApplicantName(value: string): string {
+  return String(value || "").replace(/\s+/g, "").toLowerCase();
+}
+
+function normalizePhone(value: string): string {
+  return String(value || "").replace(/\D/g, "");
+}
+
+function normalizeClassKey(value: string): string {
+  return String(value || "").replace(/\s+/g, " ").trim();
+}
+
+function resolveActiveDuplicateStatus(input: {
+  statusRaw: string;
+  confirmedRaw?: string;
+  deadlineRaw?: string;
+  receivedRaw?: string;
+  nowMs: number;
+}): string | null {
+  if (
+    isClosedOpsStatus(input.statusRaw) ||
+    isClosedOpsStatus(input.confirmedRaw || "")
+  ) {
+    return null;
+  }
+  if (isReservationConfirmed(input.confirmedRaw || "")) return "예약확정";
+
+  const compact = compactStatus(input.statusRaw);
+  if (
+    compact === "예약대기" ||
+    compact.includes("결제완료") ||
+    compact.includes("입금완료")
+  ) {
+    return String(input.statusRaw || "").trim();
+  }
+  if (!isPendingPaymentStatus(input.statusRaw)) return null;
+
+  const deadlineMs = resolveHoldDeadlineMs({
+    deadlineRaw: input.deadlineRaw,
+    receivedRaw: input.receivedRaw,
+  });
+  return isHoldStillValid(deadlineMs, input.nowMs)
+    ? String(input.statusRaw || "").trim()
+    : null;
+}
+
+export async function checkGoogleSheetDuplicateForSameClass(data: {
+  name: string;
+  phone: string;
+  selectedClass: string;
+}): Promise<{
+  success: boolean;
+  hasDuplicate: boolean;
+  matchedStatuses: string[];
+  error?: string;
+}> {
+  try {
+    if (!env.spreadsheetId) {
+      return {
+        success: false,
+        hasDuplicate: false,
+        matchedStatuses: [],
+        error: "GOOGLE_SHEETS_SPREADSHEET_ID가 없습니다.",
+      };
+    }
+
+    const applicantName = normalizeApplicantName(data.name);
+    const applicantPhone = normalizePhone(data.phone);
+    const selectedClass = normalizeClassKey(data.selectedClass);
+    const maskedPhone = applicantPhone
+      ? `***${applicantPhone.slice(-4)}`
+      : "(없음)";
+    console.log("[구글시트 중복확인] 조회 시작:", {
+      name: data.name.trim(),
+      phone: maskedPhone,
+      selectedClass,
+    });
+
+    if (!applicantName || !applicantPhone || !selectedClass) {
+      return {
+        success: true,
+        hasDuplicate: false,
+        matchedStatuses: [],
+      };
+    }
+
+    const auth = getAuthClient();
+    const sheets = google.sheets({ version: "v4", auth });
+    const [opsRes, rawRes] = await Promise.all([
+      sheets.spreadsheets.values.get({
+        spreadsheetId: env.spreadsheetId,
+        range: `'${env.opsSheetName}'!A:Z`,
+      }),
+      sheets.spreadsheets.values.get({
+        spreadsheetId: env.spreadsheetId,
+        range: `'${env.rawSheetName}'!A:R`,
+      }),
+    ]);
+
+    const nowMs = Date.now();
+    const allOpsOrders = new Set<string>();
+    const matchedStatuses: string[] = [];
+    const matchedOrders = new Set<string>();
+
+    const inspectRows = (
+      rows: string[][],
+      source: "운영" | "수강자",
+      skipOrdersInOps: boolean,
+    ) => {
+      if (rows.length < 2) return;
+      const header = (rows[0] || []).map((value) =>
+        String(value || "").trim(),
+      );
+      const colOrder = findHeaderIndex(header, ["신청번호"]);
+      const colName = findHeaderIndex(header, ["이름"]);
+      const colPhone = findHeaderIndex(header, ["전화번호"]);
+      const colStatus = findHeaderIndex(header, ["예약상태"]);
+      const colConfirmed = findHeaderIndex(header, ["확정예약상태"]);
+      const colDeadline = findHeaderIndex(header, ["입금기한"]);
+      const colReceived = findHeaderIndex(header, ["접수일시"]);
+      const colGarden = findHeaderIndex(header, ["정원키"]);
+      const colDate = findHeaderIndex(header, ["날짜"]);
+      const colRegion = findHeaderIndex(header, ["특강지역"]);
+      const colSession = findHeaderIndex(header, ["회차"]);
+      const colClass = findHeaderIndex(header, ["클래스"]);
+      const colActual = findHeaderIndex(header, ["실제 클래스"]);
+
+      for (let index = 1; index < rows.length; index += 1) {
+        const row = rows[index] || [];
+        const order =
+          colOrder >= 0 ? String(row[colOrder] ?? "").trim() : "";
+        if (source === "운영" && order) allOpsOrders.add(order);
+        if (skipOrdersInOps && order && allOpsOrders.has(order)) continue;
+
+        const rowName = colName >= 0 ? String(row[colName] ?? "") : "";
+        const rowPhone = colPhone >= 0 ? String(row[colPhone] ?? "") : "";
+        if (
+          normalizeApplicantName(rowName) !== applicantName ||
+          normalizePhone(rowPhone) !== applicantPhone
+        ) {
+          continue;
+        }
+
+        const enrollmentKey = opsRowToEnrollmentKey({
+          gardenKey: colGarden >= 0 ? String(row[colGarden] ?? "") : "",
+          date: colDate >= 0 ? String(row[colDate] ?? "") : "",
+          region: colRegion >= 0 ? String(row[colRegion] ?? "") : "",
+          session: colSession >= 0 ? String(row[colSession] ?? "") : "",
+          className: colClass >= 0 ? String(row[colClass] ?? "") : "",
+          actualClass: colActual >= 0 ? String(row[colActual] ?? "") : "",
+        });
+        if (normalizeClassKey(enrollmentKey || "") !== selectedClass) continue;
+
+        const status = resolveActiveDuplicateStatus({
+          statusRaw: colStatus >= 0 ? String(row[colStatus] ?? "") : "",
+          confirmedRaw:
+            colConfirmed >= 0 ? String(row[colConfirmed] ?? "") : "",
+          deadlineRaw:
+            colDeadline >= 0 ? String(row[colDeadline] ?? "") : "",
+          receivedRaw:
+            colReceived >= 0 ? String(row[colReceived] ?? "") : "",
+          nowMs,
+        });
+        if (!status) continue;
+        if (order && matchedOrders.has(order)) continue;
+
+        if (order) matchedOrders.add(order);
+        matchedStatuses.push(status);
+        console.log("[구글시트 중복확인] 활성 신청 발견:", {
+          source,
+          row: index + 1,
+          order: order || "(신청번호 없음)",
+          status,
+          selectedClass,
+        });
+      }
+    };
+
+    const opsRows = (opsRes.data.values ?? []) as string[][];
+    inspectRows(opsRows, "운영", false);
+    const rawRows = (rawRes.data.values ?? []) as string[][];
+    inspectRows(rawRows, "수강자", true);
+
+    console.log("[구글시트 중복확인] 조회 완료:", {
+      name: data.name.trim(),
+      phone: maskedPhone,
+      selectedClass,
+      hasDuplicate: matchedStatuses.length > 0,
+      matchedStatuses,
+    });
+    return {
+      success: true,
+      hasDuplicate: matchedStatuses.length > 0,
+      matchedStatuses,
+    };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "구글 시트 중복 확인 실패";
+    console.error("[구글시트 중복확인] 예외:", message);
+    return {
+      success: false,
+      hasDuplicate: false,
+      matchedStatuses: [],
+      error: message,
+    };
+  }
+}
+
 type CountableKind = "confirmed" | "hold";
 
 /**

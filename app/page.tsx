@@ -42,10 +42,10 @@ import {
   submitPaidToNotion,
   updatePaymentInNotion,
   checkPaymentStatus,
-  checkDuplicateForSameClass,
   getClassEnrollmentCounts,
   findOrCreateApplicant,
 } from "@/app/actions/notion";
+import { checkDuplicateForSameClass } from "@/app/actions/google-sheets";
 import {
   EMPTY_TRAFFIC_SOURCE,
   TRAFFIC_SOURCE_STORAGE_KEY,
@@ -2682,6 +2682,16 @@ export default function SwimmingClassPage() {
         phone: formData.phone,
         selectedClass: selectedTimeSlot.name,
       });
+      if (!duplicateCheck.success) {
+        console.error("[카드결제] 구글 시트 중복 확인 실패:", duplicateCheck.error);
+        toast({
+          title: "신청 확인 실패",
+          description:
+            "기존 신청 내역을 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+          variant: "destructive",
+        });
+        return;
+      }
       if (duplicateCheck.success && duplicateCheck.hasDuplicate) {
         console.log("[카드결제] 중복 신청 차단:", {
           className: selectedTimeSlot.name,
@@ -6199,19 +6209,33 @@ export default function SwimmingClassPage() {
                           const paymentStartedAt = new Date();
                           setPaymentDate(paymentStartedAt);
 
-                          // 같은 클래스 중복 신청 방지 (옵션1: 결제대기/예약대기만 차단)
+                          // 같은 클래스 중복 신청 방지: 구글 운영/수강자 시트의 활성 신청 기준
                           const duplicateCheck =
                             await checkDuplicateForSameClass({
                               name: formData.name,
                               phone: formData.phone,
                               selectedClass: selectedTimeSlot.name,
                             });
+                          if (!duplicateCheck.success) {
+                            console.error(
+                              "[중복방지] 구글 시트 조회 실패:",
+                              duplicateCheck.error,
+                            );
+                            toast({
+                              title: "신청 확인 실패",
+                              description:
+                                "기존 신청 내역을 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+                              variant: "destructive",
+                            });
+                            setIsSubmitting(false);
+                            return;
+                          }
                           if (
                             duplicateCheck.success &&
                             duplicateCheck.hasDuplicate
                           ) {
                             console.log(
-                              "[중복방지] 동일 클래스 중복(결제대기/예약대기) 차단:",
+                              "[중복방지] 구글 시트의 동일 클래스 활성 신청 차단:",
                               {
                                 className: selectedTimeSlot.name,
                                 statuses: duplicateCheck.matchedStatuses,

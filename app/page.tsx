@@ -3571,27 +3571,31 @@ export default function SwimmingClassPage() {
                           <div className="inline-flex rounded-full border border-blue-200 bg-white px-3 py-1 text-xs font-bold text-blue-700">
                             수영 클리닉 · 저항 교정 특강
                           </div>
-                          <h3 className="text-[1.625rem] sm:text-[2rem] font-bold tracking-tight text-gray-950 leading-[1.35] sm:leading-tight text-balance break-keep-all">
-                            <span className="block">
-                              수영이 힘든 건, 힘이 부족해서가 아니라
-                            </span>
-                            <span className="block">
-                              힘이 새고 있기 때문입니다.
-                            </span>
-                          </h3>
-                          <p className="text-[15px] sm:text-[17px] font-medium text-gray-800 leading-[1.7] sm:leading-7 break-keep-all">
-                            더 세게 수영하기 전에, 어디서{" "}
-                            <span className="font-bold text-blue-700">저항</span>
-                            이 생기는지부터 찾아보세요.
-                          </p>
-                          <p className="text-[15px] sm:text-[17px] font-medium text-gray-800 leading-[1.7] sm:leading-7 break-keep-all">
-                            스윔잇은 수중 촬영으로 내 수영을 방해하는 가장 큰
-                            저항을 찾아, 코치가 직접 교정하는{" "}
-                            <span className="font-bold text-blue-700">
-                              저항 제로 특강
-                            </span>
-                            입니다.
-                          </p>
+                          <div className="space-y-2.5 sm:space-y-3">
+                            <h3 className="text-[1.45rem] sm:text-[2rem] font-bold tracking-tight text-gray-950 leading-[1.4] sm:leading-tight text-balance break-keep-all">
+                              <span className="block">
+                                수영이 힘든 건, 힘이 부족해서가 아니라
+                              </span>
+                              <span className="block">
+                                힘이 새고 있기 때문입니다.
+                              </span>
+                            </h3>
+                            <p className="text-sm sm:text-[17px] font-medium text-gray-800 leading-6 sm:leading-7 break-keep-all">
+                              더 세게 수영하기 전에, 어느 자세에서{" "}
+                              <span className="font-bold text-blue-700">
+                                저항
+                              </span>
+                              이 생기는지부터 찾아보세요.
+                            </p>
+                            <p className="text-sm sm:text-[17px] font-medium text-gray-800 leading-6 sm:leading-7 break-keep-all">
+                              스윔잇은 수중 촬영으로 내 수영 자세에서 가장 큰
+                              저항을 찾아, 코치가 직접 미끄러지게 교정하는{" "}
+                              <span className="font-bold text-blue-700">
+                                저항 제로 수영 특강
+                              </span>
+                              입니다.
+                            </p>
+                          </div>
 
                           <div className="grid gap-2">
                             <Button
@@ -3685,27 +3689,31 @@ export default function SwimmingClassPage() {
                             어항샷으로 원인을 확인했다면, 같은 날·같은 센터에서
                             저항 제로 특강으로 바로 교정할 수도 있습니다.
                           </p>
-                          <h3 className="text-[1.375rem] sm:text-[1.625rem] font-bold tracking-tight text-gray-950 leading-[1.35] break-keep-all">
-                            <span className="block">
-                              수영이 힘든 건, 힘이 부족해서가 아니라
-                            </span>
-                            <span className="block">
-                              힘이 새고 있기 때문입니다.
-                            </span>
-                          </h3>
-                          <p className="text-[15px] sm:text-[16px] font-medium text-gray-800 leading-[1.7] break-keep-all">
-                            더 세게 수영하기 전에, 어디서{" "}
-                            <span className="font-bold text-blue-700">저항</span>
-                            이 생기는지부터 찾아보세요.
-                          </p>
-                          <p className="text-[15px] sm:text-[16px] font-medium text-gray-800 leading-[1.7] break-keep-all">
-                            스윔잇은 수중 촬영으로 내 수영을 방해하는 가장 큰
-                            저항을 찾아, 코치가 직접 교정하는{" "}
-                            <span className="font-bold text-blue-700">
-                              저항 제로 특강
-                            </span>
-                            입니다.
-                          </p>
+                          <div className="space-y-2.5 sm:space-y-3">
+                            <h3 className="text-xl sm:text-[1.625rem] font-bold tracking-tight text-gray-950 leading-[1.4] break-keep-all">
+                              <span className="block">
+                                수영이 힘든 건, 힘이 부족해서가 아니라
+                              </span>
+                              <span className="block">
+                                힘이 새고 있기 때문입니다.
+                              </span>
+                            </h3>
+                            <p className="text-sm sm:text-[16px] font-medium text-gray-800 leading-6 sm:leading-[1.7] break-keep-all">
+                              더 세게 수영하기 전에, 어느 자세에서{" "}
+                              <span className="font-bold text-blue-700">
+                                저항
+                              </span>
+                              이 생기는지부터 찾아보세요.
+                            </p>
+                            <p className="text-sm sm:text-[16px] font-medium text-gray-800 leading-6 sm:leading-[1.7] break-keep-all">
+                              스윔잇은 수중 촬영으로 내 수영 자세에서 가장 큰
+                              저항을 찾아, 코치가 직접 미끄러지게 교정하는{" "}
+                              <span className="font-bold text-blue-700">
+                                저항 제로 수영 특강
+                              </span>
+                              입니다.
+                            </p>
+                          </div>
                           <div
                             className="relative w-full overflow-hidden rounded-xl shadow-md"
                             style={{ paddingBottom: "56.25%" }}

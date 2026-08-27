@@ -128,3 +128,13 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .safe-area-pb {
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+  }
+
+  .safe-area-pb-4 {
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+  }
+}

@@ -411,7 +411,7 @@ const ProductPriceLabel = ({
     <span className="text-base font-extrabold text-blue-800">
       {formatWon(price)}
     </span>
-    <span className="rounded bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
+    <span className="rounded bg-red-500 px-1.5 py-0.5 text-[11px] font-bold text-white sm:text-xs">
       {badge}
     </span>
   </span>
@@ -422,7 +422,7 @@ const DiagnosisCouponBanner = () => {
   console.log("[진단쿠폰] 저항 진단 프로그램 쿠폰 배너 표시");
   return (
     <div className="rounded-lg border-2 border-orange-400 bg-orange-50 px-3 py-2.5 text-sm font-extrabold leading-5 text-orange-950">
-      <span className="mr-1.5 inline-block rounded bg-orange-500 px-1.5 py-0.5 text-[11px] font-bold text-white">
+      <span className="mr-1.5 inline-block rounded bg-orange-500 px-1.5 py-0.5 text-xs font-bold text-white">
         쿠폰
       </span>
       진단 후 저항 제로 특강 수강 시 1만원 할인 쿠폰 제공
@@ -1193,7 +1193,7 @@ const pickStableScarcityLabel = (className: string, remaining: number) => {
 };
 
 const getAvailabilityBadgeClassName = (tone: AvailabilityTone) => {
-  const base = "rounded px-2 py-1 text-[11px] font-bold text-white";
+  const base = "rounded px-2 py-1 text-xs font-bold text-white";
   if (tone === "waitlist") return `${base} bg-gray-500`;
   if (tone === "critical") return `${base} bg-red-500`;
   if (tone === "warning") return `${base} bg-orange-500`;
@@ -2889,10 +2889,10 @@ export default function SwimmingClassPage() {
         isFishtankEntry && !showRegistrationForm ? "pb-24" : ""
       }`}
     >
-      <main className="container mx-auto py-8 px-4 max-w-4xl flex flex-col">
+      <main className="container mx-auto flex max-w-4xl flex-col px-4 py-6 sm:py-8">
         {/* 개발자 모드: 카운터 표시 (모든 단계에서 표시) */}
         {showDebug && (
-          <div className="fixed top-4 right-4 bg-black/90 text-white rounded-lg text-xs z-50 shadow-2xl border-2 border-yellow-500 w-[340px] sm:w-[420px] lg:w-[560px] max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col">
+          <div className="fixed right-4 top-4 z-50 flex max-h-[calc(100vh-2rem)] w-[calc(100vw-2rem)] max-w-[340px] flex-col overflow-hidden rounded-lg border-2 border-yellow-500 bg-black/90 text-xs text-white shadow-2xl sm:max-w-none sm:w-[420px] lg:w-[560px]">
             <div className="px-3 py-2 border-b border-yellow-500/40 bg-black/95 sticky top-0">
               <div className="flex items-center justify-between gap-2">
                 <div className="font-bold text-yellow-400 text-sm">
@@ -3518,10 +3518,10 @@ export default function SwimmingClassPage() {
                           <div className="inline-flex rounded-full border border-blue-200 bg-white px-3 py-1 text-xs font-bold text-blue-700">
                             어항샷 · 저항 진단
                           </div>
-                          <h3 className="text-[1.625rem] sm:text-[2rem] font-bold tracking-tight text-gray-950 leading-[1.35] sm:leading-tight text-balance break-keep-all">
+                          <h3 className="text-[1.625rem] sm:text-[2rem] font-bold tracking-tight text-gray-950 leading-[1.35] sm:leading-tight text-balance break-keep">
                             내 수영이 왜 힘든지, 물속에서 직접 확인하세요.
                           </h3>
-                          <p className="text-[17px] sm:text-xl font-extrabold text-blue-800 leading-snug break-keep-all">
+                          <p className="text-[17px] sm:text-xl font-extrabold text-blue-800 leading-snug break-keep">
                             스윔잇 어항샷 저항 진단 프로그램
                           </p>
                           <div className="rounded-xl border border-blue-100 bg-white p-4 shadow-sm space-y-3">
@@ -3572,7 +3572,7 @@ export default function SwimmingClassPage() {
                             수영 클리닉 · 저항 교정 특강
                           </div>
                           <div className="space-y-2.5 sm:space-y-3">
-                            <h3 className="text-[1.45rem] sm:text-[2rem] font-bold tracking-tight text-gray-950 leading-[1.4] sm:leading-tight text-balance break-keep-all">
+                            <h3 className="text-[1.45rem] sm:text-[2rem] font-bold tracking-tight text-gray-950 leading-[1.4] sm:leading-tight text-balance break-keep">
                               <span className="block">
                                 수영이 힘든 건, 힘이 부족해서가 아니라
                               </span>
@@ -3580,14 +3580,14 @@ export default function SwimmingClassPage() {
                                 힘이 새고 있기 때문입니다.
                               </span>
                             </h3>
-                            <p className="text-sm sm:text-[17px] font-medium text-gray-800 leading-6 sm:leading-7 break-keep-all">
+                            <p className="text-sm sm:text-[17px] font-medium text-gray-800 leading-6 sm:leading-7 break-keep">
                               더 세게 수영하기 전에, 어느 자세에서{" "}
                               <span className="font-bold text-blue-700">
                                 저항
                               </span>
                               이 생기는지부터 찾아보세요.
                             </p>
-                            <p className="text-sm sm:text-[17px] font-medium text-gray-800 leading-6 sm:leading-7 break-keep-all">
+                            <p className="text-sm sm:text-[17px] font-medium text-gray-800 leading-6 sm:leading-7 break-keep">
                               스윔잇은 수중 촬영으로 내 수영 자세에서 가장 큰
                               저항을 찾아, 코치가 직접 미끄러지게 교정하는{" "}
                               <span className="font-bold text-blue-700">
@@ -3690,7 +3690,7 @@ export default function SwimmingClassPage() {
                             저항 제로 특강으로 바로 교정할 수도 있습니다.
                           </p>
                           <div className="space-y-2.5 sm:space-y-3">
-                            <h3 className="text-xl sm:text-[1.625rem] font-bold tracking-tight text-gray-950 leading-[1.4] break-keep-all">
+                            <h3 className="text-xl sm:text-[1.625rem] font-bold tracking-tight text-gray-950 leading-[1.4] break-keep">
                               <span className="block">
                                 수영이 힘든 건, 힘이 부족해서가 아니라
                               </span>
@@ -3698,14 +3698,14 @@ export default function SwimmingClassPage() {
                                 힘이 새고 있기 때문입니다.
                               </span>
                             </h3>
-                            <p className="text-sm sm:text-[16px] font-medium text-gray-800 leading-6 sm:leading-[1.7] break-keep-all">
+                            <p className="text-sm sm:text-[16px] font-medium text-gray-800 leading-6 sm:leading-[1.7] break-keep">
                               더 세게 수영하기 전에, 어느 자세에서{" "}
                               <span className="font-bold text-blue-700">
                                 저항
                               </span>
                               이 생기는지부터 찾아보세요.
                             </p>
-                            <p className="text-sm sm:text-[16px] font-medium text-gray-800 leading-6 sm:leading-[1.7] break-keep-all">
+                            <p className="text-sm sm:text-[16px] font-medium text-gray-800 leading-6 sm:leading-[1.7] break-keep">
                               스윔잇은 수중 촬영으로 내 수영 자세에서 가장 큰
                               저항을 찾아, 코치가 직접 미끄러지게 교정하는{" "}
                               <span className="font-bold text-blue-700">
@@ -3809,7 +3809,7 @@ export default function SwimmingClassPage() {
                           <p className="mt-2 text-lg font-bold leading-7 text-blue-900 sm:text-xl">
                             "왜 안 되는지"
                           </p>
-                          <p className="mt-1.5 break-keep-all text-sm leading-6 text-blue-800 sm:text-[15px]">
+                          <p className="mt-1.5 break-keep text-sm leading-6 text-blue-800 sm:text-[15px]">
                             앞으로 안 나가는 자세의 원인부터 찾습니다.
                           </p>
                         </div>
@@ -3844,7 +3844,7 @@ export default function SwimmingClassPage() {
                             <div className="mt-1 text-[15px] font-bold leading-6 text-gray-950 sm:text-base">
                               {item.title}
                             </div>
-                            <p className="mt-1 break-keep-all text-sm leading-6 text-gray-600">
+                            <p className="mt-1 break-keep text-sm leading-6 text-gray-600">
                               {item.desc}
                             </p>
                           </div>
@@ -3893,15 +3893,15 @@ export default function SwimmingClassPage() {
                   런칭 특가로 진행 중입니다
                 </p>
                 <div className="space-y-3 text-sm leading-6 sm:text-[15px] sm:leading-7">
-                  <p className="break-keep-all text-gray-900">
+                  <p className="break-keep text-gray-900">
                     스윔잇은 많은 인원을 한 번에 돌리는 수업이 아니라, 한 명 한
                     명 수중 움직임을 보고 직접 교정하는 자세 진단형 특강입니다.
                   </p>
-                  <p className="break-keep-all text-gray-700">
+                  <p className="break-keep text-gray-700">
                     레인당 최대 7명 기준으로 운영하며, Before / After 촬영과 1:1
                     영상 피드백까지 포함됩니다.
                   </p>
-                  <p className="break-keep-all font-bold text-blue-800">
+                  <p className="break-keep font-bold text-blue-800">
                     단순히 수업을 듣는 것이 아니라, 내 수영 자세의 문제를
                     진단받고 실시간으로 교정하는 방향으로 설계했습니다.
                   </p>
@@ -3962,13 +3962,13 @@ export default function SwimmingClassPage() {
               >
                 <div className="space-y-3.5 sm:space-y-4">
                   <div className="space-y-2">
-                    <p className="text-[11px] font-bold tracking-wide text-blue-700 sm:text-sm">
+                    <p className="text-xs font-bold tracking-wide text-blue-700 sm:text-sm">
                       스윔잇 저항 진단 프로그램 OPEN
                     </p>
                     <p className="text-lg font-bold leading-7 text-gray-950 sm:text-xl">
                       내 수영 자세부터 보고 싶으신가요?
                     </p>
-                    <p className="break-keep-all text-sm leading-6 text-gray-700 sm:text-[15px] sm:leading-7">
+                    <p className="break-keep text-sm leading-6 text-gray-700 sm:text-[15px] sm:leading-7">
                       정밀 어항샷 기반으로
                       <br />
                       저항 진단 리포트를 제공합니다.
@@ -3979,7 +3979,7 @@ export default function SwimmingClassPage() {
                     <p className="text-[15px] font-bold leading-6 text-gray-950">
                       어항샷이란?
                     </p>
-                    <p className="mt-1.5 break-keep-all text-sm leading-6 text-gray-700 sm:text-[15px]">
+                    <p className="mt-1.5 break-keep text-sm leading-6 text-gray-700 sm:text-[15px]">
                       위·아래를 동시에 찍어 저항이 보이게 촬영합니다.
                     </p>
                   </div>
@@ -4315,10 +4315,10 @@ export default function SwimmingClassPage() {
                             }`}
                           >
                           <CardContent className="p-4 sm:p-5">
-                            <div className="mb-3 flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <MapPin className="h-5 w-5 text-blue-500 fill-blue-500/10" />
-                                <span className="font-bold text-base sm:text-lg">
+                            <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+                              <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+                                <MapPin className="h-5 w-5 shrink-0 fill-blue-500/10 text-blue-500" />
+                                <span className="min-w-0 break-keep text-base font-bold leading-6 sm:text-lg">
                                   {classItem.location}
                                 </span>
                                 {classItem.badge && (
@@ -4328,7 +4328,7 @@ export default function SwimmingClassPage() {
                                 )}
                               </div>
                               {isSelectedSchedule && (
-                                <span className="rounded-full bg-primary px-2.5 py-1 text-xs font-bold text-white">
+                                <span className="shrink-0 rounded-full bg-primary px-2.5 py-1 text-xs font-bold text-white">
                                   선택됨
                                 </span>
                               )}
@@ -4383,9 +4383,9 @@ export default function SwimmingClassPage() {
                                   </span>
                                 </div>
                               )}
-                              <div className="flex items-center gap-2 pt-2">
-                                <Clock className="h-4 w-4 text-green-600" />
-                                <span className="text-sm sm:text-[15px] font-bold text-green-600">
+                              <div className="flex items-start gap-2 pt-2">
+                                <Clock className="mt-1 h-4 w-4 shrink-0 text-green-600" />
+                                <span className="break-keep text-sm font-bold leading-6 text-green-600 sm:text-[15px]">
                                   예약 가능 · 코치 1명 당 최대 7명 소수 정예 클래스
                                 </span>
                               </div>
@@ -4587,9 +4587,9 @@ export default function SwimmingClassPage() {
                   )}
                 </div>
               )}
-            <div className="mb-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+            <div className="mb-6 grid grid-cols-3 gap-2 sm:mb-8 sm:flex sm:flex-wrap sm:items-center sm:justify-center sm:gap-4">
               {/* Step 1 */}
-              <div className="flex items-center">
+              <div className="flex flex-col items-center gap-1 sm:flex-row sm:gap-0">
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
                     step > 1
@@ -4601,13 +4601,13 @@ export default function SwimmingClassPage() {
                 >
                   {step > 1 ? "✓" : "1"}
                 </div>
-                <span className="ml-2 text-sm font-medium">일정 선택</span>
+                <span className="text-xs font-medium sm:ml-2 sm:text-sm">일정 선택</span>
               </div>
 
-              <div className="w-12 h-0.5 bg-gray-300" />
+              <div className="hidden h-0.5 w-12 bg-gray-300 sm:block" />
 
               {/* Step 2 */}
-              <div className="flex items-center">
+              <div className="flex flex-col items-center gap-1 sm:flex-row sm:gap-0">
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
                     step > 3
@@ -4619,13 +4619,13 @@ export default function SwimmingClassPage() {
                 >
                   {step > 3 ? "✓" : "2"}
                 </div>
-                <span className="ml-2 text-sm font-medium">신청/결제</span>
+                <span className="text-xs font-medium sm:ml-2 sm:text-sm">신청/결제</span>
               </div>
 
-              <div className="w-12 h-0.5 bg-gray-300" />
+              <div className="hidden h-0.5 w-12 bg-gray-300 sm:block" />
 
               {/* Step 3 */}
-              <div className="flex items-center">
+              <div className="flex flex-col items-center gap-1 sm:flex-row sm:gap-0">
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
                     step === 4
@@ -4635,7 +4635,7 @@ export default function SwimmingClassPage() {
                 >
                   {step === 4 ? "✓" : "3"}
                 </div>
-                <span className="ml-2 text-sm font-medium">완료</span>
+                <span className="text-xs font-medium sm:ml-2 sm:text-sm">완료</span>
               </div>
             </div>
 
@@ -4672,7 +4672,7 @@ export default function SwimmingClassPage() {
 
                 {/* Registration Form */}
                 <Card>
-                  <CardContent className="p-6 space-y-6">
+                  <CardContent className="space-y-6 p-4 sm:p-6">
                     {/* Name Field */}
                     <div className="space-y-2">
                       <Label
@@ -5399,7 +5399,7 @@ export default function SwimmingClassPage() {
                                         }}
                                         className="rounded-xl border border-slate-200 bg-white p-4 text-left hover:border-primary/50 hover:shadow-sm"
                                       >
-                                        <span className="rounded-full bg-blue-600 px-2 py-0.5 text-[11px] font-bold text-white">
+                                        <span className="rounded-full bg-blue-600 px-2 py-0.5 text-xs font-bold text-white">
                                           {product.tag}
                                         </span>
                                         <p className="mt-2 text-base font-extrabold text-gray-950">
@@ -5456,7 +5456,7 @@ export default function SwimmingClassPage() {
                             <div className="space-y-4">
                               <div className="rounded-lg bg-slate-50 px-4 py-3 text-sm text-gray-700">
                                 <div className="flex flex-wrap items-center gap-2">
-                                  <span className="rounded-full bg-blue-600 px-2 py-0.5 text-[11px] font-bold text-white">
+                                  <span className="rounded-full bg-blue-600 px-2 py-0.5 text-xs font-bold text-white">
                                     {product.tag}
                                   </span>
                                   <span className="font-bold text-gray-900">
@@ -6161,7 +6161,7 @@ export default function SwimmingClassPage() {
                       </p>
                     </div>
                   )}
-                  <div className="sticky bottom-0 z-20 -mx-4 mt-6 border-t border-slate-200 bg-white/95 px-4 py-4 shadow-[0_-8px_24px_rgba(15,23,42,0.08)] backdrop-blur sm:static sm:mx-0 sm:rounded-2xl sm:border sm:shadow-sm">
+                  <div className="safe-area-pb-4 sticky bottom-0 z-20 -mx-4 mt-6 border-t border-slate-200 bg-white/95 px-4 py-4 shadow-[0_-8px_24px_rgba(15,23,42,0.08)] backdrop-blur sm:static sm:mx-0 sm:rounded-2xl sm:border sm:shadow-sm">
                     <div className="flex gap-3">
                     <Button
                       variant="outline"
@@ -7296,8 +7296,8 @@ export default function SwimmingClassPage() {
               <p className="font-semibold text-gray-900 mb-2">
                 [제3자 제공 현황]
               </p>
-              <div className="border rounded-lg overflow-hidden text-xs">
-                <table className="w-full text-left border-collapse">
+              <div className="overflow-x-auto rounded-lg border text-xs">
+                <table className="min-w-[520px] w-full border-collapse text-left">
                   <thead className="bg-gray-50 border-b">
                     <tr>
                       <th className="p-2 border-r font-bold">제공받는 자</th>
@@ -7709,12 +7709,12 @@ export default function SwimmingClassPage() {
                 <p className="font-bold text-gray-900 mb-3 text-xs">
                   [필수 고지 사항]
                 </p>
-                <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-4">
                   <div className="space-y-1">
                     <p className="font-bold text-gray-800 text-xs">
                       심혈관계 질환
                     </p>
-                    <p className="text-gray-600 text-[11px]">
+                    <p className="text-xs leading-5 text-gray-600">
                       심장 질환, 고혈압, 부정맥
                     </p>
                   </div>
@@ -7722,19 +7722,19 @@ export default function SwimmingClassPage() {
                     <p className="font-bold text-gray-800 text-xs">
                       호흡기 질환
                     </p>
-                    <p className="text-gray-600 text-[11px]">
+                    <p className="text-xs leading-5 text-gray-600">
                       천식, 폐 질환, 호흡기 알레르기
                     </p>
                   </div>
                   <div className="space-y-1">
                     <p className="font-bold text-gray-800 text-xs">기타 질환</p>
-                    <p className="text-gray-600 text-[11px]">
+                    <p className="text-xs leading-5 text-gray-600">
                       당뇨병, 간질, 척추/관절 질환
                     </p>
                   </div>
                   <div className="space-y-1">
                     <p className="font-bold text-gray-800 text-xs">특이사항</p>
-                    <p className="text-gray-600 text-[11px]">
+                    <p className="text-xs leading-5 text-gray-600">
                       최근 수술 이력, 임신 여부, 약물 복용 중
                     </p>
                   </div>
@@ -7786,7 +7786,7 @@ export default function SwimmingClassPage() {
                       <p className="font-bold text-gray-900 text-xs">
                         {item.title}
                       </p>
-                      <p className="text-gray-500 text-[11px] mt-0.5">
+                      <p className="mt-0.5 text-xs leading-5 text-gray-500">
                         {item.desc}
                       </p>
                     </div>
@@ -7820,12 +7820,12 @@ export default function SwimmingClassPage() {
               <h3 className="font-bold text-base mb-2">
                 5. 회사의 안전 관리 의무
               </h3>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
                   <p className="font-bold text-gray-900 text-xs mb-2 flex items-center gap-1">
                     👨‍🏫 인력 관리
                   </p>
-                  <ul className="text-[11px] text-gray-500 space-y-1 list-disc pl-4">
+                  <ul className="list-disc space-y-1 pl-4 text-xs leading-5 text-gray-500">
                     <li>자격증 보유 강사 배치</li>
                     <li>정기적인 안전 교육 실시</li>
                     <li>응급처치 교육 이수</li>
@@ -7835,7 +7835,7 @@ export default function SwimmingClassPage() {
                   <p className="font-bold text-gray-900 text-xs mb-2 flex items-center gap-1">
                     🛟 안전 장비
                   </p>
-                  <ul className="text-[11px] text-gray-500 space-y-1 list-disc pl-4">
+                  <ul className="list-disc space-y-1 pl-4 text-xs leading-5 text-gray-500">
                     <li>구명 장비 구비</li>
                     <li>응급 의료 키트 비치</li>
                     <li>장비 정기 점검 실시</li>
@@ -7845,7 +7845,7 @@ export default function SwimmingClassPage() {
                   <p className="font-bold text-gray-900 text-xs mb-2 flex items-center gap-1">
                     📋 매뉴얼 운영
                   </p>
-                  <ul className="text-[11px] text-gray-500 space-y-1 list-disc pl-4">
+                  <ul className="list-disc space-y-1 pl-4 text-xs leading-5 text-gray-500">
                     <li>응급 상황 대응 매뉴얼</li>
                     <li>사고 보고 체계 구축</li>
                     <li>정기 안전 훈련</li>
@@ -7855,7 +7855,7 @@ export default function SwimmingClassPage() {
                   <p className="font-bold text-gray-900 text-xs mb-2 flex items-center gap-1">
                     🏊 시설 관리
                   </p>
-                  <ul className="text-[11px] text-gray-500 space-y-1 list-disc pl-4">
+                  <ul className="list-disc space-y-1 pl-4 text-xs leading-5 text-gray-500">
                     <li>수질 정기 검사</li>
                     <li>시설 안전 점검</li>
                     <li>미끄럼 방지 조치</li>
@@ -7870,7 +7870,7 @@ export default function SwimmingClassPage() {
                 <p className="font-bold text-red-900 text-xs mb-3 flex items-center gap-1">
                   🚨 긴급 상황 발생 시 행동 요령
                 </p>
-                <div className="space-y-2 text-[11px] text-red-800">
+                <div className="space-y-2 text-xs leading-5 text-red-800">
                   <p>
                     <span className="font-bold">1단계:</span> 즉시 수영을
                     중단하고 안전한 곳으로 이동
@@ -7892,7 +7892,7 @@ export default function SwimmingClassPage() {
                   <p className="font-bold text-red-900 text-xs flex items-center gap-1">
                     📞 긴급 연락처
                   </p>
-                  <div className="grid grid-cols-2 gap-2 text-[11px] text-red-700">
+                  <div className="grid grid-cols-1 gap-2 text-xs leading-5 text-red-700 sm:grid-cols-2">
                     <p>수영장 관리실: [수영장별 안내]</p>
                     <p>강사 연락처: [현장 안내]</p>
                     <p>회사 상황실: 010-3904-1018</p>
@@ -7905,14 +7905,14 @@ export default function SwimmingClassPage() {
             <div>
               <h3 className="font-bold text-base mb-2">7. 보험 안내</h3>
               <div className="bg-gray-50 p-4 rounded-lg space-y-2 text-gray-600">
-                <p className="text-[11px] leading-relaxed">
+                <p className="text-xs leading-relaxed">
                   회사는 다음과 같은 보험에 가입되어 있습니다:
                 </p>
-                <ul className="text-[11px] space-y-1 list-disc pl-4 font-medium">
+                <ul className="list-disc space-y-1 pl-4 text-xs font-medium leading-5">
                   <li>시설 배상책임보험: 시설 결함으로 인한 사고 보장</li>
                   <li>강사 배상책임보험: 강사의 과실로 인한 사고 보장</li>
                 </ul>
-                <p className="text-[10px] text-gray-400 mt-2 leading-relaxed">
+                <p className="mt-2 text-[11px] leading-relaxed text-gray-500 sm:text-xs">
                   * 수강생 개인의 건강 상태나 귀책사유로 인한 사고는 보험 적용
                   대상이 아닙니다. 개인 상해보험 가입을 권장합니다.
                 </p>
@@ -7931,7 +7931,7 @@ export default function SwimmingClassPage() {
               <p className="font-bold text-primary text-xs mb-2">
                 📌 최종 확인 사항
               </p>
-              <p className="text-[11px] text-gray-700 leading-relaxed font-medium">
+              <p className="text-xs font-medium leading-5 text-gray-700">
                 본인은 위의 모든 내용을 충분히 숙지하였으며, 수영 활동의
                 위험성을 이해하고 안전 수칙을 준수할 것을 약속합니다. 또한 건강
                 상태를 정확히 고지하였으며, 고지하지 않은 사항으로 인한 사고에
@@ -7939,7 +7939,7 @@ export default function SwimmingClassPage() {
               </p>
             </div>
 
-            <div className="pt-2 text-[10px] text-gray-400 border-t flex justify-between items-center">
+            <div className="flex flex-col gap-1 border-t pt-2 text-[11px] leading-4 text-gray-500 sm:flex-row sm:items-center sm:justify-between sm:text-xs">
               <p>본 동의서는 2026년 1월 1일부터 시행됩니다.</p>
               <p className="font-bold">부칙</p>
             </div>

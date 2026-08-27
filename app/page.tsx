@@ -476,7 +476,7 @@ const CARE_PROCESS_STEPS = [
   { step: "STEP2", title: "Before 수중 촬영", desc: "현재 자세와 물속 움직임을 영상으로 남깁니다." },
   { step: "STEP3", title: "저항 원인 진단", desc: "숨참, 가라앉음, 통증이 어디서 시작되는지 찾습니다." },
   { step: "STEP4", title: "맞춤 드릴 및 교정", desc: "문제 원인에 맞는 드릴로 바로 몸에서 바꿔봅니다." },
-  { step: "STEP5", title: "After 촬영", desc: "교정 후 움직임을 다시 촬영해 변화를 확인합니다." },
+  { step: "STEP5", title: "After 촬영", desc: "교정 후 움직임을 다시 촬영해 자세의 변화를 확인합니다." },
   { step: "STEP6", title: "1:1 영상 피드백", desc: "수업 후 혼자 연습할 방향까지 영상 기반으로 안내합니다." },
 ];
 
@@ -3806,11 +3806,11 @@ export default function SwimmingClassPage() {
                           <p className="text-xs font-bold text-blue-600">
                             스윔잇
                           </p>
-                          <p className="mt-2 text-lg font-bold text-blue-900">
+                          <p className="mt-2 text-lg font-bold leading-7 text-blue-900 sm:text-xl">
                             "왜 안 되는지"
                           </p>
-                          <p className="mt-1 text-sm text-blue-800">
-                            앞으로 안 나가는 원인부터 찾습니다.
+                          <p className="mt-1.5 break-keep-all text-sm leading-6 text-blue-800 sm:text-[15px]">
+                            앞으로 안 나가는 자세의 원인부터 찾습니다.
                           </p>
                         </div>
                       </div>
@@ -3841,10 +3841,10 @@ export default function SwimmingClassPage() {
                             <div className="text-xs font-bold text-blue-600">
                               {item.step}
                             </div>
-                            <div className="mt-1 font-bold text-gray-950">
+                            <div className="mt-1 text-[15px] font-bold leading-6 text-gray-950 sm:text-base">
                               {item.title}
                             </div>
-                            <p className="mt-1 text-sm leading-5 text-gray-600">
+                            <p className="mt-1 break-keep-all text-sm leading-6 text-gray-600">
                               {item.desc}
                             </p>
                           </div>
@@ -3888,22 +3888,24 @@ export default function SwimmingClassPage() {
               </Card>
 
               {/* CTA Copy Section */}
-              <div className="order-5 w-full mt-6 rounded-2xl border border-blue-200 bg-blue-50 p-4 sm:p-5 shadow-sm">
-                <p className="text-base sm:text-lg font-bold text-blue-900 mb-2.5">
+              <div className="order-5 mt-6 w-full rounded-2xl border border-blue-200 bg-blue-50 p-4 shadow-sm sm:p-5">
+                <p className="mb-3 text-[17px] font-bold leading-6 text-blue-900 sm:text-lg">
                   런칭 특가로 진행 중입니다
                 </p>
-                <p className="text-sm sm:text-[15px] text-gray-900 leading-6">
-                  스윔잇은 많은 인원을 한 번에 돌리는 수업이 아니라, 한 명 한 명
-                  수중 움직임을 보고 직접 교정하는 진단형 특강입니다.
-                </p>
-                <p className="mt-2 text-sm sm:text-[15px] text-gray-700 leading-6">
-                  레인당 최대 7명 기준으로 운영하며, Before / After 촬영과 1:1 영상
-                  피드백까지 포함됩니다.
-                </p>
-                <p className="mt-2.5 text-sm sm:text-[15px] font-bold text-blue-800 leading-6">
-                  단순히 수업을 듣는 것이 아니라, 내 수영의 문제를 진단받는
-                  시간으로 설계했습니다.
-                </p>
+                <div className="space-y-3 text-sm leading-6 sm:text-[15px] sm:leading-7">
+                  <p className="break-keep-all text-gray-900">
+                    스윔잇은 많은 인원을 한 번에 돌리는 수업이 아니라, 한 명 한
+                    명 수중 움직임을 보고 직접 교정하는 자세 진단형 특강입니다.
+                  </p>
+                  <p className="break-keep-all text-gray-700">
+                    레인당 최대 7명 기준으로 운영하며, Before / After 촬영과 1:1
+                    영상 피드백까지 포함됩니다.
+                  </p>
+                  <p className="break-keep-all font-bold text-blue-800">
+                    단순히 수업을 듣는 것이 아니라, 내 수영 자세의 문제를
+                    진단받고 실시간으로 교정하는 방향으로 설계했습니다.
+                  </p>
+                </div>
               </div>
 
               {/* Student Review Section */}
@@ -3958,26 +3960,26 @@ export default function SwimmingClassPage() {
                 id="diagnosis-intro-section"
                 className="order-2 mt-6 w-full scroll-mt-4 rounded-2xl border border-blue-100 bg-white p-4 shadow-sm sm:p-5"
               >
-                <div className="space-y-4">
-                  <div className="space-y-1.5">
-                    <p className="text-xs font-bold tracking-wide text-blue-700 sm:text-sm">
+                <div className="space-y-3.5 sm:space-y-4">
+                  <div className="space-y-2">
+                    <p className="text-[11px] font-bold tracking-wide text-blue-700 sm:text-sm">
                       스윔잇 저항 진단 프로그램 OPEN
                     </p>
-                    <p className="text-[17px] font-bold leading-snug text-gray-950 sm:text-lg">
-                      내 수영 저항 상태 부터 보고 싶으신가요?
+                    <p className="text-lg font-bold leading-7 text-gray-950 sm:text-xl">
+                      내 수영 자세부터 보고 싶으신가요?
                     </p>
-                    <p className="text-sm leading-6 text-gray-700 sm:text-[15px]">
+                    <p className="break-keep-all text-sm leading-6 text-gray-700 sm:text-[15px] sm:leading-7">
                       정밀 어항샷 기반으로
                       <br />
                       저항 진단 리포트를 제공합니다.
                     </p>
                   </div>
 
-                  <div className="rounded-xl bg-blue-50/80 px-3.5 py-3">
-                    <p className="text-sm font-bold text-gray-950">
+                  <div className="rounded-xl bg-blue-50/80 px-3.5 py-3.5 sm:py-4">
+                    <p className="text-[15px] font-bold leading-6 text-gray-950">
                       어항샷이란?
                     </p>
-                    <p className="mt-1 text-sm leading-6 text-gray-700">
+                    <p className="mt-1.5 break-keep-all text-sm leading-6 text-gray-700 sm:text-[15px]">
                       위·아래를 동시에 찍어 저항이 보이게 촬영합니다.
                     </p>
                   </div>

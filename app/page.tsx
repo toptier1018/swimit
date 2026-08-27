@@ -3665,7 +3665,7 @@ export default function SwimmingClassPage() {
                         <ul className="space-y-1.5 rounded-xl border border-blue-100 bg-blue-50/60 px-3.5 py-3 text-sm font-bold leading-6 text-blue-700">
                           <li>· 자유수영 2시간 (개인 촬영 가능)</li>
                           <li>· 2가지 영법 어항샷</li>
-                          <li>· 저항분석리포트 제공</li>
+                          <li>· 1가지 영법 저항분석리포트 제공</li>
                           <li>· 이후 저항 제로 특강 1만원 쿠폰</li>
                         </ul>
                       </div>
@@ -4010,7 +4010,7 @@ export default function SwimmingClassPage() {
                   <ul className="space-y-1.5 rounded-xl border border-blue-100 bg-blue-50/60 px-3.5 py-3 text-sm font-bold leading-6 text-blue-700">
                     <li>· 자유수영 2시간 (개인 촬영 가능)</li>
                     <li>· 2가지 영법 어항샷</li>
-                    <li>· 저항분석리포트 제공</li>
+                    <li>· 1가지 영법 저항분석리포트 제공</li>
                   </ul>
                 </div>
               </section>
@@ -8052,37 +8052,10 @@ export default function SwimmingClassPage() {
                   </ul>
                 </div>
 
-                {/* D-3 이전 */}
-                <div className="bg-orange-50 p-2.5 md:p-3 rounded-lg border border-orange-200">
-                  <p className="font-bold text-xs md:text-sm text-orange-900 mb-1.5">
-                    ② 특강일 3일 전까지 (D-3 이전)
-                  </p>
-                  <ul className="space-y-1 text-xs text-gray-700">
-                    <li className="flex items-start gap-1.5">
-                      <span className="text-orange-600 mt-0.5">•</span>
-                      <span className="font-semibold">환불은 불가</span>
-                    </li>
-                    <li className="flex items-start gap-1.5">
-                      <span className="text-orange-600 mt-0.5">•</span>
-                      <span>
-                        대기자가 있는 경우 운영자가 자동으로 대기자에게 배정
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-1.5">
-                      <span className="text-orange-600 mt-0.5">•</span>
-                      <span>기존 참가자는 환불 없이 일정 변경 처리</span>
-                    </li>
-                  </ul>
-                  <p className="text-xs text-orange-700 mt-2 bg-white p-2 rounded">
-                    ※ 개인 간 직접 양도는 불가하며, 반드시 운영자를 통해
-                    진행됩니다.
-                  </p>
-                </div>
-
                 {/* D-3 이내 */}
                 <div className="bg-red-50 p-2.5 md:p-3 rounded-lg border border-red-200">
                   <p className="font-bold text-xs md:text-sm text-red-900 mb-1.5">
-                    ③ 특강일 3일 이내 (D-3 포함)
+                    ② 특강일 3일 이내 (D-3 포함)
                   </p>
                   <ul className="space-y-1 text-xs text-gray-700 mb-2">
                     <li className="flex items-start gap-1.5">

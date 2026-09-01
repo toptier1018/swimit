@@ -2439,20 +2439,35 @@ export default function SwimmingClassPage() {
     setRegionError(false);
     setCalendarMonth(classItem.month);
     setCalendarYear(classItem.year);
-    // 특강 버튼: 제로를 바로 열어 영법 선택 → 결제로 이어지게 함
-    setSelectedProductType(preferDiagnosis ? null : "zero");
+    const hasSeparateDiagnosisSession = isDongtanDualProductClass(classItem.id);
+    // 동탄처럼 제로·진단을 서로 다른 부로 운영하면 상품 선택 화면부터 표시합니다.
+    setSelectedProductType(
+      preferDiagnosis || hasSeparateDiagnosisSession ? null : "zero",
+    );
     console.log("[일정 선택] 신청 단계 진입:", {
       id: classItem.id,
       location: classItem.location,
       date: classItem.date,
       preferDiagnosis,
+      hasSeparateDiagnosisSession,
       landingEntry,
-      productHint: preferDiagnosis ? "diagnosis" : "zero",
+      productHint: preferDiagnosis
+        ? "diagnosis"
+        : hasSeparateDiagnosisSession
+          ? "choose-product"
+          : "zero",
     });
     handleRegistration();
     window.setTimeout(() => {
       if (preferDiagnosis) {
         applyDiagnosisProductSelection(classItem.id);
+      } else if (hasSeparateDiagnosisSession) {
+        setSelectedProductType(null);
+        setSelectedTimeSlot(null);
+        console.log(
+          "[상품] 제로·진단 분리 일정 — 상품 선택 화면:",
+          classItem.id,
+        );
       } else {
         setSelectedProductType("zero");
         setSelectedTimeSlot(null);

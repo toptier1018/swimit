@@ -2522,7 +2522,7 @@ export default function SwimmingClassPage() {
     if (isFishtankEntry) {
       openScheduleRegistration(selectedScheduleClass, true);
     } else {
-      handleRegistration();
+      openScheduleRegistration(selectedScheduleClass, false);
     }
   };
 
@@ -5500,6 +5500,10 @@ export default function SwimmingClassPage() {
                                   ).map((productType) => {
                                     const product =
                                       PRODUCT_CATALOG[productType];
+                                    const sessionLabel =
+                                      productType === "diagnosis"
+                                        ? "2부"
+                                        : "1부";
                                     return (
                                       <button
                                         key={productType}
@@ -5528,7 +5532,7 @@ export default function SwimmingClassPage() {
                                           {product.tag}
                                         </span>
                                         <p className="mt-2 text-base font-extrabold text-gray-950">
-                                          {product.name}
+                                          {sessionLabel} {product.name}
                                         </p>
                                         <p className="mt-1 text-sm font-bold text-blue-800">
                                           {product.timeLabel}

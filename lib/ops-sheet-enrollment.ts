@@ -121,6 +121,7 @@ function resolveRegionCode(
     "동탄",
     "목동",
     "은평",
+    "중구",
     "김포",
     "화성",
     "서초",

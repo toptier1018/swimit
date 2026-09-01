@@ -297,6 +297,71 @@ const classes: ClassItem[] = [
     ],
     badge: "특강 + 진단 동시 운영",
   },
+  {
+    id: 20,
+    year: 2026,
+    location: "부산 · 조이풀스윔",
+    locationCode: "부산",
+    date: "10월 4일 (일)",
+    dateNum: 4,
+    month: 10,
+    venue: "조이풀스윔",
+    address: "부산광역시 부산진구 백양관문로 20 현대빌딩 지하 1, 2층",
+    spots: "자유형·평영·접영 각 7명 · 진단 14명",
+    scheduleSummaryLines: [
+      "1부 특강 · 14:00~16:00 (2시간)",
+      "1부 진단 프로그램 · 14:00~16:00",
+    ],
+    badge: "특강 + 진단 동시 운영",
+  },
+  {
+    id: 21,
+    year: 2026,
+    location: "서울 중구 · 스포빌키즈쿠아",
+    locationCode: "중구",
+    date: "10월 11일 (일)",
+    dateNum: 11,
+    month: 10,
+    venue: "스포빌키즈쿠아",
+    address: "서울 중구 청계천로 400 메가몰동 B-1109호",
+    spots: "자유형 14명 · 평영·접영 각 7명",
+    scheduleSummaryLines: ["1부 특강 · 14:00~16:00 (2시간)"],
+  },
+  {
+    id: 22,
+    year: 2026,
+    location: "서울 목동 · 목동스포츠센터",
+    locationCode: "목동",
+    date: "10월 18일 (일)",
+    dateNum: 18,
+    month: 10,
+    venue: "목동스포츠센터",
+    address: "서울특별시 양천구 목동서로 130 목동스포츠센터",
+    spots: "자유형 14명 · 평영·접영 각 7명 · 진단 14명",
+    scheduleSummaryLines: [
+      "1부 특강 · 14:00~16:00 (2시간)",
+      "1부 진단 프로그램 · 14:00~16:00",
+    ],
+    badge: "특강 + 진단 동시 운영",
+  },
+  {
+    id: 23,
+    year: 2026,
+    location: "경기 동탄 · 스윔스튜디오제이",
+    locationCode: "동탄",
+    date: "10월 25일 (일)",
+    dateNum: 25,
+    month: 10,
+    venue: "스윔스튜디오제이",
+    address:
+      "경기도 화성시 동탄구 동탄신리천로 414 경서타워 4층 스윔스튜디오제이",
+    spots: "자유형 14명 · 평영·접영 각 7명 · 진단 14명",
+    scheduleSummaryLines: [
+      "1부 제로 특강 · 14:00~16:00 (2시간)",
+      "2부 진단 프로그램 · 16:00~18:00 (2시간)",
+    ],
+    badge: "특강 + 진단 운영",
+  },
 ];
 
 const DEPOSIT_BANK_NAME = "농협";
@@ -317,8 +382,13 @@ type ProductType = "zero" | "diagnosis";
 
 const STROKE_ORDER: StrokeType[] = ["자유형", "평영", "접영"];
 
-/** 동탄 8/23 전용 이중 상품 */
+/** 제로 특강과 진단 프로그램을 서로 다른 부로 운영하는 동탄 일정 */
 const DONGTAN_AUGUST_CLASS_ID = 13;
+const DONGTAN_OCTOBER_CLASS_ID = 23;
+const DONGTAN_DUAL_PRODUCT_CLASS_IDS = new Set([
+  DONGTAN_AUGUST_CLASS_ID,
+  DONGTAN_OCTOBER_CLASS_ID,
+]);
 
 const PRODUCT_CATALOG: Record<
   ProductType,
@@ -430,13 +500,15 @@ const DiagnosisCouponBanner = () => {
   );
 };
 
-const getDongtanDiagnosisEnrollmentKey = () => "[동탄 8/23] 2부 진단";
+const getDongtanDiagnosisEnrollmentKey = (
+  classId: number = DONGTAN_AUGUST_CLASS_ID,
+) => `[${getClassKeyLabel(classId)}] 2부 진단`;
 
 /** 시간표 안에서 진단 프로그램 레인을 표시하는 이름 (목동 8/30 5·6레인 등) */
 const DIAGNOSIS_LANE_TITLE = "저항 진단 프로그램";
 
 const isDongtanDualProductClass = (classId: number) =>
-  classId === DONGTAN_AUGUST_CLASS_ID;
+  DONGTAN_DUAL_PRODUCT_CLASS_IDS.has(classId);
 
 const STROKE_CATALOG: Record<
   StrokeType,
@@ -826,6 +898,19 @@ const TIMETABLE_CHEONGNA_SEPTEMBER: TimetableRow[] = [
   },
 ];
 
+/** 스포빌키즈쿠아 10/11 특강 (서울 중구) — 특강만 운영 */
+const TIMETABLE_JUNGGU_OCTOBER: TimetableRow[] = [
+  {
+    session: "1부 특강",
+    time: "14:00 ~ 16:00",
+    lanes: [
+      { lane: UNASSIGNED_LANE, title: "자유형", price: 80000 },
+      { lane: UNASSIGNED_LANE, title: "평영", price: 80000 },
+      { lane: UNASSIGNED_LANE, title: "접영", price: 80000 },
+    ],
+  },
+];
+
 const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   3: TIMETABLE_SEOCHO,   // 5/31 서초
   4: TIMETABLE_KIMPO,    // 6/14 김포
@@ -842,6 +927,10 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   17: TIMETABLE_DONGTAN_SEPTEMBER, // 9/19 동탄 샤크베이
   18: TIMETABLE_MOKDONG_SEPTEMBER, // 9/20 목동
   19: TIMETABLE_CHEONGNA_SEPTEMBER, // 9/27 청라
+  20: TIMETABLE_BUSAN_SEPTEMBER, // 10/4 부산
+  21: TIMETABLE_JUNGGU_OCTOBER, // 10/11 중구
+  22: TIMETABLE_MOKDONG_SEPTEMBER, // 10/18 목동
+  23: TIMETABLE_DONGTAN_AUGUST, // 10/25 동탄 스윔스튜디오제이
 };
 
 const getAvailableStrokesForClass = (classId: number) => {
@@ -977,7 +1066,7 @@ const getDiagnosisOfferingForClass = (
       time: product.time,
       price: product.price,
       lanes: [],
-      enrollmentKey: getDongtanDiagnosisEnrollmentKey(),
+      enrollmentKey: getDongtanDiagnosisEnrollmentKey(classId),
     };
   }
 
@@ -1106,6 +1195,25 @@ const DEFAULT_WAITLIST_THRESHOLDS_BY_CLASS: Record<string, number> = {
   "[청라 9/27] 1부 특강 평영": 7,
   "[청라 9/27] 1부 특강 접영": 7,
   "[청라 9/27] 1부 진단": DIAGNOSIS_WAITLIST_THRESHOLD,
+  // 부산 10/4
+  "[부산 10/4] 1부 특강 자유형": 7,
+  "[부산 10/4] 1부 특강 평영": 7,
+  "[부산 10/4] 1부 특강 접영": 7,
+  "[부산 10/4] 1부 진단": 14,
+  // 중구 10/11
+  "[중구 10/11] 1부 특강 자유형": 14,
+  "[중구 10/11] 1부 특강 평영": 7,
+  "[중구 10/11] 1부 특강 접영": 7,
+  // 목동 10/18
+  "[목동 10/18] 1부 특강 자유형": 14,
+  "[목동 10/18] 1부 특강 평영": 7,
+  "[목동 10/18] 1부 특강 접영": 7,
+  "[목동 10/18] 1부 진단": 14,
+  // 동탄 10/25 스윔스튜디오제이
+  "[동탄 10/25] 1부 특강 자유형": 14,
+  "[동탄 10/25] 1부 특강 평영": 7,
+  "[동탄 10/25] 1부 특강 접영": 7,
+  "[동탄 10/25] 2부 진단": 14,
   // 구 키 호환 (부산 8/30)
   "[부산 8/30] 1부 특강 자유형": 14,
   "[부산 8/30] 1부 특강 평영": 7,
@@ -1488,7 +1596,7 @@ export default function SwimmingClassPage() {
           ...STROKE_ORDER.map((stroke) =>
             makeClassKey(c.id, PRODUCT_CATALOG.zero.session, stroke),
           ),
-          getDongtanDiagnosisEnrollmentKey(),
+          getDongtanDiagnosisEnrollmentKey(c.id),
         ];
       }
       const { session, strokes } = getAvailableStrokesForClass(c.id);
@@ -5387,7 +5495,9 @@ export default function SwimmingClassPage() {
                                             productType,
                                           );
                                           if (productType === "diagnosis") {
-                                            applyDiagnosisProductSelection();
+                                            applyDiagnosisProductSelection(
+                                              selectedClassIdNum,
+                                            );
                                           } else {
                                             console.log(
                                               "[상품] 신청폼에서 제로로 전환",
@@ -5443,7 +5553,9 @@ export default function SwimmingClassPage() {
                           const product =
                             PRODUCT_CATALOG[selectedProductType];
                           const diagnosisKey =
-                            getDongtanDiagnosisEnrollmentKey();
+                            getDongtanDiagnosisEnrollmentKey(
+                              selectedClassIdNum,
+                            );
                           const enrollmentKeyForBadge =
                             selectedProductType === "diagnosis"
                               ? diagnosisKey

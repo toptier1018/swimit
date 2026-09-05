@@ -60,7 +60,15 @@ import { savePendingCardEnrollment } from "@/lib/card-enrollment";
 import { formatBankTransferDeadline } from "@/lib/deposit-deadline";
 import { ResistanceContentConsentModal } from "@/components/resistance-content-consent-modal";
 import {
-  RESISTANCE_CONTENT_CONSENT_VERSION,
+  VideoConsentDialog,
+  VideoConsentItem,
+} from "@/components/video-consent";
+import {
+  CLASS_VIDEO_CONSENT_VERSION,
+  RESISTANCE_PAYMENT_CONSENT_VERSION,
+  RESISTANCE_VIDEO_CONSENT_VERSION,
+  getVideoConsentCopy,
+  getVideoConsentKind,
   isResistanceDiagnosisProduct,
   type ResistanceContentConsent,
 } from "@/lib/resistance-content-consent";
@@ -2769,6 +2777,27 @@ export default function SwimmingClassPage() {
     setStep(3);
   };
 
+  const videoConsentKind = getVideoConsentKind({
+    productType: selectedTimeSlot?.productType || selectedProductType,
+    className: selectedTimeSlot?.name,
+  });
+  const videoConsentCopy = getVideoConsentCopy(videoConsentKind);
+
+  useEffect(() => {
+    console.log("[영상촬영동의] 프로그램 유형:", {
+      kind: videoConsentKind,
+      title: videoConsentCopy.itemTitle,
+      productType: selectedTimeSlot?.productType || selectedProductType || "",
+      className: selectedTimeSlot?.name || "",
+    });
+  }, [
+    videoConsentKind,
+    videoConsentCopy.itemTitle,
+    selectedTimeSlot?.productType,
+    selectedTimeSlot?.name,
+    selectedProductType,
+  ]);
+
   const getCurrentResistanceConsent = () => {
     if (
       !selectedTimeSlot ||
@@ -2781,6 +2810,40 @@ export default function SwimmingClassPage() {
     }
     const consent = resistanceConsentRef.current;
     return consent?.className === selectedTimeSlot.name ? consent : null;
+  };
+
+  const getPaymentContentConsent = (): ResistanceContentConsent | null => {
+    if (!selectedTimeSlot) return null;
+
+    if (
+      isResistanceDiagnosisProduct({
+        productType: selectedTimeSlot.productType,
+        className: selectedTimeSlot.name,
+      })
+    ) {
+      const diagnosisConsent = getCurrentResistanceConsent();
+      console.log("[영상촬영동의] 결제 전달 값:", {
+        kind: "resistance",
+        version: diagnosisConsent?.version || null,
+        formVersion: diagnosisConsent?.formVersion || null,
+        className: selectedTimeSlot.name,
+      });
+      return diagnosisConsent;
+    }
+
+    if (!agree7) return null;
+    const classConsent: ResistanceContentConsent = {
+      agreed: true,
+      agreedAt: new Date().toISOString(),
+      version: CLASS_VIDEO_CONSENT_VERSION,
+      className: selectedTimeSlot.name,
+    };
+    console.log("[영상촬영동의] 결제 전달 값:", {
+      kind: "class",
+      version: classConsent.version,
+      className: classConsent.className,
+    });
+    return classConsent;
   };
 
   const requestResistanceContentConsent = (
@@ -2803,7 +2866,8 @@ export default function SwimmingClassPage() {
     console.log("[촬영콘텐츠동의] 결제 전 모달 표시:", {
       action,
       className: selectedTimeSlot.name,
-      version: RESISTANCE_CONTENT_CONSENT_VERSION,
+      kind: videoConsentKind,
+      version: RESISTANCE_PAYMENT_CONSENT_VERSION,
     });
     return true;
   };
@@ -2829,8 +2893,9 @@ export default function SwimmingClassPage() {
     const consent: ResistanceContentConsent = {
       agreed: true,
       agreedAt: new Date().toISOString(),
-      version: RESISTANCE_CONTENT_CONSENT_VERSION,
+      version: RESISTANCE_PAYMENT_CONSENT_VERSION,
       className: selectedTimeSlot.name,
+      formVersion: RESISTANCE_VIDEO_CONSENT_VERSION,
     };
     resistanceConsentRef.current = consent;
     pendingConsentActionRef.current = null;
@@ -2938,7 +3003,7 @@ export default function SwimmingClassPage() {
       const notionPageId = pageId;
 
       const paymentStartedAt = new Date();
-      const contentConsent = getCurrentResistanceConsent();
+      const contentConsent = getPaymentContentConsent();
       const selectedClassInfo = classes.find(
         (c) => String(c.id) === selectedClass,
       );
@@ -5185,42 +5250,21 @@ export default function SwimmingClassPage() {
                             </p>
                           </div>
 
-                          {/* 3. 수영 강의 영상촬영 동의 */}
-                          <div className="space-y-1">
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex-1 flex items-start gap-2">
-                                <Checkbox
-                                  id="agree-7"
-                                  checked={agree7}
-                                  onCheckedChange={(checked) =>
-                                    setAgree7(checked as boolean)
-                                  }
-                                  className="mt-0.5 size-5 border-2 border-gray-400 data-[state=checked]:bg-primary data-[state=checked]:border-primary shadow-md hover:border-primary transition-all"
-                                />
-                                <Label
-                                  htmlFor="agree-7"
-                                  className="cursor-pointer text-sm leading-relaxed"
-                                >
-                                  <span className="text-red-500 font-semibold">
-                                    [필수]
-                                  </span>{" "}
-                                  수영 강의 영상촬영 동의
-                                </Label>
-                              </div>
-                              <Button
-                                variant="link"
-                                size="sm"
-                                className="h-auto p-0 text-xs text-primary hover:no-underline"
-                                onClick={() => setShowVideoModal(true)}
-                              >
-                                보기
-                              </Button>
-                            </div>
-                            <p className="text-xs text-gray-500 ml-6 leading-relaxed">
-                              촬영된 영상은 및 교육정보조절로 가능 일정변경도
-                              원석되합니다.
-                            </p>
-                          </div>
+                          {/* 3. 프로그램별 영상 촬영 동의 */}
+                          <VideoConsentItem
+                            id="agree-7"
+                            kind={videoConsentKind}
+                            checked={agree7}
+                            onCheckedChange={setAgree7}
+                            showSummary
+                            onOpenDetail={() => {
+                              console.log("[영상촬영동의] 보기 열림:", {
+                                kind: videoConsentKind,
+                                title: videoConsentCopy.itemTitle,
+                              });
+                              setShowVideoModal(true);
+                            }}
+                          />
 
                           {/* 4. 수영 활동 안전 및 면책 동의 */}
                           <div className="space-y-1">
@@ -6236,7 +6280,13 @@ export default function SwimmingClassPage() {
                           {[
                             ["agree-1", agree1, setAgree1, "개인정보 수집 및 이용 동의", () => setShowPrivacyModal(true)],
                             ["agree-2", agree2, setAgree2, "서비스 이용약관 동의", () => setShowTermsModal(true)],
-                            ["agree-7", agree7, setAgree7, "수영 강의 영상촬영 동의", () => setShowVideoModal(true)],
+                            ["agree-7", agree7, setAgree7, videoConsentCopy.itemTitle, () => {
+                              console.log("[영상촬영동의] 보기 열림:", {
+                                kind: videoConsentKind,
+                                title: videoConsentCopy.itemTitle,
+                              });
+                              setShowVideoModal(true);
+                            }],
                             ["agree-6", agree6, setAgree6, "수영 활동 안전 및 면책 동의", () => setShowSafetyModal(true)],
                             ["agree-4", agree4, setAgree4, "취소 및 환불약관 동의", () => setShowRefundModal(true)],
                             ["agree-5", agree5, setAgree5, "강의 취소 가능성 안내", () => setShowCancellationModal(true)],
@@ -6435,8 +6485,7 @@ export default function SwimmingClassPage() {
 
                         if (selectedTimeSlot) {
                           const paymentStartedAt = new Date();
-                          const contentConsent =
-                            getCurrentResistanceConsent();
+                          const contentConsent = getPaymentContentConsent();
                           setPaymentDate(paymentStartedAt);
 
                           // 같은 클래스 중복 신청 방지: 구글 운영/수강자 시트의 활성 신청 기준
@@ -7816,64 +7865,11 @@ export default function SwimmingClassPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Video Filming Consent Modal */}
-      <Dialog open={showVideoModal} onOpenChange={setShowVideoModal}>
-        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
-          <DialogHeader className="relative">
-            <DialogTitle className="text-lg font-semibold">
-              수영 강의 영상촬영 동의
-            </DialogTitle>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-0 top-0"
-              onClick={() => setShowVideoModal(false)}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </DialogHeader>
-
-          <div className="space-y-4 text-sm">
-            <div>
-              <h3 className="font-semibold mb-2">1. 촬영 목적</h3>
-              <p className="text-gray-600 mb-2">
-                회사는 다음의 목적을 위해 수영 강의 영상을 촬영합니다:
-              </p>
-              <ul className="list-disc pl-5 space-y-1 text-gray-600">
-                <li>수강생의 수영 자세 교정 및 피드백 제공</li>
-                <li>강의 품질 향상을 위한 분석 자료</li>
-                <li>수강생 본인의 실력 향상 확인을 자료 제공</li>
-                <li>교육용 모델 콘텐츠 제작 및 수영 강의 홍보 목적</li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-2">2. 촬영 방법</h3>
-              <ul className="list-disc pl-5 space-y-1 text-gray-600">
-                <li>모든 카메라 및 수영장 곳곳에 카메라를 설치하여 촬영</li>
-                <li>강의 진행 중 참사자 동의 시 촬영</li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-2">3. 영상의 보관 및 이용</h3>
-              <ul className="list-disc pl-5 space-y-1 text-gray-600">
-                <li>
-                  영상은 수강생 본인의 교육 목적으로만 사용되며, 제3자에게
-                  제공되지 않습니다.
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <Button
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-            onClick={() => setShowVideoModal(false)}
-          >
-            확인
-          </Button>
-        </DialogContent>
-      </Dialog>
+      <VideoConsentDialog
+        open={showVideoModal}
+        kind={videoConsentKind}
+        onOpenChange={setShowVideoModal}
+      />
 
       {/* Swimming Activity Safety and Liability Modal */}
       <Dialog open={showSafetyModal} onOpenChange={setShowSafetyModal}>

@@ -81,7 +81,7 @@ export type GoogleSheetRowInput = {
   utm_medium?: string;
   /** Z: utm_campaign */
   utm_campaign?: string;
-  /** AA~AC: 저항 진단 촬영 콘텐츠 활용 동의 */
+  /** AA~AC: 프로그램별 영상 촬영/콘텐츠 활용 동의 */
   contentConsent?: ResistanceContentConsent | null;
 };
 

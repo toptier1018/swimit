@@ -4,8 +4,9 @@ import { resolveClassPaymentAmount } from "@/lib/class-payment-amount";
 import { toNotionCardStatusFields } from "@/lib/toss-card-order-meta";
 import { updatePaymentInNotion } from "@/app/actions/notion";
 import {
-  RESISTANCE_CONTENT_CONSENT_VERSION,
+  isDiagnosisPaymentConsentVersion,
   isResistanceDiagnosisProduct,
+  parseContentConsent,
 } from "@/lib/resistance-content-consent";
 
 /**
@@ -31,18 +32,7 @@ export async function POST(req: NextRequest) {
       body.traffic && typeof body.traffic === "object"
         ? (body.traffic as Record<string, string>)
         : undefined;
-    const contentConsent =
-      body.contentConsent?.agreed === true &&
-      typeof body.contentConsent.agreedAt === "string" &&
-      Number.isFinite(Date.parse(body.contentConsent.agreedAt)) &&
-      body.contentConsent.version === RESISTANCE_CONTENT_CONSENT_VERSION &&
-      body.contentConsent.className === className
-        ? {
-            agreed: true as const,
-            agreedAt: body.contentConsent.agreedAt as string,
-            version: RESISTANCE_CONTENT_CONSENT_VERSION,
-          }
-        : null;
+    const contentConsent = parseContentConsent(body.contentConsent, className);
 
     // 클라이언트가 보낸 amount는 참고용 로그만 (최종 금액으로 쓰지 않음)
     const clientAmountHint = Number(body.amount);
@@ -52,6 +42,7 @@ export async function POST(req: NextRequest) {
       clientAmountHint: Number.isFinite(clientAmountHint)
         ? clientAmountHint
         : null,
+      contentConsentVersion: contentConsent?.version || null,
     });
 
     if (!className || !pageId) {
@@ -66,7 +57,8 @@ export async function POST(req: NextRequest) {
 
     if (
       isResistanceDiagnosisProduct({ className }) &&
-      !contentConsent
+      (!contentConsent ||
+        !isDiagnosisPaymentConsentVersion(contentConsent.version))
     ) {
       console.warn("[카드결제] 저항 진단 촬영 콘텐츠 동의 누락:", {
         className,

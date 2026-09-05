@@ -1,7 +1,7 @@
 import "server-only";
 import type { GoogleSheetRowInput } from "@/lib/google-sheets";
 import { parseCardPendingStatus } from "@/lib/toss-card-order-meta";
-import { RESISTANCE_CONTENT_CONSENT_VERSION } from "@/lib/resistance-content-consent";
+import { isContentConsentVersion } from "@/lib/resistance-content-consent";
 
 type NotionRichText = { plain_text?: string };
 type NotionPage = {
@@ -207,11 +207,11 @@ export function notionPageToSheetRow(page: NotionPage): GoogleSheetRowInput | nu
     contentConsent:
       cardMeta?.contentConsent &&
       cardMeta.contentConsentAt &&
-      cardMeta.contentConsentVersion === RESISTANCE_CONTENT_CONSENT_VERSION
+      isContentConsentVersion(cardMeta.contentConsentVersion)
         ? {
             agreed: true,
             agreedAt: cardMeta.contentConsentAt,
-            version: RESISTANCE_CONTENT_CONSENT_VERSION,
+            version: cardMeta.contentConsentVersion,
             className: selectedClass,
           }
         : null,

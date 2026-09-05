@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { appendRowToGoogleSheet } from "@/lib/google-sheets";
 import {
-  RESISTANCE_CONTENT_CONSENT_VERSION,
+  isDiagnosisPaymentConsentVersion,
   isResistanceDiagnosisProduct,
-  type ResistanceContentConsent,
+  parseContentConsent,
 } from "@/lib/resistance-content-consent";
 
 export async function POST(request: NextRequest) {
@@ -16,6 +16,7 @@ export async function POST(request: NextRequest) {
       이름: body?.이름,
       입금기한: body?.입금기한,
       유입경로: body?.유입경로,
+      contentConsentVersion: body?.contentConsent?.version || null,
     });
 
     if (!body?.이름 || !body?.전화번호 || !body?.예약상태) {
@@ -28,22 +29,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const contentConsent: ResistanceContentConsent | null =
-      body?.contentConsent?.agreed === true &&
-      typeof body.contentConsent.agreedAt === "string" &&
-      body.contentConsent.version === RESISTANCE_CONTENT_CONSENT_VERSION &&
-      typeof body.contentConsent.className === "string"
-        ? {
-            agreed: true as const,
-            agreedAt: body.contentConsent.agreedAt,
-            version: RESISTANCE_CONTENT_CONSENT_VERSION,
-            className: body.contentConsent.className,
-          }
-        : null;
+    const contentConsent = parseContentConsent(body?.contentConsent);
 
     if (
       isResistanceDiagnosisProduct({ className: String(body.클래스 || "") }) &&
-      !contentConsent
+      (!contentConsent ||
+        !isDiagnosisPaymentConsentVersion(contentConsent.version))
     ) {
       console.warn("[Google Sheets API] 저항 진단 촬영 콘텐츠 동의 누락:", {
         신청번호: body?.신청번호,

@@ -14,7 +14,8 @@ import {
 } from "@/lib/toss-card-order-meta";
 import { guessClassDate } from "@/lib/notion-sheet-sync";
 import {
-  RESISTANCE_CONTENT_CONSENT_VERSION,
+  isContentConsentVersion,
+  parseContentConsent,
   type ResistanceContentConsent,
 } from "@/lib/resistance-content-consent";
 
@@ -414,19 +415,17 @@ export async function finalizeCardEnrollmentCore(
     new Date().toISOString().replace("T", " ").slice(0, 19);
   const traffic = enrollment?.traffic || {};
   const contentConsent: ResistanceContentConsent | null =
-    enrollment?.contentConsent?.agreed &&
-    enrollment.contentConsent.version === RESISTANCE_CONTENT_CONSENT_VERSION
-      ? enrollment.contentConsent
-      : meta.contentConsent &&
-          meta.contentConsentAt &&
-          meta.contentConsentVersion === RESISTANCE_CONTENT_CONSENT_VERSION
-        ? {
-            agreed: true,
-            agreedAt: meta.contentConsentAt,
-            version: RESISTANCE_CONTENT_CONSENT_VERSION,
-            className: selectedClassName || found.selectedClass || "",
-          }
-        : null;
+    parseContentConsent(enrollment?.contentConsent) ??
+    (meta.contentConsent &&
+    meta.contentConsentAt &&
+    isContentConsentVersion(meta.contentConsentVersion)
+      ? {
+          agreed: true,
+          agreedAt: meta.contentConsentAt,
+          version: meta.contentConsentVersion,
+          className: selectedClassName || found.selectedClass || "",
+        }
+      : null);
 
   let notionOk = true;
   let sheetOk = true;

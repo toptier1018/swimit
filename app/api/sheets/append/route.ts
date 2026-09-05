@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { appendRowToGoogleSheet } from "@/lib/google-sheets";
+import {
+  RESISTANCE_CONTENT_CONSENT_VERSION,
+  isResistanceDiagnosisProduct,
+  type ResistanceContentConsent,
+} from "@/lib/resistance-content-consent";
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,6 +23,36 @@ export async function POST(request: NextRequest) {
         {
           success: false,
           error: "이름, 전화번호, 예약상태는 필수입니다.",
+        },
+        { status: 400 },
+      );
+    }
+
+    const contentConsent: ResistanceContentConsent | null =
+      body?.contentConsent?.agreed === true &&
+      typeof body.contentConsent.agreedAt === "string" &&
+      body.contentConsent.version === RESISTANCE_CONTENT_CONSENT_VERSION &&
+      typeof body.contentConsent.className === "string"
+        ? {
+            agreed: true as const,
+            agreedAt: body.contentConsent.agreedAt,
+            version: RESISTANCE_CONTENT_CONSENT_VERSION,
+            className: body.contentConsent.className,
+          }
+        : null;
+
+    if (
+      isResistanceDiagnosisProduct({ className: String(body.클래스 || "") }) &&
+      !contentConsent
+    ) {
+      console.warn("[Google Sheets API] 저항 진단 촬영 콘텐츠 동의 누락:", {
+        신청번호: body?.신청번호,
+        클래스: body?.클래스,
+      });
+      return NextResponse.json(
+        {
+          success: false,
+          error: "촬영 및 콘텐츠 활용 동의가 필요합니다.",
         },
         { status: 400 },
       );
@@ -49,6 +84,7 @@ export async function POST(request: NextRequest) {
       utm_source: body.utm_source ?? "",
       utm_medium: body.utm_medium ?? "",
       utm_campaign: body.utm_campaign ?? "",
+      contentConsent,
     });
 
     if (!result.success) {

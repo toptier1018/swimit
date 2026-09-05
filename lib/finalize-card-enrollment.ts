@@ -13,6 +13,10 @@ import {
   type CardPendingMeta,
 } from "@/lib/toss-card-order-meta";
 import { guessClassDate } from "@/lib/notion-sheet-sync";
+import {
+  RESISTANCE_CONTENT_CONSENT_VERSION,
+  type ResistanceContentConsent,
+} from "@/lib/resistance-content-consent";
 
 /** 같은 서버 인스턴스에서 웹훅+success가 겹치면 한 줄로 줄임 */
 const sheetWriteInFlight = new Map<string, Promise<void>>();
@@ -46,6 +50,7 @@ export type FinalizeEnrollmentInput = {
     classDate?: string;
     region?: string;
     traffic?: Record<string, string>;
+    contentConsent?: ResistanceContentConsent | null;
   } | null;
   /** 웹훅에서 CARD_PENDING → DONE 승격 허용 */
   allowMarkDoneFromWebhook?: boolean;
@@ -408,6 +413,20 @@ export async function finalizeCardEnrollmentCore(
     enrollment?.sheetTimestamp?.trim() ||
     new Date().toISOString().replace("T", " ").slice(0, 19);
   const traffic = enrollment?.traffic || {};
+  const contentConsent: ResistanceContentConsent | null =
+    enrollment?.contentConsent?.agreed &&
+    enrollment.contentConsent.version === RESISTANCE_CONTENT_CONSENT_VERSION
+      ? enrollment.contentConsent
+      : meta.contentConsent &&
+          meta.contentConsentAt &&
+          meta.contentConsentVersion === RESISTANCE_CONTENT_CONSENT_VERSION
+        ? {
+            agreed: true,
+            agreedAt: meta.contentConsentAt,
+            version: RESISTANCE_CONTENT_CONSENT_VERSION,
+            className: selectedClassName || found.selectedClass || "",
+          }
+        : null;
 
   let notionOk = true;
   let sheetOk = true;
@@ -487,6 +506,7 @@ export async function finalizeCardEnrollmentCore(
         utm_source: traffic.utm_source || "",
         utm_medium: traffic.utm_medium || "",
         utm_campaign: traffic.utm_campaign || "",
+        contentConsent,
       });
       if (!sheetResult.success) {
         sheetOk = false;

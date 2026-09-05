@@ -25,6 +25,10 @@ export type CardPendingMeta = {
   sheetWriteClaim?: string;
   /** SHEET_WRITING 시작 시각 (ISO) */
   sheetWriteAt?: string;
+  /** 저항 진단 촬영 콘텐츠 활용 동의 */
+  contentConsent?: true;
+  contentConsentAt?: string;
+  contentConsentVersion?: string;
 };
 
 export const CARD_META_PROPERTY_NAME = "카드결제 메타";
@@ -71,6 +75,15 @@ export function encodeCardPendingStatus(meta: CardPendingMeta): string {
   if (meta.sheetWriteAt) {
     parts.push(`swt=${meta.sheetWriteAt}`);
   }
+  if (meta.contentConsent) {
+    parts.push("cc=1");
+  }
+  if (meta.contentConsentAt) {
+    parts.push(`cca=${meta.contentConsentAt}`);
+  }
+  if (meta.contentConsentVersion) {
+    parts.push(`ccv=${meta.contentConsentVersion}`);
+  }
   return parts.join("|");
 }
 
@@ -115,6 +128,9 @@ export function parseCardPendingStatus(
   const swRaw = text.match(/sw=([^|]+)/)?.[1]?.trim();
   const sc = text.match(/sc=([^|]+)/)?.[1]?.trim();
   const swt = text.match(/swt=([^|]+)/)?.[1]?.trim();
+  const contentConsentRaw = text.match(/cc=([^|]+)/)?.[1]?.trim();
+  const contentConsentAt = text.match(/cca=([^|]+)/)?.[1]?.trim();
+  const contentConsentVersion = text.match(/ccv=([^|]+)/)?.[1]?.trim();
   const status: CardPendingMeta["status"] = text.includes("CARD_DONE")
     ? "CARD_DONE"
     : "CARD_PENDING";
@@ -147,6 +163,9 @@ export function parseCardPendingStatus(
     sheetWrite,
     sheetWriteClaim: sc || undefined,
     sheetWriteAt: swt || undefined,
+    contentConsent: contentConsentRaw === "1" ? true : undefined,
+    contentConsentAt: contentConsentAt || undefined,
+    contentConsentVersion: contentConsentVersion || undefined,
   };
 }
 

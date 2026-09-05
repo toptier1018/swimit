@@ -1,5 +1,7 @@
 /** 카드 결제 후 노션·시트 저장용 (결제창 리다이렉트 사이 임시 보관) */
 
+import type { ResistanceContentConsent } from "@/lib/resistance-content-consent";
+
 export const CARD_ENROLLMENT_STORAGE_KEY = "swimit_card_enrollment_pending";
 
 export type PendingCardEnrollment = {
@@ -28,6 +30,7 @@ export type PendingCardEnrollment = {
   classDate: string;
   region: string;
   traffic: Record<string, string>;
+  contentConsent?: ResistanceContentConsent | null;
 };
 
 export function savePendingCardEnrollment(data: PendingCardEnrollment) {

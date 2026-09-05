@@ -58,6 +58,12 @@ import {
 } from "@/lib/traffic-source";
 import { savePendingCardEnrollment } from "@/lib/card-enrollment";
 import { formatBankTransferDeadline } from "@/lib/deposit-deadline";
+import { ResistanceContentConsentModal } from "@/components/resistance-content-consent-modal";
+import {
+  RESISTANCE_CONTENT_CONSENT_VERSION,
+  isResistanceDiagnosisProduct,
+  type ResistanceContentConsent,
+} from "@/lib/resistance-content-consent";
 
 type ClassItem = {
   id: number;
@@ -1517,6 +1523,10 @@ export default function SwimmingClassPage() {
     "입금대기" | "입금완료" | "결제대기" | "결제완료" | "예약대기"
   >("결제대기");
   const [showDepositModal, setShowDepositModal] = useState(false);
+  const [showResistanceConsentModal, setShowResistanceConsentModal] =
+    useState(false);
+  const [resistanceConsentChecked, setResistanceConsentChecked] =
+    useState(false);
   const [videoCode, setVideoCode] = useState("");
   const [trafficSource, setTrafficSource] = useState<TrafficSource>(
     EMPTY_TRAFFIC_SOURCE,
@@ -1541,6 +1551,10 @@ export default function SwimmingClassPage() {
   const { toast } = useToast();
   const submittedApplicantsRef = useRef<Set<string>>(new Set());
   const applicationSectionRef = useRef<HTMLDivElement | null>(null);
+  const depositPaymentButtonRef = useRef<HTMLButtonElement | null>(null);
+  const cardPaymentButtonRef = useRef<HTMLButtonElement | null>(null);
+  const pendingConsentActionRef = useRef<"deposit" | "card" | null>(null);
+  const resistanceConsentRef = useRef<ResistanceContentConsent | null>(null);
   const lastFunnelActionRef = useRef<{ action: string; ts: number } | null>(
     null,
   );
@@ -2199,6 +2213,19 @@ export default function SwimmingClassPage() {
 
   const selectedClassIdNum = selectedClass ? Number(selectedClass) : NaN;
 
+  useEffect(() => {
+    if (
+      selectedTimeSlot &&
+      resistanceConsentRef.current?.className === selectedTimeSlot.name
+    ) {
+      return;
+    }
+    resistanceConsentRef.current = null;
+    pendingConsentActionRef.current = null;
+    setShowResistanceConsentModal(false);
+    setResistanceConsentChecked(false);
+  }, [selectedTimeSlot?.name]);
+
   // selectedClass 변경 시 해당 특강 월로 이동, 미선택 시 KST 현재 월
   useEffect(() => {
     const kst = getKoreanTodayParts();
@@ -2742,10 +2769,92 @@ export default function SwimmingClassPage() {
     setStep(3);
   };
 
+  const getCurrentResistanceConsent = () => {
+    if (
+      !selectedTimeSlot ||
+      !isResistanceDiagnosisProduct({
+        productType: selectedTimeSlot.productType,
+        className: selectedTimeSlot.name,
+      })
+    ) {
+      return null;
+    }
+    const consent = resistanceConsentRef.current;
+    return consent?.className === selectedTimeSlot.name ? consent : null;
+  };
+
+  const requestResistanceContentConsent = (
+    action: "deposit" | "card",
+  ): boolean => {
+    if (
+      !selectedTimeSlot ||
+      !isResistanceDiagnosisProduct({
+        productType: selectedTimeSlot.productType,
+        className: selectedTimeSlot.name,
+      }) ||
+      getCurrentResistanceConsent()
+    ) {
+      return false;
+    }
+
+    pendingConsentActionRef.current = action;
+    setResistanceConsentChecked(false);
+    setShowResistanceConsentModal(true);
+    console.log("[촬영콘텐츠동의] 결제 전 모달 표시:", {
+      action,
+      className: selectedTimeSlot.name,
+      version: RESISTANCE_CONTENT_CONSENT_VERSION,
+    });
+    return true;
+  };
+
+  const handleResistanceConsentOpenChange = (open: boolean) => {
+    setShowResistanceConsentModal(open);
+    if (open) return;
+
+    if (pendingConsentActionRef.current) {
+      console.log("[촬영콘텐츠동의] 사용자가 모달을 닫아 결제 진행 취소:", {
+        action: pendingConsentActionRef.current,
+        className: selectedTimeSlot?.name || "",
+      });
+    }
+    pendingConsentActionRef.current = null;
+    setResistanceConsentChecked(false);
+  };
+
+  const handleResistanceConsentConfirm = () => {
+    if (!resistanceConsentChecked || !selectedTimeSlot) return;
+
+    const action = pendingConsentActionRef.current;
+    const consent: ResistanceContentConsent = {
+      agreed: true,
+      agreedAt: new Date().toISOString(),
+      version: RESISTANCE_CONTENT_CONSENT_VERSION,
+      className: selectedTimeSlot.name,
+    };
+    resistanceConsentRef.current = consent;
+    pendingConsentActionRef.current = null;
+    setShowResistanceConsentModal(false);
+    setResistanceConsentChecked(false);
+    console.log("[촬영콘텐츠동의] 동의 완료 후 결제 흐름 재개:", {
+      action,
+      className: consent.className,
+      agreedAt: consent.agreedAt,
+      version: consent.version,
+    });
+
+    window.setTimeout(() => {
+      if (action === "deposit") {
+        depositPaymentButtonRef.current?.click();
+      } else if (action === "card") {
+        cardPaymentButtonRef.current?.click();
+      }
+    }, 0);
+  };
+
   const handleClassPgTestPayment = async () => {
     if (classPgTestLockRef.current || isClassPgTestLoading || !selectedTimeSlot)
       return;
-    classPgTestLockRef.current = true;
 
     if (!validateApplicationForPayment()) {
       return;
@@ -2761,6 +2870,7 @@ export default function SwimmingClassPage() {
       return;
     }
 
+    classPgTestLockRef.current = true;
     setIsClassPgTestLoading(true);
     console.log("[카드결제] 신청 저장 후 결제창 준비:", {
       className: selectedTimeSlot.name,
@@ -2828,6 +2938,7 @@ export default function SwimmingClassPage() {
       const notionPageId = pageId;
 
       const paymentStartedAt = new Date();
+      const contentConsent = getCurrentResistanceConsent();
       const selectedClassInfo = classes.find(
         (c) => String(c.id) === selectedClass,
       );
@@ -2853,6 +2964,7 @@ export default function SwimmingClassPage() {
           region: selectedRegion,
           paymentStartedAt: paymentStartedAt.toISOString(),
           traffic: trafficRecord,
+          contentConsent,
           amount, // 서버에서 무시·불일치 로그만
         }),
       });
@@ -2931,6 +3043,7 @@ export default function SwimmingClassPage() {
         classDate,
         region: selectedRegion,
         traffic: trafficRecord,
+        contentConsent,
       });
 
       if (!saved) {
@@ -6271,6 +6384,7 @@ export default function SwimmingClassPage() {
                       ← 이전
                     </Button>
                     <Button
+                      ref={depositPaymentButtonRef}
                       className={`flex-1 py-6 text-base font-extrabold shadow-md ${
                         selectedTimeSlot &&
                         (isClassFull(selectedTimeSlot.name) ||
@@ -6303,6 +6417,10 @@ export default function SwimmingClassPage() {
                         }
                         setRegionError(false);
 
+                        if (requestResistanceContentConsent("deposit")) {
+                          return;
+                        }
+
                         console.log("[결제UX] 계좌이체(우선) 버튼 클릭", {
                           className: selectedTimeSlot?.name,
                           price: selectedTimeSlot?.price,
@@ -6317,6 +6435,8 @@ export default function SwimmingClassPage() {
 
                         if (selectedTimeSlot) {
                           const paymentStartedAt = new Date();
+                          const contentConsent =
+                            getCurrentResistanceConsent();
                           setPaymentDate(paymentStartedAt);
 
                           // 같은 클래스 중복 신청 방지: 구글 운영/수강자 시트의 활성 신청 기준
@@ -6503,6 +6623,7 @@ export default function SwimmingClassPage() {
                                         날짜: classDate,
                                         특강지역: selectedRegion,
                                         예약상태: "예약대기",
+                                        contentConsent,
                                         ...toTrafficRecord(trafficSource),
                                       }),
                                     },
@@ -6715,6 +6836,7 @@ export default function SwimmingClassPage() {
                                           formatBankTransferDeadline(
                                             paymentStartedAt,
                                           ),
+                                        contentConsent,
                                         ...toTrafficRecord(trafficSource),
                                       }),
                                     },
@@ -6893,6 +7015,7 @@ export default function SwimmingClassPage() {
 
                     {!isReservationOnly && selectedTimeSlot && (
                       <Button
+                        ref={cardPaymentButtonRef}
                         type="button"
                         variant="outline"
                         size="sm"
@@ -6904,6 +7027,12 @@ export default function SwimmingClassPage() {
                             price: selectedTimeSlot.price,
                             canSubmit: canSubmitApplication,
                           });
+                          if (!validateApplicationForPayment()) {
+                            return;
+                          }
+                          if (requestResistanceContentConsent("card")) {
+                            return;
+                          }
                           void handleClassPgTestPayment();
                         }}
                         aria-label={cardPaymentLabel}
@@ -7083,6 +7212,14 @@ export default function SwimmingClassPage() {
           </section>
         )}
       </main>
+
+      <ResistanceContentConsentModal
+        open={showResistanceConsentModal}
+        checked={resistanceConsentChecked}
+        onCheckedChange={setResistanceConsentChecked}
+        onOpenChange={handleResistanceConsentOpenChange}
+        onConfirm={handleResistanceConsentConfirm}
+      />
 
       <Dialog
         open={showDepositModal && paymentStatus !== "예약대기"}

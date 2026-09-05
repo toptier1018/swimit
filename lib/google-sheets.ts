@@ -1,5 +1,6 @@
 import "server-only";
 import { google } from "googleapis";
+import type { ResistanceContentConsent } from "@/lib/resistance-content-consent";
 
 const env = {
   clientEmail: process.env.GOOGLE_CLIENT_EMAIL,
@@ -25,6 +26,9 @@ function getAuthClient() {
     scopes: ["https://www.googleapis.com/auth/spreadsheets"],
   });
 }
+
+const wait = (ms: number) =>
+  new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 export type GoogleSheetRowInput = {
   /** A: 접수일시 */
@@ -77,6 +81,8 @@ export type GoogleSheetRowInput = {
   utm_medium?: string;
   /** Z: utm_campaign */
   utm_campaign?: string;
+  /** AA~AC: 저항 진단 촬영 콘텐츠 활용 동의 */
+  contentConsent?: ResistanceContentConsent | null;
 };
 
 /** B열(신청번호) 목록 — 중복 복구 방지 */
@@ -137,6 +143,7 @@ export async function appendRowToGoogleSheet(
       예약상태: row["예약상태"],
       입금기한: row["입금기한"] ?? "",
       유입경로: row["유입경로"] ?? "",
+      콘텐츠활용동의: row.contentConsent?.agreed ?? false,
       시트명: env.sheetName,
     });
 
@@ -216,6 +223,91 @@ export async function appendRowToGoogleSheet(
         신청번호: row["신청번호"],
         updatedRange,
       });
+    }
+
+    if (row.contentConsent?.agreed) {
+      if (!appendedRow) {
+        const error =
+          "주문은 저장됐지만 촬영 콘텐츠 동의를 기록할 행 번호를 확인하지 못했습니다.";
+        console.error("[Google Sheets] 촬영 콘텐츠 동의 기록 실패:", {
+          신청번호: row["신청번호"],
+          updatedRange,
+        });
+        return { success: false, error };
+      }
+
+      let consentSaved = false;
+      let lastConsentError = "";
+      for (let attempt = 1; attempt <= 3; attempt += 1) {
+        try {
+          await sheets.spreadsheets.values.update({
+            spreadsheetId: env.spreadsheetId,
+            range: `'${env.sheetName}'!AA${appendedRow}:AC${appendedRow}`,
+            valueInputOption: "USER_ENTERED",
+            requestBody: {
+              values: [
+                [
+                  true,
+                  row.contentConsent.agreedAt,
+                  row.contentConsent.version,
+                ],
+              ],
+            },
+          });
+          consentSaved = true;
+          break;
+        } catch (consentError) {
+          lastConsentError =
+            consentError instanceof Error
+              ? consentError.message
+              : String(consentError);
+          console.error("[Google Sheets] 촬영 콘텐츠 동의 기록 재시도:", {
+            신청번호: row["신청번호"],
+            행: appendedRow,
+            attempt,
+            error: lastConsentError,
+          });
+          if (attempt < 3) await wait(200 * attempt);
+        }
+      }
+
+      if (!consentSaved) {
+        return {
+          success: false,
+          error: `주문은 저장됐지만 촬영 콘텐츠 동의 기록에 실패했습니다: ${lastConsentError}`,
+        };
+      }
+
+      console.log("[Google Sheets] 촬영 콘텐츠 동의 기록 성공:", {
+        신청번호: row["신청번호"],
+        행: appendedRow,
+        version: row.contentConsent.version,
+      });
+
+      try {
+        await sheets.spreadsheets.values.update({
+          spreadsheetId: env.spreadsheetId,
+          range: `'${env.sheetName}'!AA1:AC1`,
+          valueInputOption: "USER_ENTERED",
+          requestBody: {
+            values: [
+              [
+                "콘텐츠 활용 동의 여부",
+                "콘텐츠 활용 동의 일시",
+                "콘텐츠 활용 동의 약관 버전",
+              ],
+            ],
+          },
+        });
+      } catch (headerError) {
+        console.warn("[Google Sheets] 동의 값은 저장됐지만 헤더 기록 실패:", {
+          신청번호: row["신청번호"],
+          error:
+            headerError instanceof Error
+              ? headerError.message
+              : String(headerError),
+        });
+      }
     }
 
     console.log("[Google Sheets] 행 추가 성공:", {

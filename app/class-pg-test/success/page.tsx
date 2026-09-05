@@ -100,6 +100,7 @@ function SuccessContent() {
                 classDate: pending.classDate,
                 region: pending.region,
                 traffic: pending.traffic,
+                contentConsent: pending.contentConsent,
               }
             : null,
         }),

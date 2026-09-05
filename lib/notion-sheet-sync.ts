@@ -1,5 +1,7 @@
 import "server-only";
 import type { GoogleSheetRowInput } from "@/lib/google-sheets";
+import { parseCardPendingStatus } from "@/lib/toss-card-order-meta";
+import { RESISTANCE_CONTENT_CONSENT_VERSION } from "@/lib/resistance-content-consent";
 
 type NotionRichText = { plain_text?: string };
 type NotionPage = {
@@ -173,6 +175,7 @@ export function notionPageToSheetRow(page: NotionPage): GoogleSheetRowInput | nu
   const region = richText(p["지역"]);
   const status = richText(p["가상계좌 입금 정보"]) || "입금대기";
   const parsed = parseSelectedClassFull(selectedClass);
+  const cardMeta = parseCardPendingStatus(richText(p["카드결제 메타"]));
 
   const paymentIso = dateStart(p["결제 진행 시간"]);
 
@@ -201,6 +204,17 @@ export function notionPageToSheetRow(page: NotionPage): GoogleSheetRowInput | nu
     utm_source: anyText(p["utm_source"]),
     utm_medium: anyText(p["utm_medium"]),
     utm_campaign: anyText(p["utm_campaign"]),
+    contentConsent:
+      cardMeta?.contentConsent &&
+      cardMeta.contentConsentAt &&
+      cardMeta.contentConsentVersion === RESISTANCE_CONTENT_CONSENT_VERSION
+        ? {
+            agreed: true,
+            agreedAt: cardMeta.contentConsentAt,
+            version: RESISTANCE_CONTENT_CONSENT_VERSION,
+            className: selectedClass,
+          }
+        : null,
   };
 }
 

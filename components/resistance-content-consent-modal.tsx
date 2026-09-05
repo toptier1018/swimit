@@ -10,7 +10,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { VideoConsentPrivacyList } from "@/components/video-consent";
+
+const PRIVACY_ITEMS = [
+  "얼굴 블러 처리",
+  "이름 및 연락처 비공개",
+  "필요 시 개인을 특정할 수 있는 특징 추가 블러 처리",
+  "개인을 특정할 수 있는 음성 및 정보 제거",
+] as const;
 
 type ResistanceContentConsentModalProps = {
   open: boolean;
@@ -34,23 +40,37 @@ export function ResistanceContentConsentModal({
           <DialogTitle className="text-lg leading-7 sm:text-xl">
             촬영 및 콘텐츠 활용 확인
           </DialogTitle>
-          <DialogDescription className="break-keep text-sm leading-6">
-            저항 진단 프로그램 결제 전에 촬영과 콘텐츠 활용 내용을 한 번 더
-            확인해 주세요.
+          <DialogDescription className="sr-only">
+            저항 진단 프로그램 결제 전 촬영 및 콘텐츠 활용 동의
           </DialogDescription>
         </DialogHeader>
 
         <div className="overflow-y-auto px-4 py-4 sm:px-6">
-          <div className="space-y-4 text-sm leading-6 text-gray-700 sm:text-[15px] sm:leading-7">
-            <VideoConsentPrivacyList />
+          <div className="space-y-4 text-sm leading-7 text-gray-700 sm:text-[15px] sm:leading-8">
+            <p className="break-keep">
+              회원님의 수영 영상은 비슷한 고민을 가진 다른 수영인들에게 도움이
+              되는 교육 콘텐츠로 활용될 수 있습니다.
+            </p>
+
+            <div className="rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-3.5">
+              <p className="mb-2.5 break-keep font-bold text-blue-950">
+                콘텐츠 활용 시에는
+              </p>
+              <ul className="space-y-2 text-blue-950">
+                {PRIVACY_ITEMS.map((item) => (
+                  <li key={item} className="break-keep font-semibold">
+                    • {item}
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-2.5 break-keep font-bold text-blue-950">
+                후 사용합니다.
+              </p>
+            </div>
 
             <p className="break-keep">
-              저항 진단 프로그램은 촬영 영상의 일부를 스윔잇 수영 교육 콘텐츠 및
-              프로그램 소개 자료로 활용하는 것을 포함하여 운영됩니다.
-            </p>
-            <p className="break-keep">
-              인스타그램, 유튜브, 네이버 카페, 홈페이지 및 온라인 콘텐츠 등에
-              게시될 수 있습니다.
+              촬영 영상은 스윔잇의 수영 교육 및 프로그램 소개를 위해
+              인스타그램, 유튜브, 네이버 카페, 홈페이지 등에 활용될 수 있습니다.
             </p>
 
             <div className="rounded-xl border-2 border-slate-200 bg-slate-50 p-3.5">

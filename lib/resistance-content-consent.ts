@@ -128,6 +128,7 @@ export function isContentConsentVersion(
 
 export function isDiagnosisPaymentConsentVersion(value: unknown): boolean {
   return (
+    value === RESISTANCE_VIDEO_CONSENT_VERSION ||
     value === RESISTANCE_PAYMENT_CONSENT_VERSION ||
     value === LEGACY_RESISTANCE_CONTENT_CONSENT_VERSION
   );

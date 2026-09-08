@@ -21,11 +21,74 @@ const CENTER_BY_LABEL: Record<string, string> = {
   중구: "서울 중구 · 스포빌키즈쿠아",
 };
 
+/**
+ * 특강용 승인 템플릿 본문 (Aligo 등록 문구와 동일)
+ * #{…} 만 실제 예약 값으로 치환한다.
+ */
+export const SPECIAL_RESERVATION_ALIMTALK_TEMPLATE = `🎉 스윔잇 특강 예약 확정 안내
+
+반갑습니다, #{고객명} 회원님!
+‘저항 없는 수영’ 스윔잇 특강에 합류하신 것을 환영합니다.
+
+📅 특강일
+👉 #{특강일}
+
+📌 예약 확정 클래스
+👉 #{장소}
+👉 #{클래스명} #{타임}
+
+#{고객명} 회원님께서
+오직 수영에만 집중하실 수 있도록
+스윔잇이 현장 준비를 모두 마쳤습니다.
+
+━━━━━━━━━━━━━━
+📢 필독 가이드 꼭 확인 (중요)
+✨ 아래 체크 포인트를 꼭 확인해주세요.
+━━━━━━━━━━━━━━
+
+✔ 클래스별 배정 레인 및 클래스 시간
+✔ 특강 장소 및 오시는 길
+✔ 필수 준비물 체크
+✔ 수영장 입장 방법`;
+
+/**
+ * 진단용 승인 템플릿 본문 (Aligo UL_0794 등 진단 전용 문구)
+ * 특강 문구와 분리 관리.
+ */
+export const DIAGNOSIS_RESERVATION_ALIMTALK_TEMPLATE = `🎉 스윔잇 진단 예약 확정 안내
+
+반갑습니다, #{고객명} 회원님!
+‘저항 없는 수영’ 스윔잇 진단 프로그램에
+합류하신 것을 환영합니다.
+
+📅 진단일
+👉 #{특강일}
+
+📌 예약 확정 프로그램
+👉 #{장소}
+👉 #{클래스명} #{타임}
+
+#{고객명} 회원님께서
+오직 수영에만 집중하실 수 있도록
+스윔잇이 현장 준비를 모두 마쳤습니다.
+
+━━━━━━━━━━━━━━
+📢 필독 가이드 꼭 확인 (중요)
+✨ 아래 체크 포인트를 꼭 확인해주세요.
+━━━━━━━━━━━━━━
+
+✔ 배정 레인 및 시간
+✔ 장소 및 오시는 길
+✔ 수영장 입장 방법`;
+
 export type ReservationAlimtalkFields = {
   center: string;
   program: AlimtalkProgram;
   className: string;
   session: string;
+  /** YYYY-MM-DD 원본 (있으면) */
+  date?: string;
+  /** "2026년 10월 11일" */
   classDateLabel: string;
   customerName: string;
   customerPhone: string;
@@ -101,6 +164,10 @@ export function formatAlimtalkClassDateLabel(input: {
   );
 }
 
+/**
+ * orderId 기준 카드결제 주문 필드 → 알림톡 치환용 값
+ * (웹훅에서 Notion/enrollment 조회 결과를 넘김)
+ */
 export function resolveReservationAlimtalkFields(
   input: SendCardPaymentReservationAlimtalkInput,
 ): ReservationAlimtalkFields {
@@ -189,15 +256,70 @@ export function resolveReservationAlimtalkFields(
     );
   }
 
+  const dateRaw = String(input.classDate || "").trim();
+
   return {
     center,
     program,
     className,
     session,
+    date: dateRaw || undefined,
     classDateLabel,
     customerName,
     customerPhone,
   };
+}
+
+/**
+ * 특강/진단 승인 문구를 분리 선택.
+ * program === "진단" → 진단용 승인 문구, 그 외 → 특강용 승인 문구
+ */
+export function getReservationAlimtalkTemplateBody(
+  program: AlimtalkProgram,
+): { kind: "special" | "diagnosis"; body: string } {
+  if (program === "진단") {
+    return {
+      kind: "diagnosis",
+      body: DIAGNOSIS_RESERVATION_ALIMTALK_TEMPLATE,
+    };
+  }
+  return {
+    kind: "special",
+    body: SPECIAL_RESERVATION_ALIMTALK_TEMPLATE,
+  };
+}
+
+/**
+ * 실제 고객/예약 정보로 #{…} 를 모두 치환한 최종 message_1 생성
+ */
+export function buildAligoReservationMessage(
+  fields: ReservationAlimtalkFields,
+): { message: string; templateKind: "special" | "diagnosis" } {
+  const { kind, body: templateBody } = getReservationAlimtalkTemplateBody(
+    fields.program,
+  );
+
+  const message = templateBody
+    .replace(/#\{고객명\}/g, fields.customerName)
+    .replace(/#\{특강일\}/g, fields.classDateLabel)
+    .replace(/#\{장소\}/g, fields.center)
+    .replace(/#\{클래스명\}/g, fields.className)
+    .replace(/#\{타임\}/g, fields.session);
+
+  const leftover = message.match(/#\{[^}]+\}/g);
+  if (leftover?.length) {
+    throw new AlimtalkTemplateError(
+      `알림톡 message_1 치환 미완료: ${leftover.join(", ")}`,
+    );
+  }
+
+  if (!message.trim()) {
+    throw new AlimtalkTemplateError(
+      "알림톡 message_1 생성 실패: 본문이 비어 있습니다.",
+    );
+  }
+
+  return { message, templateKind: kind };
 }
 
 function getAligoEnv() {
@@ -229,13 +351,14 @@ async function createAligoToken(apikey: string, userid: string): Promise<string>
   return String(result.token);
 }
 
-async function fetchAligoTemplate(params: {
+/** subject_1 용 — 템플릿명만 조회 (본문은 로컬 치환본 사용) */
+async function fetchAligoTemplateSubject(params: {
   apikey: string;
   userid: string;
   senderkey: string;
   token: string;
   tplCode: string;
-}): Promise<{ subject: string; content: string }> {
+}): Promise<string> {
   const body = new URLSearchParams({
     apikey: params.apikey,
     userid: params.userid,
@@ -269,32 +392,14 @@ async function fetchAligoTemplate(params: {
     );
   }
 
-  const content = String(found.templtContent || "");
-  if (!content.trim()) {
-    throw new Error(`알리고 템플릿 본문 비어 있음: tpl_code=${params.tplCode}`);
-  }
-
-  return {
-    subject: String(found.templtName || "예약확정 안내").trim() || "예약확정 안내",
-    content,
-  };
-}
-
-function fillAligoTemplateMessage(
-  templateContent: string,
-  fields: ReservationAlimtalkFields,
-): string {
-  return templateContent
-    .replace(/#\{고객명\}/g, fields.customerName)
-    .replace(/#\{특강일\}/g, fields.classDateLabel)
-    .replace(/#\{장소\}/g, fields.center)
-    .replace(/#\{클래스명\}/g, fields.className)
-    .replace(/#\{타임\}/g, fields.session);
+  return (
+    String(found.templtName || "").trim() || "스윔잇 예약 확정 안내"
+  );
 }
 
 /**
  * 카드결제 예약확정 전용 — Aligo만 호출
- * (입금 안내받기 / NHN Cloud 경로와 완전히 분리)
+ * message_1 은 주문 데이터로 치환한 최종 문장만 전송
  */
 export async function sendCardPaymentReservationAlimtalk(
   input: SendCardPaymentReservationAlimtalkInput,
@@ -304,10 +409,20 @@ export async function sendCardPaymentReservationAlimtalk(
   let program: AlimtalkProgram | undefined;
 
   try {
+    // 1) orderId 로 조회된 주문/예약 필드 → 치환값
     const fields = resolveReservationAlimtalkFields(input);
     center = fields.center;
     program = fields.program;
     templateCode = getAlimtalkTemplateCode(fields.center, fields.program);
+
+    // 2) 특강/진단 승인 문구 + 실제 고객정보로 message_1 생성
+    const built = buildAligoReservationMessage(fields);
+    const message_1 = built.message;
+    if (!message_1 || /#\{[^}]+\}/.test(message_1)) {
+      throw new AlimtalkTemplateError(
+        "알림톡 message_1 이 최종 치환되지 않았습니다. 발송 중단.",
+      );
+    }
 
     const { apikey, userid, senderkey, sender } = getAligoEnv();
     if (!apikey || !userid || !senderkey || !sender) {
@@ -332,18 +447,22 @@ export async function sendCardPaymentReservationAlimtalk(
       center: fields.center,
       program: fields.program,
       templateCode,
+      templateKind: built.templateKind,
+      messageReady: true,
+      messageLength: message_1.length,
+      hasPlaceholder: false,
     });
 
     const token = await createAligoToken(apikey, userid);
-    const template = await fetchAligoTemplate({
+    const subject_1 = await fetchAligoTemplateSubject({
       apikey,
       userid,
       senderkey,
       token,
       tplCode: templateCode,
     });
-    const message = fillAligoTemplateMessage(template.content, fields);
 
+    // 3) 최종 치환된 message_1 만 Aligo로 전송 (placeholder 원문 금지)
     const body = new URLSearchParams({
       apikey,
       userid,
@@ -353,8 +472,8 @@ export async function sendCardPaymentReservationAlimtalk(
       sender,
       receiver_1: fields.customerPhone,
       recvname_1: fields.customerName,
-      subject_1: template.subject,
-      message_1: message,
+      subject_1,
+      message_1,
     });
 
     const response = await fetch(

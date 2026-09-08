@@ -31,11 +31,11 @@ export type ReservationAlimtalkFields = {
   customerPhone: string;
 };
 
-export type SendReservationConfirmAlimtalkInput = {
+export type SendCardPaymentReservationAlimtalkInput = {
   orderId: string;
   customerName: string;
   customerPhone: string;
-  /** Notion/시트 지역 — 가능하면 schedules center 전체명 */
+  /** Notion/시트 지역 — schedules center 전체명 권장 */
   region?: string;
   /** enrollment key 예: [은평 9/13] 1부 특강 자유형 */
   selectedClass?: string;
@@ -45,12 +45,13 @@ export type SendReservationConfirmAlimtalkInput = {
   pageId?: string;
 };
 
-export type SendReservationConfirmAlimtalkResult =
+export type SendCardPaymentReservationAlimtalkResult =
   | {
       success: true;
       templateCode: string;
       center: string;
       program: AlimtalkProgram;
+      messageId?: string;
     }
   | {
       success: false;
@@ -71,18 +72,15 @@ export function formatAlimtalkClassDateLabel(input: {
 }): string {
   const raw = String(input.classDate || "").trim();
 
-  // 이미 "2026년 10월 11일" 형태
   if (/^\d{4}년\s*\d{1,2}월\s*\d{1,2}일$/.test(raw)) {
     return raw.replace(/\s+/g, " ");
   }
 
-  // YYYY-MM-DD
   const iso = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
   if (iso) {
     return `${iso[1]}년 ${Number(iso[2])}월 ${Number(iso[3])}일`;
   }
 
-  // enrollment key: [중구 10/11]
   const fromKey = String(input.selectedClass || "").match(
     /\[(?:[^\]]*?)\s+(\d{1,2})\/(\d{1,2})\]/,
   );
@@ -90,11 +88,9 @@ export function formatAlimtalkClassDateLabel(input: {
     return `2026년 ${Number(fromKey[1])}월 ${Number(fromKey[2])}일`;
   }
 
-  // 시트 표기 "2026. 10. 11" 등
   const dotted = raw.match(/(\d{4})\D+(\d{1,2})\D+(\d{1,2})/);
   if (dotted) {
     const year = Number(dotted[1]);
-    // Google Sheets 일련번호(4만대) 방어
     if (year >= 2020 && year <= 2100) {
       return `${year}년 ${Number(dotted[2])}월 ${Number(dotted[3])}일`;
     }
@@ -106,7 +102,7 @@ export function formatAlimtalkClassDateLabel(input: {
 }
 
 export function resolveReservationAlimtalkFields(
-  input: SendReservationConfirmAlimtalkInput,
+  input: SendCardPaymentReservationAlimtalkInput,
 ): ReservationAlimtalkFields {
   const selectedClass = String(input.selectedClass || "").trim();
   const region = String(input.region || "").trim();
@@ -152,7 +148,6 @@ export function resolveReservationAlimtalkFields(
       "1부";
   }
 
-  // #{타임} 은 1부/2부만
   session = session.match(/^(\d+부)/)?.[1] || "1부";
 
   let center = "";
@@ -167,7 +162,6 @@ export function resolveReservationAlimtalkFields(
     }
   }
   if (!center && region) {
-    // region 이 이미 schedules center 이거나 부분 문자열인 경우
     const hit = Object.values(CENTER_BY_LABEL).find(
       (c) => c === region || region.includes(c) || c.includes(region),
     );
@@ -206,123 +200,229 @@ export function resolveReservationAlimtalkFields(
   };
 }
 
+function getAligoEnv() {
+  const apikey = process.env.ALIGO_API_KEY?.trim() || "";
+  const userid = process.env.ALIGO_USER_ID?.trim() || "";
+  const senderkey = process.env.ALIGO_SENDER_KEY?.trim() || "";
+  const sender = process.env.ALIGO_SENDER?.trim() || "";
+  return { apikey, userid, senderkey, sender };
+}
+
+async function createAligoToken(apikey: string, userid: string): Promise<string> {
+  const body = new URLSearchParams({ apikey, userid });
+  const response = await fetch(
+    "https://kakaoapi.aligo.in/akv10/token/create/30/s/",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+      },
+      body,
+    },
+  );
+  const result = await response.json().catch(() => ({}));
+  if (Number(result?.code) !== 0 || !result?.token) {
+    throw new Error(
+      `알리고 토큰 발급 실패: code=${result?.code}, message=${result?.message || ""}`,
+    );
+  }
+  return String(result.token);
+}
+
+async function fetchAligoTemplate(params: {
+  apikey: string;
+  userid: string;
+  senderkey: string;
+  token: string;
+  tplCode: string;
+}): Promise<{ subject: string; content: string }> {
+  const body = new URLSearchParams({
+    apikey: params.apikey,
+    userid: params.userid,
+    senderkey: params.senderkey,
+    token: params.token,
+  });
+  const response = await fetch(
+    "https://kakaoapi.aligo.in/akv10/template/list/",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+      },
+      body,
+    },
+  );
+  const result = await response.json().catch(() => ({}));
+  if (Number(result?.code) !== 0 || !Array.isArray(result?.list)) {
+    throw new Error(
+      `알리고 템플릿 조회 실패: code=${result?.code}, message=${result?.message || ""}`,
+    );
+  }
+
+  const found = result.list.find(
+    (item: { templtCode?: string }) =>
+      String(item?.templtCode || "").trim() === params.tplCode,
+  );
+  if (!found) {
+    throw new Error(
+      `알리고 템플릿 없음: tpl_code=${params.tplCode} (다른 템플릿으로 fallback 하지 않음)`,
+    );
+  }
+
+  const content = String(found.templtContent || "");
+  if (!content.trim()) {
+    throw new Error(`알리고 템플릿 본문 비어 있음: tpl_code=${params.tplCode}`);
+  }
+
+  return {
+    subject: String(found.templtName || "예약확정 안내").trim() || "예약확정 안내",
+    content,
+  };
+}
+
+function fillAligoTemplateMessage(
+  templateContent: string,
+  fields: ReservationAlimtalkFields,
+): string {
+  return templateContent
+    .replace(/#\{고객명\}/g, fields.customerName)
+    .replace(/#\{특강일\}/g, fields.classDateLabel)
+    .replace(/#\{장소\}/g, fields.center)
+    .replace(/#\{클래스명\}/g, fields.className)
+    .replace(/#\{타임\}/g, fields.session);
+}
+
 /**
- * 카드 결제 완료 후 예약확정 알림톡
- * - 템플릿: getAlimtalkTemplateCode(center, program)
- * - 전송: 현재 운영 중인 NHN Cloud 알림톡 (환경변수)
- *   (페이지 주석의 '알리고'와 동일 역할 — 템플릿 코드만 설정 파일에서 관리)
+ * 카드결제 예약확정 전용 — Aligo만 호출
+ * (입금 안내받기 / NHN Cloud 경로와 완전히 분리)
  */
-export async function sendReservationConfirmAlimtalk(
-  input: SendReservationConfirmAlimtalkInput,
-): Promise<SendReservationConfirmAlimtalkResult> {
+export async function sendCardPaymentReservationAlimtalk(
+  input: SendCardPaymentReservationAlimtalkInput,
+): Promise<SendCardPaymentReservationAlimtalkResult> {
+  let templateCode = "";
+  let center = "";
+  let program: AlimtalkProgram | undefined;
+
   try {
     const fields = resolveReservationAlimtalkFields(input);
-    const templateCode = getAlimtalkTemplateCode(
-      fields.center,
-      fields.program,
-    );
+    center = fields.center;
+    program = fields.program;
+    templateCode = getAlimtalkTemplateCode(fields.center, fields.program);
 
-    const appKey = process.env.NHN_APPKEY;
-    const secretKey = process.env.NHN_SECRET_KEY;
-    const senderKey = process.env.NHN_SENDER_KEY;
-
-    if (!appKey || !secretKey || !senderKey) {
-      console.error("[예약확정알림톡] NHN 환경변수 없음 — 발송 중단");
+    const { apikey, userid, senderkey, sender } = getAligoEnv();
+    if (!apikey || !userid || !senderkey || !sender) {
+      console.error("[알리고 예약확정] 실패", {
+        orderId: input.orderId,
+        templateCode,
+        code: "ENV_MISSING",
+        message:
+          "ALIGO_API_KEY / ALIGO_USER_ID / ALIGO_SENDER_KEY / ALIGO_SENDER 필요",
+      });
       return {
         success: false,
-        error: "NHN Cloud 알림톡 환경변수가 없습니다.",
+        error: "Aligo 환경변수가 없습니다.",
         templateCode,
-        center: fields.center,
-        program: fields.program,
+        center,
+        program,
       };
     }
 
-    const requestBody = {
-      senderKey,
-      templateCode,
-      recipientList: [
-        {
-          recipientNo: fields.customerPhone,
-          templateParameter: {
-            고객명: fields.customerName,
-            특강일: fields.classDateLabel,
-            장소: fields.center,
-            클래스명: fields.className,
-            타임: fields.session,
-          },
-        },
-      ],
-    };
-
-    console.log("[예약확정알림톡] 발송 요청:", {
+    console.log("[알리고 예약확정] 요청", {
       orderId: input.orderId,
       center: fields.center,
       program: fields.program,
       templateCode,
-      className: fields.className,
-      session: fields.session,
-      classDateLabel: fields.classDateLabel,
-      phoneSuffix: fields.customerPhone.slice(-4),
+    });
+
+    const token = await createAligoToken(apikey, userid);
+    const template = await fetchAligoTemplate({
+      apikey,
+      userid,
+      senderkey,
+      token,
+      tplCode: templateCode,
+    });
+    const message = fillAligoTemplateMessage(template.content, fields);
+
+    const body = new URLSearchParams({
+      apikey,
+      userid,
+      senderkey,
+      token,
+      tpl_code: templateCode,
+      sender,
+      receiver_1: fields.customerPhone,
+      recvname_1: fields.customerName,
+      subject_1: template.subject,
+      message_1: message,
     });
 
     const response = await fetch(
-      `https://api-alimtalk.cloud.toast.com/alimtalk/v2.3/appkeys/${appKey}/messages`,
+      "https://kakaoapi.aligo.in/akv10/alimtalk/send/",
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "X-Secret-Key": secretKey,
+          "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
         },
-        body: JSON.stringify(requestBody),
+        body,
       },
     );
-
     const result = await response.json().catch(() => ({}));
-    console.log(
-      "[예약확정알림톡] API 응답:",
-      JSON.stringify(result).slice(0, 800),
-    );
+    const code = Number(result?.code);
+    const messageId =
+      result?.info?.mid != null
+        ? String(result.info.mid)
+        : result?.info?.messageId != null
+          ? String(result.info.messageId)
+          : undefined;
 
-    if (result?.header?.isSuccessful) {
-      console.log("[예약확정알림톡] 발송 성공:", {
+    if (code === 0) {
+      console.log("[알리고 예약확정] 성공", {
         orderId: input.orderId,
         templateCode,
-        center: fields.center,
-        program: fields.program,
+        ...(messageId ? { messageId } : {}),
       });
       return {
         success: true,
         templateCode,
-        center: fields.center,
-        program: fields.program,
+        center,
+        program,
+        messageId,
       };
     }
 
-    const error =
-      result?.header?.resultMessage ||
-      result?.message ||
-      "예약확정 알림톡 발송 실패";
-    console.error("[예약확정알림톡] 발송 실패 — 잘못된 템플릿으로 재시도하지 않음:", {
+    console.error("[알리고 예약확정] 실패", {
       orderId: input.orderId,
       templateCode,
-      center: fields.center,
-      program: fields.program,
-      error,
+      code: result?.code,
+      message: result?.message,
     });
     return {
       success: false,
-      error,
+      error: `Aligo 발송 실패: code=${result?.code}, message=${result?.message || ""}`,
       templateCode,
-      center: fields.center,
-      program: fields.program,
+      center,
+      program,
     };
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : "알림톡 발송 중 알 수 없는 오류";
-    console.error("[예약확정알림톡] 발송 중단:", {
+      error instanceof Error ? error.message : "알리고 예약확정 발송 중 오류";
+    console.error("[알리고 예약확정] 실패", {
       orderId: input.orderId,
-      error: message,
+      templateCode: templateCode || undefined,
+      code: "EXCEPTION",
+      message,
     });
-    return { success: false, error: message };
+    return {
+      success: false,
+      error: message,
+      templateCode: templateCode || undefined,
+      center: center || undefined,
+      program,
+    };
   }
 }
+
+/** @deprecated 카드결제 전용 함수명으로 사용하세요 */
+export const sendReservationConfirmAlimtalk =
+  sendCardPaymentReservationAlimtalk;

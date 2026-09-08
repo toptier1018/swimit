@@ -8,7 +8,7 @@ import {
   isSwimmitClassCardOrderId,
 } from "@/lib/finalize-card-enrollment";
 import { notifyAdminPayment } from "@/lib/notify-admin-payment";
-import { sendReservationConfirmAlimtalk } from "@/lib/reservation-confirm-alimtalk";
+import { sendCardPaymentReservationAlimtalk } from "@/lib/reservation-confirm-alimtalk";
 import {
   parseCardPendingStatus,
   shouldSkipAdminNotify,
@@ -17,6 +17,13 @@ import {
   type CardPendingMeta,
 } from "@/lib/toss-card-order-meta";
 import { fetchTossPaymentByKey } from "@/lib/toss-payment-query";
+
+/** Toss 재조회 method — 카드 결제만 Aligo 예약확정 대상 */
+function isTossCardPaymentMethod(method: string | undefined): boolean {
+  const value = String(method || "").trim();
+  // Toss Payments 조회 응답: 카드 결제는 보통 "카드"
+  return value === "카드" || value.toUpperCase() === "CARD";
+}
 
 /**
  * Notion 카드 메타의 관리자/고객 알림 상태만 갱신 (결제/시트와 분리)
@@ -143,6 +150,7 @@ export async function POST(req: NextRequest) {
       orderId,
       status,
       totalAmount,
+      method: payment.method || "",
       paymentKeyPrefix: `${paymentKey.slice(0, 10)}…`,
       hasApprovedAt: Boolean(payment.approvedAt),
     });
@@ -353,7 +361,15 @@ export async function POST(req: NextRequest) {
               }
             }
 
-            // --- 고객 예약확정 알림톡 (센터+프로그램 템플릿) ---
+            // --- 고객 예약확정 알림톡 (카드결제 + Aligo 전용) ---
+            // 입금 안내받기(NHN)와 분리: CLASS- 주문 + Toss method=카드 + DONE 만
+            if (!isTossCardPaymentMethod(payment.method)) {
+              console.log("[웹훅] 예약확정 알림톡 스킵 — 카드 결제 아님:", {
+                orderId,
+                method: payment.method || "",
+              });
+              customerAlimtalk = "skipped";
+            } else {
             const refreshed = await findCardOrderByTossOrderId(orderId);
             if (
               refreshed.success &&
@@ -390,7 +406,8 @@ export async function POST(req: NextRequest) {
                   );
                   customerAlimtalk = "failed";
                 } else {
-                  const sendResult = await sendReservationConfirmAlimtalk({
+                  const sendResult =
+                    await sendCardPaymentReservationAlimtalk({
                     orderId,
                     customerName:
                       finalize.customerName ||
@@ -454,6 +471,7 @@ export async function POST(req: NextRequest) {
                 "[웹훅] 고객 알림톡 전 Notion 재조회 실패 — 알림톡만 스킵",
               );
               customerAlimtalk = "failed";
+            }
             }
           }
         }

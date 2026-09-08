@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { formatAlimtalkDepositDeadline } from "@/lib/deposit-deadline";
 
 async function updateAlimtalkLogInNotion(params: {
   pageId: string;
@@ -70,7 +71,9 @@ export async function POST(request: NextRequest) {
       입금기한,
     } = await request.json();
 
-    const deadlineLabel = String(depositDeadline || 입금기한 || "").trim();
+    const deadlineLabel =
+      String(depositDeadline || 입금기한 || "").trim() ||
+      formatAlimtalkDepositDeadline(new Date());
 
     console.log("[NHN Cloud 알림톡] 발송 요청:", {
       customerName,
@@ -78,7 +81,10 @@ export async function POST(request: NextRequest) {
         ? `***${String(customerPhone).replace(/\D/g, "").slice(-4)}`
         : "",
       className,
-      depositDeadline: deadlineLabel || "(없음)",
+      depositDeadline: deadlineLabel,
+      depositDeadlineFromClient: Boolean(
+        String(depositDeadline || 입금기한 || "").trim(),
+      ),
       pageId: pageId ? "있음" : "없음",
     });
 
@@ -103,22 +109,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!deadlineLabel) {
-      console.error(
-        "[NHN Cloud 알림톡] 발송 중단: 입금기한(#{입금기한})이 없습니다",
-      );
+    // 전화번호 형식 정리 (하이픈 제거)
+    const receiverPhone = String(customerPhone).replace(/\D/g, "");
+    if (receiverPhone.length < 10) {
       return NextResponse.json(
-        {
-          success: false,
-          error:
-            "입금기한이 없어 알림톡을 보낼 수 없습니다. (템플릿 v1은 #{입금기한} 필수)",
-        },
+        { success: false, error: "전화번호 형식이 올바르지 않습니다." },
         { status: 400 },
       );
     }
-
-    // 전화번호 형식 정리 (하이픈 제거)
-    const receiverPhone = String(customerPhone).replace(/-/g, "");
 
     // 알림톡에 보이는 상품명 정리 (정원 키 ≠ 고객 안내 문구)
     // 「1부 진단」「2부 저항진단」 등 어떤 표기든 「N부 저항 진단 프로그램」으로 통일

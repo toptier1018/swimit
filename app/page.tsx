@@ -6698,19 +6698,26 @@ export default function SwimmingClassPage() {
                                   selectedRegion,
                                 );
 
-                                // Notion 결제 정보 업데이트
-                                await updatePaymentInNotion({
-                                  pageId,
-                                  // 노션 표의 '가상계좌 입금 정보' 컬럼에는 상태 값만 저장 (예: 결제대기)
-                                  virtualAccountInfo: "결제대기",
-                                  orderNumber: newOrderNumber,
-                                  selectedClass: selectedTimeSlot.name,
-                                  timeSlot: `${selectedTimeSlot.session} (${selectedTimeSlot.time})`,
-                                  region: selectedRegion,
-                                  paymentStartedAt:
-                                    paymentStartedAt.toISOString(),
-                                  traffic: toTrafficRecord(trafficSource),
-                                });
+                                // Notion 결제 정보 업데이트 (실패해도 알림톡/시트는 계속)
+                                try {
+                                  await updatePaymentInNotion({
+                                    pageId,
+                                    // 노션 표의 '가상계좌 입금 정보' 컬럼에는 상태 값만 저장 (예: 결제대기)
+                                    virtualAccountInfo: "결제대기",
+                                    orderNumber: newOrderNumber,
+                                    selectedClass: selectedTimeSlot.name,
+                                    timeSlot: `${selectedTimeSlot.session} (${selectedTimeSlot.time})`,
+                                    region: selectedRegion,
+                                    paymentStartedAt:
+                                      paymentStartedAt.toISOString(),
+                                    traffic: toTrafficRecord(trafficSource),
+                                  });
+                                } catch (notionPaymentError) {
+                                  console.error(
+                                    "[결제] Notion 결제정보 업데이트 실패(알림톡은 계속):",
+                                    notionPaymentError,
+                                  );
+                                }
 
                                 try {
                                   console.log(
@@ -6834,11 +6841,23 @@ export default function SwimmingClassPage() {
                                         depositDeadline: depositDeadlineLabel,
                                       },
                                     );
+                                    toast({
+                                      title: "입금 안내 알림톡 발송",
+                                      description:
+                                        "카카오 알림톡으로 입금 안내를 보냈습니다.",
+                                    });
                                   } else {
                                     console.error(
                                       "[알림톡] NHN 입금안내 발송 실패:",
                                       alimtalkResult.error,
                                     );
+                                    toast({
+                                      title: "알림톡 발송 실패",
+                                      description:
+                                        alimtalkResult.error ||
+                                        "입금 안내 알림톡 발송에 실패했습니다. 계좌 안내는 화면에서 확인해 주세요.",
+                                      variant: "destructive",
+                                    });
                                   }
 
                                   if (alimtalkResult?.notionLog?.attempted) {
@@ -6867,6 +6886,12 @@ export default function SwimmingClassPage() {
                                     "[알림톡] 발송 중 오류:",
                                     alimtalkError,
                                   );
+                                  toast({
+                                    title: "알림톡 발송 오류",
+                                    description:
+                                      "입금 안내 알림톡을 보내지 못했습니다. 계좌 안내는 화면에서 확인해 주세요.",
+                                    variant: "destructive",
+                                  });
                                 }
 
                                 // 신청 인원 증가

@@ -354,76 +354,16 @@ function getAligoEnv() {
   return { apikey, userid, senderkey, sender };
 }
 
-async function createAligoToken(apikey: string, userid: string): Promise<string> {
-  const body = new URLSearchParams({ apikey, userid });
-  const response = await fetch(
-    "https://kakaoapi.aligo.in/akv10/token/create/30/s/",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-      },
-      body,
-    },
-  );
-  const result = await response.json().catch(() => ({}));
-  if (Number(result?.code) !== 0 || !result?.token) {
-    throw new Error(
-      `알리고 토큰 발급 실패: code=${result?.code}, message=${result?.message || ""}`,
-    );
-  }
-  return String(result.token);
-}
-
-/** subject_1 용 — 템플릿명만 조회 (본문은 로컬 치환본 사용) */
-async function fetchAligoTemplateSubject(params: {
-  apikey: string;
-  userid: string;
-  senderkey: string;
-  token: string;
-  tplCode: string;
-}): Promise<string> {
-  const body = new URLSearchParams({
-    apikey: params.apikey,
-    userid: params.userid,
-    senderkey: params.senderkey,
-    token: params.token,
-  });
-  const response = await fetch(
-    "https://kakaoapi.aligo.in/akv10/template/list/",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-      },
-      body,
-    },
-  );
-  const result = await response.json().catch(() => ({}));
-  if (Number(result?.code) !== 0 || !Array.isArray(result?.list)) {
-    throw new Error(
-      `알리고 템플릿 조회 실패: code=${result?.code}, message=${result?.message || ""}`,
-    );
-  }
-
-  const found = result.list.find(
-    (item: { templtCode?: string }) =>
-      String(item?.templtCode || "").trim() === params.tplCode,
-  );
-  if (!found) {
-    throw new Error(
-      `알리고 템플릿 없음: tpl_code=${params.tplCode} (다른 템플릿으로 fallback 하지 않음)`,
-    );
-  }
-
-  return (
-    String(found.templtName || "").trim() || "스윔잇 예약 확정 안내"
-  );
+/** 승인 템플릿 제목 — messageKind 기준 (token/list API 미사용) */
+function getAligoSubject(messageKind: AlimtalkTemplateKind): string {
+  return messageKind === "diagnosis"
+    ? "스윔잇 진단 예약 확정 안내"
+    : "스윔잇 특강 예약 확정 안내";
 }
 
 /**
  * 카드결제 예약확정 전용 — Aligo만 호출
- * message_1 은 주문 데이터로 치환한 최종 문장만 전송
+ * token 발급 없이 send API에 apikey/userid 직접 전달
  */
 export async function sendCardPaymentReservationAlimtalk(
   input: SendCardPaymentReservationAlimtalkInput,
@@ -472,6 +412,8 @@ export async function sendCardPaymentReservationAlimtalk(
       };
     }
 
+    const subject_1 = getAligoSubject(built.templateKind);
+
     console.log("[알리고 예약확정] 요청", {
       orderId: input.orderId,
       center: fields.center,
@@ -484,21 +426,11 @@ export async function sendCardPaymentReservationAlimtalk(
       hasPlaceholder: false,
     });
 
-    const token = await createAligoToken(apikey, userid);
-    const subject_1 = await fetchAligoTemplateSubject({
-      apikey,
-      userid,
-      senderkey,
-      token,
-      tplCode: templateCode,
-    });
-
-    // 4) 최종 치환된 message_1 만 Aligo로 전송 (placeholder 원문 금지)
+    // 4) token 없이 send API 직접 호출 (apikey/userid 포함)
     const body = new URLSearchParams({
       apikey,
       userid,
       senderkey,
-      token,
       tpl_code: templateCode,
       sender,
       receiver_1: fields.customerPhone,

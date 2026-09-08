@@ -59,3 +59,13 @@ export function formatOpsSheetDateTime(date: Date): string {
 export function formatBankTransferDeadline(from: Date = new Date()): string {
   return formatOpsSheetDateTime(getBankTransferDeadlineKst(from));
 }
+
+/** 입금 안내 알림톡 #{입금기한} 표기: 2026년 10월 12일 오후 2시 00분 */
+export function formatAlimtalkDepositDeadline(from: Date = new Date()): string {
+  const formatted = formatBankTransferDeadline(from);
+  const matched = formatted.match(
+    /(\d+)\.\s*(\d+)\.\s*(\d+)\s*(오전|오후)\s*(\d+):(\d+)/,
+  );
+  if (!matched) return formatted;
+  return `${matched[1]}년 ${matched[2]}월 ${matched[3]}일 ${matched[4]} ${matched[5]}시 ${matched[6]}분`;
+}

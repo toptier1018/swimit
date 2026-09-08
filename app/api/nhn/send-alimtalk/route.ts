@@ -61,13 +61,25 @@ async function updateAlimtalkLogInNotion(params: {
  */
 export async function POST(request: NextRequest) {
   try {
-    const { customerName, customerPhone, className, pageId } = await request.json();
-
-    console.log("[NHN Cloud 알림톡] 발송 요청:", {
+    const {
       customerName,
       customerPhone,
       className,
       pageId,
+      depositDeadline,
+      입금기한,
+    } = await request.json();
+
+    const deadlineLabel = String(depositDeadline || 입금기한 || "").trim();
+
+    console.log("[NHN Cloud 알림톡] 발송 요청:", {
+      customerName,
+      customerPhone: customerPhone
+        ? `***${String(customerPhone).replace(/\D/g, "").slice(-4)}`
+        : "",
+      className,
+      depositDeadline: deadlineLabel || "(없음)",
+      pageId: pageId ? "있음" : "없음",
     });
 
     // 환경 변수 확인
@@ -84,8 +96,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!customerName || !customerPhone) {
+      return NextResponse.json(
+        { success: false, error: "고객명 또는 전화번호가 없습니다." },
+        { status: 400 },
+      );
+    }
+
+    if (!deadlineLabel) {
+      console.error(
+        "[NHN Cloud 알림톡] 발송 중단: 입금기한(#{입금기한})이 없습니다",
+      );
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "입금기한이 없어 알림톡을 보낼 수 없습니다. (템플릿 v1은 #{입금기한} 필수)",
+        },
+        { status: 400 },
+      );
+    }
+
     // 전화번호 형식 정리 (하이픈 제거)
-    const receiverPhone = customerPhone.replace(/-/g, "");
+    const receiverPhone = String(customerPhone).replace(/-/g, "");
 
     // 알림톡에 보이는 상품명 정리 (정원 키 ≠ 고객 안내 문구)
     // 「1부 진단」「2부 저항진단」 등 어떤 표기든 「N부 저항 진단 프로그램」으로 통일
@@ -97,17 +130,14 @@ export async function POST(request: NextRequest) {
       .replace("저항 진단 프로그램 특강", "저항 진단 프로그램");
 
     console.log("[NHN Cloud 알림톡] API 호출 준비:", {
-      appKey: appKey.substring(0, 10) + "...",
-      secretKey: secretKey.substring(0, 10) + "...",
-      senderKey: senderKey.substring(0, 10) + "...",
       templateCode,
-      receiver: receiverPhone,
+      receiver: `***${receiverPhone.slice(-4)}`,
       className: displayClassName,
+      depositDeadline: deadlineLabel,
     });
 
     // NHN Cloud 알림톡 API 호출 (/messages: 템플릿 치환 발송)
-    // - 템플릿 본문/버튼은 NHN 콘솔에 등록된 "v1" 템플릿 그대로 사용
-    // - 여기서는 templateParameter(가변 인자)만 전달해야 합니다.
+    // - 템플릿 코드 v1(입금 안내): #{고객명} #{클래스명} #{입금기한}
     const requestBody = {
       senderKey,
       templateCode,
@@ -117,6 +147,7 @@ export async function POST(request: NextRequest) {
           templateParameter: {
             고객명: customerName,
             클래스명: displayClassName,
+            입금기한: deadlineLabel,
           },
         },
       ],
@@ -124,8 +155,12 @@ export async function POST(request: NextRequest) {
 
     console.log("[NHN Cloud 알림톡] 요청 본문:", {
       templateCode,
-      recipient: receiverPhone,
-      parameters: requestBody.recipientList[0].templateParameter,
+      recipient: `***${receiverPhone.slice(-4)}`,
+      parameters: {
+        고객명: "(masked)",
+        클래스명: displayClassName,
+        입금기한: deadlineLabel,
+      },
     });
 
     const response = await fetch(

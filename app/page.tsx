@@ -57,7 +57,7 @@ import {
   type TrafficSource,
 } from "@/lib/traffic-source";
 import { savePendingCardEnrollment } from "@/lib/card-enrollment";
-import { formatBankTransferDeadline } from "@/lib/deposit-deadline";
+import { formatAlimtalkDepositDeadline, formatBankTransferDeadline } from "@/lib/deposit-deadline";
 import {
   VideoConsentDialog,
   VideoConsentItem,
@@ -2191,12 +2191,7 @@ export default function SwimmingClassPage() {
   // 입금기한: 접수일 기준 익일 오후 2시 (KST) — 자리 홀드·시트 입금기한과 동일
   const getDepositDeadline = () => {
     if (!paymentDate) return "";
-    const formatted = formatBankTransferDeadline(new Date(paymentDate));
-    const matched = formatted.match(
-      /(\d+)\.\s*(\d+)\.\s*(\d+)\s*(오전|오후)\s*(\d+):(\d+)/,
-    );
-    if (!matched) return formatted;
-    return `${matched[1]}년 ${matched[2]}월 ${matched[3]}일 ${matched[4]} ${matched[5]}시 ${matched[6]}분`;
+    return formatAlimtalkDepositDeadline(new Date(paymentDate));
   };
 
   // 달력: 한국 시간(KST) 기준 현재 연·월로 초기화
@@ -6801,9 +6796,13 @@ export default function SwimmingClassPage() {
                                   });
                                 }
 
-                                // 알리고 알림톡 자동 발송
-                                console.log("[알림톡] 자동 발송 시작");
+                                // NHN Cloud 입금 안내 알림톡 자동 발송
+                                console.log("[알림톡] NHN 입금안내 발송 시작");
                                 try {
+                                  const depositDeadlineLabel =
+                                    formatAlimtalkDepositDeadline(
+                                      paymentStartedAt,
+                                    );
                                   const alimtalkResponse = await fetch(
                                     "/api/nhn/send-alimtalk",
                                     {
@@ -6816,6 +6815,7 @@ export default function SwimmingClassPage() {
                                         customerPhone: formData.phone,
                                         className:
                                           getAlimtalkClassLabel(selectedTimeSlot),
+                                        depositDeadline: depositDeadlineLabel,
                                         pageId,
                                       }),
                                     },
@@ -6826,12 +6826,17 @@ export default function SwimmingClassPage() {
 
                                   if (alimtalkResult.success) {
                                     console.log(
-                                      "[알림톡] 발송 성공:",
-                                      formData.name,
+                                      "[알림톡] NHN 입금안내 발송 성공",
+                                      {
+                                        className: getAlimtalkClassLabel(
+                                          selectedTimeSlot,
+                                        ),
+                                        depositDeadline: depositDeadlineLabel,
+                                      },
                                     );
                                   } else {
                                     console.error(
-                                      "[알림톡] 발송 실패:",
+                                      "[알림톡] NHN 입금안내 발송 실패:",
                                       alimtalkResult.error,
                                     );
                                   }

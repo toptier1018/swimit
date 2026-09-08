@@ -2,8 +2,10 @@ import "server-only";
 
 import {
   AlimtalkTemplateError,
-  getAlimtalkTemplateCode,
+  resolveAlimtalkTemplateSelection,
   type AlimtalkProgram,
+  type AlimtalkTemplateKind,
+  type AlimtalkTemplateSelection,
 } from "@/lib/alimtalk-templates";
 
 /** /api/schedules center 와 동일한 센터 표기 */
@@ -271,13 +273,15 @@ export function resolveReservationAlimtalkFields(
 }
 
 /**
- * 특강/진단 승인 문구를 분리 선택.
- * program === "진단" → 진단용 승인 문구, 그 외 → 특강용 승인 문구
+ * tpl_code 에 맞는 승인 문구 선택.
+ * - diagnosis 전용 코드 → 진단 문구
+ * - special / special fallback → 특강 승인 문구
+ *   (진단 주문이라도 "진단 문구 + 특강 tpl_code" 조합 금지)
  */
 export function getReservationAlimtalkTemplateBody(
-  program: AlimtalkProgram,
-): { kind: "special" | "diagnosis"; body: string } {
-  if (program === "진단") {
+  messageKind: AlimtalkTemplateKind,
+): { kind: AlimtalkTemplateKind; body: string } {
+  if (messageKind === "diagnosis") {
     return {
       kind: "diagnosis",
       body: DIAGNOSIS_RESERVATION_ALIMTALK_TEMPLATE,
@@ -289,16 +293,12 @@ export function getReservationAlimtalkTemplateBody(
   };
 }
 
-/**
- * 실제 고객/예약 정보로 #{…} 를 모두 치환한 최종 message_1 생성
- */
-export function buildAligoReservationMessage(
+function fillAlimtalkPlaceholders(
+  templateBody: string,
   fields: ReservationAlimtalkFields,
-): { message: string; templateKind: "special" | "diagnosis" } {
-  const { kind, body: templateBody } = getReservationAlimtalkTemplateBody(
-    fields.program,
-  );
-
+): string {
+  // 특강 승인 템플릿의 #{클래스명} 은 자유형/평영/접영뿐 아니라
+  // fallback 진단 주문의 "진단" 문자열도 동일 자리에 들어가며 구조상 호환됨.
   const message = templateBody
     .replace(/#\{고객명\}/g, fields.customerName)
     .replace(/#\{특강일\}/g, fields.classDateLabel)
@@ -319,7 +319,31 @@ export function buildAligoReservationMessage(
     );
   }
 
-  return { message, templateKind: kind };
+  return message;
+}
+
+/**
+ * 실제 고객/예약 정보로 #{…} 를 모두 치환한 최종 message_1 생성
+ * selection.messageKind 기준으로 승인 문구를 고른다 (tpl_code 와 일치).
+ */
+export function buildAligoReservationMessage(
+  fields: ReservationAlimtalkFields,
+  selection: AlimtalkTemplateSelection,
+): {
+  message: string;
+  templateKind: AlimtalkTemplateKind;
+  fallbackToSpecial: boolean;
+} {
+  const { kind, body: templateBody } = getReservationAlimtalkTemplateBody(
+    selection.messageKind,
+  );
+  const message = fillAlimtalkPlaceholders(templateBody, fields);
+
+  return {
+    message,
+    templateKind: kind,
+    fallbackToSpecial: selection.fallbackToSpecial,
+  };
 }
 
 function getAligoEnv() {
@@ -413,10 +437,16 @@ export async function sendCardPaymentReservationAlimtalk(
     const fields = resolveReservationAlimtalkFields(input);
     center = fields.center;
     program = fields.program;
-    templateCode = getAlimtalkTemplateCode(fields.center, fields.program);
 
-    // 2) 특강/진단 승인 문구 + 실제 고객정보로 message_1 생성
-    const built = buildAligoReservationMessage(fields);
+    // 2) tpl_code + message 종류 (진단 → special fallback 포함)
+    const selection = resolveAlimtalkTemplateSelection(
+      fields.center,
+      fields.program,
+    );
+    templateCode = selection.templateCode;
+
+    // 3) selection.messageKind 에 맞는 승인 문구 + 실제 예약값으로 message_1
+    const built = buildAligoReservationMessage(fields, selection);
     const message_1 = built.message;
     if (!message_1 || /#\{[^}]+\}/.test(message_1)) {
       throw new AlimtalkTemplateError(
@@ -448,6 +478,7 @@ export async function sendCardPaymentReservationAlimtalk(
       program: fields.program,
       templateCode,
       templateKind: built.templateKind,
+      fallbackToSpecial: built.fallbackToSpecial,
       messageReady: true,
       messageLength: message_1.length,
       hasPlaceholder: false,
@@ -462,7 +493,7 @@ export async function sendCardPaymentReservationAlimtalk(
       tplCode: templateCode,
     });
 
-    // 3) 최종 치환된 message_1 만 Aligo로 전송 (placeholder 원문 금지)
+    // 4) 최종 치환된 message_1 만 Aligo로 전송 (placeholder 원문 금지)
     const body = new URLSearchParams({
       apikey,
       userid,

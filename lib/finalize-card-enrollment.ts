@@ -160,6 +160,19 @@ async function persistCardMeta(params: {
           adminNotifyAt: latestMeta.adminNotifyAt,
         };
       }
+      if (latestMeta.customerAlimtalk === "CA_NOTIFIED") {
+        meta = {
+          ...meta,
+          customerAlimtalk: "CA_NOTIFIED",
+          customerAlimtalkAt: latestMeta.customerAlimtalkAt,
+        };
+      } else if (!meta.customerAlimtalk && latestMeta.customerAlimtalk) {
+        meta = {
+          ...meta,
+          customerAlimtalk: latestMeta.customerAlimtalk,
+          customerAlimtalkAt: latestMeta.customerAlimtalkAt,
+        };
+      }
     }
   }
 

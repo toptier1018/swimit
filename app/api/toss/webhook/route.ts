@@ -8,18 +8,20 @@ import {
   isSwimmitClassCardOrderId,
 } from "@/lib/finalize-card-enrollment";
 import { notifyAdminPayment } from "@/lib/notify-admin-payment";
+import { sendReservationConfirmAlimtalk } from "@/lib/reservation-confirm-alimtalk";
 import {
   parseCardPendingStatus,
   shouldSkipAdminNotify,
+  shouldSkipCustomerAlimtalk,
   toNotionCardStatusFields,
   type CardPendingMeta,
 } from "@/lib/toss-card-order-meta";
 import { fetchTossPaymentByKey } from "@/lib/toss-payment-query";
 
 /**
- * Notion 카드 메타의 관리자 알림 상태만 갱신 (결제/시트와 분리)
+ * Notion 카드 메타의 관리자/고객 알림 상태만 갱신 (결제/시트와 분리)
  */
-async function patchAdminNotifyMeta(params: {
+async function patchNotifyMeta(params: {
   pageId: string;
   meta: CardPendingMeta;
   selectedClass: string;
@@ -27,16 +29,27 @@ async function patchAdminNotifyMeta(params: {
   region: string;
   adminNotify?: CardPendingMeta["adminNotify"];
   adminNotifyAt?: string;
+  clearAdminNotify?: boolean;
+  customerAlimtalk?: CardPendingMeta["customerAlimtalk"];
+  customerAlimtalkAt?: string;
+  clearCustomerAlimtalk?: boolean;
 }): Promise<boolean> {
-  const next: CardPendingMeta = {
-    ...params.meta,
-    adminNotify: params.adminNotify,
-    adminNotifyAt: params.adminNotifyAt,
-  };
-  // 실패 시 ADMIN_NOTIFYING 제거용 — adminNotify undefined면 토큰 생략
-  if (!params.adminNotify) {
+  const next: CardPendingMeta = { ...params.meta };
+
+  if (params.clearAdminNotify) {
     delete next.adminNotify;
     delete next.adminNotifyAt;
+  } else if (params.adminNotify) {
+    next.adminNotify = params.adminNotify;
+    next.adminNotifyAt = params.adminNotifyAt;
+  }
+
+  if (params.clearCustomerAlimtalk) {
+    delete next.customerAlimtalk;
+    delete next.customerAlimtalkAt;
+  } else if (params.customerAlimtalk) {
+    next.customerAlimtalk = params.customerAlimtalk;
+    next.customerAlimtalkAt = params.customerAlimtalkAt;
   }
 
   const mark = await updatePaymentInNotion({
@@ -49,7 +62,7 @@ async function patchAdminNotifyMeta(params: {
   });
 
   if (!mark.success) {
-    console.error("[웹훅] 관리자알림 메타 저장 실패:", mark.error);
+    console.error("[웹훅] 알림 메타 저장 실패:", mark.error);
     return false;
   }
   return true;
@@ -60,7 +73,7 @@ async function patchAdminNotifyMeta(params: {
  * - PAYMENT_STATUS_CHANGED
  * - 본문 미신뢰 → paymentKey로 GET /v1/payments/{paymentKey} 재조회
  * - 서명 헤더 검증 없음 (일반 결제 웹훅에는 해당 서명 방식 없음)
- * - 관리자 카카오 알림은 이 라우트에서만 (success 페이지 미호출)
+ * - 관리자 카카오 알림 + 고객 예약확정 알림톡은 이 라우트에서만
  */
 export async function POST(req: NextRequest) {
   const started = Date.now();
@@ -210,6 +223,9 @@ export async function POST(req: NextRequest) {
     // 6) 관리자 카카오 알림 (부가 기능 — 실패해도 웹훅 200, 결제 성공 유지)
     let adminNotify: "sent" | "skipped" | "failed" | "not_attempted" =
       "not_attempted";
+    // 7) 고객 예약확정 알림톡 (센터+프로그램 템플릿 — 실패해도 결제 성공 유지)
+    let customerAlimtalk: "sent" | "skipped" | "failed" | "not_attempted" =
+      "not_attempted";
 
     if (finalize.success && status === "DONE") {
       try {
@@ -222,14 +238,23 @@ export async function POST(req: NextRequest) {
         ) {
           console.error("[웹훅] 알림 전 Notion 재조회 실패 — 알림만 스킵");
           adminNotify = "failed";
+          customerAlimtalk = "failed";
         } else {
-          const latestMeta = parseCardPendingStatus(
-            latest.cardMetaRaw,
-          );
+          let latestMeta = parseCardPendingStatus(latest.cardMetaRaw);
           if (!latestMeta || latestMeta.tossOrderId !== orderId) {
             console.error("[웹훅] 알림 전 메타 파싱 실패 — 알림만 스킵");
             adminNotify = "failed";
+            customerAlimtalk = "failed";
           } else {
+            const selectedClass =
+              latest.selectedClass ||
+              finalize.className ||
+              latestMeta.tossOrderId;
+            const timeSlot = latest.timeSlot || "";
+            const region =
+              latest.region || finalize.location || "";
+
+            // --- 관리자 알림 ---
             const skipCheck = shouldSkipAdminNotify(latestMeta);
             if (skipCheck.skip) {
               console.log("[웹훅] 관리자 알림 스킵:", {
@@ -240,18 +265,12 @@ export async function POST(req: NextRequest) {
               adminNotify = "skipped";
             } else {
               const notifyingAt = new Date().toISOString();
-              const locked = await patchAdminNotifyMeta({
+              const locked = await patchNotifyMeta({
                 pageId: latest.pageId,
                 meta: latestMeta,
-                selectedClass:
-                  latest.selectedClass ||
-                  finalize.className ||
-                  latestMeta.tossOrderId,
-                timeSlot: latest.timeSlot || "",
-                region:
-                  latest.region ||
-                  finalize.location ||
-                  "",
+                selectedClass,
+                timeSlot,
+                region,
                 adminNotify: "ADMIN_NOTIFYING",
                 adminNotifyAt: notifyingAt,
               });
@@ -262,7 +281,6 @@ export async function POST(req: NextRequest) {
                 );
                 adminNotify = "failed";
               } else {
-                // 알 수 없는 특강 날짜는 추측하지 않고 생략
                 const classDate = (finalize.classDate || "").trim();
 
                 const notifyResult = await notifyAdminPayment({
@@ -281,7 +299,6 @@ export async function POST(req: NextRequest) {
                   className:
                     finalize.className || latest.selectedClass || "",
                   amount: totalAmount,
-                  // 승인 시각: Toss approvedAt만 (없으면 메시지에서 시간 줄 생략)
                   approvedAt: payment.approvedAt || "",
                   orderId,
                   paymentKey,
@@ -290,20 +307,16 @@ export async function POST(req: NextRequest) {
 
                 if (notifyResult.success) {
                   const notifiedAt = new Date().toISOString();
-                  const saved = await patchAdminNotifyMeta({
+                  const saved = await patchNotifyMeta({
                     pageId: latest.pageId,
                     meta: {
                       ...latestMeta,
                       paymentKey:
                         paymentKey || latestMeta.paymentKey,
                     },
-                    selectedClass:
-                      latest.selectedClass ||
-                      finalize.className ||
-                      latestMeta.tossOrderId,
-                    timeSlot: latest.timeSlot || "",
-                    region:
-                      latest.region || finalize.location || "",
+                    selectedClass,
+                    timeSlot,
+                    region,
                     adminNotify: "ADMIN_NOTIFIED",
                     adminNotifyAt: notifiedAt,
                   });
@@ -312,22 +325,24 @@ export async function POST(req: NextRequest) {
                       "[웹훅] 카카오는 성공했지만 ADMIN_NOTIFIED 저장 실패 — 재전송 시 중복 알림 가능",
                       { orderId, orderNumber: latestMeta.orderNumber },
                     );
+                  } else {
+                    latestMeta = {
+                      ...latestMeta,
+                      paymentKey:
+                        paymentKey || latestMeta.paymentKey,
+                      adminNotify: "ADMIN_NOTIFIED",
+                      adminNotifyAt: notifiedAt,
+                    };
                   }
                   adminNotify = "sent";
                 } else {
-                  // ADMIN_NOTIFIED 저장 금지 — NOTIFYING 해제해 재시도 가능하게
-                  await patchAdminNotifyMeta({
+                  await patchNotifyMeta({
                     pageId: latest.pageId,
                     meta: latestMeta,
-                    selectedClass:
-                      latest.selectedClass ||
-                      finalize.className ||
-                      latestMeta.tossOrderId,
-                    timeSlot: latest.timeSlot || "",
-                    region:
-                      latest.region || finalize.location || "",
-                    adminNotify: undefined,
-                    adminNotifyAt: undefined,
+                    selectedClass,
+                    timeSlot,
+                    region,
+                    clearAdminNotify: true,
                   });
                   console.error(
                     "[웹훅] 관리자 알림 실패 (결제는 성공 유지):",
@@ -337,14 +352,120 @@ export async function POST(req: NextRequest) {
                 }
               }
             }
+
+            // --- 고객 예약확정 알림톡 (센터+프로그램 템플릿) ---
+            const refreshed = await findCardOrderByTossOrderId(orderId);
+            if (
+              refreshed.success &&
+              refreshed.pageId &&
+              refreshed.cardMetaRaw
+            ) {
+              const caMeta =
+                parseCardPendingStatus(refreshed.cardMetaRaw) ||
+                latestMeta;
+              const caSkip = shouldSkipCustomerAlimtalk(caMeta);
+              if (caSkip.skip) {
+                console.log("[웹훅] 예약확정 알림톡 스킵:", {
+                  reason: caSkip.reason,
+                  orderId,
+                  orderNumber: caMeta.orderNumber,
+                });
+                customerAlimtalk = "skipped";
+              } else {
+                const caLockAt = new Date().toISOString();
+                const caLocked = await patchNotifyMeta({
+                  pageId: refreshed.pageId,
+                  meta: caMeta,
+                  selectedClass:
+                    refreshed.selectedClass || selectedClass,
+                  timeSlot: refreshed.timeSlot || timeSlot,
+                  region: refreshed.region || region,
+                  customerAlimtalk: "CA_NOTIFYING",
+                  customerAlimtalkAt: caLockAt,
+                });
+
+                if (!caLocked) {
+                  console.error(
+                    "[웹훅] CA_NOTIFYING 기록 실패 — 고객 알림톡 미발송(중복 완화)",
+                  );
+                  customerAlimtalk = "failed";
+                } else {
+                  const sendResult = await sendReservationConfirmAlimtalk({
+                    orderId,
+                    customerName:
+                      finalize.customerName ||
+                      refreshed.applicant?.name ||
+                      "",
+                    customerPhone:
+                      finalize.phone ||
+                      refreshed.applicant?.phone ||
+                      "",
+                    region: refreshed.region || region,
+                    selectedClass:
+                      refreshed.selectedClass || selectedClass,
+                    classDate: finalize.classDate || "",
+                    timeSlot: refreshed.timeSlot || timeSlot,
+                    pageId: refreshed.pageId,
+                  });
+
+                  if (sendResult.success) {
+                    const caDoneAt = new Date().toISOString();
+                    const caSaved = await patchNotifyMeta({
+                      pageId: refreshed.pageId,
+                      meta: {
+                        ...caMeta,
+                        paymentKey:
+                          paymentKey || caMeta.paymentKey,
+                      },
+                      selectedClass:
+                        refreshed.selectedClass || selectedClass,
+                      timeSlot: refreshed.timeSlot || timeSlot,
+                      region: refreshed.region || region,
+                      customerAlimtalk: "CA_NOTIFIED",
+                      customerAlimtalkAt: caDoneAt,
+                    });
+                    if (!caSaved) {
+                      console.error(
+                        "[웹훅] 고객 알림톡은 성공했지만 CA_NOTIFIED 저장 실패 — 재전송 시 중복 가능",
+                        { orderId, orderNumber: caMeta.orderNumber },
+                      );
+                    }
+                    customerAlimtalk = "sent";
+                  } else {
+                    await patchNotifyMeta({
+                      pageId: refreshed.pageId,
+                      meta: caMeta,
+                      selectedClass:
+                        refreshed.selectedClass || selectedClass,
+                      timeSlot: refreshed.timeSlot || timeSlot,
+                      region: refreshed.region || region,
+                      clearCustomerAlimtalk: true,
+                    });
+                    console.error(
+                      "[웹훅] 예약확정 알림톡 실패 (결제는 성공 유지):",
+                      sendResult.error,
+                    );
+                    customerAlimtalk = "failed";
+                  }
+                }
+              }
+            } else {
+              console.error(
+                "[웹훅] 고객 알림톡 전 Notion 재조회 실패 — 알림톡만 스킵",
+              );
+              customerAlimtalk = "failed";
+            }
           }
         }
       } catch (notifyError) {
         console.error(
-          "[웹훅] 관리자 알림 예외 (결제는 성공 유지):",
+          "[웹훅] 알림 처리 예외 (결제는 성공 유지):",
           notifyError,
         );
-        adminNotify = "failed";
+        if (adminNotify === "not_attempted") adminNotify = "failed";
+        if (customerAlimtalk === "not_attempted") {
+          customerAlimtalk = "failed";
+        }
       }
     }
 
@@ -355,6 +476,7 @@ export async function POST(req: NextRequest) {
       status,
       enrollSaved: finalize.enrollSaved,
       adminNotify,
+      customerAlimtalk,
       elapsedMs: Date.now() - started,
     });
   } catch (error) {

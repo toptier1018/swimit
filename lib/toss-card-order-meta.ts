@@ -6,6 +6,8 @@
 
 export type AdminNotifyStatus = "ADMIN_NOTIFYING" | "ADMIN_NOTIFIED";
 export type SheetWriteStatus = "SHEET_WRITING" | "SHEET_WRITTEN";
+/** 고객 예약확정 알림톡 중복 방지 */
+export type CustomerAlimtalkStatus = "CA_NOTIFYING" | "CA_NOTIFIED";
 
 export type CardPendingMeta = {
   status: "CARD_PENDING" | "CARD_DONE";
@@ -19,6 +21,10 @@ export type CardPendingMeta = {
   adminNotify?: AdminNotifyStatus;
   /** ADMIN_NOTIFYING 시작 또는 ADMIN_NOTIFIED 시각 (ISO) */
   adminNotifyAt?: string;
+  /** 고객 예약확정 알림톡 중복 방지 */
+  customerAlimtalk?: CustomerAlimtalkStatus;
+  /** CA_NOTIFYING 시작 또는 CA_NOTIFIED 시각 (ISO) */
+  customerAlimtalkAt?: string;
   /** 시트 중복 저장 방지 */
   sheetWrite?: SheetWriteStatus;
   /** 시트 쓰기 클레임 ID — 마지막 기록만 실제 append */
@@ -37,6 +43,8 @@ const META_PREFIX = "SWIMIT_CARD";
 
 /** ADMIN_NOTIFYING 소프트락 TTL — 이 시간이 지나면 재시도 허용 (영구 잠금 방지) */
 export const ADMIN_NOTIFYING_TTL_MS = 90_000;
+/** 고객 예약확정 알림톡 NOTIFYING 소프트락 TTL */
+export const CUSTOMER_ALIMTALK_NOTIFYING_TTL_MS = 90_000;
 /** SHEET_WRITING 소프트락 TTL */
 export const SHEET_WRITING_TTL_MS = 30_000;
 
@@ -65,6 +73,12 @@ export function encodeCardPendingStatus(meta: CardPendingMeta): string {
   }
   if (meta.adminNotifyAt) {
     parts.push(`ant=${meta.adminNotifyAt}`);
+  }
+  if (meta.customerAlimtalk) {
+    parts.push(`ca=${meta.customerAlimtalk}`);
+  }
+  if (meta.customerAlimtalkAt) {
+    parts.push(`cat=${meta.customerAlimtalkAt}`);
   }
   if (meta.sheetWrite) {
     parts.push(`sw=${meta.sheetWrite}`);
@@ -125,6 +139,8 @@ export function parseCardPendingStatus(
   const pk = text.match(/pk=([^|]+)/)?.[1]?.trim();
   const anRaw = text.match(/an=([^|]+)/)?.[1]?.trim();
   const ant = text.match(/ant=([^|]+)/)?.[1]?.trim();
+  const caRaw = text.match(/ca=([^|]+)/)?.[1]?.trim();
+  const cat = text.match(/cat=([^|]+)/)?.[1]?.trim();
   const swRaw = text.match(/sw=([^|]+)/)?.[1]?.trim();
   const sc = text.match(/sc=([^|]+)/)?.[1]?.trim();
   const swt = text.match(/swt=([^|]+)/)?.[1]?.trim();
@@ -145,6 +161,9 @@ export function parseCardPendingStatus(
       ? anRaw
       : undefined;
 
+  const customerAlimtalk: CustomerAlimtalkStatus | undefined =
+    caRaw === "CA_NOTIFIED" || caRaw === "CA_NOTIFYING" ? caRaw : undefined;
+
   const sheetWrite: SheetWriteStatus | undefined =
     swRaw === "SHEET_WRITTEN" || swRaw === "SHEET_WRITING"
       ? swRaw
@@ -160,6 +179,8 @@ export function parseCardPendingStatus(
     paymentKey: pk || undefined,
     adminNotify,
     adminNotifyAt: ant || undefined,
+    customerAlimtalk,
+    customerAlimtalkAt: cat || undefined,
     sheetWrite,
     sheetWriteClaim: sc || undefined,
     sheetWriteAt: swt || undefined,
@@ -196,6 +217,36 @@ export function shouldSkipAdminNotify(meta: CardPendingMeta): {
       return { skip: false, reason: "notifying_stale" };
     }
     // 시각 없으면 안전하게 재시도 허용 (영구 잠금 방지)
+    return { skip: false, reason: "notifying_without_timestamp" };
+  }
+  return { skip: false };
+}
+
+/**
+ * 고객 예약확정 알림톡이 이미 갔거나, 진행 중 소프트락이 유효하면 skip
+ */
+export function shouldSkipCustomerAlimtalk(meta: CardPendingMeta): {
+  skip: boolean;
+  reason?: string;
+} {
+  if (meta.customerAlimtalk === "CA_NOTIFIED") {
+    return { skip: true, reason: "already_sent" };
+  }
+  if (meta.customerAlimtalk === "CA_NOTIFYING") {
+    const started = meta.customerAlimtalkAt
+      ? Date.parse(meta.customerAlimtalkAt)
+      : NaN;
+    if (Number.isFinite(started)) {
+      const age = Date.now() - started;
+      if (age >= 0 && age < CUSTOMER_ALIMTALK_NOTIFYING_TTL_MS) {
+        return { skip: true, reason: "notify_in_progress" };
+      }
+      console.warn("[예약확정알림톡] CA_NOTIFYING TTL 만료 — 재시도 허용:", {
+        orderNumber: meta.orderNumber,
+        ageMs: age,
+      });
+      return { skip: false, reason: "notifying_stale" };
+    }
     return { skip: false, reason: "notifying_without_timestamp" };
   }
   return { skip: false };

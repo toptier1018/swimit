@@ -9,7 +9,7 @@ import {
 } from "@/lib/finalize-card-enrollment";
 import { notifyAdminPayment } from "@/lib/notify-admin-payment";
 import { sendReservationConfirmationAlimtalk } from "@/lib/nhn-reservation-confirm-alimtalk";
-import { updateLastNotifyByOrderNumber } from "@/lib/google-sheets";
+import { updateCardPaymentSheetStatusByOrderNumber } from "@/lib/google-sheets";
 import {
   parseCardPendingStatus,
   shouldSkipAdminNotify,
@@ -228,6 +228,28 @@ export async function POST(req: NextRequest) {
       code: finalize.code,
       elapsedMs: Date.now() - started,
     });
+
+    // 카드결제 완료 시 운영 시트 R=예약확정, S=입금완료 (수동 입력 불필요)
+    if (finalize.success && status === "DONE") {
+      const sheetOrderNumber = finalize.orderNumber || orderId;
+      const earlySheet = await updateCardPaymentSheetStatusByOrderNumber({
+        orderNumber: sheetOrderNumber,
+        confirmedStatus: "예약확정",
+        paymentStatus: "입금완료",
+      });
+      if (!earlySheet.success) {
+        console.warn(
+          "[웹훅] 카드결제 R/S 조기 갱신 실패(알림톡 단계에서 재시도):",
+          earlySheet.error,
+        );
+      } else {
+        console.log("[웹훅] 카드결제 시트 R=예약확정 S=입금완료", {
+          orderId,
+          orderNumber: sheetOrderNumber,
+          updated: earlySheet.updated,
+        });
+      }
+    }
 
     // 6) 관리자 카카오 알림 (부가 기능 — 실패해도 웹훅 200, 결제 성공 유지)
     let adminNotify: "sent" | "skipped" | "failed" | "not_attempted" =
@@ -454,16 +476,25 @@ export async function POST(req: NextRequest) {
                         { orderId, orderNumber: caMeta.orderNumber },
                       );
                     }
-                    // 시트 T열(마지막알림) = 예약확정
-                    const sheetNotify = await updateLastNotifyByOrderNumber({
-                      orderNumber: caMeta.orderNumber || orderId,
-                      value: "예약확정",
-                    });
-                    if (!sheetNotify.success) {
+                    // 운영 시트: R=예약확정, S=입금완료, T=예약확정
+                    const sheetStatus =
+                      await updateCardPaymentSheetStatusByOrderNumber({
+                        orderNumber: caMeta.orderNumber || orderId,
+                        confirmedStatus: "예약확정",
+                        paymentStatus: "입금완료",
+                        lastNotify: "예약확정",
+                      });
+                    if (!sheetStatus.success) {
                       console.warn(
-                        "[웹훅] 알림톡 성공했지만 시트 마지막알림 갱신 실패:",
-                        sheetNotify.error,
+                        "[웹훅] 알림톡 성공했지만 시트 R/S/T 갱신 실패:",
+                        sheetStatus.error,
                       );
+                    } else {
+                      console.log("[웹훅] 시트 R/S/T 카드결제 확정 기록", {
+                        orderId,
+                        orderNumber: caMeta.orderNumber,
+                        updated: sheetStatus.updated,
+                      });
                     }
                     customerAlimtalk = "sent";
                   } else {
@@ -476,21 +507,24 @@ export async function POST(req: NextRequest) {
                       region: refreshed.region || region,
                       clearCustomerAlimtalk: true,
                     });
-                    // 시트 T열(마지막알림) = 발송실패 (운영자가 시트에서 확인)
-                    const sheetNotify = await updateLastNotifyByOrderNumber({
-                      orderNumber: caMeta.orderNumber || orderId,
-                      value: "발송실패",
-                    });
-                    if (!sheetNotify.success) {
+                    // 알림톡 실패여도 카드결제는 완료 → R/S는 채우고 T만 발송실패
+                    const sheetStatus =
+                      await updateCardPaymentSheetStatusByOrderNumber({
+                        orderNumber: caMeta.orderNumber || orderId,
+                        confirmedStatus: "예약확정",
+                        paymentStatus: "입금완료",
+                        lastNotify: "발송실패",
+                      });
+                    if (!sheetStatus.success) {
                       console.warn(
-                        "[웹훅] 알림톡 실패 + 시트 마지막알림 갱신도 실패:",
-                        sheetNotify.error,
+                        "[웹훅] 알림톡 실패 + 시트 R/S/T 갱신도 실패:",
+                        sheetStatus.error,
                       );
                     } else {
-                      console.log("[웹훅] 시트 마지막알림=발송실패 기록", {
+                      console.log("[웹훅] 시트 R/S=확정, T=발송실패 기록", {
                         orderId,
                         orderNumber: caMeta.orderNumber,
-                        updated: sheetNotify.updated,
+                        updated: sheetStatus.updated,
                       });
                     }
                     console.error(

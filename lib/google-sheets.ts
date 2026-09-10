@@ -329,16 +329,24 @@ export async function appendRowToGoogleSheet(
 
 export type SheetLastNotifyValue = "예약확정" | "발송실패" | "";
 
-/**
- * 신청번호(B열)로 행을 찾아 T열(마지막알림)을 갱신한다.
- * - 스윔잇 수강자
- * - 스윔잇 수강자 운영
- * 둘 다 있으면 둘 다 갱신 (카드 결제 알림톡 성공/실패 표시용)
- */
-export async function updateLastNotifyByOrderNumber(params: {
+export type CardPaymentSheetStatusUpdate = {
   orderNumber: string;
-  value: SheetLastNotifyValue;
-}): Promise<{
+  /** 확정예약상태(R) — 카드결제 완료 시 예약확정 */
+  confirmedStatus?: "예약확정";
+  /** 입금상태(S) — 카드결제 완료 시 입금완료 */
+  paymentStatus?: "입금완료";
+  /** 마지막알림(T) */
+  lastNotify?: SheetLastNotifyValue;
+};
+
+/**
+ * 신청번호로 행을 찾아 카드결제 확정 상태(R/S/T)를 갱신한다.
+ * - 운영 시트: 확정예약상태·입금상태·마지막알림 (헤더 우선, 없으면 R/S/T)
+ * - 수강자 시트: 마지막알림(T)만 (R/S는 입금기한·대기순번이라 건드리지 않음)
+ */
+export async function updateCardPaymentSheetStatusByOrderNumber(
+  params: CardPaymentSheetStatusUpdate,
+): Promise<{
   success: boolean;
   updated: { sheetName: string; rowNumber: number }[];
   error?: string;
@@ -355,10 +363,12 @@ export async function updateLastNotifyByOrderNumber(params: {
     };
   }
 
-  const sheetNames = [
-    env.sheetName?.trim() || "스윔잇 수강자",
-    process.env.GOOGLE_SHEETS_OPS_SHEET_NAME?.trim() || "스윔잇 수강자 운영",
-  ].filter((name, index, arr) => name && arr.indexOf(name) === index);
+  const rawSheetName = env.sheetName?.trim() || "스윔잇 수강자";
+  const opsSheetName =
+    process.env.GOOGLE_SHEETS_OPS_SHEET_NAME?.trim() || "스윔잇 수강자 운영";
+  const sheetNames = [rawSheetName, opsSheetName].filter(
+    (name, index, arr) => name && arr.indexOf(name) === index,
+  );
 
   try {
     const auth = getAuthClient();
@@ -366,6 +376,7 @@ export async function updateLastNotifyByOrderNumber(params: {
     const updated: { sheetName: string; rowNumber: number }[] = [];
 
     for (const sheetName of sheetNames) {
+      const isOpsSheet = sheetName === opsSheetName;
       const res = await sheets.spreadsheets.values.get({
         spreadsheetId: env.spreadsheetId,
         range: `'${sheetName}'!A:T`,
@@ -376,10 +387,19 @@ export async function updateLastNotifyByOrderNumber(params: {
 
       const header = (rows[0] || []).map((v) => String(v || "").trim());
       let colOrder = header.findIndex((h) => h === "신청번호");
-      let colNotify = header.findIndex((h) => h === "마지막알림");
-      // 헤더 없으면 관례: B=신청번호(1), T=마지막알림(19)
       if (colOrder < 0) colOrder = 1;
-      if (colNotify < 0) colNotify = 19;
+
+      let colConfirmed = header.findIndex((h) => h === "확정예약상태");
+      let colPayment = header.findIndex((h) => h === "입금상태");
+      let colNotify = header.findIndex((h) => h === "마지막알림");
+
+      // 운영 시트만 R/S 관례 fallback (수강자 시트의 R=입금기한, S=대기순번과 충돌 방지)
+      // 헤더에 확정예약상태/입금상태가 있으면 수강자 시트에서도 갱신
+      if (isOpsSheet) {
+        if (colConfirmed < 0) colConfirmed = 17; // R
+        if (colPayment < 0) colPayment = 18; // S
+      }
+      if (colNotify < 0) colNotify = 19; // T
 
       for (let i = 1; i < rows.length; i += 1) {
         const row = rows[i] || [];
@@ -387,28 +407,58 @@ export async function updateLastNotifyByOrderNumber(params: {
         if (cell !== orderNumber) continue;
 
         const rowNumber = i + 1;
-        const colLetter = columnIndexToLetter(colNotify);
-        await sheets.spreadsheets.values.update({
+        const data: { range: string; values: string[][] }[] = [];
+
+        const canWriteConfirmed = colConfirmed >= 0;
+        const canWritePayment = colPayment >= 0;
+
+        if (params.confirmedStatus && canWriteConfirmed) {
+          data.push({
+            range: `'${sheetName}'!${columnIndexToLetter(colConfirmed)}${rowNumber}`,
+            values: [[params.confirmedStatus]],
+          });
+        }
+        if (params.paymentStatus && canWritePayment) {
+          data.push({
+            range: `'${sheetName}'!${columnIndexToLetter(colPayment)}${rowNumber}`,
+            values: [[params.paymentStatus]],
+          });
+        }
+        if (params.lastNotify !== undefined && colNotify >= 0) {
+          data.push({
+            range: `'${sheetName}'!${columnIndexToLetter(colNotify)}${rowNumber}`,
+            values: [[params.lastNotify]],
+          });
+        }
+
+        if (data.length === 0) break;
+
+        await sheets.spreadsheets.values.batchUpdate({
           spreadsheetId: env.spreadsheetId,
-          range: `'${sheetName}'!${colLetter}${rowNumber}`,
-          valueInputOption: "USER_ENTERED",
-          requestBody: { values: [[params.value]] },
+          requestBody: {
+            valueInputOption: "USER_ENTERED",
+            data,
+          },
         });
+
         updated.push({ sheetName, rowNumber });
-        console.log("[Google Sheets] 마지막알림 갱신:", {
+        console.log("[Google Sheets] 카드결제 시트 상태 갱신:", {
           sheetName,
           rowNumber,
           orderNumber,
-          value: params.value || "(빈칸)",
+          confirmedStatus: canWriteConfirmed
+            ? params.confirmedStatus
+            : undefined,
+          paymentStatus: canWritePayment ? params.paymentStatus : undefined,
+          lastNotify: params.lastNotify ?? undefined,
         });
         break;
       }
     }
 
     if (updated.length === 0) {
-      console.warn("[Google Sheets] 마지막알림 갱신 대상 행 없음:", {
+      console.warn("[Google Sheets] 카드결제 시트 상태 갱신 대상 없음:", {
         orderNumber,
-        value: params.value || "(빈칸)",
       });
       return {
         success: false,
@@ -420,10 +470,28 @@ export async function updateLastNotifyByOrderNumber(params: {
     return { success: true, updated };
   } catch (err) {
     const message =
-      err instanceof Error ? err.message : "마지막알림 갱신 실패";
-    console.error("[Google Sheets] 마지막알림 갱신 오류:", message);
+      err instanceof Error ? err.message : "카드결제 시트 상태 갱신 실패";
+    console.error("[Google Sheets] 카드결제 시트 상태 갱신 오류:", message);
     return { success: false, updated: [], error: message };
   }
+}
+
+/**
+ * 신청번호(B열)로 행을 찾아 T열(마지막알림)만 갱신한다.
+ * (하위 호환 — 카드결제는 updateCardPaymentSheetStatusByOrderNumber 권장)
+ */
+export async function updateLastNotifyByOrderNumber(params: {
+  orderNumber: string;
+  value: SheetLastNotifyValue;
+}): Promise<{
+  success: boolean;
+  updated: { sheetName: string; rowNumber: number }[];
+  error?: string;
+}> {
+  return updateCardPaymentSheetStatusByOrderNumber({
+    orderNumber: params.orderNumber,
+    lastNotify: params.value,
+  });
 }
 
 function columnIndexToLetter(index0: number): string {

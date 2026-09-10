@@ -157,17 +157,29 @@ async function readOpsRow(
 
   const row = (res.data.values?.[0] || []) as string[];
   // C..T → index 0 = C
+  // C고객명 D전화 E… K신청클래스(8) L회차(9) … N날짜(11) O장소(12) P실제클래스(13) … R(15) S(16) T(17)
   const customerName = cell(row, 0); // C
   const customerPhone = cell(row, 1); // D
-  const session = normalizeSession(cell(row, 9)); // L (C=0 … L=9)
+  const appliedClass = cell(row, 8); // K 신청 클래스
+  const session = normalizeSession(cell(row, 9)); // L
   const dateRaw = cell(row, 11); // N
   const center = cell(row, 12); // O
-  const className = normalizeClassName(cell(row, 13)); // P
+  const actualClass = cell(row, 13); // P 실제 클래스
+  // 클래스명: 실제 클래스(P) 우선, 없으면 신청 클래스(K)
+  const className = normalizeClassName(actualClass || appliedClass);
   const confirmedStatus = cell(row, 15); // R
   const paymentStatus = cell(row, 16); // S
   const lastNotify = cell(row, 17); // T
 
   const classDateLabel = formatBankConfirmClassDate(dateRaw);
+
+  console.log("[NHN입금확정] 클래스명 선택", {
+    sheetName,
+    rowNumber,
+    actualClass: actualClass || "(빈칸)",
+    appliedClass: appliedClass || "(빈칸)",
+    className,
+  });
 
   return {
     rowNumber,

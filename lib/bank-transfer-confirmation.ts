@@ -1,5 +1,6 @@
 import "server-only";
 
+import { randomUUID } from "crypto";
 import { google } from "googleapis";
 import { formatAlimtalkClassDateLabel } from "@/lib/reservation-confirm-alimtalk";
 import {
@@ -8,12 +9,31 @@ import {
 } from "@/lib/nhn-bank-confirm-templates";
 
 const OPS_SHEET_DEFAULT = "스윔잇 수강자 운영";
-/** 동시 요청 잠금용 (성공 전 임시값, 실패 시 빈칸으로 복구) */
-export const BANK_CONFIRM_LOCK_VALUE = "발송중";
+/**
+ * 동시 요청 잠금용 (성공 전 임시값, 실패 시 빈칸으로 복구)
+ * 예전 값 "발송중"도 잠금으로 인식한다.
+ */
+export const BANK_CONFIRM_LOCK_VALUE = "예약확정 발송중";
+const BANK_CONFIRM_LOCK_VALUE_LEGACY = "발송중";
 export const BANK_CONFIRM_DONE_VALUE = "예약확정";
 export const BANK_CONFIRM_PAYMENT_DONE = "입금완료";
 /** T열 = 20번째 컬럼 (A=1 … T=20) → 0-based index 19 */
 const COL_T_INDEX0 = 19;
+
+function isBankConfirmLockValue(raw: string): boolean {
+  const t = String(raw || "").trim();
+  return t === BANK_CONFIRM_LOCK_VALUE || t === BANK_CONFIRM_LOCK_VALUE_LEGACY;
+}
+
+/** NHN X-NC-API-IDEMPOTENCY-KEY: 시도마다 고유 (실패 즉시 재시도 가능) */
+export function buildBankConfirmIdempotencyKey(reservationId: string): string {
+  const id = String(reservationId || "")
+    .trim()
+    .replace(/[^a-zA-Z0-9._-]/g, "-")
+    .slice(0, 64);
+  const key = `BANK-CONFIRM-${id || "UNKNOWN"}-${randomUUID()}`;
+  return key.slice(0, 128);
+}
 
 const env = {
   clientEmail: process.env.GOOGLE_CLIENT_EMAIL,
@@ -113,6 +133,8 @@ function normalizeClassName(raw: string): string {
 export type OpsBankConfirmRow = {
   rowNumber: number;
   sheetName: string;
+  /** B열 신청번호 (예: WC-1788602742588-7587) */
+  reservationId: string;
   customerName: string;
   customerPhone: string;
   session: string;
@@ -123,6 +145,8 @@ export type OpsBankConfirmRow = {
   confirmedStatus: string;
   paymentStatus: string;
   lastNotify: string;
+  /** T셀 note — 잠금 소유권 확인용 */
+  lastNotifyNote: string;
 };
 
 export type ProcessBankTransferConfirmationResult = {
@@ -133,14 +157,17 @@ export type ProcessBankTransferConfirmationResult = {
   /** @deprecated ok와 동일 — 하위 호환 */
   success: boolean;
   skipped?: boolean;
+  alreadySent?: boolean;
   reason?: string;
   rowNumber: number;
   sheetName: string;
+  reservationId?: string;
   reservationConfirmed?: boolean;
   /** @deprecated sent와 동일 — 하위 호환 */
   alimtalkSent?: boolean;
   templateCode?: string;
   requestId?: string;
+  idempotencyKey?: string;
   error?: string;
   /** NHN 발송 시도 후 실패 → API는 HTTP 502 */
   nhnSendFailed?: boolean;
@@ -172,7 +199,8 @@ async function readOpsRow(
 
   const auth = getAuthClient();
   const sheets = google.sheets({ version: "v4", auth });
-  const range = `'${sheetName}'!C${rowNumber}:T${rowNumber}`;
+  // B신청번호 … T마지막알림
+  const range = `'${sheetName}'!B${rowNumber}:T${rowNumber}`;
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: env.spreadsheetId,
     range,
@@ -180,26 +208,34 @@ async function readOpsRow(
   });
 
   const row = (res.data.values?.[0] || []) as string[];
-  // C..T → index 0 = C
-  // C고객명 D전화 E… K신청클래스(8) L회차(9) … N날짜(11) O장소(12) P실제클래스(13) … R(15) S(16) T(17)
-  const customerName = cell(row, 0); // C
-  const customerPhone = cell(row, 1); // D
-  const appliedClass = cell(row, 8); // K 신청 클래스
-  const session = normalizeSession(cell(row, 9)); // L
-  const dateRaw = cell(row, 11); // N
-  const center = cell(row, 12); // O
-  const actualClass = cell(row, 13); // P 실제 클래스
-  // 클래스명: 실제 클래스(P) 우선, 없으면 신청 클래스(K)
+  // B=0 … T=18
+  // B신청번호 C고객명 D전화 … K신청클래스(9) L회차(10) … N날짜(12) O장소(13) P실제(14) … R(16) S(17) T(18)
+  const reservationId = cell(row, 0); // B
+  const customerName = cell(row, 1); // C
+  const customerPhone = cell(row, 2); // D
+  const appliedClass = cell(row, 9); // K
+  const session = normalizeSession(cell(row, 10)); // L
+  const dateRaw = cell(row, 12); // N
+  const center = cell(row, 13); // O
+  const actualClass = cell(row, 14); // P
   const className = normalizeClassName(actualClass || appliedClass);
-  const confirmedStatus = cell(row, 15); // R
-  const paymentStatus = cell(row, 16); // S
-  const lastNotify = cell(row, 17); // T
+  const confirmedStatus = cell(row, 16); // R
+  const paymentStatus = cell(row, 17); // S
+  const lastNotify = cell(row, 18); // T
+
+  let lastNotifyNote = "";
+  try {
+    lastNotifyNote = await readOpsTCellNote(sheetName, rowNumber);
+  } catch (noteErr) {
+    console.warn("[NHN입금확정] T셀 메모 조회 실패", noteErr);
+  }
 
   const classDateLabel = formatBankConfirmClassDate(dateRaw);
 
   console.log("[NHN입금확정] 클래스명 선택", {
     sheetName,
     rowNumber,
+    reservationId: reservationId || "(빈칸)",
     actualClass: actualClass || "(빈칸)",
     appliedClass: appliedClass || "(빈칸)",
     className,
@@ -208,6 +244,7 @@ async function readOpsRow(
   return {
     rowNumber,
     sheetName,
+    reservationId,
     customerName,
     customerPhone: customerPhone.replace(/-/g, ""),
     session,
@@ -218,7 +255,27 @@ async function readOpsRow(
     confirmedStatus,
     paymentStatus,
     lastNotify,
+    lastNotifyNote,
   };
+}
+
+async function readOpsTCellNote(
+  sheetName: string,
+  rowNumber: number,
+): Promise<string> {
+  if (!env.spreadsheetId) {
+    throw new Error("GOOGLE_SHEETS_SPREADSHEET_ID가 없습니다.");
+  }
+  const auth = getAuthClient();
+  const sheets = google.sheets({ version: "v4", auth });
+  const meta = await sheets.spreadsheets.get({
+    spreadsheetId: env.spreadsheetId,
+    ranges: [`'${sheetName}'!T${rowNumber}`],
+    fields: "sheets.data.rowData.values.note",
+  });
+  const note =
+    meta.data.sheets?.[0]?.data?.[0]?.rowData?.[0]?.values?.[0]?.note ?? "";
+  return String(note || "").trim();
 }
 
 async function updateOpsCells(
@@ -337,6 +394,70 @@ async function clearOpsTCellNote(
   await setOpsTCellNote(sheetName, rowNumber, "");
 }
 
+/**
+ * R/S 갱신 + T="예약확정 발송중" + note(소유권 토큰)을 한 번에 기록
+ */
+async function acquireBankConfirmSendLock(params: {
+  sheetName: string;
+  rowNumber: number;
+  lockToken: string;
+}): Promise<void> {
+  if (!env.spreadsheetId) {
+    throw new Error("GOOGLE_SHEETS_SPREADSHEET_ID가 없습니다.");
+  }
+  const { sheetName, rowNumber, lockToken } = params;
+  const sheetId = await resolveSheetId(sheetName);
+  const auth = getAuthClient();
+  const sheets = google.sheets({ version: "v4", auth });
+
+  await sheets.spreadsheets.values.batchUpdate({
+    spreadsheetId: env.spreadsheetId,
+    requestBody: {
+      valueInputOption: "USER_ENTERED",
+      data: [
+        {
+          range: `'${sheetName}'!R${rowNumber}`,
+          values: [[BANK_CONFIRM_DONE_VALUE]],
+        },
+        {
+          range: `'${sheetName}'!S${rowNumber}`,
+          values: [[BANK_CONFIRM_PAYMENT_DONE]],
+        },
+      ],
+    },
+  });
+
+  await sheets.spreadsheets.batchUpdate({
+    spreadsheetId: env.spreadsheetId,
+    requestBody: {
+      requests: [
+        {
+          updateCells: {
+            range: {
+              sheetId,
+              startRowIndex: rowNumber - 1,
+              endRowIndex: rowNumber,
+              startColumnIndex: COL_T_INDEX0,
+              endColumnIndex: COL_T_INDEX0 + 1,
+            },
+            rows: [
+              {
+                values: [
+                  {
+                    userEnteredValue: { stringValue: BANK_CONFIRM_LOCK_VALUE },
+                    note: lockToken,
+                  },
+                ],
+              },
+            ],
+            fields: "userEnteredValue,note",
+          },
+        },
+      ],
+    },
+  });
+}
+
 async function sendNhnBankConfirmAlimtalk(params: {
   templateCode: string;
   customerName: string;
@@ -451,11 +572,12 @@ async function processBankTransferConfirmationInner(input: {
     });
   }
 
-  // 1) 최신 행 재조회
+  // 1) 최신 행 재조회 (발송 직전 T 재확인)
   let row = await readOpsRow(sheetName, rowNumber);
   console.log("[NHN입금확정] 행 조회", {
     sheetName,
     rowNumber,
+    reservationId: row.reservationId || "(빈칸)",
     paymentStatus: row.paymentStatus,
     lastNotify: row.lastNotify || "(빈칸)",
     confirmedStatus: row.confirmedStatus,
@@ -464,7 +586,7 @@ async function processBankTransferConfirmationInner(input: {
     session: row.session,
   });
 
-  // 2) 조건: S=입금완료, T=빈칸
+  // 2) 조건: S=입금완료
   if (row.paymentStatus !== BANK_CONFIRM_PAYMENT_DONE) {
     return resultOkSent({
       ok: false,
@@ -473,12 +595,13 @@ async function processBankTransferConfirmationInner(input: {
       reason: `입금상태 불일치: S="${row.paymentStatus}"`,
       rowNumber,
       sheetName,
+      reservationId: row.reservationId || undefined,
       reservationConfirmed: row.confirmedStatus === BANK_CONFIRM_DONE_VALUE,
       error: `입금상태 불일치: S="${row.paymentStatus}"`,
     });
   }
 
-  // 이미 발송됨 → 멱등 성공 (중복 발송 방지) + 실패 메모 제거
+  // T === 예약확정 → 이미 발송 완료 (NHN 재호출 금지)
   if (row.lastNotify === BANK_CONFIRM_DONE_VALUE) {
     await updateOpsCells(sheetName, rowNumber, {
       r: BANK_CONFIRM_DONE_VALUE,
@@ -493,27 +616,32 @@ async function processBankTransferConfirmationInner(input: {
     return resultOkSent({
       ok: true,
       sent: true,
+      alreadySent: true,
       skipped: true,
       reason: "이미 예약확정 알림톡 발송됨 (T=예약확정)",
       rowNumber,
       sheetName,
+      reservationId: row.reservationId || undefined,
       reservationConfirmed: true,
     });
   }
 
-  if (row.lastNotify === BANK_CONFIRM_LOCK_VALUE) {
+  // T === 예약확정 발송중 → 다른 요청 처리 중
+  if (isBankConfirmLockValue(row.lastNotify)) {
     return resultOkSent({
       ok: false,
       sent: false,
       skipped: true,
-      reason: "다른 요청이 발송 처리 중 (T=발송중)",
+      reason: `다른 요청이 발송 처리 중 (T=${row.lastNotify})`,
       rowNumber,
       sheetName,
+      reservationId: row.reservationId || undefined,
       reservationConfirmed: row.confirmedStatus === BANK_CONFIRM_DONE_VALUE,
-      error: "다른 요청이 발송 처리 중 (T=발송중)",
+      error: `다른 요청이 발송 처리 중 (T=${row.lastNotify})`,
     });
   }
 
+  // T가 그 외 값 → 처리 불가 (빈칸만 진행)
   if (row.lastNotify) {
     return resultOkSent({
       ok: false,
@@ -522,8 +650,32 @@ async function processBankTransferConfirmationInner(input: {
       reason: `마지막알림이 비어 있지 않음: T="${row.lastNotify}"`,
       rowNumber,
       sheetName,
+      reservationId: row.reservationId || undefined,
       reservationConfirmed: row.confirmedStatus === BANK_CONFIRM_DONE_VALUE,
       error: `마지막알림이 비어 있지 않음: T="${row.lastNotify}"`,
+    });
+  }
+
+  if (!row.reservationId) {
+    await updateOpsCells(sheetName, rowNumber, {
+      r: BANK_CONFIRM_DONE_VALUE,
+      s: BANK_CONFIRM_PAYMENT_DONE,
+      t: "",
+    });
+    const err = "신청번호(B열)가 비어 있습니다.";
+    try {
+      await setOpsTCellNote(sheetName, rowNumber, err);
+    } catch (noteErr) {
+      console.warn("[NHN입금확정] 실패 메모 기록 실패", noteErr);
+    }
+    return resultOkSent({
+      ok: false,
+      sent: false,
+      rowNumber,
+      sheetName,
+      reservationConfirmed: true,
+      error: err,
+      nhnSendFailed: false,
     });
   }
 
@@ -544,6 +696,7 @@ async function processBankTransferConfirmationInner(input: {
       sent: false,
       rowNumber,
       sheetName,
+      reservationId: row.reservationId,
       reservationConfirmed: true,
       error: err,
       nhnSendFailed: false,
@@ -574,20 +727,28 @@ async function processBankTransferConfirmationInner(input: {
       sent: false,
       rowNumber,
       sheetName,
+      reservationId: row.reservationId,
       reservationConfirmed: true,
       error: err,
       nhnSendFailed: true,
     });
   }
 
-  // 3) R=예약확정 + S=입금완료 + T=발송중 (동시성 잠금)
-  await updateOpsCells(sheetName, rowNumber, {
-    r: BANK_CONFIRM_DONE_VALUE,
-    s: BANK_CONFIRM_PAYMENT_DONE,
-    t: BANK_CONFIRM_LOCK_VALUE,
+  // 3) 처리 시작: T = 예약확정 발송중 (+ note에 소유권 토큰, 값·메모 동시 기록)
+  const lockToken = `LOCK:${randomUUID()}`;
+  await acquireBankConfirmSendLock({
+    sheetName,
+    rowNumber,
+    lockToken,
   });
 
-  // 재조회로 잠금 소유 확인 (다른 요청이 먼저 끝냈을 수 있음)
+  console.log("[NHN입금확정] T=예약확정 발송중 잠금", {
+    sheetName,
+    rowNumber,
+    reservationId: row.reservationId,
+  });
+
+  // 재조회로 잠금 소유 확인 (동시 요청 시 두 번째가 NHN으로 가지 않게)
   row = await readOpsRow(sheetName, rowNumber);
   if (row.lastNotify === BANK_CONFIRM_DONE_VALUE) {
     try {
@@ -598,14 +759,22 @@ async function processBankTransferConfirmationInner(input: {
     return resultOkSent({
       ok: true,
       sent: true,
+      alreadySent: true,
       skipped: true,
       reason: "재조회 시 이미 T=예약확정",
       rowNumber,
       sheetName,
+      reservationId: row.reservationId || undefined,
       reservationConfirmed: true,
     });
   }
-  if (row.lastNotify !== BANK_CONFIRM_LOCK_VALUE) {
+
+  const ownsLock =
+    row.lastNotify === BANK_CONFIRM_LOCK_VALUE &&
+    row.lastNotifyNote === lockToken;
+
+  if (!ownsLock) {
+    // 다른 요청이 잠금을 가져감 — T를 지우지 않음
     return resultOkSent({
       ok: false,
       sent: false,
@@ -613,14 +782,18 @@ async function processBankTransferConfirmationInner(input: {
       reason: `잠금 확보 실패: T="${row.lastNotify}"`,
       rowNumber,
       sheetName,
+      reservationId: row.reservationId || undefined,
       reservationConfirmed: row.confirmedStatus === BANK_CONFIRM_DONE_VALUE,
       error: `잠금 확보 실패: T="${row.lastNotify}"`,
     });
   }
 
-  const idempotencyKey = `swimit-bank-confirm-${env.spreadsheetId}-${sheetName}-${rowNumber}`
-    .replace(/[^a-zA-Z0-9._-]/g, "-")
-    .slice(0, 128);
+  // 시도마다 고유 키 (동일 예약이라도 실패 후 즉시 재시도 가능)
+  const idempotencyKey = buildBankConfirmIdempotencyKey(row.reservationId);
+  console.log("[NHN입금확정] idempotency key", {
+    reservationId: row.reservationId,
+    idempotencyKey,
+  });
 
   const sendResult = await sendNhnBankConfirmAlimtalk({
     templateCode,
@@ -647,6 +820,7 @@ async function processBankTransferConfirmationInner(input: {
     console.log("[NHN입금확정] 성공 R/S/T 확정 + 메모 clear", {
       sheetName,
       rowNumber,
+      reservationId: row.reservationId,
     });
     return resultOkSent({
       ok: true,
@@ -654,13 +828,15 @@ async function processBankTransferConfirmationInner(input: {
       skipped: false,
       rowNumber,
       sheetName,
+      reservationId: row.reservationId,
       reservationConfirmed: true,
       templateCode,
       requestId: sendResult.requestId,
+      idempotencyKey,
     });
   }
 
-  // 실패: T 빈칸 복구, R=예약확정 / S=입금완료 유지, T셀에 오류 메모
+  // 실패: 반드시 T 빈칸 복구 (예약확정 발송중 잔류 금지) → 즉시 재시도 가능
   await updateOpsCells(sheetName, rowNumber, {
     r: BANK_CONFIRM_DONE_VALUE,
     s: BANK_CONFIRM_PAYMENT_DONE,
@@ -671,10 +847,12 @@ async function processBankTransferConfirmationInner(input: {
   } catch (noteErr) {
     console.warn("[NHN입금확정] 실패 메모 기록 실패", noteErr);
   }
-  console.error("[NHN입금확정] 발송 실패 — T 빈칸 + 오류 메모", {
+  console.error("[NHN입금확정] 발송 실패 — T 빈칸 복구 (재시도 가능)", {
     sheetName,
     rowNumber,
+    reservationId: row.reservationId,
     error: sendResult.error,
+    idempotencyKey,
   });
 
   return resultOkSent({
@@ -682,8 +860,10 @@ async function processBankTransferConfirmationInner(input: {
     sent: false,
     rowNumber,
     sheetName,
+    reservationId: row.reservationId,
     reservationConfirmed: true,
     templateCode,
+    idempotencyKey,
     error: sendResult.error,
     nhnSendFailed: true,
   });
@@ -692,6 +872,7 @@ async function processBankTransferConfirmationInner(input: {
 /**
  * 계좌이체 입금완료 → 예약확정 NHN 알림톡
  * Apps Script는 rowNumber만 전달하고, 서버가 시트를 다시 읽는다.
+ * 동시성: 인스턴스 내 직렬화 + 시트 T="예약확정 발송중"(소유권 note)
  */
 export async function processBankTransferConfirmation(input: {
   sheetName: string;

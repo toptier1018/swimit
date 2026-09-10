@@ -65,11 +65,14 @@ export async function POST(req: NextRequest) {
     console.log("[입금확정API] 결과", {
       sheetName: result.sheetName,
       rowNumber: result.rowNumber,
+      reservationId: result.reservationId,
       ok,
       sent,
+      alreadySent: result.alreadySent,
       skipped: result.skipped,
       nhnSendFailed: result.nhnSendFailed,
       templateCode: result.templateCode,
+      idempotencyKey: result.idempotencyKey,
       reason: result.reason,
       error: result.error,
     });
@@ -89,10 +92,12 @@ export async function POST(req: NextRequest) {
       {
         ok,
         sent,
+        alreadySent: Boolean(result.alreadySent),
         skipped: Boolean(result.skipped),
         reason: result.reason,
         rowNumber: result.rowNumber,
         sheetName: result.sheetName,
+        reservationId: result.reservationId,
         reservationConfirmed: Boolean(result.reservationConfirmed),
         templateCode: result.templateCode,
         requestId: result.requestId,

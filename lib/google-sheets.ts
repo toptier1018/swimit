@@ -326,3 +326,113 @@ export async function appendRowToGoogleSheet(
     return { success: false, error: message };
   }
 }
+
+export type SheetLastNotifyValue = "예약확정" | "발송실패" | "";
+
+/**
+ * 신청번호(B열)로 행을 찾아 T열(마지막알림)을 갱신한다.
+ * - 스윔잇 수강자
+ * - 스윔잇 수강자 운영
+ * 둘 다 있으면 둘 다 갱신 (카드 결제 알림톡 성공/실패 표시용)
+ */
+export async function updateLastNotifyByOrderNumber(params: {
+  orderNumber: string;
+  value: SheetLastNotifyValue;
+}): Promise<{
+  success: boolean;
+  updated: { sheetName: string; rowNumber: number }[];
+  error?: string;
+}> {
+  const orderNumber = String(params.orderNumber || "").trim();
+  if (!orderNumber) {
+    return { success: false, updated: [], error: "신청번호가 없습니다." };
+  }
+  if (!env.spreadsheetId) {
+    return {
+      success: false,
+      updated: [],
+      error: "GOOGLE_SHEETS_SPREADSHEET_ID가 없습니다.",
+    };
+  }
+
+  const sheetNames = [
+    env.sheetName?.trim() || "스윔잇 수강자",
+    process.env.GOOGLE_SHEETS_OPS_SHEET_NAME?.trim() || "스윔잇 수강자 운영",
+  ].filter((name, index, arr) => name && arr.indexOf(name) === index);
+
+  try {
+    const auth = getAuthClient();
+    const sheets = google.sheets({ version: "v4", auth });
+    const updated: { sheetName: string; rowNumber: number }[] = [];
+
+    for (const sheetName of sheetNames) {
+      const res = await sheets.spreadsheets.values.get({
+        spreadsheetId: env.spreadsheetId,
+        range: `'${sheetName}'!A:T`,
+        valueRenderOption: "FORMATTED_VALUE",
+      });
+      const rows = res.data.values ?? [];
+      if (rows.length < 2) continue;
+
+      const header = (rows[0] || []).map((v) => String(v || "").trim());
+      let colOrder = header.findIndex((h) => h === "신청번호");
+      let colNotify = header.findIndex((h) => h === "마지막알림");
+      // 헤더 없으면 관례: B=신청번호(1), T=마지막알림(19)
+      if (colOrder < 0) colOrder = 1;
+      if (colNotify < 0) colNotify = 19;
+
+      for (let i = 1; i < rows.length; i += 1) {
+        const row = rows[i] || [];
+        const cell = String(row[colOrder] ?? "").trim();
+        if (cell !== orderNumber) continue;
+
+        const rowNumber = i + 1;
+        const colLetter = columnIndexToLetter(colNotify);
+        await sheets.spreadsheets.values.update({
+          spreadsheetId: env.spreadsheetId,
+          range: `'${sheetName}'!${colLetter}${rowNumber}`,
+          valueInputOption: "USER_ENTERED",
+          requestBody: { values: [[params.value]] },
+        });
+        updated.push({ sheetName, rowNumber });
+        console.log("[Google Sheets] 마지막알림 갱신:", {
+          sheetName,
+          rowNumber,
+          orderNumber,
+          value: params.value || "(빈칸)",
+        });
+        break;
+      }
+    }
+
+    if (updated.length === 0) {
+      console.warn("[Google Sheets] 마지막알림 갱신 대상 행 없음:", {
+        orderNumber,
+        value: params.value || "(빈칸)",
+      });
+      return {
+        success: false,
+        updated: [],
+        error: `신청번호 ${orderNumber} 행을 찾지 못했습니다.`,
+      };
+    }
+
+    return { success: true, updated };
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "마지막알림 갱신 실패";
+    console.error("[Google Sheets] 마지막알림 갱신 오류:", message);
+    return { success: false, updated: [], error: message };
+  }
+}
+
+function columnIndexToLetter(index0: number): string {
+  let n = index0 + 1;
+  let letter = "";
+  while (n > 0) {
+    const rem = (n - 1) % 26;
+    letter = String.fromCharCode(65 + rem) + letter;
+    n = Math.floor((n - 1) / 26);
+  }
+  return letter;
+}

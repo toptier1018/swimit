@@ -9,6 +9,7 @@ import {
 } from "@/lib/finalize-card-enrollment";
 import { notifyAdminPayment } from "@/lib/notify-admin-payment";
 import { sendReservationConfirmationAlimtalk } from "@/lib/nhn-reservation-confirm-alimtalk";
+import { updateLastNotifyByOrderNumber } from "@/lib/google-sheets";
 import {
   parseCardPendingStatus,
   shouldSkipAdminNotify,
@@ -453,6 +454,17 @@ export async function POST(req: NextRequest) {
                         { orderId, orderNumber: caMeta.orderNumber },
                       );
                     }
+                    // 시트 T열(마지막알림) = 예약확정
+                    const sheetNotify = await updateLastNotifyByOrderNumber({
+                      orderNumber: caMeta.orderNumber || orderId,
+                      value: "예약확정",
+                    });
+                    if (!sheetNotify.success) {
+                      console.warn(
+                        "[웹훅] 알림톡 성공했지만 시트 마지막알림 갱신 실패:",
+                        sheetNotify.error,
+                      );
+                    }
                     customerAlimtalk = "sent";
                   } else {
                     await patchNotifyMeta({
@@ -464,6 +476,23 @@ export async function POST(req: NextRequest) {
                       region: refreshed.region || region,
                       clearCustomerAlimtalk: true,
                     });
+                    // 시트 T열(마지막알림) = 발송실패 (운영자가 시트에서 확인)
+                    const sheetNotify = await updateLastNotifyByOrderNumber({
+                      orderNumber: caMeta.orderNumber || orderId,
+                      value: "발송실패",
+                    });
+                    if (!sheetNotify.success) {
+                      console.warn(
+                        "[웹훅] 알림톡 실패 + 시트 마지막알림 갱신도 실패:",
+                        sheetNotify.error,
+                      );
+                    } else {
+                      console.log("[웹훅] 시트 마지막알림=발송실패 기록", {
+                        orderId,
+                        orderNumber: caMeta.orderNumber,
+                        updated: sheetNotify.updated,
+                      });
+                    }
                     console.error(
                       "[웹훅] 예약확정 알림톡 실패 (결제는 성공 유지):",
                       sendResult.error,

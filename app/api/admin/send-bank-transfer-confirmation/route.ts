@@ -8,6 +8,12 @@ import { processBankTransferConfirmation } from "@/lib/bank-transfer-confirmatio
  * POST /api/admin/send-bank-transfer-confirmation
  * Header: x-swimit-automation-secret: SHEET_AUTOMATION_SECRET
  * Body: { sheetName: "스윔잇 수강자 운영", rowNumber: 123 }
+ *
+ * Apps Script 성공 조건:
+ *   HTTP 2xx AND result.ok === true AND result.sent === true
+ *
+ * 성공 예: { "ok": true, "sent": true }
+ * 실패 예: { "ok": false, "sent": false, "error": "..." }  (NHN 실패 시 HTTP 502)
  */
 export async function POST(req: NextRequest) {
   const secret = process.env.SHEET_AUTOMATION_SECRET?.trim() || "";
@@ -16,7 +22,7 @@ export async function POST(req: NextRequest) {
   if (!secret || provided !== secret) {
     console.warn("[입금확정API] 인증 실패");
     return NextResponse.json(
-      { success: false, error: "Unauthorized" },
+      { ok: false, sent: false, error: "Unauthorized" },
       { status: 401 },
     );
   }
@@ -26,7 +32,7 @@ export async function POST(req: NextRequest) {
     body = await req.json();
   } catch {
     return NextResponse.json(
-      { success: false, error: "Invalid JSON body" },
+      { ok: false, sent: false, error: "Invalid JSON body" },
       { status: 400 },
     );
   }
@@ -37,7 +43,8 @@ export async function POST(req: NextRequest) {
   if (!sheetName || !Number.isInteger(rowNumber) || rowNumber < 2) {
     return NextResponse.json(
       {
-        success: false,
+        ok: false,
+        sent: false,
         error: "sheetName과 rowNumber(정수, 2 이상)가 필요합니다.",
       },
       { status: 400 },
@@ -52,32 +59,47 @@ export async function POST(req: NextRequest) {
       rowNumber,
     });
 
+    const ok = Boolean(result.ok);
+    const sent = Boolean(result.sent);
+
     console.log("[입금확정API] 결과", {
       sheetName: result.sheetName,
       rowNumber: result.rowNumber,
-      success: result.success,
+      ok,
+      sent,
       skipped: result.skipped,
-      alimtalkSent: result.alimtalkSent,
-      reservationConfirmed: result.reservationConfirmed,
+      nhnSendFailed: result.nhnSendFailed,
       templateCode: result.templateCode,
       reason: result.reason,
       error: result.error,
     });
 
-    const status = result.success ? 200 : result.error?.includes("Unauthorized") ? 401 : 200;
+    // NHN 발송 실패는 HTTP 200으로 위장하지 않음
+    let status = 200;
+    if (ok && sent) {
+      status = 200;
+    } else if (result.nhnSendFailed) {
+      status = 502;
+    } else if (!ok) {
+      // 스킵·검증 실패 등: JSON으로 구분 (Apps Script는 ok/sent로 판정)
+      status = 422;
+    }
 
     return NextResponse.json(
       {
-        success: result.success,
+        ok,
+        sent,
         skipped: Boolean(result.skipped),
         reason: result.reason,
         rowNumber: result.rowNumber,
         sheetName: result.sheetName,
         reservationConfirmed: Boolean(result.reservationConfirmed),
-        alimtalkSent: Boolean(result.alimtalkSent),
         templateCode: result.templateCode,
         requestId: result.requestId,
         error: result.error,
+        // 하위 호환 (구 Apps Script가 success/alimtalkSent를 보던 경우)
+        success: ok,
+        alimtalkSent: sent,
       },
       { status },
     );
@@ -87,13 +109,15 @@ export async function POST(req: NextRequest) {
     console.error("[입금확정API] 예외", { sheetName, rowNumber, message });
     return NextResponse.json(
       {
-        success: false,
+        ok: false,
+        sent: false,
         skipped: false,
         sheetName,
         rowNumber,
         reservationConfirmed: false,
-        alimtalkSent: false,
         error: message,
+        success: false,
+        alimtalkSent: false,
       },
       { status: 500 },
     );

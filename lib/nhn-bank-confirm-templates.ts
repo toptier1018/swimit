@@ -1,6 +1,8 @@
 /**
- * 계좌이체(입금완료) → 예약확정 NHN 알림톡 템플릿
- * 카드결제 Aligo 템플릿과 분리. 입금 안내받기(v1)와도 분리.
+ * NHN Cloud 예약확정 알림톡 템플릿
+ * - 계좌이체 입금완료 → 예약확정
+ * - 카드결제 DONE → 예약확정
+ * 입금 안내받기(v1)와 분리.
  */
 
 export const NHN_BANK_CONFIRM_TEMPLATE_CODES = {

@@ -362,147 +362,44 @@ function getAligoSubject(messageKind: AlimtalkTemplateKind): string {
 }
 
 /**
- * 카드결제 예약확정 전용 — Aligo만 호출
- * token 발급 없이 send API에 apikey/userid 직접 전달
+ * @deprecated 카드결제 예약확정은 NHN Cloud 로 전환됨.
+ * Aligo API는 호출하지 않고 sendReservationConfirmationAlimtalk 로 위임한다.
  */
 export async function sendCardPaymentReservationAlimtalk(
   input: SendCardPaymentReservationAlimtalkInput,
 ): Promise<SendCardPaymentReservationAlimtalkResult> {
-  let templateCode = "";
-  let center = "";
-  let program: AlimtalkProgram | undefined;
+  const { sendReservationConfirmationAlimtalk } = await import(
+    "@/lib/nhn-reservation-confirm-alimtalk"
+  );
+  const result = await sendReservationConfirmationAlimtalk({
+    orderId: input.orderId,
+    customerName: input.customerName,
+    phone: input.customerPhone,
+    classDate: input.classDate,
+    region: input.region,
+    center: input.region,
+    selectedClass: input.selectedClass,
+    className: input.selectedClass,
+    timeSlot: input.timeSlot,
+    session: input.timeSlot,
+  });
 
-  try {
-    // 1) orderId 로 조회된 주문/예약 필드 → 치환값
-    const fields = resolveReservationAlimtalkFields(input);
-    center = fields.center;
-    program = fields.program;
-
-    // 2) tpl_code + message 종류 (진단 → special fallback 포함)
-    const selection = resolveAlimtalkTemplateSelection(
-      fields.center,
-      fields.program,
-    );
-    templateCode = selection.templateCode;
-
-    // 3) selection.messageKind 에 맞는 승인 문구 + 실제 예약값으로 message_1
-    const built = buildAligoReservationMessage(fields, selection);
-    const message_1 = built.message;
-    if (!message_1 || /#\{[^}]+\}/.test(message_1)) {
-      throw new AlimtalkTemplateError(
-        "알림톡 message_1 이 최종 치환되지 않았습니다. 발송 중단.",
-      );
-    }
-
-    const { apikey, userid, senderkey, sender } = getAligoEnv();
-    if (!apikey || !userid || !senderkey || !sender) {
-      console.error("[알리고 예약확정] 실패", {
-        orderId: input.orderId,
-        templateCode,
-        code: "ENV_MISSING",
-        message:
-          "ALIGO_API_KEY / ALIGO_USER_ID / ALIGO_SENDER_KEY / ALIGO_SENDER 필요",
-      });
-      return {
-        success: false,
-        error: "Aligo 환경변수가 없습니다.",
-        templateCode,
-        center,
-        program,
-      };
-    }
-
-    const subject_1 = getAligoSubject(built.templateKind);
-
-    console.log("[알리고 예약확정] 요청", {
-      orderId: input.orderId,
-      center: fields.center,
-      program: fields.program,
-      templateCode,
-      templateKind: built.templateKind,
-      fallbackToSpecial: built.fallbackToSpecial,
-      messageReady: true,
-      messageLength: message_1.length,
-      hasPlaceholder: false,
-    });
-
-    // 4) token 없이 send API 직접 호출 (apikey/userid 포함)
-    const body = new URLSearchParams({
-      apikey,
-      userid,
-      senderkey,
-      tpl_code: templateCode,
-      sender,
-      receiver_1: fields.customerPhone,
-      recvname_1: fields.customerName,
-      subject_1,
-      message_1,
-    });
-
-    const response = await fetch(
-      "https://kakaoapi.aligo.in/akv10/alimtalk/send/",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-        },
-        body,
-      },
-    );
-    const result = await response.json().catch(() => ({}));
-    const code = Number(result?.code);
-    const messageId =
-      result?.info?.mid != null
-        ? String(result.info.mid)
-        : result?.info?.messageId != null
-          ? String(result.info.messageId)
-          : undefined;
-
-    if (code === 0) {
-      console.log("[알리고 예약확정] 성공", {
-        orderId: input.orderId,
-        templateCode,
-        ...(messageId ? { messageId } : {}),
-      });
-      return {
-        success: true,
-        templateCode,
-        center,
-        program,
-        messageId,
-      };
-    }
-
-    console.error("[알리고 예약확정] 실패", {
-      orderId: input.orderId,
-      templateCode,
-      code: result?.code,
-      message: result?.message,
-    });
+  if (result.success) {
     return {
-      success: false,
-      error: `Aligo 발송 실패: code=${result?.code}, message=${result?.message || ""}`,
-      templateCode,
-      center,
-      program,
-    };
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "알리고 예약확정 발송 중 오류";
-    console.error("[알리고 예약확정] 실패", {
-      orderId: input.orderId,
-      templateCode: templateCode || undefined,
-      code: "EXCEPTION",
-      message,
-    });
-    return {
-      success: false,
-      error: message,
-      templateCode: templateCode || undefined,
-      center: center || undefined,
-      program,
+      success: true,
+      templateCode: result.templateCode,
+      center: result.center,
+      program: result.program,
+      messageId: result.requestId,
     };
   }
+  return {
+    success: false,
+    error: result.error,
+    templateCode: result.templateCode,
+    center: result.center,
+    program: result.program,
+  };
 }
 
 /** @deprecated 카드결제 전용 함수명으로 사용하세요 */

@@ -8,7 +8,7 @@ import {
   isSwimmitClassCardOrderId,
 } from "@/lib/finalize-card-enrollment";
 import { notifyAdminPayment } from "@/lib/notify-admin-payment";
-import { sendCardPaymentReservationAlimtalk } from "@/lib/reservation-confirm-alimtalk";
+import { sendReservationConfirmationAlimtalk } from "@/lib/nhn-reservation-confirm-alimtalk";
 import {
   parseCardPendingStatus,
   shouldSkipAdminNotify,
@@ -18,7 +18,7 @@ import {
 } from "@/lib/toss-card-order-meta";
 import { fetchTossPaymentByKey } from "@/lib/toss-payment-query";
 
-/** Toss 재조회 method — 카드 결제만 Aligo 예약확정 대상 */
+/** Toss 재조회 method — 카드 결제만 NHN 예약확정 대상 */
 function isTossCardPaymentMethod(method: string | undefined): boolean {
   const value = String(method || "").trim();
   // Toss Payments 조회 응답: 카드 결제는 보통 "카드"
@@ -361,8 +361,9 @@ export async function POST(req: NextRequest) {
               }
             }
 
-            // --- 고객 예약확정 알림톡 (카드결제 + Aligo 전용) ---
-            // 입금 안내받기(NHN)와 분리: CLASS- 주문 + Toss method=카드 + DONE 만
+            // --- 고객 예약확정 알림톡 (카드결제 + NHN Cloud 전용) ---
+            // 입금 안내받기(NHN v1)와 분리: CLASS- 주문 + Toss method=카드 + DONE 만
+            // Aligo 미사용
             if (!isTossCardPaymentMethod(payment.method)) {
               console.log("[웹훅] 예약확정 알림톡 스킵 — 카드 결제 아님:", {
                 orderId,
@@ -407,22 +408,27 @@ export async function POST(req: NextRequest) {
                   customerAlimtalk = "failed";
                 } else {
                   const sendResult =
-                    await sendCardPaymentReservationAlimtalk({
+                    await sendReservationConfirmationAlimtalk({
                     orderId,
                     customerName:
                       finalize.customerName ||
                       refreshed.applicant?.name ||
                       "",
-                    customerPhone:
+                    phone:
                       finalize.phone ||
                       refreshed.applicant?.phone ||
                       "",
                     region: refreshed.region || region,
+                    center: refreshed.region || region,
                     selectedClass:
                       refreshed.selectedClass || selectedClass,
+                    className:
+                      finalize.className ||
+                      refreshed.selectedClass ||
+                      selectedClass,
                     classDate: finalize.classDate || "",
                     timeSlot: refreshed.timeSlot || timeSlot,
-                    pageId: refreshed.pageId,
+                    session: refreshed.timeSlot || timeSlot,
                   });
 
                   if (sendResult.success) {

@@ -20,7 +20,6 @@ import {
   X,
   Calendar,
   CreditCard,
-  Users,
   Check,
   MessageCircle,
   RefreshCw,
@@ -8189,10 +8188,10 @@ export default function SwimmingClassPage() {
                   </ul>
                 </div>
 
-                {/* D-3 이내 */}
+                {/* D-5 이내 */}
                 <div className="bg-red-50 p-2.5 md:p-3 rounded-lg border border-red-200">
                   <p className="font-bold text-xs md:text-sm text-red-900 mb-1.5">
-                    ② 특강일 3일 이내 (D-3 포함)
+                    ② 특강일 5일 이내 (D-5 포함)
                   </p>
                   <ul className="space-y-1 text-xs text-gray-700 mb-2">
                     <li className="flex items-start gap-1.5">
@@ -8388,16 +8387,9 @@ export default function SwimmingClassPage() {
                   </span>
                 </li>
                 <li className="flex items-start gap-2 leading-relaxed">
-                  <Users className="h-3.5 w-3.5 md:h-4 md:w-4 text-orange-600 mt-0.5 flex-shrink-0" />
-                  <span>
-                    <span className="font-bold">3일 전까지</span> 대기자 자동
-                    배정 가능
-                  </span>
-                </li>
-                <li className="flex items-start gap-2 leading-relaxed">
                   <AlertTriangle className="h-3.5 w-3.5 md:h-4 md:w-4 text-red-600 mt-0.5 flex-shrink-0" />
                   <span>
-                    <span className="font-bold">3일 이내</span> 환불·이월 불가
+                    <span className="font-bold">5일 이내</span> 환불·이월 불가
                     (긴급 상황 제외)
                   </span>
                 </li>

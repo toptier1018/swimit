@@ -509,3 +509,66 @@ export async function getSchedules(): Promise<ScheduleItem[]> {
 
   return schedules;
 }
+
+export type DiagnosisFishtankFormOption = {
+  label: string;
+  date: string;
+  locationCode: string;
+  enrollmentKey: string;
+};
+
+/**
+ * 어항샷 영상 수령 Google Form 선택지용 진단 일정
+ * - 라벨 예: "2026.08.23 동탄"
+ * - 미래 전부 + 과거 keepPastDays일(기본 90일)
+ */
+export function getDiagnosisFishtankFormProgramOptions(
+  keepPastDays = 90,
+): DiagnosisFishtankFormOption[] {
+  const today = getKoreanTodayParts();
+  const todayUtc = Date.UTC(today.year, today.month - 1, today.day);
+  const cutoffUtc = todayUtc - Math.max(0, keepPastDays) * 86400000;
+
+  const byLabel = new Map<string, DiagnosisFishtankFormOption>();
+
+  for (const enrollmentKey of Object.keys(DEFAULT_CAPACITY_BY_CLASS)) {
+    if (!isDiagnosisClassKey(enrollmentKey)) continue;
+    const parsed = parseEnrollmentKey(enrollmentKey);
+    if (!parsed || parsed.program !== "진단") continue;
+
+    const event = findClassEventByLabel(parsed.label);
+    if (!event) {
+      console.warn("[어항샷폼] 센터 메타 없음:", parsed.label, enrollmentKey);
+      continue;
+    }
+
+    const eventUtc = Date.UTC(event.year, event.month - 1, event.dateNum);
+    if (eventUtc < cutoffUtc) continue;
+
+    const mm = String(event.month).padStart(2, "0");
+    const dd = String(event.dateNum).padStart(2, "0");
+    const label = `${event.year}.${mm}.${dd} ${event.locationCode}`;
+
+    if (!byLabel.has(label)) {
+      byLabel.set(label, {
+        label,
+        date: toIsoDate(event),
+        locationCode: event.locationCode,
+        enrollmentKey,
+      });
+    }
+  }
+
+  const options = Array.from(byLabel.values()).sort((a, b) =>
+    a.date.localeCompare(b.date),
+  );
+
+  console.log("[어항샷폼] 진단 선택지 생성", {
+    keepPastDays,
+    count: options.length,
+    first: options[0]?.label ?? null,
+    last: options[options.length - 1]?.label ?? null,
+  });
+
+  return options;
+}

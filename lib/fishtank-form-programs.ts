@@ -29,6 +29,7 @@ export type FishtankFormProgramsPayload = {
 
 /**
  * Apps Script / 관리자가 폼 선택지를 맞출 때 쓰는 진단 프로그램 목록
+ * 일정 정본: lib/class-schedule-data.ts → lib/schedules.ts
  */
 export function buildFishtankFormProgramsPayload(): FishtankFormProgramsPayload {
   const items = getDiagnosisFishtankFormProgramOptions(

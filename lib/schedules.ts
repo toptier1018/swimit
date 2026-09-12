@@ -1,6 +1,16 @@
 import "server-only";
 
 import { getClassEnrollmentCounts } from "@/app/actions/notion";
+import {
+  CLASS_SCHEDULES,
+  DEFAULT_CAPACITY_BY_CLASS,
+  DEFAULT_WAITLIST_THRESHOLD,
+  DIAGNOSIS_WAITLIST_THRESHOLD,
+  getClassScheduleLabel,
+  isDiagnosisEnrollmentKey,
+  toClassScheduleIsoDate,
+  type ClassScheduleItem,
+} from "@/lib/class-schedule-data";
 
 /**
  * debug=true 관리자 패널과 동일한 일정 행 구조
@@ -18,196 +28,19 @@ export type ScheduleItem = {
   status: "결제 가능" | "예약대기" | "강제 예약대기";
 };
 
-/** page.tsx 의 ClassItem 과 동일 기준 (센터·날짜 메타) */
-type ClassEvent = {
-  year: number;
-  month: number;
-  dateNum: number;
-  location: string;
-  locationCode: string;
-};
+/** 홈페이지 CLASS_SCHEDULES 와 동일 정본 */
+type ClassEvent = Pick<
+  ClassScheduleItem,
+  "year" | "month" | "dateNum" | "location" | "locationCode"
+>;
 
-/**
- * app/page.tsx `classes` 배열과 같은 일정 메타
- * — 센터명·날짜는 여기서만 읽고, 임의 추측하지 않는다.
- */
-const CLASS_EVENTS: ClassEvent[] = [
-  {
-    year: 2026,
-    month: 5,
-    dateNum: 31,
-    location: "서울 서초 인근",
-    locationCode: "서초",
-  },
-  {
-    year: 2026,
-    month: 6,
-    dateNum: 14,
-    location: "경기 김포 · 아스타스포츠센터",
-    locationCode: "김포",
-  },
-  {
-    year: 2026,
-    month: 6,
-    dateNum: 21,
-    location: "경기 화성 · 와이풀앤와이에스씨",
-    locationCode: "화성",
-  },
-  {
-    year: 2026,
-    month: 6,
-    dateNum: 28,
-    location: "서울 목동 · 목동스포츠센터",
-    locationCode: "목동",
-  },
-  {
-    year: 2026,
-    month: 7,
-    dateNum: 5,
-    location: "서울 은평구 · 삼정스포츠 수영장",
-    locationCode: "은평",
-  },
-  {
-    year: 2026,
-    month: 7,
-    dateNum: 12,
-    location: "인천 청라 · 청라스카이스위밍",
-    locationCode: "인천",
-  },
-  {
-    year: 2026,
-    month: 7,
-    dateNum: 19,
-    location: "경기 동탄 · 스윔스튜디오제이",
-    locationCode: "동탄",
-  },
-  {
-    year: 2026,
-    month: 7,
-    dateNum: 26,
-    location: "서울 목동 · 목동스포츠센터",
-    locationCode: "목동",
-  },
-  {
-    year: 2026,
-    month: 8,
-    dateNum: 23,
-    location: "경기 동탄 · 스윔스튜디오제이",
-    locationCode: "동탄",
-  },
-  {
-    year: 2026,
-    month: 8,
-    dateNum: 30,
-    location: "서울 목동 · 목동스포츠센터",
-    locationCode: "목동",
-  },
-  {
-    year: 2026,
-    month: 9,
-    dateNum: 6,
-    location: "부산 · 조이풀스윔",
-    locationCode: "부산",
-  },
-  {
-    year: 2026,
-    month: 9,
-    dateNum: 13,
-    location: "서울 은평구 · 삼정스포츠 수영장",
-    locationCode: "은평",
-  },
-  {
-    year: 2026,
-    month: 9,
-    dateNum: 20,
-    location: "서울 목동 · 목동스포츠센터",
-    locationCode: "목동",
-  },
-  {
-    year: 2026,
-    month: 9,
-    dateNum: 27,
-    location: "인천 청라 · 청라스카이스위밍",
-    locationCode: "청라",
-  },
-  {
-    year: 2026,
-    month: 10,
-    dateNum: 4,
-    location: "부산 · 조이풀스윔",
-    locationCode: "부산",
-  },
-  {
-    year: 2026,
-    month: 10,
-    dateNum: 11,
-    location: "서울 중구 · 스포빌키즈쿠아",
-    locationCode: "중구",
-  },
-  {
-    year: 2026,
-    month: 10,
-    dateNum: 18,
-    location: "서울 목동 · 목동스포츠센터",
-    locationCode: "목동",
-  },
-  {
-    year: 2026,
-    month: 10,
-    dateNum: 25,
-    location: "경기 동탄 · 스윔스튜디오제이",
-    locationCode: "동탄",
-  },
-];
-
-/**
- * page.tsx / set-waitlist 의 DEFAULT_WAITLIST_THRESHOLDS_BY_CLASS 정본 키
- * (구 키·레거시 표기는 제외)
- */
-const DEFAULT_CAPACITY_BY_CLASS: Record<string, number> = {
-  "[동탄 8/23] 1부 특강 자유형": 7,
-  "[동탄 8/23] 1부 특강 평영": 7,
-  "[동탄 8/23] 1부 특강 접영": 7,
-  "[동탄 8/23] 2부 진단": 20,
-  "[목동 8/30] 1부 특강 자유형": 7,
-  "[목동 8/30] 1부 특강 평영": 7,
-  "[목동 8/30] 1부 특강 접영": 14,
-  "[목동 8/30] 1부 진단": 20,
-  "[부산 9/6] 1부 특강 자유형": 7,
-  "[부산 9/6] 1부 특강 평영": 7,
-  "[부산 9/6] 1부 특강 접영": 7,
-  "[부산 9/6] 1부 진단": 20,
-  "[은평 9/13] 1부 특강 자유형": 7,
-  "[은평 9/13] 1부 특강 평영": 7,
-  "[은평 9/13] 1부 특강 접영": 7,
-  "[은평 9/13] 1부 진단": 20,
-  "[목동 9/20] 1부 특강 자유형": 7,
-  "[목동 9/20] 1부 특강 평영": 7,
-  "[목동 9/20] 1부 특강 접영": 7,
-  "[목동 9/20] 1부 진단": 20,
-  "[청라 9/27] 1부 특강 자유형": 7,
-  "[청라 9/27] 1부 특강 평영": 7,
-  "[청라 9/27] 1부 특강 접영": 7,
-  "[청라 9/27] 1부 진단": 20,
-  "[부산 10/4] 1부 특강 자유형": 7,
-  "[부산 10/4] 1부 특강 평영": 7,
-  "[부산 10/4] 1부 특강 접영": 7,
-  "[부산 10/4] 1부 진단": 14,
-  "[중구 10/11] 1부 특강 자유형": 14,
-  "[중구 10/11] 1부 특강 평영": 7,
-  "[중구 10/11] 1부 특강 접영": 7,
-  "[목동 10/18] 1부 특강 자유형": 14,
-  "[목동 10/18] 1부 특강 평영": 7,
-  "[목동 10/18] 1부 특강 접영": 7,
-  "[목동 10/18] 1부 진단": 14,
-  "[동탄 10/25] 1부 특강 자유형": 14,
-  "[동탄 10/25] 1부 특강 평영": 7,
-  "[동탄 10/25] 1부 특강 접영": 7,
-  "[동탄 10/25] 2부 진단": 14,
-};
-
-const DEFAULT_WAITLIST_THRESHOLD = 7;
-const DIAGNOSIS_WAITLIST_THRESHOLD = 20;
+const CLASS_EVENTS: ClassEvent[] = CLASS_SCHEDULES.map((event) => ({
+  year: event.year,
+  month: event.month,
+  dateNum: event.dateNum,
+  location: event.location,
+  locationCode: event.locationCode,
+}));
 
 function getKoreanTodayParts() {
   const formatter = new Intl.DateTimeFormat("en-CA", {
@@ -251,13 +84,11 @@ function isActiveClassEvent(event: ClassEvent): boolean {
 }
 
 function classLabelKey(event: ClassEvent): string {
-  return `${event.locationCode} ${event.month}/${event.dateNum}`;
+  return getClassScheduleLabel(event);
 }
 
 function toIsoDate(event: ClassEvent): string {
-  const mm = String(event.month).padStart(2, "0");
-  const dd = String(event.dateNum).padStart(2, "0");
-  return `${event.year}-${mm}-${dd}`;
+  return toClassScheduleIsoDate(event);
 }
 
 function findClassEventByLabel(label: string): ClassEvent | null {
@@ -267,7 +98,7 @@ function findClassEventByLabel(label: string): ClassEvent | null {
 }
 
 function isDiagnosisClassKey(className: string) {
-  return /^\[[^\]]+\]\s+\d+부\s*진단$/.test(className);
+  return isDiagnosisEnrollmentKey(className);
 }
 
 function parseEnrollmentKey(enrollmentKey: string): {

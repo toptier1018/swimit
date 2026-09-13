@@ -76,6 +76,7 @@ import {
   COMPANION_DISCOUNT_KAKAO_URL,
   COMPANION_DISCOUNT_SECTION_ID,
 } from "@/components/companion-discount-promo";
+import { SwimitTourPromo } from "@/components/swimit-tour-promo";
 
 import {
   CLASS_SCHEDULES,
@@ -4253,6 +4254,13 @@ export default function SwimmingClassPage() {
                   </div>
                 </div>
                 
+                {/* 확정 일정 카드 아래 · 자리 확보 CTA 직전 — 전국투어 안내 */}
+                {!showRegistrationForm && (
+                  <div className="mt-4">
+                    <SwimitTourPromo />
+                  </div>
+                )}
+
                 {!showRegistrationForm && (
                 <div className="mt-4 rounded-xl border border-orange-200 bg-orange-50 p-4 sm:p-5">
                   <p className="text-base sm:text-lg font-bold text-gray-900 mb-2">

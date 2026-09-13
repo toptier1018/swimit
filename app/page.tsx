@@ -71,6 +71,13 @@ import {
 } from "@/lib/resistance-content-consent";
 
 import {
+  CompanionDiscountHint,
+  CompanionDiscountPromo,
+  COMPANION_DISCOUNT_KAKAO_URL,
+  COMPANION_DISCOUNT_SECTION_ID,
+} from "@/components/companion-discount-promo";
+
+import {
   CLASS_SCHEDULES,
   DEFAULT_WAITLIST_THRESHOLD,
   DIAGNOSIS_WAITLIST_THRESHOLD,
@@ -3754,6 +3761,9 @@ export default function SwimmingClassPage() {
                 </div>
               </section>
 
+              {/* 친구·가족 동반 할인 — 후기 다음 / 일정 선택 직전 */}
+              <CompanionDiscountPromo className="order-3 mt-6" />
+
               {/* 어항샷 · 저항 진단 — clinic만 별도 섹션 (fishtank는 히어로 직후에 이미 표시) */}
               {!isFishtankEntry ? (
               <section
@@ -3840,6 +3850,17 @@ export default function SwimmingClassPage() {
                       ? "지역을 고른 뒤, 어항샷 진단 또는 저항 제로 특강 중 원하는 프로그램을 신청하세요."
                       : "지역을 먼저 선택한 뒤, 일정을 확인하세요."}
                   </p>
+                  <CompanionDiscountHint
+                    onNavigate={() => {
+                      console.log(
+                        "[동반할인] 일정 섹션 한 줄 안내 → 이벤트 섹션 스크롤",
+                      );
+                      const el = document.getElementById(
+                        COMPANION_DISCOUNT_SECTION_ID,
+                      );
+                      el?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }}
+                  />
                 </div>
                 {scheduleRegions.length > 0 && (
                   <div className="mb-4">
@@ -5870,6 +5891,26 @@ export default function SwimmingClassPage() {
                       <p className="mt-1 text-sm text-gray-600">
                         선택하신 특강과 결제금액을 확인한 뒤 결제해 주세요
                       </p>
+                      {!isResistanceDiagnosisProduct({
+                        className: selectedTimeSlot?.name,
+                        productType: selectedProductType,
+                      }) ? (
+                        <div className="mt-2 flex justify-center">
+                          <CompanionDiscountHint
+                            onNavigate={() => {
+                              console.log(
+                                "[동반할인] 결제 확인 한 줄 안내 → 이벤트 섹션",
+                              );
+                              // 신청 폼에 있으면 랜딩 섹션이 안 보일 수 있어 카카오로 연결
+                              window.open(
+                                COMPANION_DISCOUNT_KAKAO_URL,
+                                "_blank",
+                                "noopener,noreferrer",
+                              );
+                            }}
+                          />
+                        </div>
+                      ) : null}
                     </div>
 
                     <div className="mx-auto w-full max-w-2xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">

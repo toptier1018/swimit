@@ -40,7 +40,7 @@ export function CompanionDiscountPromo({
             <span className="mr-1" aria-hidden>
               👥
             </span>
-            친구·가족과 함께 신청하면
+            친구·가족과 함께 &quot;특강&quot; 신청하면
             <br className="sm:hidden" /> 둘 다 5,000원 할인
           </h3>
 

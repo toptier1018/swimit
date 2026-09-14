@@ -45,7 +45,9 @@ export function CompanionDiscountPromo({
           </h3>
 
           <p className="break-keep text-sm leading-6 text-gray-700 sm:text-[15px] sm:leading-7">
-            같은 일정의 저항 특강을 함께 신청하면
+            같은 일정의{" "}
+            <span className="font-bold text-blue-800">저항 제로 특강</span>을
+            함께 신청하면
             <br className="sm:hidden" />
             본인 5,000원 + 동반인도 각각 5,000원 할인
           </p>
@@ -65,6 +67,10 @@ export function CompanionDiscountPromo({
             </p>
           </div>
         </div>
+
+        <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold leading-5 text-slate-700 sm:text-sm sm:leading-6">
+          ※ 저항 진단 프로그램은 이벤트 대상이 아닙니다. (특강만 해당)
+        </p>
 
         <p className="break-keep text-sm leading-6 text-gray-600 sm:text-[15px]">
           수친 · 가족과 함께 신청할수록 함께 할인받을 수 있습니다.
@@ -164,7 +170,8 @@ export function CompanionDiscountHint({
     >
       <span aria-hidden>👥</span>
       <span className="break-keep">
-        친구·가족과 함께 신청하면 각각 5,000원 할인
+        친구·가족과 특강 함께 신청하면 각각 5,000원 할인
+        <span className="font-medium text-blue-700/80"> (진단 제외)</span>
       </span>
     </button>
   );

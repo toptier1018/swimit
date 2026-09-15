@@ -18,8 +18,8 @@ type CompanionDiscountPromoProps = {
 };
 
 /**
- * 친구·가족 동반 신청 할인 프로모션
- * — 랜딩 후기 아래 / 일정 선택 직전에만 노출 (전환율 해치지 않는 섹션형 UI)
+ * 친구·가족 동반 신청 할인 프로모션 (2026년 10월 기준 UI 안내)
+ * — 실제 결제금액/Toss 자동 할인과 연결되지 않음. 고객센터 확인 후 수동 처리.
  */
 export function CompanionDiscountPromo({
   className = "",
@@ -40,8 +40,8 @@ export function CompanionDiscountPromo({
             <span className="mr-1" aria-hidden>
               👥
             </span>
-            친구·가족과 함께 &quot;특강&quot; 신청하면
-            <br className="sm:hidden" /> 둘 다 5,000원 할인
+            수친·가족과 함께 신청하면
+            <br className="sm:hidden" /> 두 분 모두 각각 10,000원 할인
           </h3>
 
           <p className="break-keep text-sm leading-6 text-gray-700 sm:text-[15px] sm:leading-7">
@@ -49,7 +49,7 @@ export function CompanionDiscountPromo({
             <span className="font-bold text-blue-800">저항 제로 특강</span>을
             함께 신청하면
             <br className="sm:hidden" />
-            본인 5,000원 + 동반인도 각각 5,000원 할인
+            두 사람 모두 각각 10,000원 할인
           </p>
         </div>
 
@@ -57,23 +57,27 @@ export function CompanionDiscountPromo({
           <div className="rounded-xl border border-blue-200 bg-blue-50 px-3 py-3 text-center sm:px-4 sm:py-3.5">
             <p className="text-xs font-bold text-blue-700 sm:text-sm">본인</p>
             <p className="mt-1 text-xl font-black tracking-tight text-blue-800 sm:text-2xl">
-              -5,000원
+              -10,000원
             </p>
           </div>
           <div className="rounded-xl border border-blue-200 bg-blue-50 px-3 py-3 text-center sm:px-4 sm:py-3.5">
             <p className="text-xs font-bold text-blue-700 sm:text-sm">동반인</p>
             <p className="mt-1 text-xl font-black tracking-tight text-blue-800 sm:text-2xl">
-              각 -5,000원
+              -10,000원
             </p>
           </div>
         </div>
 
+        <p className="break-keep text-center text-sm font-bold leading-6 text-blue-900 sm:text-left sm:text-[15px] sm:leading-7">
+          정상가 80,000원 → 각 70,000원
+        </p>
+
         <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold leading-5 text-slate-700 sm:text-sm sm:leading-6">
-          ※ 저항 진단 프로그램은 이벤트 대상이 아닙니다. (특강만 해당)
+          ※ 저항 진단 프로그램은 할인 대상이 아닙니다.
         </p>
 
         <p className="break-keep text-sm leading-6 text-gray-600 sm:text-[15px]">
-          수친 · 가족과 함께 신청할수록 함께 할인받을 수 있습니다.
+          다른 할인·쿠폰과 중복 적용되지 않습니다.
         </p>
 
         <div className="space-y-2">
@@ -94,7 +98,7 @@ export function CompanionDiscountPromo({
             </a>
           </Button>
           <p className="break-keep text-xs leading-5 text-gray-500 sm:text-sm sm:leading-6">
-            결제 전 고객센터에 함께 신청할 분의 성함과 일정을 알려주세요.
+            결제 전 고객센터에서 두 분의 성함과 신청 일정을 확인해주세요.
           </p>
         </div>
 
@@ -110,16 +114,16 @@ export function CompanionDiscountPromo({
                   <ol className="list-decimal space-y-1.5 pl-5 text-gray-800">
                     <li>함께 참여할 같은 특강 일정을 선택</li>
                     <li>결제 전 고객센터에 두 분의 성함과 신청 일정 전달</li>
-                    <li>할인 안내 후 결제</li>
+                    <li>할인 안내 후 결제 (자동 할인 아님 · 고객센터 확인 후 수동 처리)</li>
                   </ol>
                   <ul className="mt-2 space-y-1 pl-1 text-gray-700">
                     <li>
                       <span className="font-semibold text-gray-900">계좌이체:</span>{" "}
-                      각 75,000원으로 안내
+                      확인 후 각 70,000원으로 안내
                     </li>
                     <li>
                       <span className="font-semibold text-gray-900">카드 결제:</span>{" "}
-                      두 분 결제 확인 후 각각 5,000원 부분취소
+                      각 80,000원 결제 후 각각 10,000원 부분취소
                     </li>
                   </ul>
                 </div>
@@ -127,9 +131,9 @@ export function CompanionDiscountPromo({
                 <div className="space-y-2 border-t border-blue-100/80 pt-3">
                   <p className="font-bold text-blue-900">[유의사항]</p>
                   <ul className="space-y-1.5 pl-1 text-gray-700">
-                    <li>· 저항 진단 프로그램은 이벤트 대상이 아닙니다.</li>
+                    <li>· 저항 진단 프로그램은 할인 대상이 아닙니다.</li>
                     <li>· 1인 1회 적용</li>
-                    <li>· 다른 할인 및 쿠폰과 중복 불가</li>
+                    <li>· 다른 할인·쿠폰과 중복 적용되지 않습니다.</li>
                     <li>· 한 분이 취소 또는 이월하면 동반 할인 혜택도 취소</li>
                     <li>
                       · 공지 전 이미 결제한 고객도 같은 일정 동반 참여가 확인되면
@@ -170,7 +174,7 @@ export function CompanionDiscountHint({
     >
       <span aria-hidden>👥</span>
       <span className="break-keep">
-        친구·가족과 특강 함께 신청하면 각각 5,000원 할인
+        수친·가족과 함께 신청하면 각각 10,000원 할인
         <span className="font-medium text-blue-700/80"> (진단 제외)</span>
       </span>
     </button>

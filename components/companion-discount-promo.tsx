@@ -18,7 +18,7 @@ type CompanionDiscountPromoProps = {
 };
 
 /**
- * 친구·가족 동반 신청 할인 프로모션 (2026년 10월 기준 UI 안내)
+ * 친구·가족 동반 신청 할인 프로모션 (UI 안내 · 각 5,000원)
  * — 실제 결제금액/Toss 자동 할인과 연결되지 않음. 고객센터 확인 후 수동 처리.
  */
 export function CompanionDiscountPromo({
@@ -41,7 +41,7 @@ export function CompanionDiscountPromo({
               👥
             </span>
             수친·가족과 함께 신청하면
-            <br className="sm:hidden" /> 두 분 모두 각각 10,000원 할인
+            <br className="sm:hidden" /> 두 분 모두 각각 5,000원 할인
           </h3>
 
           <p className="break-keep text-sm leading-6 text-gray-700 sm:text-[15px] sm:leading-7">
@@ -49,7 +49,7 @@ export function CompanionDiscountPromo({
             <span className="font-bold text-blue-800">저항 제로 특강</span>을
             함께 신청하면
             <br className="sm:hidden" />
-            두 사람 모두 각각 10,000원 할인
+            두 사람 모두 각각 5,000원 할인
           </p>
         </div>
 
@@ -57,19 +57,19 @@ export function CompanionDiscountPromo({
           <div className="rounded-xl border border-blue-200 bg-blue-50 px-3 py-3 text-center sm:px-4 sm:py-3.5">
             <p className="text-xs font-bold text-blue-700 sm:text-sm">본인</p>
             <p className="mt-1 text-xl font-black tracking-tight text-blue-800 sm:text-2xl">
-              -10,000원
+              -5,000원
             </p>
           </div>
           <div className="rounded-xl border border-blue-200 bg-blue-50 px-3 py-3 text-center sm:px-4 sm:py-3.5">
             <p className="text-xs font-bold text-blue-700 sm:text-sm">동반인</p>
             <p className="mt-1 text-xl font-black tracking-tight text-blue-800 sm:text-2xl">
-              -10,000원
+              -5,000원
             </p>
           </div>
         </div>
 
         <p className="break-keep text-center text-sm font-bold leading-6 text-blue-900 sm:text-left sm:text-[15px] sm:leading-7">
-          정상가 80,000원 → 각 70,000원
+          정상가 80,000원 → 각 75,000원
         </p>
 
         <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold leading-5 text-slate-700 sm:text-sm sm:leading-6">
@@ -119,11 +119,11 @@ export function CompanionDiscountPromo({
                   <ul className="mt-2 space-y-1 pl-1 text-gray-700">
                     <li>
                       <span className="font-semibold text-gray-900">계좌이체:</span>{" "}
-                      확인 후 각 70,000원으로 안내
+                      확인 후 각 75,000원으로 안내
                     </li>
                     <li>
                       <span className="font-semibold text-gray-900">카드 결제:</span>{" "}
-                      각 80,000원 결제 후 각각 10,000원 부분취소
+                      각 80,000원 결제 후 각각 5,000원 부분취소
                     </li>
                   </ul>
                 </div>
@@ -174,7 +174,7 @@ export function CompanionDiscountHint({
     >
       <span aria-hidden>👥</span>
       <span className="break-keep">
-        수친·가족과 함께 신청하면 각각 10,000원 할인
+        수친·가족과 함께 신청하면 각각 5,000원 할인
         <span className="font-medium text-blue-700/80"> (진단 제외)</span>
       </span>
     </button>

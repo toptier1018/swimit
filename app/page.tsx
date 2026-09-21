@@ -553,6 +553,18 @@ const TIMETABLE_BUSAN_SEPTEMBER: TimetableRow[] = [
   },
 ];
 
+/** 조이풀스윔 10/4 특강 — 평영·접영만 (자유형·진단 미모집) */
+const TIMETABLE_BUSAN_OCTOBER: TimetableRow[] = [
+  {
+    session: "1부 특강",
+    time: "14:00 ~ 16:00",
+    lanes: [
+      { lane: "2레인", title: "접영", price: 80000 },
+      { lane: "3레인", title: "평영", price: 80000 },
+    ],
+  },
+];
+
 /** 삼정스포츠 수영장 9/13 특강 (은평) — 특강+진단 동시, 레인 미표시 */
 const TIMETABLE_EUNPYEONG_SEPTEMBER: TimetableRow[] = [
   {
@@ -635,7 +647,7 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   16: TIMETABLE_EUNPYEONG_SEPTEMBER, // 9/13 은평
   18: TIMETABLE_MOKDONG_SEPTEMBER, // 9/20 목동
   19: TIMETABLE_CHEONGNA_SEPTEMBER, // 9/27 청라
-  20: TIMETABLE_BUSAN_SEPTEMBER, // 10/4 부산
+  20: TIMETABLE_BUSAN_OCTOBER, // 10/4 부산 (평영·접영만)
   21: TIMETABLE_JUNGGU_OCTOBER, // 10/11 중구
   22: TIMETABLE_MOKDONG_SEPTEMBER, // 10/18 목동
   23: TIMETABLE_DONGTAN_AUGUST, // 10/25 동탄 스윔스튜디오제이

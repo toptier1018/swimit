@@ -222,9 +222,31 @@ const DiagnosisCouponBanner = () => {
   );
 };
 
+/**
+ * 동탄처럼 제로·진단을 나눠 받을 때, 진단이 열리는 회차.
+ * 8/23은 2부 16:00~18:00, 10/25는 1부와 같은 14:00~16:00.
+ */
+const getDualDiagnosisSchedule = (classId: number) => {
+  if (classId === DONGTAN_OCTOBER_CLASS_ID) {
+    return {
+      session: "1부 진단",
+      sessionLabel: "1부",
+      time: "14:00 ~ 16:00",
+      timeLabel: "14:00~16:00 · 2시간",
+    };
+  }
+  return {
+    session: PRODUCT_CATALOG.diagnosis.session,
+    sessionLabel: "2부",
+    time: PRODUCT_CATALOG.diagnosis.time,
+    timeLabel: PRODUCT_CATALOG.diagnosis.timeLabel,
+  };
+};
+
 const getDongtanDiagnosisEnrollmentKey = (
   classId: number = DONGTAN_AUGUST_CLASS_ID,
-) => `[${getClassKeyLabel(classId)}] 2부 진단`;
+) =>
+  `[${getClassKeyLabel(classId)}] ${getDualDiagnosisSchedule(classId).sessionLabel} 진단`;
 
 /** 시간표 안에서 진단 프로그램 레인을 표시하는 이름 (목동 8/30 5·6레인 등) */
 const DIAGNOSIS_LANE_TITLE = "저항 진단 프로그램";
@@ -771,7 +793,8 @@ type DiagnosisOffering = {
 
 /**
  * 특강별 저항 진단 프로그램 운영 정보
- * - 동탄 8/23: 2부에 진단만 단독 운영
+ * - 동탄 8/23: 2부 16:00~18:00에 진단만 단독 운영
+ * - 동탄 10/25: 1부 14:00~16:00에 제로 특강과 같은 시간으로 진단 운영
  * - 목동 8/30·부산 9/6: 1부 특강과 동시 운영 (레인 표기)
  * - 은평 9/13·목동 9/20·청라 9/27: 1부 특강과 동시 운영 (레인 미표시)
  */
@@ -780,10 +803,11 @@ const getDiagnosisOfferingForClass = (
 ): DiagnosisOffering | null => {
   if (isDongtanDualProductClass(classId)) {
     const product = PRODUCT_CATALOG.diagnosis;
+    const schedule = getDualDiagnosisSchedule(classId);
     return {
       classId,
-      session: product.session,
-      time: product.time,
+      session: schedule.session,
+      time: schedule.time,
       price: product.price,
       lanes: [],
       enrollmentKey: getDongtanDiagnosisEnrollmentKey(classId),
@@ -830,6 +854,8 @@ const ENROLLMENT_MERGE_TO: Record<string, string> = {
   "[부산 8/30] 1부 특강 자유형": "[부산 9/6] 1부 특강 자유형",
   "[부산 8/30] 1부 특강 평영": "[부산 9/6] 1부 특강 평영",
   "[부산 8/30] 1부 특강 접영": "[부산 9/6] 1부 특강 접영",
+  // 동탄 10/25 진단을 2부에서 1부 시간으로 옮긴 뒤, 이미 받은 신청은 1부로 합산
+  "[동탄 10/25] 2부 진단": "[동탄 10/25] 1부 진단",
 };
 
 const migrateToStrokeClassKey = (key: string): string => {
@@ -4418,9 +4444,12 @@ export default function SwimmingClassPage() {
                         PRODUCT_CATALOG[selectedProductType!].name}
                       {selectedTimeSlot?.time
                         ? ` · ${selectedTimeSlot.time}`
-                        : selectedProductType
-                          ? ` · ${PRODUCT_CATALOG[selectedProductType].timeLabel}`
-                          : ""}
+                        : selectedProductType === "diagnosis" &&
+                            selectedScheduleClass
+                          ? ` · ${getDualDiagnosisSchedule(selectedScheduleClass.id).timeLabel}`
+                          : selectedProductType
+                            ? ` · ${PRODUCT_CATALOG[selectedProductType].timeLabel}`
+                            : ""}
                       {selectedTimeSlot?.price
                         ? ` · ₩${selectedTimeSlot.price.toLocaleString()}`
                         : ""}
@@ -5197,10 +5226,17 @@ export default function SwimmingClassPage() {
                                   ).map((productType) => {
                                     const product =
                                       PRODUCT_CATALOG[productType];
-                                    const sessionLabel =
+                                    const diagnosisSchedule =
                                       productType === "diagnosis"
-                                        ? "2부"
-                                        : "1부";
+                                        ? getDualDiagnosisSchedule(
+                                            selectedClassIdNum,
+                                          )
+                                        : null;
+                                    const sessionLabel =
+                                      diagnosisSchedule?.sessionLabel ?? "1부";
+                                    const timeLabel =
+                                      diagnosisSchedule?.timeLabel ??
+                                      product.timeLabel;
                                     return (
                                       <button
                                         key={productType}
@@ -5232,7 +5268,7 @@ export default function SwimmingClassPage() {
                                           {sessionLabel} {product.name}
                                         </p>
                                         <p className="mt-1 text-sm font-bold text-blue-800">
-                                          {product.timeLabel}
+                                          {timeLabel}
                                         </p>
                                         <div className="mt-1">
                                           <ProductPriceLabel
@@ -5268,6 +5304,10 @@ export default function SwimmingClassPage() {
 
                           const product =
                             PRODUCT_CATALOG[selectedProductType];
+                          const diagnosisSchedule =
+                            selectedProductType === "diagnosis"
+                              ? getDualDiagnosisSchedule(selectedClassIdNum)
+                              : null;
                           const diagnosisKey =
                             getDongtanDiagnosisEnrollmentKey(
                               selectedClassIdNum,
@@ -5292,7 +5332,8 @@ export default function SwimmingClassPage() {
                                   </span>
                                 </div>
                                 <p className="mt-1">
-                                  {product.timeLabel}
+                                  {diagnosisSchedule?.timeLabel ??
+                                    product.timeLabel}
                                   {selectedProductType === "zero"
                                     ? " · 영법 1개 집중 교정"
                                     : ""}

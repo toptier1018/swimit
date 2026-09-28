@@ -15,6 +15,8 @@ export const COMPANION_DISCOUNT_KAKAO_URL =
 
 type CompanionDiscountPromoProps = {
   className?: string;
+  showWaitlist?: boolean;
+  onViewWaitlist?: () => void;
 };
 
 /**
@@ -23,6 +25,8 @@ type CompanionDiscountPromoProps = {
  */
 export function CompanionDiscountPromo({
   className = "",
+  showWaitlist = false,
+  onViewWaitlist,
 }: CompanionDiscountPromoProps) {
   return (
     <section
@@ -30,31 +34,26 @@ export function CompanionDiscountPromo({
       className={`w-full scroll-mt-4 rounded-2xl border border-blue-200 bg-white p-4 shadow-sm sm:p-5 ${className}`}
     >
       <div className="mx-auto max-w-3xl space-y-3">
-        <div className="space-y-2">
+        <div className="space-y-1">
           <div className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">
             <Users className="h-3.5 w-3.5" aria-hidden />
             상시 할인
           </div>
           <h3 className="break-keep text-lg font-bold leading-7 text-gray-950">
-            함께 신청하면 각각 5,000원
+            특강 5,000원
           </h3>
-          <p className="break-keep text-sm leading-6 text-gray-700">
-            같은 일정 저항 제로 특강 · 본인·동반인 각 -5,000원
-          </p>
-          <p className="text-sm font-bold text-blue-900">
-            80,000원 → 각 75,000원
-          </p>
+          <p className="text-sm font-bold text-blue-900">80,000원 → 75,000원</p>
           <p className="text-xs leading-5 text-gray-500">
-            진단 제외 · 다른 할인과 중복 불가
+            진단 제외 · 두 할인은 함께 적용되지 않아요
           </p>
         </div>
 
-        <div className="space-y-2">
-          <Button
-            asChild
-            size="lg"
-            className="h-12 w-full text-[15px] font-bold sm:h-11 sm:max-w-md sm:text-base"
-          >
+        <div className="space-y-2 rounded-xl border border-blue-100 bg-blue-50/50 p-3">
+          <p className="text-sm font-bold text-gray-950">함께 신청</p>
+          <p className="text-sm leading-6 text-gray-700">
+            같은 일정 특강을 같이 신청하면 두 분 모두 각각 5,000원
+          </p>
+          <Button asChild size="sm" className="h-10 w-full font-bold">
             <a
               href={COMPANION_DISCOUNT_KAKAO_URL}
               target="_blank"
@@ -66,10 +65,34 @@ export function CompanionDiscountPromo({
               동반 할인 신청하기
             </a>
           </Button>
-          <p className="break-keep text-xs leading-5 text-gray-500 sm:text-sm sm:leading-6">
-            결제 전 고객센터에서 두 분의 성함과 신청 일정을 확인해주세요.
+          <p className="text-xs leading-5 text-gray-500">
+            결제 전 고객센터에서 두 분의 성함과 일정을 확인합니다.
           </p>
         </div>
+
+        {showWaitlist ? (
+          <div className="space-y-2 rounded-xl border border-blue-100 p-3">
+            <p className="text-sm font-bold text-gray-950">미리 예약대기</p>
+            <p className="text-sm leading-6 text-gray-700">
+              전월 15일까지 등록하면, 16일 결제 안내 알림톡과 함께 5,000원 쿠폰
+            </p>
+            <p className="text-xs leading-5 text-gray-600">
+              지금은 결제하지 않아요. 안내 후 결제하면 예약이 확정됩니다.
+            </p>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="h-10 w-full border-blue-200 font-bold text-blue-800"
+              onClick={() => {
+                console.log("[예약대기할인] 일정으로 이동");
+                onViewWaitlist?.();
+              }}
+            >
+              예약대기 일정 보기 ↓
+            </Button>
+          </div>
+        ) : null}
 
         <Accordion type="single" collapsible className="w-full border-t border-blue-100 pt-1">
           <AccordionItem value="companion-discount-details" className="border-0">

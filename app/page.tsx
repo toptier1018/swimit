@@ -236,41 +236,6 @@ const scrollToNovemberSchedules = () => {
   });
 };
 
-/** 동반 할인 바로 아래. 일정 카드 사이에는 두지 않습니다. */
-const NovemberWaitlistIntro = ({ className = "" }: { className?: string }) => (
-  <section
-    className={`w-full scroll-mt-4 rounded-2xl border border-blue-100 bg-white p-4 shadow-sm sm:p-5 ${className}`}
-  >
-    <div className="mx-auto max-w-3xl space-y-3">
-      <div className="inline-flex rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">
-        상시 할인
-      </div>
-      <h3 className="break-keep text-lg font-bold leading-7 text-gray-950">
-        미리 예약대기하면 5,000원 쿠폰
-      </h3>
-      <p className="text-sm font-bold text-blue-900">80,000원 → 75,000원</p>
-      <p className="text-sm leading-6 text-gray-700">
-        전월 15일까지 등록하면, 16일 결제 안내 알림톡과 함께 5,000원 쿠폰을 드려요.
-      </p>
-      <p className="text-sm leading-6 text-gray-800">
-        지금은 결제하지 않아요. 안내 후 결제하면 예약이 확정됩니다.
-      </p>
-      <Button
-        type="button"
-        size="lg"
-        variant="outline"
-        className="h-11 w-full border-blue-200 text-sm font-bold text-blue-800 sm:max-w-md"
-        onClick={scrollToNovemberSchedules}
-      >
-        예약대기 일정 보기 ↓
-      </Button>
-      <p className="text-xs leading-5 text-gray-500">
-        진단 제외 · 다른 할인과 중복 불가 · 예약대기만으로 확정되지 않아요
-      </p>
-    </div>
-  </section>
-);
-
 /** 11월 특강 신청 화면 상단 짧은 안내. 진단 선택 시에는 호출하지 않습니다. */
 const NovemberWaitlistApplyNotice = ({ showDiscount }: { showDiscount: boolean }) => (
   <div className="mb-4 rounded-xl border border-blue-100 bg-white p-4 shadow-sm">
@@ -3962,12 +3927,11 @@ export default function SwimmingClassPage() {
                 </div>
               </section>
 
-              {/* 친구·가족 동반 할인 — 후기 다음 */}
-              <CompanionDiscountPromo className="order-3 mt-6" />
-
-              {!isFishtankEntry ? (
-                <NovemberWaitlistIntro className="order-3 mt-6" />
-              ) : null}
+              <CompanionDiscountPromo
+                className="order-3 mt-6"
+                showWaitlist={!isFishtankEntry}
+                onViewWaitlist={scrollToNovemberSchedules}
+              />
 
               {/* 어항샷 · 저항 진단 — 동반 할인·11월 예약대기 다음 */}
               {!isFishtankEntry ? (

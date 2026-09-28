@@ -44,6 +44,7 @@ import {
   getClassEnrollmentCounts,
   findOrCreateApplicant,
 } from "@/app/actions/notion";
+import { hasNovemberBenefit, isNovemberSchedule, NOVEMBER_BENEFIT_AMOUNT, NOVEMBER_BENEFIT_END } from "@/lib/november-reservation";
 import { checkDuplicateForSameClass } from "@/app/actions/google-sheets";
 import {
   EMPTY_TRAFFIC_SOURCE,
@@ -188,12 +189,30 @@ const ProductPriceLabel = ({
   originalPrice,
   badge = "런칭특가",
   className = "",
+  reservationOnly = false,
+  reservationBenefit = false,
 }: {
   price: number;
   originalPrice: number;
   badge?: string;
   className?: string;
-}) => (
+  reservationOnly?: boolean;
+  reservationBenefit?: boolean;
+}) => reservationOnly ? (
+  <span className="block rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-sm leading-5 text-blue-950">
+    {reservationBenefit ? (
+      <>
+        <span className="block text-xs font-bold text-blue-700">예약대기 혜택</span>
+        <strong className="font-bold">특강 5,000원 할인</strong>
+        <span className="mt-0.5 block text-xs font-medium text-blue-800">
+          10/15까지 등록 · 지금 결제 없음
+        </span>
+      </>
+    ) : (
+      "지금 결제 없이 예약하기"
+    )}
+  </span>
+) : (
   <span
     className={`inline-flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 ${className}`}
   >
@@ -207,6 +226,96 @@ const ProductPriceLabel = ({
       {badge}
     </span>
   </span>
+);
+
+const scrollToNovemberSchedules = () => {
+  console.log("[11월예약대기] 11월 일정으로 이동");
+  document.getElementById("november-schedule-start")?.scrollIntoView({
+    behavior: "smooth",
+    block: "start",
+  });
+};
+
+/** 10월 일정과 11월 일정 사이에 두는 예약대기 안내. 저장/결제 로직과 무관합니다. */
+const NovemberWaitlistIntro = () => (
+  <section className="scroll-mt-24 rounded-xl border border-blue-100 bg-white p-4 shadow-sm sm:p-5">
+    <p className="text-xs font-bold tracking-wide text-blue-700">11월 예약대기 OPEN</p>
+    <h3 className="mt-2 break-keep text-lg font-bold leading-7 text-gray-950 sm:text-xl">
+      11월 특강을 미리 예약대기하면
+      <br />
+      5,000원 혜택
+    </h3>
+    <p className="mt-3 text-sm leading-6 text-gray-700">
+      <span className="text-gray-400 line-through">정상가 80,000원</span>
+      <span className="mx-1.5 text-gray-300">→</span>
+      <strong className="text-blue-800">예약대기 혜택 75,000원</strong>
+    </p>
+    <div className="mt-3 space-y-2 text-sm leading-6 text-gray-700">
+      <p>11월 스윔잇 특강을 기다리고 계신다면 지금 예약대기에 등록해주세요.</p>
+      <p>10월 15일까지 예약대기에 등록하신 분께 11월 특강 결제 시 5,000원 할인 혜택을 드립니다.</p>
+    </div>
+    <ul className="mt-3 space-y-1.5 text-sm leading-6 text-gray-800">
+      <li>✓ 지금은 결제하지 않아요</li>
+      <li>✓ 일정 오픈 시 예약대기 고객에게 먼저 안내</li>
+      <li>✓ 특강 결제 시 5,000원 할인</li>
+      <li>✓ 안내 후 결제를 완료하면 최종 예약 확정</li>
+    </ul>
+    <button
+      type="button"
+      onClick={(event) => {
+        event.stopPropagation();
+        scrollToNovemberSchedules();
+      }}
+      className="mt-4 text-sm font-bold text-blue-700 underline underline-offset-4"
+    >
+      11월 예약대기 일정 보기 ↓
+    </button>
+    <div className="mt-4 rounded-lg border border-blue-100 bg-blue-50 px-3 py-3 text-sm leading-6 text-blue-950">
+      <p className="font-bold">예약대기는 최종 예약 확정이 아닙니다.</p>
+      <p className="mt-1">
+        현재 결제는 진행되지 않습니다. 예약 안내를 받은 후 결제를 완료하면 최종 예약이 확정됩니다.
+      </p>
+      <p className="mt-2 text-xs leading-5 text-blue-800">
+        5,000원 혜택은 11월 특강에만 적용됩니다. 저항 진단 프로그램은 할인 대상이 아닙니다.
+      </p>
+    </div>
+  </section>
+);
+
+/** 11월 특강 신청 화면 상단 안내. 진단 선택 시에는 호출하지 않습니다. */
+const NovemberWaitlistApplyNotice = ({ showDiscount }: { showDiscount: boolean }) => (
+  <div className="mb-4 rounded-xl border border-blue-100 bg-white p-4 shadow-sm">
+    <p className="text-xs font-bold text-blue-700">11월 예약대기 혜택</p>
+    <h3 className="mt-1 text-base font-bold text-gray-950 sm:text-lg">지금은 결제하지 않습니다</h3>
+    <div className="mt-2 hidden space-y-2 text-sm leading-6 text-gray-700 sm:block">
+      <p>현재는 11월 특강 예약대기 접수 기간입니다.</p>
+      {showDiscount ? (
+        <p>10월 15일까지 예약대기에 등록하시면 정식 예약 안내 시 특강 수강료 5,000원 할인 혜택을 받으실 수 있습니다.</p>
+      ) : (
+        <p>예약 안내를 받은 뒤 결제를 완료하면 최종 예약이 확정됩니다.</p>
+      )}
+    </div>
+    {showDiscount ? (
+      <p className="mt-2 text-sm font-bold text-blue-800">
+        <span className="font-medium text-gray-400 line-through">80,000원</span>
+        <span className="mx-1.5 font-normal text-gray-300">→</span>
+        75,000원
+      </p>
+    ) : null}
+    <p className="mt-2 text-sm leading-6 text-gray-800 sm:hidden">
+      {showDiscount
+        ? "10/15까지 예약대기 등록 시 특강 5,000원 혜택"
+        : "예약 안내 후 결제를 완료하면 예약이 확정됩니다."}
+    </p>
+    <p className="mt-2 text-xs leading-5 text-gray-600 sm:text-sm">
+      예약대기 → 안내 → {showDiscount ? "75,000원 결제" : "결제"} → 예약확정
+    </p>
+    <div className="mt-3 hidden space-y-1 text-xs leading-5 text-gray-600 sm:block">
+      <p>※ 예약대기만으로 좌석이 최종 확정되지는 않습니다.</p>
+      <p>※ 저항 진단 프로그램은 5,000원 할인 대상이 아닙니다.</p>
+      <p>※ 정식 예약 안내 후 결제가 완료되어야 예약이 확정됩니다.</p>
+    </div>
+  </div>
 );
 
 /** 저항 진단 프로그램 전용 쿠폰 안내 (모든 센터 공통) */
@@ -1221,6 +1330,18 @@ export default function SwimmingClassPage() {
     type: string;
   } | null>(null);
 
+  const [reservationReceipt, setReservationReceipt] = useState<{
+    orderNumber: string; status: "사전예약" | "예약대기"; discountAmount: number;
+    originalAmount: number; expectedAmount: number; reservedAt: string;
+  } | null>(null);
+  const reservationSubmittingRef = useRef(false);
+  const [, refreshReservationBenefit] = useState(0);
+  useEffect(() => {
+    const remaining = NOVEMBER_BENEFIT_END - Date.now();
+    if (remaining <= 0) return;
+    const timer = window.setTimeout(() => refreshReservationBenefit(v => v + 1), Math.min(remaining, 2147483647));
+    return () => window.clearTimeout(timer);
+  }, []);
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [finalAgree, setFinalAgree] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -2119,6 +2240,7 @@ export default function SwimmingClassPage() {
     classItem: ClassItem,
     preferDiagnosis: boolean,
   ) => {
+    setReservationReceipt(null);
     setSelectedClass(String(classItem.id));
     setSelectedTimeSlot(null);
     setDiagnosisStrokes([]);
@@ -2218,7 +2340,7 @@ export default function SwimmingClassPage() {
     if (!selectedTimeSlot) {
       toast({
         title: "클래스를 선택해주세요",
-        description: "신청할 반을 먼저 선택한 뒤 결제를 진행해주세요.",
+        description: "신청할 반을 먼저 선택해 주세요.",
         variant: "destructive",
       });
       console.log("[신청/결제] 클래스 미선택 - 결제 차단");
@@ -2241,7 +2363,7 @@ export default function SwimmingClassPage() {
     if (!agreeAll) {
       toast({
         title: "약관 동의 필요",
-        description: "모든 약관에 동의해야 결제를 진행할 수 있습니다.",
+        description: "필수 약관에 동의한 뒤 신청해 주세요.",
         variant: "destructive",
       });
       console.log("[신청/결제] 약관 전체 동의 미체크 - 결제 차단");
@@ -2285,6 +2407,7 @@ export default function SwimmingClassPage() {
   };
 
   const handleBackToSchedule = () => {
+    setReservationReceipt(null);
     setShowRegistrationForm(false);
     setShowDepositModal(false);
     setSelectedProductType(null);
@@ -2387,7 +2510,21 @@ export default function SwimmingClassPage() {
     ? classes.find((c) => String(c.id) === selectedClass)
     : null;
 
-  const isReservationOnly = Boolean(
+  const isNovemberReservation = isNovemberSchedule(selectedScheduleForPayment) &&
+    !isResistanceDiagnosisProduct({ className: selectedTimeSlot?.name, productType: selectedTimeSlot?.productType || selectedProductType });
+  const novemberDiscount = isNovemberReservation && hasNovemberBenefit(selectedScheduleForPayment)
+    ? NOVEMBER_BENEFIT_AMOUNT : 0;
+
+  useEffect(() => {
+    if (!isNovemberReservation) return;
+    console.log("[11월예약대기] 특강 신청 안내 표시", {
+      classId: selectedScheduleForPayment?.id,
+      date: selectedScheduleForPayment?.date,
+      discount: novemberDiscount,
+    });
+  }, [isNovemberReservation, selectedScheduleForPayment?.id, selectedScheduleForPayment?.date, novemberDiscount]);
+
+  const isReservationOnly = isNovemberReservation || Boolean(
     selectedTimeSlot &&
       (isClassFull(selectedTimeSlot.name) ||
         hasEnrollment(selectedTimeSlot.name) ||
@@ -2403,7 +2540,7 @@ export default function SwimmingClassPage() {
   );
 
   const paymentAmountLabel = selectedTimeSlot
-    ? selectedTimeSlot.price.toLocaleString()
+    ? (selectedTimeSlot.price - novemberDiscount).toLocaleString()
     : "0";
 
   const paymentClassLabel = selectedTimeSlot
@@ -2414,6 +2551,7 @@ export default function SwimmingClassPage() {
 
   const paymentCtaLabel = (() => {
     if (!selectedTimeSlot) return "일정을 선택해 주세요";
+    if (isNovemberReservation) return "11월 예약대기 등록하기";
     if (
       isClassFull(selectedTimeSlot.name) ||
       hasEnrollment(selectedTimeSlot.name)
@@ -2505,7 +2643,44 @@ export default function SwimmingClassPage() {
     return consent;
   };
 
+  useEffect(() => {
+    if (!reservationReceipt || step !== 4) return;
+    const timer = window.setTimeout(() => {
+      applicationSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 80);
+    return () => window.clearTimeout(timer);
+  }, [reservationReceipt, step]);
+
+  const submitNovemberReservation = async () => {
+    if (!selectedTimeSlot || !selectedScheduleForPayment || reservationSubmittingRef.current) return;
+    reservationSubmittingRef.current = true;
+    setIsSubmitting(true);
+    try {
+      const response = await fetch("/api/reservations/november", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          classId: selectedScheduleForPayment.id, classKey: selectedTimeSlot.name,
+          form: formData, agreed: agreeAll, contentConsent: getPaymentContentConsent(),
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.error || "예약을 저장하지 못했습니다.");
+      setReservationReceipt(result);
+      setOrderNumber(result.orderNumber);
+      setPaymentDate(new Date(result.reservedAt));
+      setShowDepositModal(false);
+      setStep(4);
+      void syncClassEnrollmentFromNotion();
+    } catch (error) {
+      toast({ title: "예약 확인", description: error instanceof Error ? error.message : "예약을 다시 시도해 주세요.", variant: "destructive" });
+    } finally {
+      reservationSubmittingRef.current = false;
+      setIsSubmitting(false);
+    }
+  };
+
   const handleClassPgTestPayment = async () => {
+    if (isNovemberReservation) return;
     if (classPgTestLockRef.current || isClassPgTestLoading || !selectedTimeSlot)
       return;
 
@@ -4138,13 +4313,26 @@ export default function SwimmingClassPage() {
                           다른 지역을 선택해 주세요.
                         </div>
                       ) : (
-                        activeScheduleClasses.map((classItem) => {
+                        activeScheduleClasses.map((classItem, scheduleIndex) => {
                         const isSelectedSchedule =
                           selectedClass === String(classItem.id);
+                        const isNovemberCard = isNovemberSchedule(classItem);
+                        const showNovemberIntro =
+                          isNovemberCard &&
+                          !isFishtankEntry &&
+                          (scheduleIndex === 0 ||
+                            !isNovemberSchedule(
+                              activeScheduleClasses[scheduleIndex - 1],
+                            ));
                         return (
+                          <div key={classItem.id} className="space-y-3">
+                          {showNovemberIntro ? <NovemberWaitlistIntro /> : null}
                           <Card
-                            key={classItem.id}
-                            id={`schedule-class-${classItem.id}`}
+                            id={
+                              showNovemberIntro
+                                ? "november-schedule-start"
+                                : `schedule-class-${classItem.id}`
+                            }
                             role={isFishtankEntry ? "group" : "button"}
                             tabIndex={isFishtankEntry ? undefined : 0}
                             onClick={
@@ -4206,6 +4394,13 @@ export default function SwimmingClassPage() {
                               )}
                             </div>
 
+                            {hasNovemberBenefit(classItem) && !isFishtankEntry && (
+                              <div className="mb-3 rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-sm leading-5 text-blue-950">
+                                <span className="block text-xs font-bold text-blue-700">예약대기 혜택</span>
+                                <strong>특강 5,000원 할인</strong>
+                                <p className="mt-0.5 text-xs text-blue-800">10/15까지 등록 · 지금 결제 없음</p>
+                              </div>
+                            )}
                             <div className="bg-blue-50 rounded-lg p-4 mb-4 border border-blue-100">
                               <div className="flex items-center gap-2 mb-1">
                                 <Calendar className="h-5 w-5 text-blue-600" />
@@ -4256,9 +4451,23 @@ export default function SwimmingClassPage() {
                                 </div>
                               )}
                               <div className="flex items-start gap-2 pt-2">
-                                <Clock className="mt-1 h-4 w-4 shrink-0 text-green-600" />
-                                <span className="break-keep text-sm font-bold leading-6 text-green-600 sm:text-[15px]">
-                                  예약 가능 · 코치 1명 당 최대 7명 소수 정예 클래스
+                                <Clock
+                                  className={`mt-1 h-4 w-4 shrink-0 ${
+                                    isNovemberCard && !isFishtankEntry
+                                      ? "text-blue-700"
+                                      : "text-green-600"
+                                  }`}
+                                />
+                                <span
+                                  className={`break-keep text-sm font-bold leading-6 sm:text-[15px] ${
+                                    isNovemberCard && !isFishtankEntry
+                                      ? "text-blue-800"
+                                      : "text-green-600"
+                                  }`}
+                                >
+                                  {isNovemberCard && !isFishtankEntry
+                                    ? "예약대기 접수 중 · 지금 결제하지 않아요"
+                                    : "예약 가능 · 코치 1명 당 최대 7명 소수 정예 클래스"}
                                 </span>
                               </div>
                               {isFishtankEntry ? (
@@ -4297,6 +4506,7 @@ export default function SwimmingClassPage() {
                             </div>
                           </CardContent>
                         </Card>
+                          </div>
                         );
                       })
                       )}
@@ -4462,13 +4672,16 @@ export default function SwimmingClassPage() {
                           : selectedProductType
                             ? ` · ${PRODUCT_CATALOG[selectedProductType].timeLabel}`
                             : ""}
-                      {selectedTimeSlot?.price
+                      {!isNovemberReservation && selectedTimeSlot?.price
                         ? ` · ₩${selectedTimeSlot.price.toLocaleString()}`
                         : ""}
                     </p>
                   )}
                 </div>
               )}
+              {isNovemberReservation && step !== 4 ? (
+                <NovemberWaitlistApplyNotice showDiscount={novemberDiscount > 0} />
+              ) : null}
             <div className="mb-6 grid grid-cols-3 gap-2 sm:mb-8 sm:flex sm:flex-wrap sm:items-center sm:justify-center sm:gap-4">
               {/* Step 1 */}
               <div className="flex flex-col items-center gap-1 sm:flex-row sm:gap-0">
@@ -4501,7 +4714,7 @@ export default function SwimmingClassPage() {
                 >
                   {step > 3 ? "✓" : "2"}
                 </div>
-                <span className="text-xs font-medium sm:ml-2 sm:text-sm">신청/결제</span>
+                <span className="text-xs font-medium sm:ml-2 sm:text-sm">{isNovemberReservation ? "예약대기" : "신청/결제"}</span>
               </div>
 
               <div className="hidden h-0.5 w-12 bg-gray-300 sm:block" />
@@ -4546,9 +4759,9 @@ export default function SwimmingClassPage() {
                 </div>
 
                 <div className="mb-4 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm leading-6 text-blue-900 sm:text-[15px]">
-                  <p>선택하신 클래스는 결제 완료 순으로 자리가 확정됩니다.</p>
+                  <p>{isNovemberReservation ? "지금은 결제하지 않습니다. 이름과 연락처만 입력해 예약대기에 등록해 주세요." : "선택하신 클래스는 결제 완료 순으로 자리가 확정됩니다."}</p>
                   <p>
-                    아래에 이름과 연락처를 입력하시면 결제 단계로 이동합니다.
+                    {isNovemberReservation ? "정식 예약 안내 후 결제를 완료하면 예약이 확정됩니다." : "아래에 이름과 연락처를 입력하시면 결제 단계로 이동합니다."}
                   </p>
                 </div>
 
@@ -5139,10 +5352,10 @@ export default function SwimmingClassPage() {
                         <path d="M3 10h18" strokeWidth="2" />
                       </svg>
                     </div>
-                    신청/결제
+                    {isNovemberReservation ? "예약대기" : "신청/결제"}
                   </h1>
                   <p className="mt-2 text-center text-sm text-gray-600">
-                    클래스를 선택하고 정보를 입력한 뒤 결제까지 한 번에 진행합니다.
+                    {isNovemberReservation ? "클래스를 선택하고 정보를 입력하면 예약대기에 등록됩니다. 지금 결제하지 않아요." : "클래스를 선택하고 정보를 입력한 뒤 결제까지 한 번에 진행합니다."}
                   </p>
                 </div>
 
@@ -5204,7 +5417,7 @@ export default function SwimmingClassPage() {
                       </div>
                       <p className="text-base md:text-sm text-blue-100 ml-8 md:ml-7">
                         {selectedProductType === "diagnosis"
-                          ? "아래 정보를 입력하고 결제해 주세요."
+                          ? (isNovemberReservation ? "아래 정보를 입력하고 예약해 주세요." : "아래 정보를 입력하고 결제해 주세요.")
                           : selectedProductType === "zero"
                             ? "영법 1개를 선택해주세요."
                             : selectedClassDiagnosis
@@ -5284,6 +5497,8 @@ export default function SwimmingClassPage() {
                                         </p>
                                         <div className="mt-1">
                                           <ProductPriceLabel
+                                          reservationOnly={isNovemberSchedule(selectedScheduleForPayment) && product.name === PRODUCT_CATALOG.zero.name}
+                                          reservationBenefit={hasNovemberBenefit(selectedScheduleForPayment)}
                                             price={product.price}
                                             originalPrice={product.originalPrice}
                                             badge={product.priceBadge}
@@ -5352,6 +5567,8 @@ export default function SwimmingClassPage() {
                                 </p>
                                 <div className="mt-1">
                                   <ProductPriceLabel
+                                          reservationOnly={isNovemberSchedule(selectedScheduleForPayment) && product.name === PRODUCT_CATALOG.zero.name}
+                                          reservationBenefit={hasNovemberBenefit(selectedScheduleForPayment)}
                                     price={product.price}
                                     originalPrice={product.originalPrice}
                                     badge={product.priceBadge}
@@ -5384,7 +5601,7 @@ export default function SwimmingClassPage() {
                                   )}
                                   <DiagnosisCouponBanner />
                                   <p className="rounded-lg border border-dashed border-blue-200 bg-blue-50/60 px-3 py-3 text-sm leading-6 text-blue-900">
-                                    아래 정보를 입력하고 결제해 주세요.
+                                    {isNovemberReservation ? "아래 정보를 입력하고 예약해 주세요." : "아래 정보를 입력하고 결제해 주세요."}
                                     <br />
                                     <span className="text-xs text-blue-800">
                                       ※ 교정 수업이 아닌 어항샷 진단
@@ -5432,26 +5649,30 @@ export default function SwimmingClassPage() {
                                           </div>
                                           <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
                                             <ProductPriceLabel
+                                          reservationOnly={isNovemberSchedule(selectedScheduleForPayment) && product.name === PRODUCT_CATALOG.zero.name}
+                                          reservationBenefit={hasNovemberBenefit(selectedScheduleForPayment)}
                                               price={product.price}
                                               originalPrice={
                                                 product.originalPrice
                                               }
                                               badge={product.priceBadge}
                                             />
-                                            <span
+                                            {!isNovemberSchedule(selectedScheduleForPayment) && (
+<span
                                               className={getAvailabilityBadgeClassName(
                                                 availabilityBadge.tone,
                                               )}
                                             >
                                               {availabilityBadge.label}
                                             </span>
+)}
                                           </div>
                                         </button>
                                       );
                                     })}
                                   </div>
                                   <p className="text-xs leading-5 text-gray-500">
-                                    ※ 영법 1개 선택 → 결제. 코치당 최대 7명.
+                                    {isNovemberReservation ? "※ 영법 1개 선택 → 예약대기 등록. 지금 결제하지 않아요." : "※ 영법 1개 선택 → 결제. 코치당 최대 7명."}
                                   </p>
                                 </>
                               )}
@@ -5564,6 +5785,8 @@ export default function SwimmingClassPage() {
                                       </div>
                                       <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
                                         <ProductPriceLabel
+                                          reservationOnly={isNovemberSchedule(selectedScheduleForPayment)}
+                                          reservationBenefit={hasNovemberBenefit(selectedScheduleForPayment)}
                                           price={price}
                                           originalPrice={
                                             PRODUCT_CATALOG.zero.originalPrice
@@ -5572,13 +5795,15 @@ export default function SwimmingClassPage() {
                                             PRODUCT_CATALOG.zero.priceBadge
                                           }
                                         />
-                                        <span
+                                        {!isNovemberSchedule(selectedScheduleForPayment) && (
+<span
                                           className={getAvailabilityBadgeClassName(
                                             availabilityBadge.tone,
                                           )}
                                         >
                                           {availabilityBadge.label}
                                         </span>
+)}
                                       </div>
                                     </button>
                                   );
@@ -5625,20 +5850,24 @@ export default function SwimmingClassPage() {
                                         </div>
                                       </div>
                                       <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
-                                        <ProductPriceLabel
+                                        {!isNovemberReservation && (
+<ProductPriceLabel
                                           price={selectedClassDiagnosis.price}
                                           originalPrice={
                                             diagnosisProduct.originalPrice
                                           }
                                           badge={diagnosisProduct.priceBadge}
                                         />
-                                        <span
+)}
+                                        {!isNovemberSchedule(selectedScheduleForPayment) && (
+<span
                                           className={getAvailabilityBadgeClassName(
                                             availabilityBadge.tone,
                                           )}
                                         >
                                           {availabilityBadge.label}
                                         </span>
+)}
                                       </div>
                                       <div className="mt-3">
                                         <DiagnosisCouponBanner />
@@ -5962,9 +6191,9 @@ export default function SwimmingClassPage() {
                         신청내용 확인
                       </h2>
                       <p className="mt-1 text-sm text-gray-600">
-                        선택하신 특강과 결제금액을 확인한 뒤 결제해 주세요
+                        {isNovemberReservation ? "선택하신 특강을 확인한 뒤 예약대기에 등록해 주세요. 지금 결제하지 않아요." : "선택하신 특강과 결제금액을 확인한 뒤 결제해 주세요"}
                       </p>
-                      {!isResistanceDiagnosisProduct({
+                      {!isNovemberReservation && !isResistanceDiagnosisProduct({
                         className: selectedTimeSlot?.name,
                         productType: selectedProductType,
                       }) ? (
@@ -6035,6 +6264,13 @@ export default function SwimmingClassPage() {
                             ) : null}
                           </span>
                         </div>
+                        {novemberDiscount > 0 && selectedTimeSlot && (
+                          <div className="flex justify-between gap-3 px-4 py-3.5 text-sm sm:px-5">
+                            <span className="font-bold text-blue-900">예약대기 혜택</span>
+                            <strong className="text-blue-800">특강 5,000원 할인</strong>
+                          </div>
+                        )}
+                        {!isNovemberReservation && (
                         <div className="flex items-end justify-between gap-3 bg-slate-50 px-4 py-4 sm:px-5">
                           <span className="text-sm font-semibold text-gray-600">
                             결제금액
@@ -6056,10 +6292,17 @@ export default function SwimmingClassPage() {
                             </div>
                           </div>
                         </div>
+                        )}
                       </div>
                     </div>
                   </div>
 
+                  {isNovemberReservation && (
+                    <p className="mt-3 text-center text-sm leading-6 text-gray-600">
+                      {novemberDiscount > 0 ? "10/15까지 등록 시 특강 5,000원 혜택. " : ""}
+                      지금은 결제하지 않아요. 진단 프로그램은 할인 대상이 아닙니다.
+                    </p>
+                  )}
                   {/* Navigation Buttons */}
                   {regionError && (
                     <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 mt-4">
@@ -6110,6 +6353,11 @@ export default function SwimmingClassPage() {
                         }
                         setRegionError(false);
 
+                        if (isNovemberReservation) {
+                          await submitNovemberReservation();
+                          return;
+                        }
+                        setReservationReceipt(null);
                         console.log("[결제UX] 계좌이체(우선) 버튼 클릭", {
                           className: selectedTimeSlot?.name,
                           price: selectedTimeSlot?.price,
@@ -6766,7 +7014,33 @@ export default function SwimmingClassPage() {
               </>
             ) : step === 4 ? (
               <div className="space-y-4">
-                {paymentStatus === "예약대기" ? (
+                {reservationReceipt ? (
+                  <div className="rounded-xl border border-emerald-200 bg-white p-6 text-center shadow-sm">
+                    <h2 className="text-2xl font-bold">
+                      11월 예약대기 등록이 완료되었습니다.
+                    </h2>
+                    <p className="mt-3 leading-7 text-gray-700">
+                      정식 예약이 시작되면 입력하신 연락처로 먼저 안내드리겠습니다.
+                    </p>
+                    {reservationReceipt.discountAmount > 0 ? (
+                      <p className="mt-2 leading-7 text-gray-700">
+                        10월 15일까지 예약대기에 등록하신 분은 11월 특강 결제 시 5,000원 혜택이 적용됩니다.
+                      </p>
+                    ) : null}
+                    {reservationReceipt.status === "예약대기" ? (
+                      <p className="mt-2 text-sm leading-6 text-gray-600">
+                        이번 반은 정원이 차서 대기 순서로 접수되었습니다.
+                      </p>
+                    ) : null}
+                    <p className="mt-2 text-sm text-gray-600">지금 결제할 금액은 없습니다.</p>
+                    <div className="mt-5 space-y-2 rounded-lg bg-slate-50 p-4 text-sm">
+                      <p>{selectedScheduleForPayment?.date} · {selectedScheduleForPayment?.location}</p>
+                      <p>{paymentClassLabel} · {selectedTimeSlot?.time}</p>
+                      {reservationReceipt.discountAmount > 0 && <p className="font-semibold text-blue-800">특강 결제 시 75,000원으로 안내됩니다.</p>}
+                      <p className="break-all text-xs text-gray-500">예약번호 {reservationReceipt.orderNumber}</p>
+                    </div>
+                  </div>
+                ) : paymentStatus === "예약대기" ? (
                   <div className="rounded-xl border border-purple-200 bg-white p-6 text-center shadow-sm">
                     <div className="mb-3 text-3xl">✅</div>
                     <h2 className="text-2xl font-bold text-gray-900">
@@ -6883,6 +7157,7 @@ export default function SwimmingClassPage() {
                   className="w-full py-6 text-lg font-semibold bg-teal-600 hover:bg-teal-700"
                   onClick={() => {
                     setStep(1);
+                    setReservationReceipt(null);
                     setSelectedDate(null);
                     setSelectedClass(null);
                     setSelectedTimeSlot(null);
@@ -6933,7 +7208,7 @@ export default function SwimmingClassPage() {
       </main>
 
       <Dialog
-        open={showDepositModal && paymentStatus !== "예약대기"}
+        open={showDepositModal && !reservationReceipt && paymentStatus !== "예약대기"}
         onOpenChange={(open) => {
           if (open) setShowDepositModal(true);
         }}

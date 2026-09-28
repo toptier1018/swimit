@@ -315,7 +315,7 @@ export const CLASS_SCHEDULES: ClassScheduleItem[] = [
     venue: "와이키키 링크&스윔",
     address: "서울 강남구 압구정로 104 보암빌딩",
     spots: "영법 각 7명",
-    scheduleSummaryLines: ["1부 특강 · 14:00~16:00 (2시간)"],
+    scheduleSummaryLines: ["1부 특강 · 16:00~18:00 (2시간)"],
     badge: "특강 운영",
   },
   {

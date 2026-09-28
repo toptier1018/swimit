@@ -628,7 +628,7 @@ const TIMETABLE_BUSAN_SEPTEMBER: TimetableRow[] = [
 const TIMETABLE_GANGNAM_NOVEMBER: TimetableRow[] = [
   {
     session: "1부 특강",
-    time: "14:00 ~ 16:00",
+    time: "16:00 ~ 18:00",
     lanes: [
       { lane: UNASSIGNED_LANE, title: "자유형", price: 80000 },
       { lane: UNASSIGNED_LANE, title: "평영", price: 80000 },
@@ -1441,7 +1441,7 @@ export default function SwimmingClassPage() {
     );
     console.log("[특강일정] 11월 일정 추가", {
       "부산 11/8": "특강+진단 14:00~16:00",
-      "강남 11/15": "특강만 14:00~16:00",
+      "강남 11/15": "특강만 16:00~18:00",
       "목동 11/22": "특강+진단 14:00~16:00",
       "동탄 11/29": "특강+진단 14:00~16:00",
     });

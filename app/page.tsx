@@ -236,85 +236,85 @@ const scrollToNovemberSchedules = () => {
   });
 };
 
-/** 10월 일정과 11월 일정 사이에 두는 예약대기 안내. 저장/결제 로직과 무관합니다. */
-const NovemberWaitlistIntro = () => (
-  <section className="scroll-mt-24 rounded-xl border border-blue-100 bg-white p-4 shadow-sm sm:p-5">
-    <p className="text-xs font-bold tracking-wide text-blue-700">11월 예약대기 OPEN</p>
-    <h3 className="mt-2 break-keep text-lg font-bold leading-7 text-gray-950 sm:text-xl">
-      11월 특강을 미리 예약대기하면
-      <br />
-      5,000원 혜택
-    </h3>
-    <p className="mt-3 text-sm leading-6 text-gray-700">
-      <span className="text-gray-400 line-through">정상가 80,000원</span>
-      <span className="mx-1.5 text-gray-300">→</span>
-      <strong className="text-blue-800">예약대기 혜택 75,000원</strong>
-    </p>
-    <div className="mt-3 space-y-2 text-sm leading-6 text-gray-700">
-      <p>11월 스윔잇 특강을 기다리고 계신다면 지금 예약대기에 등록해주세요.</p>
-      <p>10월 15일까지 예약대기에 등록하신 분께 11월 특강 결제 시 5,000원 할인 혜택을 드립니다.</p>
-    </div>
-    <ul className="mt-3 space-y-1.5 text-sm leading-6 text-gray-800">
-      <li>✓ 지금은 결제하지 않아요</li>
-      <li>✓ 일정 오픈 시 예약대기 고객에게 먼저 안내</li>
-      <li>✓ 특강 결제 시 5,000원 할인</li>
-      <li>✓ 안내 후 결제를 완료하면 최종 예약 확정</li>
-    </ul>
-    <button
-      type="button"
-      onClick={(event) => {
-        event.stopPropagation();
-        scrollToNovemberSchedules();
-      }}
-      className="mt-4 text-sm font-bold text-blue-700 underline underline-offset-4"
-    >
-      11월 예약대기 일정 보기 ↓
-    </button>
-    <div className="mt-4 rounded-lg border border-blue-100 bg-blue-50 px-3 py-3 text-sm leading-6 text-blue-950">
-      <p className="font-bold">예약대기는 최종 예약 확정이 아닙니다.</p>
-      <p className="mt-1">
-        현재 결제는 진행되지 않습니다. 예약 안내를 받은 후 결제를 완료하면 최종 예약이 확정됩니다.
+/** 동반 할인 바로 아래. 일정 카드 사이에는 두지 않습니다. */
+const NovemberWaitlistIntro = ({ className = "" }: { className?: string }) => (
+  <section
+    className={`w-full scroll-mt-4 rounded-2xl border border-blue-100 bg-white p-4 shadow-sm sm:p-5 ${className}`}
+  >
+    <div className="mx-auto max-w-3xl space-y-3">
+      <div className="inline-flex rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">
+        11월 예약대기 OPEN
+      </div>
+      <h3 className="break-keep text-lg font-bold leading-7 text-gray-950 sm:text-xl">
+        11월 특강을 미리 예약대기하면
+        <br />
+        5,000원 혜택
+      </h3>
+      <p className="text-sm leading-6 text-gray-700">
+        <span className="text-gray-400 line-through">정상가 80,000원</span>
+        <span className="mx-1.5 text-gray-300">→</span>
+        <strong className="text-blue-800">예약대기 혜택 75,000원</strong>
       </p>
-      <p className="mt-2 text-xs leading-5 text-blue-800">
-        5,000원 혜택은 11월 특강에만 적용됩니다. 저항 진단 프로그램은 할인 대상이 아닙니다.
-      </p>
+      <div className="space-y-2 text-sm leading-6 text-gray-700">
+        <p>11월 스윔잇 특강을 기다리고 계신다면 지금 예약대기에 등록해주세요.</p>
+        <p>10월 15일까지 예약대기에 등록하신 분께 11월 특강 결제 시 5,000원 할인 혜택을 드립니다.</p>
+      </div>
+      <ul className="space-y-1.5 text-sm leading-6 text-gray-800">
+        <li>✓ 지금은 결제하지 않아요</li>
+        <li>✓ 일정 오픈 시 예약대기 고객에게 먼저 안내</li>
+        <li>✓ 특강 결제 시 5,000원 할인</li>
+        <li>✓ 안내 후 결제를 완료하면 최종 예약 확정</li>
+      </ul>
+      <Button
+        type="button"
+        size="lg"
+        variant="outline"
+        className="h-12 w-full border-blue-200 text-[15px] font-bold text-blue-800 sm:h-11 sm:max-w-md sm:text-base"
+        onClick={scrollToNovemberSchedules}
+      >
+        11월 예약대기 일정 보기 ↓
+      </Button>
+      <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-sm leading-6 text-slate-700">
+        <p className="font-bold text-slate-900">예약대기는 최종 예약 확정이 아닙니다.</p>
+        <p className="mt-1">
+          현재 결제는 진행되지 않습니다. 예약 안내를 받은 후 결제를 완료하면 최종 예약이 확정됩니다.
+        </p>
+        <p className="mt-2 text-xs leading-5 sm:text-sm">
+          ※ 5,000원 혜택은 11월 특강에만 적용됩니다.
+          <br />
+          ※ 저항 진단 프로그램은 할인 대상이 아닙니다.
+          <br />
+          ※ 다른 할인·쿠폰과 중복 적용되지 않습니다.
+        </p>
+      </div>
     </div>
   </section>
 );
 
-/** 11월 특강 신청 화면 상단 안내. 진단 선택 시에는 호출하지 않습니다. */
+/** 11월 특강 신청 화면 상단 짧은 안내. 진단 선택 시에는 호출하지 않습니다. */
 const NovemberWaitlistApplyNotice = ({ showDiscount }: { showDiscount: boolean }) => (
   <div className="mb-4 rounded-xl border border-blue-100 bg-white p-4 shadow-sm">
     <p className="text-xs font-bold text-blue-700">11월 예약대기 혜택</p>
-    <h3 className="mt-1 text-base font-bold text-gray-950 sm:text-lg">지금은 결제하지 않습니다</h3>
-    <div className="mt-2 hidden space-y-2 text-sm leading-6 text-gray-700 sm:block">
-      <p>현재는 11월 특강 예약대기 접수 기간입니다.</p>
-      {showDiscount ? (
-        <p>10월 15일까지 예약대기에 등록하시면 정식 예약 안내 시 특강 수강료 5,000원 할인 혜택을 받으실 수 있습니다.</p>
-      ) : (
-        <p>예약 안내를 받은 뒤 결제를 완료하면 최종 예약이 확정됩니다.</p>
-      )}
-    </div>
+    <h3 className="mt-1 text-base font-bold text-gray-950">지금은 결제하지 않습니다.</h3>
     {showDiscount ? (
-      <p className="mt-2 text-sm font-bold text-blue-800">
-        <span className="font-medium text-gray-400 line-through">80,000원</span>
-        <span className="mx-1.5 font-normal text-gray-300">→</span>
-        75,000원
+      <p className="mt-2 text-sm leading-6 text-gray-700">
+        10월 15일까지 예약대기에 등록하면 11월 특강 결제 시
+        <br />
+        <span className="text-gray-400 line-through">80,000원</span>
+        <span className="mx-1.5 text-gray-300">→</span>
+        <strong className="text-blue-800">75,000원</strong>
       </p>
-    ) : null}
-    <p className="mt-2 text-sm leading-6 text-gray-800 sm:hidden">
-      {showDiscount
-        ? "10/15까지 예약대기 등록 시 특강 5,000원 혜택"
-        : "예약 안내 후 결제를 완료하면 예약이 확정됩니다."}
+    ) : (
+      <p className="mt-2 text-sm leading-6 text-gray-700">
+        예약 안내를 받은 뒤 결제를 완료하면 최종 예약이 확정됩니다.
+      </p>
+    )}
+    <p className="mt-2 text-sm leading-6 text-gray-800">
+      예약대기 등록 → 예약 안내 → {showDiscount ? "75,000원 결제" : "결제"} → 최종 예약 확정
     </p>
-    <p className="mt-2 text-xs leading-5 text-gray-600 sm:text-sm">
-      예약대기 → 안내 → {showDiscount ? "75,000원 결제" : "결제"} → 예약확정
+    <p className="mt-2 text-xs leading-5 text-gray-600">
+      ※ 저항 진단 프로그램은 할인 대상이 아닙니다.
     </p>
-    <div className="mt-3 hidden space-y-1 text-xs leading-5 text-gray-600 sm:block">
-      <p>※ 예약대기만으로 좌석이 최종 확정되지는 않습니다.</p>
-      <p>※ 저항 진단 프로그램은 5,000원 할인 대상이 아닙니다.</p>
-      <p>※ 정식 예약 안내 후 결제가 완료되어야 예약이 확정됩니다.</p>
-    </div>
   </div>
 );
 
@@ -3987,14 +3987,18 @@ export default function SwimmingClassPage() {
                 </div>
               </section>
 
-              {/* 친구·가족 동반 할인 — 후기 다음 / 일정 선택 직전 */}
+              {/* 친구·가족 동반 할인 — 후기 다음 */}
               <CompanionDiscountPromo className="order-3 mt-6" />
 
-              {/* 어항샷 · 저항 진단 — clinic만 별도 섹션 (fishtank는 히어로 직후에 이미 표시) */}
+              {!isFishtankEntry ? (
+                <NovemberWaitlistIntro className="order-3 mt-6" />
+              ) : null}
+
+              {/* 어항샷 · 저항 진단 — 동반 할인·11월 예약대기 다음 */}
               {!isFishtankEntry ? (
               <section
                 id="diagnosis-intro-section"
-                className="order-2 mt-6 w-full scroll-mt-4 rounded-2xl border border-blue-100 bg-white p-4 shadow-sm sm:p-5"
+                className="order-3 mt-6 w-full scroll-mt-4 rounded-2xl border border-blue-100 bg-white p-4 shadow-sm sm:p-5"
               >
                 <div className="space-y-3.5 sm:space-y-4">
                   <div className="space-y-2">
@@ -4317,19 +4321,17 @@ export default function SwimmingClassPage() {
                         const isSelectedSchedule =
                           selectedClass === String(classItem.id);
                         const isNovemberCard = isNovemberSchedule(classItem);
-                        const showNovemberIntro =
+                        const isFirstNovemberCard =
                           isNovemberCard &&
-                          !isFishtankEntry &&
                           (scheduleIndex === 0 ||
                             !isNovemberSchedule(
                               activeScheduleClasses[scheduleIndex - 1],
                             ));
                         return (
-                          <div key={classItem.id} className="space-y-3">
-                          {showNovemberIntro ? <NovemberWaitlistIntro /> : null}
                           <Card
+                            key={classItem.id}
                             id={
-                              showNovemberIntro
+                              isFirstNovemberCard
                                 ? "november-schedule-start"
                                 : `schedule-class-${classItem.id}`
                             }
@@ -4506,7 +4508,6 @@ export default function SwimmingClassPage() {
                             </div>
                           </CardContent>
                         </Card>
-                          </div>
                         );
                       })
                       )}

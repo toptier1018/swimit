@@ -253,19 +253,6 @@ export const CLASS_SCHEDULES: ClassScheduleItem[] = [
     badge: "특강 운영",
   },
   {
-    id: 21,
-    year: 2026,
-    location: "서울 중구 · 스포빌키즈쿠아",
-    locationCode: "중구",
-    date: "10월 11일 (일)",
-    dateNum: 11,
-    month: 10,
-    venue: "스포빌키즈쿠아",
-    address: "서울 중구 청계천로 400 메가몰동 B-1109호",
-    spots: "자유형 14명 · 평영·접영 각 7명",
-    scheduleSummaryLines: ["1부 특강 · 14:00~16:00 (2시간)"],
-  },
-  {
     id: 22,
     year: 2026,
     location: "서울 목동 · 목동스포츠센터",
@@ -340,10 +327,6 @@ export const DEFAULT_CAPACITY_BY_CLASS: Record<string, number> = {
   // 부산 10/4 (자유형·진단 미모집)
   "[부산 10/4] 1부 특강 평영": 7,
   "[부산 10/4] 1부 특강 접영": 7,
-  // 중구 10/11
-  "[중구 10/11] 1부 특강 자유형": 14,
-  "[중구 10/11] 1부 특강 평영": 7,
-  "[중구 10/11] 1부 특강 접영": 7,
   // 목동 10/18
   "[목동 10/18] 1부 특강 자유형": 14,
   "[목동 10/18] 1부 특강 평영": 7,

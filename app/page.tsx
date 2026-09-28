@@ -641,19 +641,6 @@ const TIMETABLE_CHEONGNA_SEPTEMBER: TimetableRow[] = [
   },
 ];
 
-/** 스포빌키즈쿠아 10/11 특강 (서울 중구) — 특강만 운영 */
-const TIMETABLE_JUNGGU_OCTOBER: TimetableRow[] = [
-  {
-    session: "1부 특강",
-    time: "14:00 ~ 16:00",
-    lanes: [
-      { lane: UNASSIGNED_LANE, title: "자유형", price: 80000 },
-      { lane: UNASSIGNED_LANE, title: "평영", price: 80000 },
-      { lane: UNASSIGNED_LANE, title: "접영", price: 80000 },
-    ],
-  },
-];
-
 const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   3: TIMETABLE_SEOCHO,   // 5/31 서초
   4: TIMETABLE_KIMPO,    // 6/14 김포
@@ -670,7 +657,6 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   18: TIMETABLE_MOKDONG_SEPTEMBER, // 9/20 목동
   19: TIMETABLE_CHEONGNA_SEPTEMBER, // 9/27 청라
   20: TIMETABLE_BUSAN_OCTOBER, // 10/4 부산 (평영·접영만)
-  21: TIMETABLE_JUNGGU_OCTOBER, // 10/11 중구
   22: TIMETABLE_MOKDONG_SEPTEMBER, // 10/18 목동
   23: TIMETABLE_DONGTAN_AUGUST, // 10/25 동탄 스윔스튜디오제이
 };
@@ -1372,6 +1358,9 @@ export default function SwimmingClassPage() {
   }, [pgReviewFromEnv]);
 
   useEffect(() => {
+    console.log(
+      "[특강일정] 취소로 신청 목록에서 제외: 서울 중구 스포빌키즈쿠아 10/11",
+    );
     console.log("[특강일정] 활성 특강 목록", {
       classIds: getActiveClasses().map((c) => ({
         id: c.id,

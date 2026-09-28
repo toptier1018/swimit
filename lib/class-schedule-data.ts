@@ -11,6 +11,55 @@ export const DEFAULT_WAITLIST_THRESHOLD = 7;
 /** 저항 진단 프로그램 기본 정원 */
 export const DIAGNOSIS_WAITLIST_THRESHOLD = 20;
 
+export type SpecialClassOption = {
+  stroke: "자유형" | "평영" | "접영";
+  name: string;
+  flow: string;
+  short: string;
+};
+
+/** 11/29 동탄처럼 일반 2시간 특강과 다른 한정 클래스 */
+export type SpecialClassInfo = {
+  specialType: "intensive-3h";
+  duration: "3시간";
+  timeLabel: "14:00~17:00";
+  price: number;
+  summary: string;
+  detail: string;
+  classes: SpecialClassOption[];
+};
+
+export const DONGTAN_NOV29_INTENSIVE: SpecialClassInfo = {
+  specialType: "intensive-3h",
+  duration: "3시간",
+  timeLabel: "14:00~17:00",
+  price: 115000,
+  summary:
+    "11월 29일 동탄은 일반 2시간 특강이 아닌 3시간 집중 스페셜 클래스입니다.",
+  detail:
+    "한 가지 영법을 선택해 영법 교정부터 출발·턴·브레이크아웃까지 집중적으로 연결합니다.",
+  classes: [
+    {
+      stroke: "자유형",
+      name: "자유형 3시간 집중반",
+      flow: "자유형 → 물속 출발 → 사이드턴·플립턴 → 돌핀킥 → 브레이크아웃",
+      short: "영법 · 출발 · 사이드턴/플립턴 · 돌핀킥 · 브레이크아웃",
+    },
+    {
+      stroke: "평영",
+      name: "평영 3시간 집중반",
+      flow: "평영 → 물속 출발 → 사이드턴 → 수중동작 → 브레이크아웃",
+      short: "영법 · 출발 · 사이드턴 · 수중동작 · 브레이크아웃",
+    },
+    {
+      stroke: "접영",
+      name: "접영 3시간 집중반",
+      flow: "접영 → 물속 출발 → 사이드턴 → 돌핀킥 → 브레이크아웃",
+      short: "영법 · 출발 · 사이드턴 · 돌핀킥 · 브레이크아웃",
+    },
+  ],
+};
+
 export type ClassScheduleItem = {
   id: number;
   year: number;
@@ -25,6 +74,7 @@ export type ClassScheduleItem = {
   scheduleSummaryLines: string[];
   badge?: string;
   parking?: string;
+  specialClass?: SpecialClassInfo;
 };
 
 export const CLASS_SCHEDULES: ClassScheduleItem[] = [
@@ -346,12 +396,10 @@ export const CLASS_SCHEDULES: ClassScheduleItem[] = [
     venue: "스윔스튜디오제이",
     address:
       "경기도 화성시 동탄구 동탄신리천로 414 경서타워 4층 스윔스튜디오제이",
-    spots: "자유형 14명 · 평영·접영 각 7명 · 진단 14명",
-    scheduleSummaryLines: [
-      "1부 특강 · 14:00~16:00 (2시간)",
-      "1부 진단 프로그램 · 14:00~16:00",
-    ],
-    badge: "특강 + 진단 동시 운영",
+    spots: "자유형 14명 · 평영·접영 각 7명",
+    scheduleSummaryLines: ["3시간 집중 특강 · 14:00~17:00"],
+    badge: "SPECIAL",
+    specialClass: DONGTAN_NOV29_INTENSIVE,
   },
 ];
 
@@ -423,7 +471,6 @@ export const DEFAULT_CAPACITY_BY_CLASS: Record<string, number> = {
   "[동탄 11/29] 1부 특강 자유형": 14,
   "[동탄 11/29] 1부 특강 평영": 7,
   "[동탄 11/29] 1부 특강 접영": 7,
-  "[동탄 11/29] 1부 진단": 14,
   // 구 키 호환 (부산 8/30)
   "[부산 8/30] 1부 특강 자유형": 14,
   "[부산 8/30] 1부 특강 평영": 7,

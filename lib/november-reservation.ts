@@ -20,7 +20,14 @@ export function resolveNovemberReservation(classId: number, classKey: string, no
   if (!["자유형", "평영", "접영"].includes(stroke)) return null;
   const startHour = schedule.id === 25 ? "16" : "14";
   if (now >= Date.parse(`2026-11-${String(schedule.dateNum).padStart(2, "0")}T${startHour}:00:00+09:00`)) return null;
-  const originalAmount = 80000;
+  const originalAmount = schedule.specialClass?.price ?? 80000;
+  if (schedule.specialClass) {
+    console.log("[3시간집중] 예약 금액 확인", {
+      classId: schedule.id,
+      originalAmount,
+      discount: hasNovemberBenefit(schedule, now) ? NOVEMBER_BENEFIT_AMOUNT : 0,
+    });
+  }
   const discountAmount = hasNovemberBenefit(schedule, now) ? NOVEMBER_BENEFIT_AMOUNT : 0;
   return { schedule, stroke, originalAmount, discountAmount, expectedAmount: originalAmount - discountAmount,
     benefitName: discountAmount ? NOVEMBER_BENEFIT_NAME : "", reservedAt: new Date(now).toISOString() };

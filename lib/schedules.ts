@@ -1,4 +1,5 @@
 import "server-only";
+import { isNovemberSchedule } from "@/lib/november-reservation";
 
 import { getClassEnrollmentCounts } from "@/app/actions/notion";
 import {
@@ -25,7 +26,7 @@ export type ScheduleItem = {
   applied: number;
   capacity: number;
   remaining: number;
-  status: "결제 가능" | "예약대기" | "강제 예약대기";
+  status: "결제 가능" | "예약 가능" | "예약대기" | "강제 예약대기";
 };
 
 /** 홈페이지 CLASS_SCHEDULES 와 동일 정본 */
@@ -172,7 +173,7 @@ function extractPlainTextFromNotionTextArray(arr: unknown): string {
 }
 
 /** set-waitlist GET 과 동일하게 Notion 클래스 설정에서 정원·강제대기 조회 */
-async function getClassSettingsFromNotion(): Promise<{
+export async function getClassSettingsFromNotion(): Promise<{
   waitlistClasses: string[];
   thresholds: Record<string, number>;
 }> {
@@ -317,7 +318,9 @@ export async function getSchedules(): Promise<ScheduleItem[]> {
       ? "강제 예약대기"
       : isWaitlist
         ? "예약대기"
-        : "결제 가능";
+        : isNovemberSchedule(event) && parsed.program === "특강"
+          ? "예약 가능"
+          : "결제 가능";
 
     schedules.push({
       date: toIsoDate(event),

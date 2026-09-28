@@ -504,3 +504,65 @@ function columnIndexToLetter(index0: number): string {
   }
   return letter;
 }
+
+/** One append saves the reservation, consent and benefit together. Preserve existing columns. */
+export async function appendAdvanceReservationToGoogleSheet(
+  row: GoogleSheetRowInput,
+  benefit: { originalAmount: number; discountAmount: number; expectedAmount: number; benefitName: string; reservedAt: string },
+): Promise<{ success: true } | { success: false; error: string }> {
+  try {
+    if (!env.spreadsheetId || !env.sheetName) throw new Error("예약 저장소 설정을 확인해 주세요.");
+    const sheets = google.sheets({ version: "v4", auth: getAuthClient() });
+    const range = `'${env.sheetName.replace(/'/g, "''")}'`;
+    const response = await sheets.spreadsheets.values.get({ spreadsheetId: env.spreadsheetId, range: `${range}!1:1` });
+    const headers = (response.data.values?.[0] || []).map(value => String(value || ""));
+    if (headers[1] !== "신청번호" || headers[15] !== "예약상태") throw new Error("예약 시트의 열 구성을 확인해 주세요.");
+    const { contentConsent, ...fields } = row;
+    const entries: Record<string, string | number | boolean> = {
+      ...Object.fromEntries(Object.entries(fields).filter(([key]) => ![
+        "접수일시", "신청번호", "이름", "전화번호", "이메일", "성별", "거주지역", "수영경력",
+        "통증부위", "해결문제", "클래스", "회차", "레인", "날짜", "특강지역", "예약상태", "링크", "입금기한", "대기순번",
+      ].includes(key)).map(([key, value]) => [key, value ?? ""])),
+      "예약 혜택": benefit.benefitName, "할인 전 금액": benefit.originalAmount,
+      "예약 할인액": benefit.discountAmount, "할인 후 예정 금액": benefit.expectedAmount,
+      "혜택 확정 일시": benefit.reservedAt,
+      "콘텐츠 활용 동의 여부": contentConsent?.agreed ?? false,
+      "콘텐츠 활용 동의 일시": contentConsent?.agreedAt ?? "",
+      "콘텐츠 활용 동의 약관 버전": contentConsent?.version ?? "",
+    };
+    // Existing U:AC columns are reserved for attribution and consent.
+    const reserved = ["유입경로", "video", "source", "utm_source", "utm_medium", "utm_campaign",
+      "콘텐츠 활용 동의 여부", "콘텐츠 활용 동의 일시", "콘텐츠 활용 동의 약관 버전"];
+    for (let i = 0; i < reserved.length; i++) {
+      const index = 20 + i;
+      if (headers[index] && headers[index] !== reserved[i]) throw new Error("운영 시트 열 구성을 확인해 주세요.");
+      headers[index] = reserved[i];
+    }
+    for (const key of Object.keys(entries)) if (!headers.includes(key)) headers.push(key);
+    const end = columnIndexToLetter(headers.length - 1);
+    const metadata = await sheets.spreadsheets.get({ spreadsheetId: env.spreadsheetId,
+      fields: "sheets(properties(sheetId,title,gridProperties(columnCount)))" });
+    const sheet = metadata.data.sheets?.find(item => item.properties?.title === env.sheetName)?.properties;
+    if (!sheet || sheet.sheetId == null) throw new Error("예약 시트를 찾지 못했습니다.");
+    if ((sheet.gridProperties?.columnCount ?? 0) < headers.length) {
+      await sheets.spreadsheets.batchUpdate({ spreadsheetId: env.spreadsheetId, requestBody: { requests: [{
+        appendDimension: { sheetId: sheet.sheetId, dimension: "COLUMNS", length: headers.length - (sheet.gridProperties?.columnCount ?? 0) },
+      }] } });
+    }
+    const values = headers.map(key => entries[key] ?? "");
+    const core: Array<keyof GoogleSheetRowInput> = [
+      "접수일시", "신청번호", "이름", "전화번호", "이메일", "성별", "거주지역", "수영경력",
+      "통증부위", "해결문제", "클래스", "회차", "레인", "날짜", "특강지역", "예약상태", "링크", "입금기한", "대기순번",
+    ];
+    core.forEach((key, index) => { values[index] = String(row[key] ?? ""); });
+    await sheets.spreadsheets.values.update({ spreadsheetId: env.spreadsheetId, range: `${range}!A1:${end}1`,
+      valueInputOption: "RAW", requestBody: { values: [headers.map(v => v ?? "")] } });
+    await sheets.spreadsheets.values.append({ spreadsheetId: env.spreadsheetId, range: `${range}!A:${end}`,
+      valueInputOption: "RAW", insertDataOption: "INSERT_ROWS",
+      requestBody: { values: [values] } });
+    return { success: true };
+  } catch (error) {
+    console.error("[사전예약] 저장 실패", error);
+    return { success: false, error: "예약을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요." };
+  }
+}

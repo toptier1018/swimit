@@ -339,6 +339,7 @@ function resolveActiveDuplicateStatus(input: {
   const compact = compactStatus(input.statusRaw);
   if (
     compact === "예약대기" ||
+    compact === "사전예약" ||
     compact.includes("결제완료") ||
     compact.includes("입금완료")
   ) {
@@ -624,6 +625,8 @@ export async function getOpsSheetEnrollmentCounts(): Promise<{
             confirmedStatus: confirmedRaw,
             reservationStatus: statusRaw,
           });
+        } else if (compactStatus(statusRaw) === "사전예약") {
+          kind = "hold";
         } else if (isReservationConfirmed(confirmedRaw)) {
           kind = "confirmed";
         } else if (
@@ -690,7 +693,8 @@ export async function getOpsSheetEnrollmentCounts(): Promise<{
 
         const statusRaw =
           colStatus >= 0 ? String(row[colStatus] ?? "") : "";
-        if (!isPendingPaymentStatus(statusRaw)) continue;
+        const isAdvanceReservation = compactStatus(statusRaw) === "사전예약";
+        if (!isAdvanceReservation && !isPendingPaymentStatus(statusRaw)) continue;
 
         const deadlineMs = resolveHoldDeadlineMs({
           deadlineRaw:
@@ -698,7 +702,7 @@ export async function getOpsSheetEnrollmentCounts(): Promise<{
           receivedRaw:
             colReceived >= 0 ? String(row[colReceived] ?? "") : "",
         });
-        if (!isHoldStillValid(deadlineMs, nowMs)) continue;
+        if (!isAdvanceReservation && !isHoldStillValid(deadlineMs, nowMs)) continue;
 
         const enrollmentKey = opsRowToEnrollmentKey({
           date: colDate >= 0 ? String(row[colDate] ?? "") : "",

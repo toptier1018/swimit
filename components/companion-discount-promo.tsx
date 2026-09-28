@@ -29,56 +29,25 @@ export function CompanionDiscountPromo({
       id={COMPANION_DISCOUNT_SECTION_ID}
       className={`w-full scroll-mt-4 rounded-2xl border border-blue-200 bg-white p-4 shadow-sm sm:p-5 ${className}`}
     >
-      <div className="mx-auto max-w-3xl space-y-4 sm:space-y-5">
-        <div className="space-y-2.5 sm:space-y-3">
+      <div className="mx-auto max-w-3xl space-y-3">
+        <div className="space-y-2">
           <div className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">
             <Users className="h-3.5 w-3.5" aria-hidden />
-            상시 이벤트
+            상시 할인
           </div>
-
-          <h3 className="break-keep text-lg font-bold leading-7 text-gray-950 sm:text-xl sm:leading-8">
-            <span className="mr-1" aria-hidden>
-              👥
-            </span>
-            수친·가족과 함께 신청하면
-            <br className="sm:hidden" /> 두 분 모두 각각 5,000원 할인
+          <h3 className="break-keep text-lg font-bold leading-7 text-gray-950">
+            함께 신청하면 각각 5,000원
           </h3>
-
-          <p className="break-keep text-sm leading-6 text-gray-700 sm:text-[15px] sm:leading-7">
-            같은 일정의{" "}
-            <span className="font-bold text-blue-800">저항 제로 특강</span>을
-            함께 신청하면
-            <br className="sm:hidden" />
-            두 사람 모두 각각 5,000원 할인
+          <p className="break-keep text-sm leading-6 text-gray-700">
+            같은 일정 저항 제로 특강 · 본인·동반인 각 -5,000원
+          </p>
+          <p className="text-sm font-bold text-blue-900">
+            80,000원 → 각 75,000원
+          </p>
+          <p className="text-xs leading-5 text-gray-500">
+            진단 제외 · 다른 할인과 중복 불가
           </p>
         </div>
-
-        <div className="grid grid-cols-2 gap-2.5 sm:gap-3 sm:max-w-md">
-          <div className="rounded-xl border border-blue-200 bg-blue-50 px-3 py-3 text-center sm:px-4 sm:py-3.5">
-            <p className="text-xs font-bold text-blue-700 sm:text-sm">본인</p>
-            <p className="mt-1 text-xl font-black tracking-tight text-blue-800 sm:text-2xl">
-              -5,000원
-            </p>
-          </div>
-          <div className="rounded-xl border border-blue-200 bg-blue-50 px-3 py-3 text-center sm:px-4 sm:py-3.5">
-            <p className="text-xs font-bold text-blue-700 sm:text-sm">동반인</p>
-            <p className="mt-1 text-xl font-black tracking-tight text-blue-800 sm:text-2xl">
-              -5,000원
-            </p>
-          </div>
-        </div>
-
-        <p className="break-keep text-center text-sm font-bold leading-6 text-blue-900 sm:text-left sm:text-[15px] sm:leading-7">
-          정상가 80,000원 → 각 75,000원
-        </p>
-
-        <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold leading-5 text-slate-700 sm:text-sm sm:leading-6">
-          ※ 저항 진단 프로그램은 할인 대상이 아닙니다.
-        </p>
-
-        <p className="break-keep text-sm leading-6 text-gray-600 sm:text-[15px]">
-          다른 할인·쿠폰과 중복 적용되지 않습니다.
-        </p>
 
         <div className="space-y-2">
           <Button

@@ -203,9 +203,9 @@ const ProductPriceLabel = ({
     {reservationBenefit ? (
       <>
         <span className="block text-xs font-bold text-blue-700">예약대기 혜택</span>
-        <strong className="font-bold">특강 5,000원 할인</strong>
+        <strong className="font-bold">특강 5,000원 쿠폰</strong>
         <span className="mt-0.5 block text-xs font-medium text-blue-800">
-          10/15까지 등록 · 지금 결제 없음
+          전월 15일까지 · 지금 결제 없음
         </span>
       </>
     ) : (
@@ -243,50 +243,30 @@ const NovemberWaitlistIntro = ({ className = "" }: { className?: string }) => (
   >
     <div className="mx-auto max-w-3xl space-y-3">
       <div className="inline-flex rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">
-        11월 예약대기 OPEN
+        상시 할인
       </div>
-      <h3 className="break-keep text-lg font-bold leading-7 text-gray-950 sm:text-xl">
-        11월 특강을 미리 예약대기하면
-        <br />
-        5,000원 혜택
+      <h3 className="break-keep text-lg font-bold leading-7 text-gray-950">
+        미리 예약대기하면 5,000원 쿠폰
       </h3>
+      <p className="text-sm font-bold text-blue-900">80,000원 → 75,000원</p>
       <p className="text-sm leading-6 text-gray-700">
-        <span className="text-gray-400 line-through">정상가 80,000원</span>
-        <span className="mx-1.5 text-gray-300">→</span>
-        <strong className="text-blue-800">예약대기 혜택 75,000원</strong>
+        전월 15일까지 등록하면, 16일 결제 안내 알림톡과 함께 5,000원 쿠폰을 드려요.
       </p>
-      <div className="space-y-2 text-sm leading-6 text-gray-700">
-        <p>11월 스윔잇 특강을 기다리고 계신다면 지금 예약대기에 등록해주세요.</p>
-        <p>10월 15일까지 예약대기에 등록하신 분께 11월 특강 결제 시 5,000원 할인 혜택을 드립니다.</p>
-      </div>
-      <ul className="space-y-1.5 text-sm leading-6 text-gray-800">
-        <li>✓ 지금은 결제하지 않아요</li>
-        <li>✓ 일정 오픈 시 예약대기 고객에게 먼저 안내</li>
-        <li>✓ 특강 결제 시 5,000원 할인</li>
-        <li>✓ 안내 후 결제를 완료하면 최종 예약 확정</li>
-      </ul>
+      <p className="text-sm leading-6 text-gray-800">
+        지금은 결제하지 않아요. 안내 후 결제하면 예약이 확정됩니다.
+      </p>
       <Button
         type="button"
         size="lg"
         variant="outline"
-        className="h-12 w-full border-blue-200 text-[15px] font-bold text-blue-800 sm:h-11 sm:max-w-md sm:text-base"
+        className="h-11 w-full border-blue-200 text-sm font-bold text-blue-800 sm:max-w-md"
         onClick={scrollToNovemberSchedules}
       >
-        11월 예약대기 일정 보기 ↓
+        예약대기 일정 보기 ↓
       </Button>
-      <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-sm leading-6 text-slate-700">
-        <p className="font-bold text-slate-900">예약대기는 최종 예약 확정이 아닙니다.</p>
-        <p className="mt-1">
-          현재 결제는 진행되지 않습니다. 예약 안내를 받은 후 결제를 완료하면 최종 예약이 확정됩니다.
-        </p>
-        <p className="mt-2 text-xs leading-5 sm:text-sm">
-          ※ 5,000원 혜택은 11월 특강에만 적용됩니다.
-          <br />
-          ※ 저항 진단 프로그램은 할인 대상이 아닙니다.
-          <br />
-          ※ 다른 할인·쿠폰과 중복 적용되지 않습니다.
-        </p>
-      </div>
+      <p className="text-xs leading-5 text-gray-500">
+        진단 제외 · 다른 할인과 중복 불가 · 예약대기만으로 확정되지 않아요
+      </p>
     </div>
   </section>
 );
@@ -294,11 +274,11 @@ const NovemberWaitlistIntro = ({ className = "" }: { className?: string }) => (
 /** 11월 특강 신청 화면 상단 짧은 안내. 진단 선택 시에는 호출하지 않습니다. */
 const NovemberWaitlistApplyNotice = ({ showDiscount }: { showDiscount: boolean }) => (
   <div className="mb-4 rounded-xl border border-blue-100 bg-white p-4 shadow-sm">
-    <p className="text-xs font-bold text-blue-700">11월 예약대기 혜택</p>
+    <p className="text-xs font-bold text-blue-700">상시 할인 · 예약대기</p>
     <h3 className="mt-1 text-base font-bold text-gray-950">지금은 결제하지 않습니다.</h3>
     {showDiscount ? (
       <p className="mt-2 text-sm leading-6 text-gray-700">
-        10월 15일까지 예약대기에 등록하면 11월 특강 결제 시
+        전월 15일까지 등록하면 16일 알림톡으로 5,000원 쿠폰을 드려요.
         <br />
         <span className="text-gray-400 line-through">80,000원</span>
         <span className="mx-1.5 text-gray-300">→</span>
@@ -306,15 +286,10 @@ const NovemberWaitlistApplyNotice = ({ showDiscount }: { showDiscount: boolean }
       </p>
     ) : (
       <p className="mt-2 text-sm leading-6 text-gray-700">
-        예약 안내를 받은 뒤 결제를 완료하면 최종 예약이 확정됩니다.
+        16일 결제 안내 후 결제를 완료하면 예약이 확정됩니다.
       </p>
     )}
-    <p className="mt-2 text-sm leading-6 text-gray-800">
-      예약대기 등록 → 예약 안내 → {showDiscount ? "75,000원 결제" : "결제"} → 최종 예약 확정
-    </p>
-    <p className="mt-2 text-xs leading-5 text-gray-600">
-      ※ 저항 진단 프로그램은 할인 대상이 아닙니다.
-    </p>
+    <p className="mt-2 text-xs leading-5 text-gray-500">진단 제외 · 다른 할인과 중복 불가</p>
   </div>
 );
 
@@ -4399,8 +4374,8 @@ export default function SwimmingClassPage() {
                             {hasNovemberBenefit(classItem) && !isFishtankEntry && (
                               <div className="mb-3 rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-sm leading-5 text-blue-950">
                                 <span className="block text-xs font-bold text-blue-700">예약대기 혜택</span>
-                                <strong>특강 5,000원 할인</strong>
-                                <p className="mt-0.5 text-xs text-blue-800">10/15까지 등록 · 지금 결제 없음</p>
+                                <strong>특강 5,000원 쿠폰</strong>
+                                <p className="mt-0.5 text-xs text-blue-800">전월 15일까지 · 지금 결제 없음</p>
                               </div>
                             )}
                             <div className="bg-blue-50 rounded-lg p-4 mb-4 border border-blue-100">
@@ -6268,7 +6243,7 @@ export default function SwimmingClassPage() {
                         {novemberDiscount > 0 && selectedTimeSlot && (
                           <div className="flex justify-between gap-3 px-4 py-3.5 text-sm sm:px-5">
                             <span className="font-bold text-blue-900">예약대기 혜택</span>
-                            <strong className="text-blue-800">특강 5,000원 할인</strong>
+                            <strong className="text-blue-800">특강 5,000원 쿠폰</strong>
                           </div>
                         )}
                         {!isNovemberReservation && (
@@ -6300,8 +6275,8 @@ export default function SwimmingClassPage() {
 
                   {isNovemberReservation && (
                     <p className="mt-3 text-center text-sm leading-6 text-gray-600">
-                      {novemberDiscount > 0 ? "10/15까지 등록 시 특강 5,000원 혜택. " : ""}
-                      지금은 결제하지 않아요. 진단 프로그램은 할인 대상이 아닙니다.
+                      {novemberDiscount > 0 ? "전월 15일까지 등록 시 16일 알림톡으로 5,000원 쿠폰. " : ""}
+                      지금은 결제하지 않아요. 진단은 제외입니다.
                     </p>
                   )}
                   {/* Navigation Buttons */}
@@ -7025,7 +7000,7 @@ export default function SwimmingClassPage() {
                     </p>
                     {reservationReceipt.discountAmount > 0 ? (
                       <p className="mt-2 leading-7 text-gray-700">
-                        10월 15일까지 예약대기에 등록하신 분은 11월 특강 결제 시 5,000원 혜택이 적용됩니다.
+                        전월 15일까지 등록하시면 16일 결제 안내 알림톡과 함께 5,000원 쿠폰이 제공됩니다.
                       </p>
                     ) : null}
                     {reservationReceipt.status === "예약대기" ? (

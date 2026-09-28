@@ -118,6 +118,7 @@ function resolveRegionCode(
   }
 
   const ordered = [
+    "강남",
     "동탄",
     "목동",
     "은평",

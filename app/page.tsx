@@ -575,6 +575,19 @@ const TIMETABLE_BUSAN_SEPTEMBER: TimetableRow[] = [
   },
 ];
 
+/** 강남 와이키키 링크&스윔 11/15 — 특강만, 레인 미표시 */
+const TIMETABLE_GANGNAM_NOVEMBER: TimetableRow[] = [
+  {
+    session: "1부 특강",
+    time: "14:00 ~ 16:00",
+    lanes: [
+      { lane: UNASSIGNED_LANE, title: "자유형", price: 80000 },
+      { lane: UNASSIGNED_LANE, title: "평영", price: 80000 },
+      { lane: UNASSIGNED_LANE, title: "접영", price: 80000 },
+    ],
+  },
+];
+
 /** 조이풀스윔 10/4 특강 — 평영·접영만 (자유형·진단 미모집) */
 const TIMETABLE_BUSAN_OCTOBER: TimetableRow[] = [
   {
@@ -659,6 +672,10 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   20: TIMETABLE_BUSAN_OCTOBER, // 10/4 부산 (평영·접영만)
   22: TIMETABLE_MOKDONG_SEPTEMBER, // 10/18 목동
   23: TIMETABLE_DONGTAN_AUGUST, // 10/25 동탄 스윔스튜디오제이
+  24: TIMETABLE_MOKDONG_SEPTEMBER, // 11/8 부산 (특강+진단, 레인 미표시)
+  25: TIMETABLE_GANGNAM_NOVEMBER, // 11/15 강남 (특강만)
+  26: TIMETABLE_MOKDONG_SEPTEMBER, // 11/22 목동
+  27: TIMETABLE_MOKDONG_SEPTEMBER, // 11/29 동탄 (특강+진단 같은 시간)
 };
 
 const getAvailableStrokesForClass = (classId: number) => {
@@ -1361,6 +1378,12 @@ export default function SwimmingClassPage() {
     console.log(
       "[특강일정] 취소로 신청 목록에서 제외: 서울 중구 스포빌키즈쿠아 10/11",
     );
+    console.log("[특강일정] 11월 일정 추가", {
+      "부산 11/8": "특강+진단 14:00~16:00",
+      "강남 11/15": "특강만 14:00~16:00",
+      "목동 11/22": "특강+진단 14:00~16:00",
+      "동탄 11/29": "특강+진단 14:00~16:00",
+    });
     console.log("[특강일정] 활성 특강 목록", {
       classIds: getActiveClasses().map((c) => ({
         id: c.id,

@@ -39,18 +39,15 @@ export function CompanionDiscountPromo({
           </div>
           <h3 className="break-keep text-xl font-bold leading-snug text-gray-950 sm:text-2xl">
             <span aria-hidden>🎁 </span>
-            스윔잇 특강,
+            스윔잇 특강
             <br />
-            5,000원 할인받는 {showWaitlist ? "2가지 방법" : "방법"}
+            <span className="text-blue-800">5,000원 할인</span>
+            받는 {showWaitlist ? "2가지 방법" : "방법"}
           </h3>
-          <p className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-            <span className="text-sm text-gray-400 line-through">80,000원</span>
-            <span className="text-3xl font-extrabold tracking-tight text-blue-800">
-              75,000원
-            </span>
-          </p>
-          <p className="text-sm leading-6 text-gray-600">
-            원하는 방식으로 혜택을 받아보세요.
+          <p className="break-keep text-sm leading-6 text-gray-700">
+            2시간 특강도, 3시간 집중 특강도
+            <br />
+            결제 금액에서 <span className="font-bold text-blue-800">5,000원 할인</span>
           </p>
           <div className="flex flex-wrap gap-2 pt-0.5">
             <span className="rounded-full border border-blue-100 bg-blue-50/80 px-2.5 py-1 text-xs font-medium text-blue-800">
@@ -80,11 +77,11 @@ export function CompanionDiscountPromo({
             <div className="flex flex-wrap gap-2">
               <span className="rounded-lg bg-white px-2.5 py-1.5 text-sm text-gray-600 shadow-sm">
                 본인{" "}
-                <span className="font-extrabold text-blue-800">75,000원</span>
+                <span className="text-lg font-extrabold text-blue-800">-5,000원</span>
               </span>
               <span className="rounded-lg bg-white px-2.5 py-1.5 text-sm text-gray-600 shadow-sm">
                 동반인{" "}
-                <span className="font-extrabold text-blue-800">75,000원</span>
+                <span className="text-lg font-extrabold text-blue-800">-5,000원</span>
               </span>
             </div>
             <Button asChild className="h-11 w-full font-bold">
@@ -131,7 +128,7 @@ export function CompanionDiscountPromo({
                   →
                 </span>
                 <span className="rounded-full bg-blue-800 px-2.5 py-1 font-bold text-white">
-                  75,000원 결제
+                  5,000원 할인 적용
                 </span>
               </div>
               <Button
@@ -177,11 +174,11 @@ export function CompanionDiscountPromo({
                   <ul className="mt-2 space-y-1 pl-1 text-gray-700">
                     <li>
                       <span className="font-semibold text-gray-900">계좌이체:</span>{" "}
-                      확인 후 각 75,000원으로 안내
+                      확인 후 정상가에서 각각 5,000원을 뺀 금액으로 안내
                     </li>
                     <li>
                       <span className="font-semibold text-gray-900">카드 결제:</span>{" "}
-                      각 80,000원 결제 후 각각 5,000원 부분취소
+                      정상가 결제 후 각각 5,000원 부분취소
                     </li>
                   </ul>
                 </div>

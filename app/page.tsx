@@ -294,7 +294,7 @@ const DongtanIntensivePromo = ({ onViewSchedule }: { onViewSchedule: () => void 
             한 영법을 3시간 동안 연결합니다.
           </p>
           <p className="break-keep text-sm leading-5 text-gray-600">
-            11월 29일 동탄에서만, 영법 하나를 골라 집중합니다.
+            11월 29일 동탄에서만, 영법 하나를 연결하여 완성합니다.
           </p>
         </div>
 

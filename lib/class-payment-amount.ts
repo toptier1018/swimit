@@ -3,25 +3,13 @@
  */
 
 import {
+  matchesSpecialClassOption,
   resolveClassScheduleFromEnrollmentKey,
-  type SpecialClassInfo,
 } from "@/lib/class-schedule-data";
 
 const DIAGNOSIS_AMOUNT = 40000;
 const ZERO_OR_SPECIAL_AMOUNT = 80000;
 const LEGACY_SEOCHO_AMOUNT = 70000;
-
-function specialOptionMatches(
-  className: string,
-  special: SpecialClassInfo,
-): boolean {
-  return special.classes.some(
-    (option) =>
-      className.includes(`특강 ${option.key}`) ||
-      className.includes(option.name) ||
-      new RegExp(`\\b${option.key}\\b`).test(className),
-  );
-}
 
 /** 활성·과거 특강 키 패턴에 맞는 결제 금액 */
 export function resolveClassPaymentAmount(className: string): number | null {
@@ -37,10 +25,11 @@ export function resolveClassPaymentAmount(className: string): number | null {
     return DIAGNOSIS_AMOUNT;
   }
 
-  // 일정 정본의 specialClass 가격 (예: 목동 10/18 런칭 70,000)
+  // 일정 정본의 specialClass 옵션만 특별가 (예: 목동 10/18 턴·배영 70,000)
+  // 같은 일정의 일반 영법(자유형 등)은 아래로 내려 80,000 유지
   const resolved = resolveClassScheduleFromEnrollmentKey(name);
   const special = resolved?.schedule.specialClass;
-  if (special && specialOptionMatches(name, special)) {
+  if (special && matchesSpecialClassOption(name, special)) {
     console.log("[금액검증] 일정별 스페셜 클래스 금액:", {
       className: name,
       classId: resolved.schedule.id,

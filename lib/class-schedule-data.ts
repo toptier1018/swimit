@@ -69,6 +69,7 @@ export const DONGTAN_NOV29_INTENSIVE: SpecialClassInfo = {
   ],
 };
 
+/** 10/18 목동 — 기존 자유형/평영/접영 특강에 추가되는 신규 클래스만 정의 */
 export const MOKDONG_OCT18_LAUNCH: SpecialClassInfo = {
   specialType: "launch-2h",
   duration: "2시간",
@@ -78,9 +79,9 @@ export const MOKDONG_OCT18_LAUNCH: SpecialClassInfo = {
   promotionType: "launch",
   noExtraDiscount: true,
   summary:
-    "평소 강습에서 제대로 배우기 어려웠던 턴과 배영만 2시간 동안 집중합니다.",
+    "기존 스윔잇 특강과 함께, 평소 깊게 배우기 어려웠던 턴·배영 2시간 집중 클래스를 추가 운영합니다.",
   detail:
-    "10월 18일 목동 한정 런칭 특가입니다. 다른 할인·쿠폰과 중복 적용되지 않습니다.",
+    "런칭 특가(70,000원)는 턴·배영 집중반에만 적용됩니다. 다른 할인·쿠폰과 중복되지 않습니다.",
   classes: [
     {
       key: "턴",
@@ -98,6 +99,22 @@ export const MOKDONG_OCT18_LAUNCH: SpecialClassInfo = {
     },
   ],
 };
+
+/** enrollment key가 해당 일정의 specialClass 옵션(턴/배영 등)인지 */
+export function matchesSpecialClassOption(
+  className: string,
+  special: SpecialClassInfo | undefined,
+): boolean {
+  if (!special) return false;
+  const name = String(className || "");
+  return special.classes.some(
+    (option) =>
+      name.includes(`특강 ${option.key}`) ||
+      name.includes(option.name) ||
+      name === option.key ||
+      name === option.name,
+  );
+}
 
 export type ClassScheduleItem = {
   id: number;
@@ -351,12 +368,12 @@ export const CLASS_SCHEDULES: ClassScheduleItem[] = [
     month: 10,
     venue: "목동스포츠센터",
     address: "서울특별시 양천구 목동서로 130 목동스포츠센터",
-    spots: "턴·배영 각 7명 · 진단 14명",
+    spots: "자유형 14명 · 평영·접영 각 7명 · 턴·배영 각 7명",
     scheduleSummaryLines: [
+      "1부 특강 · 14:00~16:00 (2시간)",
       "턴·배영 2시간 집중 · 14:00~16:00",
-      "1부 진단 프로그램 · 14:00~16:00",
     ],
-    badge: "NEW CLASS",
+    badge: "특강 + NEW 클래스",
     specialClass: MOKDONG_OCT18_LAUNCH,
   },
   {
@@ -481,14 +498,14 @@ export const DEFAULT_CAPACITY_BY_CLASS: Record<string, number> = {
   // 부산 10/4 (자유형·진단 미모집)
   "[부산 10/4] 1부 특강 평영": 7,
   "[부산 10/4] 1부 특강 접영": 7,
-  // 목동 10/18 턴·배영 런칭 특강 (+ 진단 유지)
+  // 목동 10/18: 기존 특강(자유형·평영·접영) + 턴·배영 NEW (진단 미운영)
+  "[목동 10/18] 1부 특강 자유형": 14,
+  "[목동 10/18] 1부 특강 평영": 7,
+  "[목동 10/18] 1부 특강 접영": 7,
   "[목동 10/18] 1부 특강 턴": 7,
   "[목동 10/18] 1부 특강 배영": 7,
-  "[목동 10/18] 1부 진단": 14,
-  // 구 키 호환 (일반 영법 → 모집 종료)
-  "[목동 10/18] 1부 특강 자유형": 0,
-  "[목동 10/18] 1부 특강 평영": 0,
-  "[목동 10/18] 1부 특강 접영": 0,
+  // 진단은 10/18 목동에서만 미모집
+  "[목동 10/18] 1부 진단": 0,
   // 동탄 10/25 스윔스튜디오제이
   "[동탄 10/25] 1부 특강 자유형": 14,
   "[동탄 10/25] 1부 특강 평영": 7,

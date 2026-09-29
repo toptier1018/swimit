@@ -14,6 +14,10 @@ import {
 } from "@/lib/toss-card-order-meta";
 import { guessClassDate } from "@/lib/notion-sheet-sync";
 import {
+  buildSheetScheduleLink,
+  resolveClassScheduleFromEnrollmentKey,
+} from "@/lib/class-schedule-data";
+import {
   isContentConsentVersion,
   parseContentConsent,
   type ResistanceContentConsent,
@@ -411,18 +415,44 @@ export async function finalizeCardEnrollmentCore(
     classSheetLabelFromSelected(selectedClassName);
   const sessionLabel =
     enrollment?.sessionLabel?.trim() || sessionFromTimeSlot(timeSlot);
-  // 웹훅만 먼저 오면 enrollment가 없어 날짜/레인이 비기 쉬움 → Notion 클래스로 보완
+  // 웹훅만 먼저 오면 enrollment가 없어 날짜/레인이 비기 쉬움 → enrollment key 정본으로 확정
   const lane = enrollment?.lane?.trim() || "미배정";
+  const resolvedSchedule = resolveClassScheduleFromEnrollmentKey(
+    selectedClassName,
+  );
   const classDate =
+    resolvedSchedule?.isoDate ||
     enrollment?.classDate?.trim() ||
     guessClassDate(region, selectedClassName) ||
     "";
+  const sheetRegion = resolvedSchedule?.location || region;
+  const sheetLink = classDate
+    ? buildSheetScheduleLink({
+        session: sessionLabel,
+        lane,
+        isoDate: classDate,
+      })
+    : "";
   console.log("[카드후처리] 시트 날짜/레인:", {
     orderNumber,
     classDate,
     lane,
+    sheetRegion,
+    sheetLink,
+    fromEnrollmentKey: Boolean(resolvedSchedule),
     fromEnrollment: Boolean(enrollment?.classDate?.trim()),
   });
+  if (
+    enrollment?.classDate?.trim() &&
+    resolvedSchedule &&
+    enrollment.classDate.trim() !== resolvedSchedule.isoDate
+  ) {
+    console.warn("[카드후처리] enrollment 날짜와 classKey 정본이 다름 — 정본 사용:", {
+      enrollmentDate: enrollment.classDate,
+      resolvedDate: resolvedSchedule.isoDate,
+      selectedClassName,
+    });
+  }
   const sheetTimestamp =
     enrollment?.sheetTimestamp?.trim() ||
     new Date().toISOString().replace("T", " ").slice(0, 19);
@@ -457,7 +487,7 @@ export async function finalizeCardEnrollmentCore(
       meta,
       selectedClass: selectedClassName,
       timeSlot: timeSlot || found.timeSlot || "",
-      region: region || found.region || "",
+      region: sheetRegion || region || found.region || "",
       paymentStartedAt: enrollment?.paymentStartedAt,
       traffic: Object.keys(traffic).length ? traffic : undefined,
       preserveLocks: true,
@@ -481,7 +511,7 @@ export async function finalizeCardEnrollmentCore(
         meta,
         selectedClass: selectedClassName || found.selectedClass || meta.tossOrderId,
         timeSlot: timeSlot || found.timeSlot || "",
-        region: region || found.region || "",
+        region: sheetRegion || region || found.region || "",
       });
       meta = claim.meta;
 
@@ -510,8 +540,9 @@ export async function finalizeCardEnrollmentCore(
         회차: sessionLabel,
         레인: lane,
         날짜: classDate,
-        특강지역: region,
+        특강지역: sheetRegion,
         예약상태: "결제완료",
+        링크: sheetLink,
         유입경로: traffic["유입경로"] || "",
         video: traffic.video || "",
         source: traffic.source || "",
@@ -536,7 +567,7 @@ export async function finalizeCardEnrollmentCore(
         selectedClass:
           selectedClassName || found.selectedClass || meta.tossOrderId,
         timeSlot: timeSlot || found.timeSlot || "",
-        region: region || found.region || "",
+        region: sheetRegion || region || found.region || "",
       });
       if (!markWritten.success) {
         console.error(
@@ -590,7 +621,7 @@ export async function finalizeCardEnrollmentCore(
     amount: meta.amount,
     customerName,
     phone,
-    location: region || location,
+    location: sheetRegion || region || location,
     className: selectedClassName,
     classDate,
     recoveryHint: enrollSaved

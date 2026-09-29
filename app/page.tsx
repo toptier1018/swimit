@@ -85,6 +85,8 @@ import {
   DIAGNOSIS_WAITLIST_THRESHOLD,
   DEFAULT_WAITLIST_THRESHOLDS_BY_CLASS,
   isDiagnosisEnrollmentKey,
+  resolveClassScheduleFromEnrollmentKey,
+  toClassScheduleIsoDate,
   type ClassScheduleItem,
 } from "@/lib/class-schedule-data";
 
@@ -2071,6 +2073,46 @@ export default function SwimmingClassPage() {
     return matched?.[0] ?? session;
   };
 
+  /** 화면에서 고른 classKey를 기준으로 시트 날짜·장소를 만듭니다. calendarYear는 쓰지 않습니다. */
+  const resolveSheetScheduleFields = (slot: {
+    name: string;
+    session: string;
+    lane: string;
+  }) => {
+    const fromKey = resolveClassScheduleFromEnrollmentKey(slot.name);
+    const selectedClassInfo = fromKey?.schedule
+      ? fromKey.schedule
+      : selectedClass
+        ? classes.find((c) => String(c.id) === selectedClass) || null
+        : null;
+    const classDate =
+      fromKey?.isoDate ||
+      (selectedClassInfo ? toClassScheduleIsoDate(selectedClassInfo) : "");
+    const selectedRegion =
+      fromKey?.location || selectedClassInfo?.location || "정보 없음";
+    if (!fromKey) {
+      console.warn("[일정저장] classKey 매핑 실패 — selectedClass로 보조:", {
+        classKey: slot.name,
+        selectedClass,
+        classDate,
+        selectedRegion,
+      });
+    } else {
+      console.log("[일정저장] classKey로 일정 확정:", {
+        classKey: slot.name,
+        classId: fromKey.schedule.id,
+        classDate,
+        selectedRegion,
+      });
+    }
+    return {
+      selectedClassInfo,
+      classDate,
+      selectedRegion,
+      classKey: slot.name,
+    };
+  };
+
   // 입금기한: 접수일 기준 익일 오후 2시 (KST) — 자리 홀드·시트 입금기한과 동일
   const getDepositDeadline = () => {
     if (!paymentDate) return "";
@@ -2818,17 +2860,10 @@ export default function SwimmingClassPage() {
 
       const paymentStartedAt = new Date();
       const contentConsent = getPaymentContentConsent();
-      const selectedClassInfo = classes.find(
-        (c) => String(c.id) === selectedClass,
-      );
-      const selectedRegion = selectedClassInfo?.location || "정보 없음";
-      const classDate = selectedClassInfo
-        ? formatSheetClassDate(
-            calendarYear,
-            selectedClassInfo.month,
-            selectedClassInfo.dateNum,
-          )
-        : "";
+      const {
+        selectedRegion,
+        classDate,
+      } = resolveSheetScheduleFields(selectedTimeSlot);
       const trafficRecord = toTrafficRecord(trafficSource);
       const timeSlotLabel = `${selectedTimeSlot.session} (${selectedTimeSlot.time})`;
 
@@ -6663,18 +6698,11 @@ export default function SwimmingClassPage() {
                                 const newOrderNumber = generateOrderNumber();
                                 setOrderNumber(newOrderNumber); // 주문번호 저장
                                 setPaymentStatus("예약대기"); // 예약대기 상태 설정
-                                const selectedClassInfo = classes.find(
-                                  (c) => String(c.id) === selectedClass,
-                                );
-                                const selectedRegion =
-                                  selectedClassInfo?.location || "정보 없음";
-                                const classDate = selectedClassInfo
-                                  ? formatSheetClassDate(
-                                      calendarYear,
-                                      selectedClassInfo.month,
-                                      selectedClassInfo.dateNum,
-                                    )
-                                  : "";
+                                const {
+                                  selectedRegion,
+                                  classDate,
+                                  classKey,
+                                } = resolveSheetScheduleFields(selectedTimeSlot);
                                 console.log(
                                   "[예약대기] 지역 정보 저장:",
                                   selectedRegion,
@@ -6734,6 +6762,7 @@ export default function SwimmingClassPage() {
                                         날짜: classDate,
                                         특강지역: selectedRegion,
                                         예약상태: "예약대기",
+                                        classKey,
                                         contentConsent,
                                         ...toTrafficRecord(trafficSource),
                                       }),
@@ -6872,18 +6901,11 @@ export default function SwimmingClassPage() {
                                 const newOrderNumber = generateOrderNumber();
                                 setOrderNumber(newOrderNumber); // 주문번호 저장
                                 setPaymentStatus("결제대기"); // 결제 전 이탈 고객 회수용 상태
-                                const selectedClassInfo = classes.find(
-                                  (c) => String(c.id) === selectedClass,
-                                );
-                                const selectedRegion =
-                                  selectedClassInfo?.location || "정보 없음";
-                                const classDate = selectedClassInfo
-                                  ? formatSheetClassDate(
-                                      calendarYear,
-                                      selectedClassInfo.month,
-                                      selectedClassInfo.dateNum,
-                                    )
-                                  : "";
+                                const {
+                                  selectedRegion,
+                                  classDate,
+                                  classKey,
+                                } = resolveSheetScheduleFields(selectedTimeSlot);
                                 console.log(
                                   "[결제] 지역 정보 저장:",
                                   selectedRegion,
@@ -6950,6 +6972,7 @@ export default function SwimmingClassPage() {
                                         날짜: classDate,
                                         특강지역: selectedRegion,
                                         예약상태: "결제대기",
+                                        classKey,
                                         입금기한:
                                           formatBankTransferDeadline(
                                             paymentStartedAt,

@@ -2,6 +2,7 @@ import "server-only";
 import type { GoogleSheetRowInput } from "@/lib/google-sheets";
 import { parseCardPendingStatus } from "@/lib/toss-card-order-meta";
 import { isContentConsentVersion } from "@/lib/resistance-content-consent";
+import { resolveClassScheduleFromEnrollmentKey, buildSheetScheduleLink } from "@/lib/class-schedule-data";
 
 type NotionRichText = { plain_text?: string };
 type NotionPage = {
@@ -142,6 +143,10 @@ const CLASS_DATES_BY_REGION: Record<string, string> = {
 
 /** 지역·선택된 클래스 문자열에서 특강 날짜(YYYY-MM-DD) 추정 */
 export function guessClassDate(region: string, selectedClass: string): string {
+  // 1) enrollment key의 [지역 M/D]를 CLASS_SCHEDULES 정본으로 해석 (가장 안전)
+  const fromKey = resolveClassScheduleFromEnrollmentKey(selectedClass);
+  if (fromKey) return fromKey.isoDate;
+
   const datedClassLabel = selectedClass.match(/^\[[^\]]*?(\d{1,2})\/(\d{1,2})\]/);
   if (datedClassLabel) {
     const month = datedClassLabel[1].padStart(2, "0");
@@ -149,8 +154,14 @@ export function guessClassDate(region: string, selectedClass: string): string {
     return `2026-${month}-${day}`;
   }
 
-  for (const [key, date] of Object.entries(CLASS_DATES_BY_REGION)) {
-    if (region.includes(key) || selectedClass.includes(key)) return date;
+  // 2) 긴 키부터 매칭 (동탄10/25가 동탄보다 먼저)
+  const keys = Object.keys(CLASS_DATES_BY_REGION).sort(
+    (a, b) => b.length - a.length,
+  );
+  for (const key of keys) {
+    if (region.includes(key) || selectedClass.includes(key)) {
+      return CLASS_DATES_BY_REGION[key];
+    }
   }
   if (selectedClass.includes("서초")) return CLASS_DATES_BY_REGION["서초"];
   if (selectedClass.includes("김포")) return CLASS_DATES_BY_REGION["김포"];
@@ -182,6 +193,16 @@ export function notionPageToSheetRow(page: NotionPage): GoogleSheetRowInput | nu
   const cardMeta = parseCardPendingStatus(richText(p["카드결제 메타"]));
 
   const paymentIso = dateStart(p["결제 진행 시간"]);
+  const resolved = resolveClassScheduleFromEnrollmentKey(selectedClass);
+  const isoDate = resolved?.isoDate || guessClassDate(region, selectedClass);
+  const sheetLocation = resolved?.location || region;
+  const sheetLink = isoDate
+    ? buildSheetScheduleLink({
+        session: parsed.회차 || "1부",
+        lane: parsed.레인 || "미배정",
+        isoDate,
+      })
+    : "";
 
   return {
     접수일시: formatNotionDateForSheet(paymentIso),
@@ -199,9 +220,10 @@ export function notionPageToSheetRow(page: NotionPage): GoogleSheetRowInput | nu
     클래스: parsed.클래스,
     회차: parsed.회차,
     레인: parsed.레인,
-    날짜: guessClassDate(region, selectedClass),
-    특강지역: region,
+    날짜: isoDate,
+    특강지역: sheetLocation,
     예약상태: status,
+    링크: sheetLink,
     유입경로: anyText(p["유입경로"]) || "direct",
     video: anyText(p["video"]),
     source: anyText(p["source"]),

@@ -501,3 +501,73 @@ export function toClassScheduleIsoDate(event: {
   const dd = String(event.dateNum).padStart(2, "0");
   return `${event.year}-${mm}-${dd}`;
 }
+
+/** `[동탄 10/25] 1부 특강 자유형` → 지역/월/일 */
+export function parseEnrollmentKeyLabel(classKey: string): {
+  locationCode: string;
+  month: number;
+  dateNum: number;
+} | null {
+  const matched = String(classKey || "")
+    .trim()
+    .match(/^\[([^\]]+?)\s+(\d{1,2})\/(\d{1,2})\]/);
+  if (!matched) return null;
+  return {
+    locationCode: matched[1].trim(),
+    month: Number(matched[2]),
+    dateNum: Number(matched[3]),
+  };
+}
+
+/**
+ * 신청 키(classKey) 하나로 일정 정본을 찾습니다.
+ * 날짜·장소·링크는 이 결과를 기준으로만 저장해야 합니다.
+ */
+export function resolveClassScheduleFromEnrollmentKey(classKey: string) {
+  const parsed = parseEnrollmentKeyLabel(classKey);
+  if (!parsed) {
+    console.warn("[일정매핑] enrollment key에서 날짜를 읽지 못함:", classKey);
+    return null;
+  }
+  const schedule = CLASS_SCHEDULES.find(
+    (item) =>
+      item.locationCode === parsed.locationCode &&
+      item.month === parsed.month &&
+      item.dateNum === parsed.dateNum,
+  );
+  if (!schedule) {
+    console.warn("[일정매핑] CLASS_SCHEDULES에서 일정을 찾지 못함:", {
+      classKey,
+      parsed,
+    });
+    return null;
+  }
+  const isoDate = toClassScheduleIsoDate(schedule);
+  console.log("[일정매핑] enrollment key → 일정 확정:", {
+    classKey,
+    classId: schedule.id,
+    isoDate,
+    location: schedule.location,
+  });
+  return {
+    schedule,
+    isoDate,
+    location: schedule.location,
+  };
+}
+
+/** 시트 Q열 링크: 1부-미배정-2026-10-25 */
+export function buildSheetScheduleLink(params: {
+  session: string;
+  lane?: string;
+  isoDate: string;
+}): string {
+  const session =
+    String(params.session || "").match(/\d+부/)?.[0] ||
+    String(params.session || "").trim() ||
+    "1부";
+  const lane = String(params.lane || "미배정").trim() || "미배정";
+  const isoDate = String(params.isoDate || "").trim();
+  if (!isoDate) return `${session}-${lane}`;
+  return `${session}-${lane}-${isoDate}`;
+}

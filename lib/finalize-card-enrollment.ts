@@ -116,7 +116,9 @@ function sessionFromTimeSlot(timeSlot: string): string {
 
 function classSheetLabelFromSelected(selectedClass: string): string {
   if (/진단/.test(selectedClass)) return "진단";
-  const stroke = selectedClass.match(/(자유형|평영|접영)/)?.[1];
+  if (/턴 2시간|특강 턴/.test(selectedClass)) return "턴 2시간 집중반";
+  if (/배영 2시간|특강 배영/.test(selectedClass)) return "배영 2시간 집중반";
+  const stroke = selectedClass.match(/(자유형|평영|접영|턴|배영)/)?.[1];
   return stroke || selectedClass;
 }
 

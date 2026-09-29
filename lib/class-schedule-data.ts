@@ -12,18 +12,24 @@ export const DEFAULT_WAITLIST_THRESHOLD = 7;
 export const DIAGNOSIS_WAITLIST_THRESHOLD = 20;
 
 export type SpecialClassOption = {
-  stroke: "자유형" | "평영" | "접영";
+  /** enrollment key에 쓰는 짧은 이름 (예: 턴, 배영, 자유형) */
+  key: string;
   name: string;
   flow: string;
   short: string;
+  icon?: string;
 };
 
-/** 11/29 동탄처럼 일반 2시간 특강과 다른 한정 클래스 */
+/** 일반 2시간 특강과 다른 한정/스페셜 클래스 */
 export type SpecialClassInfo = {
-  specialType: "intensive-3h";
-  duration: "3시간";
-  timeLabel: "14:00~17:00";
+  specialType: "intensive-3h" | "launch-2h";
+  duration: string;
+  timeLabel: string;
   price: number;
+  originalPrice?: number;
+  promotionType?: "launch";
+  /** true면 동반/예약대기 등 추가 5,000원 할인 없음 */
+  noExtraDiscount?: boolean;
   summary: string;
   detail: string;
   classes: SpecialClassOption[];
@@ -40,22 +46,55 @@ export const DONGTAN_NOV29_INTENSIVE: SpecialClassInfo = {
     "한 가지 영법을 선택해 영법 교정부터 출발·턴·브레이크아웃까지 집중적으로 연결합니다.",
   classes: [
     {
-      stroke: "자유형",
+      key: "자유형",
       name: "자유형 3시간 집중반",
+      icon: "🏊",
       flow: "자유형 → 물속 출발 → 사이드턴·플립턴 → 돌핀킥 → 브레이크아웃",
       short: "영법 · 출발 · 사이드턴/플립턴 · 돌핀킥 · 브레이크아웃",
     },
     {
-      stroke: "평영",
+      key: "평영",
       name: "평영 3시간 집중반",
+      icon: "🐸",
       flow: "평영 → 물속 출발 → 사이드턴 → 수중동작 → 브레이크아웃",
       short: "영법 · 출발 · 사이드턴 · 수중동작 · 브레이크아웃",
     },
     {
-      stroke: "접영",
+      key: "접영",
       name: "접영 3시간 집중반",
+      icon: "🦋",
       flow: "접영 → 물속 출발 → 사이드턴 → 돌핀킥 → 브레이크아웃",
       short: "영법 · 출발 · 사이드턴 · 돌핀킥 · 브레이크아웃",
+    },
+  ],
+};
+
+export const MOKDONG_OCT18_LAUNCH: SpecialClassInfo = {
+  specialType: "launch-2h",
+  duration: "2시간",
+  timeLabel: "14:00~16:00",
+  price: 70000,
+  originalPrice: 80000,
+  promotionType: "launch",
+  noExtraDiscount: true,
+  summary:
+    "평소 강습에서 제대로 배우기 어려웠던 턴과 배영만 2시간 동안 집중합니다.",
+  detail:
+    "10월 18일 목동 한정 런칭 특가입니다. 다른 할인·쿠폰과 중복 적용되지 않습니다.",
+  classes: [
+    {
+      key: "턴",
+      name: "턴 2시간 집중반",
+      icon: "🔄",
+      flow: "사이드턴 → 플립턴 → 벽차기 → 스트림라인 → 돌핀킥 → 브레이크아웃",
+      short: "사이드턴 · 플립턴 · 벽차기 · 스트림라인 · 돌핀킥 · 브레이크아웃",
+    },
+    {
+      key: "배영",
+      name: "배영 2시간 집중반",
+      icon: "🏊",
+      flow: "수평 자세 → 롤링 → 팔 입수 → 캐치 → 킥 → 몸통 연결",
+      short: "수평 자세 · 롤링 · 입수 · 캐치 · 킥 · 몸통 연결",
     },
   ],
 };
@@ -312,12 +351,13 @@ export const CLASS_SCHEDULES: ClassScheduleItem[] = [
     month: 10,
     venue: "목동스포츠센터",
     address: "서울특별시 양천구 목동서로 130 목동스포츠센터",
-    spots: "자유형 14명 · 평영·접영 각 7명 · 진단 14명",
+    spots: "턴·배영 각 7명 · 진단 14명",
     scheduleSummaryLines: [
-      "1부 특강 · 14:00~16:00 (2시간)",
+      "턴·배영 2시간 집중 · 14:00~16:00",
       "1부 진단 프로그램 · 14:00~16:00",
     ],
-    badge: "특강 + 진단 동시 운영",
+    badge: "NEW CLASS",
+    specialClass: MOKDONG_OCT18_LAUNCH,
   },
   {
     id: 23,
@@ -441,11 +481,14 @@ export const DEFAULT_CAPACITY_BY_CLASS: Record<string, number> = {
   // 부산 10/4 (자유형·진단 미모집)
   "[부산 10/4] 1부 특강 평영": 7,
   "[부산 10/4] 1부 특강 접영": 7,
-  // 목동 10/18
-  "[목동 10/18] 1부 특강 자유형": 14,
-  "[목동 10/18] 1부 특강 평영": 7,
-  "[목동 10/18] 1부 특강 접영": 7,
+  // 목동 10/18 턴·배영 런칭 특강 (+ 진단 유지)
+  "[목동 10/18] 1부 특강 턴": 7,
+  "[목동 10/18] 1부 특강 배영": 7,
   "[목동 10/18] 1부 진단": 14,
+  // 구 키 호환 (일반 영법 → 모집 종료)
+  "[목동 10/18] 1부 특강 자유형": 0,
+  "[목동 10/18] 1부 특강 평영": 0,
+  "[목동 10/18] 1부 특강 접영": 0,
   // 동탄 10/25 스윔스튜디오제이
   "[동탄 10/25] 1부 특강 자유형": 14,
   "[동탄 10/25] 1부 특강 평영": 7,

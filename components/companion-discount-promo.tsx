@@ -49,12 +49,18 @@ export function CompanionDiscountPromo({
             <br />
             결제 금액에서 <span className="font-bold text-blue-800">5,000원 할인</span>
           </p>
+          <p className="break-keep text-xs leading-5 text-gray-500">
+            ※ 10/18 목동 턴·배영 런칭 특가는 제외됩니다.
+          </p>
           <div className="flex flex-wrap gap-2 pt-0.5">
             <span className="rounded-full border border-blue-100 bg-blue-50/80 px-2.5 py-1 text-xs font-medium text-blue-800">
               저항 진단 제외
             </span>
             <span className="rounded-full border border-blue-100 bg-blue-50/80 px-2.5 py-1 text-xs font-medium text-blue-800">
               할인 중복 적용 불가
+            </span>
+            <span className="rounded-full border border-blue-100 bg-blue-50/80 px-2.5 py-1 text-xs font-medium text-blue-800">
+              런칭 특가 제외
             </span>
           </div>
         </div>
@@ -187,6 +193,10 @@ export function CompanionDiscountPromo({
                   <p className="font-bold text-blue-900">[유의사항]</p>
                   <ul className="space-y-1.5 pl-1 text-gray-700">
                     <li>· 저항 진단 프로그램은 할인 대상이 아닙니다.</li>
+                    <li>
+                      · 10/18 목동 턴·배영 런칭 특가(70,000원)는 추가 할인
+                      대상이 아닙니다.
+                    </li>
                     <li>· 1인 1회 적용</li>
                     <li>· 다른 할인·쿠폰과 중복 적용되지 않습니다.</li>
                     <li>· 한 분이 취소 또는 이월하면 동반 할인 혜택도 취소</li>

@@ -102,10 +102,12 @@ const DEPOSIT_ACCOUNT_LABEL = `${DEPOSIT_BANK_NAME} ${DEPOSIT_ACCOUNT_NUMBER}`;
 // 개발자 모드에서 대기 해제/기준 변경이 필요하므로 기본은 false로 둡니다.
 const FORCE_ALL_WAITLIST = false;
 
-type StrokeType = "자유형" | "평영" | "접영";
+type StrokeType = "자유형" | "평영" | "접영" | "턴" | "배영";
 type ProductType = "zero" | "diagnosis";
 
 const STROKE_ORDER: StrokeType[] = ["자유형", "평영", "접영"];
+/** 시간표에 턴·배영이 있을 때도 선택 목록에 포함 */
+const STROKE_ORDER_ALL: StrokeType[] = ["자유형", "평영", "접영", "턴", "배영"];
 
 /** 제로 특강과 진단 프로그램을 서로 다른 부로 운영하는 동탄 일정 */
 const DONGTAN_AUGUST_CLASS_ID = 13;
@@ -268,10 +270,12 @@ const NovemberWaitlistApplyNotice = ({
   </div>
 );
 
-const INTENSIVE_STROKE_ICON: Record<"자유형" | "평영" | "접영", string> = {
+const INTENSIVE_STROKE_ICON: Record<string, string> = {
   자유형: "🏊",
   평영: "🐸",
   접영: "🦋",
+  턴: "🔄",
+  배영: "🏊",
 };
 
 /** 진단 소개 다음, 일정 안내 직전. 11/29 동탄 3시간 집중반만 안내합니다. */
@@ -302,9 +306,9 @@ const DongtanIntensivePromo = ({ onViewSchedule }: { onViewSchedule: () => void 
 
         <div className="grid gap-2 md:grid-cols-3 md:gap-3">
           {offer.classes.map((item) => (
-            <div key={item.stroke} className="rounded-xl bg-blue-50/60 px-3 py-2.5">
+            <div key={item.key} className="rounded-xl bg-blue-50/60 px-3 py-2.5">
               <p className="text-sm font-bold text-gray-950">
-                <span aria-hidden>{INTENSIVE_STROKE_ICON[item.stroke]} </span>
+                <span aria-hidden>{(item.icon || INTENSIVE_STROKE_ICON[item.key] || "") + " "}</span>
                 {item.name}
               </p>
               <p className="mt-1.5 flex flex-wrap items-center gap-x-1 gap-y-0.5 text-[11px] leading-4 text-gray-700 sm:text-xs">
@@ -339,6 +343,74 @@ const DongtanIntensivePromo = ({ onViewSchedule }: { onViewSchedule: () => void 
 
         <Button type="button" className="h-11 w-full font-bold" onClick={onViewSchedule}>
           11월 29일 동탄 3시간 집중반 보기 ↓
+        </Button>
+      </div>
+    </section>
+  );
+};
+
+/** 일정 안내 직전. 10/18 목동 턴·배영 런칭만 짧게 안내합니다. */
+const MokdongLaunchPromo = ({ onViewSchedule }: { onViewSchedule: () => void }) => {
+  const offer = CLASS_SCHEDULES.find((item) => item.id === 22)?.specialClass;
+  if (!offer || offer.specialType !== "launch-2h") return null;
+  const original = offer.originalPrice ?? 80000;
+  return (
+    <section className="order-3 mt-6 w-full scroll-mt-4 rounded-2xl border border-blue-200 bg-white p-4 shadow-sm sm:p-5">
+      <div className="mx-auto max-w-3xl space-y-3">
+        <div className="space-y-1.5">
+          <p className="text-xs font-bold tracking-wide text-blue-700">
+            <span className="sm:hidden">10.18 목동 · NEW</span>
+            <span className="hidden sm:inline">10.18 목동 · NEW CLASS</span>
+          </p>
+          <h3 className="break-keep text-lg font-bold leading-snug text-gray-950 sm:text-xl">
+            <span className="sm:hidden">
+              턴 &amp; 배영
+              <br />
+              2시간 집중 클래스
+            </span>
+            <span className="hidden sm:inline">
+              평소 강습에서 제대로 배우기 어려웠던
+              <br />
+              턴과 배영만 2시간 집중합니다.
+            </span>
+          </h3>
+        </div>
+
+        <div className="grid gap-2 sm:grid-cols-2">
+          {offer.classes.map((item) => (
+            <div key={item.key} className="rounded-xl bg-blue-50/60 px-3 py-2.5">
+              <p className="text-sm font-bold text-gray-950">
+                <span aria-hidden>{(item.icon || "") + " "}</span>
+                {item.name}
+              </p>
+              <p className="mt-1 break-keep text-xs leading-5 text-gray-700">
+                {item.key === "턴"
+                  ? "사이드턴부터 플립턴, 벽차기와 브레이크아웃까지"
+                  : "수평 자세와 롤링부터 입수·캐치·킥 연결까지"}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <div className="rounded-xl border border-blue-100 px-3.5 py-3">
+          <p className="text-xs font-bold text-blue-700">런칭 특가</p>
+          <p className="mt-0.5 flex flex-wrap items-baseline gap-x-2">
+            <span className="text-sm text-gray-400 line-through">
+              {original.toLocaleString()}
+              <span className="sm:inline">원</span>
+            </span>
+            <span className="text-2xl font-extrabold text-blue-800">
+              {offer.price.toLocaleString()}
+              <span className="sm:inline">원</span>
+            </span>
+          </p>
+          <p className="mt-1 text-xs text-gray-500">
+            10월 18일 목동 한정 · 다른 할인 중복 불가
+          </p>
+        </div>
+
+        <Button type="button" className="h-11 w-full font-bold" onClick={onViewSchedule}>
+          10월 18일 목동 클래스 보기 ↓
         </Button>
       </div>
     </section>
@@ -412,6 +484,18 @@ const STROKE_CATALOG: Record<
     description:
       "첫 25m 완주부터 50m도 힘을 빼고 나아갈 수 있도록 교정합니다.",
   },
+  턴: {
+    icon: "🔄",
+    label: "턴 2시간 집중반",
+    description:
+      "사이드턴·플립턴부터 벽차기·스트림라인·돌핀킥·브레이크아웃까지 연결합니다.",
+  },
+  배영: {
+    icon: "🏊",
+    label: "배영 2시간 집중반",
+    description:
+      "수평 자세와 롤링부터 입수·캐치·킥·몸통 연결까지 집중 교정합니다.",
+  },
 };
 
 const PROBLEM_CHECKLIST = [
@@ -452,6 +536,9 @@ const getStrokeFromTitle = (title: string): StrokeType | null => {
   if (title.includes("자유형")) return "자유형";
   if (title.includes("평영")) return "평영";
   if (title.includes("접영")) return "접영";
+  if (title.includes("배영")) return "배영";
+  if (title === "턴" || title.startsWith("턴 ") || title.includes("턴 2시간"))
+    return "턴";
   return null;
 };
 
@@ -736,6 +823,35 @@ const TIMETABLE_DONGTAN_INTENSIVE: TimetableRow[] = [
   },
 ];
 
+/** 목동 10/18 — 턴·배영 런칭 특강 + 진단. 가격은 specialClass */
+const TIMETABLE_MOKDONG_OCTOBER_LAUNCH: TimetableRow[] = [
+  {
+    session: "1부 특강",
+    time: "14:00 ~ 16:00",
+    lanes: [
+      {
+        lane: UNASSIGNED_LANE,
+        title: "턴",
+        price:
+          CLASS_SCHEDULES.find((item) => item.id === 22)?.specialClass?.price ??
+          70000,
+      },
+      {
+        lane: UNASSIGNED_LANE,
+        title: "배영",
+        price:
+          CLASS_SCHEDULES.find((item) => item.id === 22)?.specialClass?.price ??
+          70000,
+      },
+      {
+        lane: UNASSIGNED_LANE,
+        title: DIAGNOSIS_LANE_TITLE,
+        price: PRODUCT_CATALOG.diagnosis.price,
+      },
+    ],
+  },
+];
+
 /** 강남 와이키키 링크&스윔 11/15 — 특강만, 레인 미표시 */
 const TIMETABLE_GANGNAM_NOVEMBER: TimetableRow[] = [
   {
@@ -831,7 +947,7 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   18: TIMETABLE_MOKDONG_SEPTEMBER, // 9/20 목동
   19: TIMETABLE_CHEONGNA_SEPTEMBER, // 9/27 청라
   20: TIMETABLE_BUSAN_OCTOBER, // 10/4 부산 (평영·접영만)
-  22: TIMETABLE_MOKDONG_SEPTEMBER, // 10/18 목동
+  22: TIMETABLE_MOKDONG_OCTOBER_LAUNCH, // 10/18 목동 턴·배영 런칭 (+진단)
   23: TIMETABLE_DONGTAN_AUGUST, // 10/25 동탄 스윔스튜디오제이
   24: TIMETABLE_MOKDONG_SEPTEMBER, // 11/8 부산 (특강+진단, 레인 미표시)
   25: TIMETABLE_GANGNAM_NOVEMBER, // 11/15 강남 (특강만)
@@ -859,7 +975,7 @@ const getAvailableStrokesForClass = (classId: number) => {
   return {
     session,
     time,
-    strokes: STROKE_ORDER.filter((stroke) => strokePrices[stroke]).map(
+    strokes: STROKE_ORDER_ALL.filter((stroke) => strokePrices[stroke]).map(
       (stroke) => ({
         stroke,
         price: strokePrices[stroke]!,
@@ -4152,6 +4268,23 @@ export default function SwimmingClassPage() {
               ) : null}
 
               {!isFishtankEntry ? (
+                <MokdongLaunchPromo
+                  onViewSchedule={() => {
+                    console.log("[목동런칭] 홍보 버튼 → 10/18 목동 일정 카드");
+                    setSelectedScheduleRegion("목동");
+                    window.setTimeout(() => {
+                      document
+                        .getElementById("schedule-class-22")
+                        ?.scrollIntoView({
+                          behavior: "smooth",
+                          block: "start",
+                        });
+                    }, 80);
+                  }}
+                />
+              ) : null}
+
+              {!isFishtankEntry ? (
                 <DongtanIntensivePromo
                   onViewSchedule={() => {
                     console.log("[3시간집중] 홍보 버튼 → 11/29 동탄 일정 카드");
@@ -4483,7 +4616,11 @@ export default function SwimmingClassPage() {
                                 <span className="min-w-0 break-keep text-base font-bold leading-6 sm:text-lg">
                                   {classItem.location}
                                 </span>
-                                {classItem.specialClass ? (
+                                {classItem.specialClass?.specialType === "launch-2h" ? (
+                                  <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-bold text-blue-800">
+                                    NEW CLASS
+                                  </span>
+                                ) : classItem.specialClass ? (
                                   <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-bold text-blue-800">
                                     SPECIAL
                                   </span>
@@ -4500,7 +4637,61 @@ export default function SwimmingClassPage() {
                               )}
                             </div>
 
-                            {classItem.specialClass ? (
+                            {classItem.specialClass?.specialType === "launch-2h" ? (
+                              <div className="mb-4 space-y-3">
+                                <div className="rounded-lg border border-blue-100 bg-blue-50 p-4">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <Calendar className="h-5 w-5 text-blue-600" />
+                                    <span className="text-base font-bold text-blue-900 sm:text-lg">
+                                      {classItem.date}
+                                    </span>
+                                    <span className="rounded-full bg-blue-800 px-2 py-0.5 text-[11px] font-bold text-white">
+                                      런칭 특가
+                                    </span>
+                                  </div>
+                                  <p className="mt-2 text-sm font-bold text-blue-800">
+                                    턴 · 배영 2시간 집중
+                                  </p>
+                                  <p className="text-sm font-semibold text-blue-900">
+                                    {classItem.specialClass.timeLabel}
+                                  </p>
+                                  <p className="mt-3 flex flex-wrap items-baseline gap-x-2">
+                                    <span className="text-sm text-gray-400 line-through">
+                                      {(classItem.specialClass.originalPrice ?? 80000).toLocaleString()}원
+                                    </span>
+                                    <span className="text-2xl font-extrabold text-blue-800">
+                                      {classItem.specialClass.price.toLocaleString()}원
+                                    </span>
+                                  </p>
+                                  <p className="mt-1 text-xs leading-5 text-gray-600">
+                                    ※ 10/18 목동 한정 · 다른 할인·쿠폰 중복 적용 불가
+                                  </p>
+                                </div>
+                                <div className="space-y-2">
+                                  {classItem.specialClass.classes.map((option) => (
+                                    <div
+                                      key={option.key}
+                                      className="rounded-lg border border-blue-100 px-3 py-2"
+                                    >
+                                      <p className="text-sm font-bold text-gray-950">
+                                        {(option.icon || INTENSIVE_STROKE_ICON[option.key] || "") +
+                                          " "}
+                                        {option.name}
+                                      </p>
+                                      <p className="mt-0.5 text-xs leading-5 text-gray-600">
+                                        {option.short}
+                                      </p>
+                                    </div>
+                                  ))}
+                                </div>
+                                <div className="space-y-1 text-sm leading-6 text-gray-700">
+                                  <p>{classItem.specialClass.summary}</p>
+                                  <p className="text-xs text-gray-500">
+                                    {classItem.specialClass.detail}
+                                  </p>
+                                </div>
+                              </div>
+                            ) : classItem.specialClass ? (
                               <div className="mb-4 space-y-3">
                                 <div className="rounded-lg border border-blue-100 bg-blue-50 p-4">
                                   <div className="flex items-center gap-2">
@@ -4526,9 +4717,10 @@ export default function SwimmingClassPage() {
                                 </div>
                                 <div className="space-y-2">
                                   {classItem.specialClass.classes.map((option) => (
-                                    <div key={option.stroke} className="rounded-lg border border-blue-100 px-3 py-2">
+                                    <div key={option.key} className="rounded-lg border border-blue-100 px-3 py-2">
                                       <p className="text-sm font-bold text-gray-950">
-                                        {INTENSIVE_STROKE_ICON[option.stroke]} {option.name}
+                                        {(option.icon || INTENSIVE_STROKE_ICON[option.key] || "") + " "}
+                                        {option.name}
                                       </p>
                                       <p className="mt-0.5 text-xs leading-5 text-gray-600">{option.short}</p>
                                     </div>
@@ -4843,14 +5035,69 @@ export default function SwimmingClassPage() {
                   )}
                 </div>
               )}
-              {selectedScheduleClass?.specialClass && step !== 4 ? (
+              {selectedScheduleClass?.specialClass?.specialType === "launch-2h" &&
+              step !== 4 &&
+              !isResistanceDiagnosisProduct({
+                className: selectedTimeSlot?.name,
+                productType:
+                  selectedTimeSlot?.productType || selectedProductType,
+              }) ? (
+                <div className="mb-4 rounded-xl border border-blue-200 bg-white p-4 pr-12 shadow-sm">
+                  <p className="text-xs font-bold tracking-wide text-blue-700">
+                    ✨ 10/18 목동 NEW CLASS
+                  </p>
+                  <p className="mt-1 text-lg font-bold text-gray-950">런칭 특가</p>
+                  <p className="mt-2 text-sm font-semibold text-gray-800">
+                    선택한 클래스:{" "}
+                    {selectedScheduleClass.specialClass.classes.find(
+                      (option) =>
+                        selectedTimeSlot?.title === option.name ||
+                        selectedTimeSlot?.title === option.key,
+                    )?.name ?? "클래스를 선택해 주세요"}
+                  </p>
+                  {selectedScheduleClass.specialClass.classes.find(
+                    (option) =>
+                      selectedTimeSlot?.title === option.name ||
+                      selectedTimeSlot?.title === option.key,
+                  ) ? (
+                    <p className="mt-1 text-xs leading-5 text-gray-600">
+                      {
+                        selectedScheduleClass.specialClass.classes.find(
+                          (option) =>
+                            selectedTimeSlot?.title === option.name ||
+                            selectedTimeSlot?.title === option.key,
+                        )?.short
+                      }
+                    </p>
+                  ) : null}
+                  <p className="mt-2 text-sm text-gray-700">
+                    시간: {selectedScheduleClass.specialClass.timeLabel}
+                  </p>
+                  <p className="mt-2 flex flex-wrap items-baseline gap-x-2">
+                    <span className="text-sm text-gray-400 line-through">
+                      {(selectedScheduleClass.specialClass.originalPrice ?? 80000).toLocaleString()}원
+                    </span>
+                    <span className="text-2xl font-extrabold text-blue-800">
+                      {selectedScheduleClass.specialClass.price.toLocaleString()}원
+                    </span>
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-gray-500">
+                    10월 18일 목동 신규 클래스 런칭 특가입니다. 다른 할인·쿠폰과
+                    중복 적용되지 않습니다.
+                  </p>
+                </div>
+              ) : null}
+              {selectedScheduleClass?.specialClass?.specialType === "intensive-3h" &&
+              step !== 4 ? (
                 <div className="mb-4 rounded-xl border border-blue-200 bg-white p-4 pr-12 shadow-sm">
                   <p className="text-xs font-bold tracking-wide text-blue-700">🔥 11/29 동탄 SPECIAL</p>
                   <p className="mt-1 text-lg font-bold text-gray-950">3시간 집중 특강</p>
                   <p className="mt-2 text-sm font-semibold text-gray-800">
                     선택한 클래스:{" "}
                     {selectedScheduleClass.specialClass.classes.find(
-                      (option) => selectedTimeSlot?.title === option.name || selectedTimeSlot?.title === option.stroke,
+                      (option) =>
+                        selectedTimeSlot?.title === option.name ||
+                        selectedTimeSlot?.title === option.key,
                     )?.name ?? "영법을 선택해 주세요"}
                   </p>
                   <p className="text-sm text-gray-700">시간: {selectedScheduleClass.specialClass.timeLabel}</p>
@@ -5907,9 +6154,12 @@ export default function SwimmingClassPage() {
                             ) : null}
                             <div className="rounded-lg bg-slate-50 px-4 py-3 text-sm text-gray-700">
                               <span className="font-bold text-gray-900">
-                                {selectedScheduleForPayment?.specialClass
-                                  ? "3시간 집중 특강"
-                                  : strokeSchedule.session}
+                                {selectedScheduleForPayment?.specialClass?.specialType ===
+                                "launch-2h"
+                                  ? "NEW CLASS · 런칭 특가"
+                                  : selectedScheduleForPayment?.specialClass
+                                    ? "3시간 집중 특강"
+                                    : strokeSchedule.session}
                               </span>
                               <span className="mx-2 text-gray-400">·</span>
                               <span>
@@ -5931,7 +6181,7 @@ export default function SwimmingClassPage() {
                                   const catalog = STROKE_CATALOG[stroke];
                                   const intensiveOption =
                                     selectedScheduleForPayment?.specialClass?.classes.find(
-                                      (option) => option.stroke === stroke,
+                                      (option) => option.key === stroke,
                                     );
                                   const isSelected =
                                     selectedTimeSlot?.name === classKey;
@@ -5969,6 +6219,7 @@ export default function SwimmingClassPage() {
                                           price,
                                           isWaitlist: isFull,
                                           available: !isFull,
+                                          productName: intensiveOption?.name,
                                         });
                                         setStep(3);
                                       }}
@@ -5981,30 +6232,51 @@ export default function SwimmingClassPage() {
                                       <div>
                                         <div className="text-base font-bold text-gray-900">
                                           {intensiveOption
-                                            ? `${INTENSIVE_STROKE_ICON[stroke]} ${intensiveOption.name}`
+                                            ? `${intensiveOption.icon || INTENSIVE_STROKE_ICON[stroke] || ""} ${intensiveOption.name}`
                                             : `${catalog.icon} ${catalog.label}`}
                                         </div>
                                         <div className="mt-2 text-sm leading-5 text-gray-600">
                                           {intensiveOption?.short ?? catalog.description}
                                         </div>
                                         {intensiveOption ? (
-                                          <p className="mt-2 text-sm font-extrabold text-blue-800">
-                                            {price.toLocaleString()}원
+                                          <p className="mt-2 flex flex-wrap items-baseline gap-x-2">
+                                            {selectedScheduleForPayment?.specialClass
+                                              ?.originalPrice ? (
+                                              <span className="text-xs text-gray-400 line-through">
+                                                {selectedScheduleForPayment.specialClass.originalPrice.toLocaleString()}원
+                                              </span>
+                                            ) : null}
+                                            <span className="text-sm font-extrabold text-blue-800">
+                                              {price.toLocaleString()}원
+                                            </span>
                                           </p>
                                         ) : null}
                                       </div>
                                       <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
-                                        <ProductPriceLabel
-                                          reservationOnly={isNovemberSchedule(selectedScheduleForPayment)}
-                                          reservationBenefit={hasNovemberBenefit(selectedScheduleForPayment)}
-                                          price={price}
-                                          originalPrice={
-                                            PRODUCT_CATALOG.zero.originalPrice
-                                          }
-                                          badge={
-                                            PRODUCT_CATALOG.zero.priceBadge
-                                          }
-                                        />
+                                        {intensiveOption ? (
+                                          selectedScheduleForPayment?.specialClass
+                                            ?.specialType === "launch-2h" ? (
+                                            <span className="text-xs font-bold text-blue-700">
+                                              런칭 특가 · 추가 할인 불가
+                                            </span>
+                                          ) : (
+                                            <span className="text-xs font-bold text-blue-700">
+                                              3시간 집중
+                                            </span>
+                                          )
+                                        ) : (
+                                          <ProductPriceLabel
+                                            reservationOnly={isNovemberSchedule(selectedScheduleForPayment)}
+                                            reservationBenefit={hasNovemberBenefit(selectedScheduleForPayment)}
+                                            price={price}
+                                            originalPrice={
+                                              PRODUCT_CATALOG.zero.originalPrice
+                                            }
+                                            badge={
+                                              PRODUCT_CATALOG.zero.priceBadge
+                                            }
+                                          />
+                                        )}
                                         {!isNovemberSchedule(selectedScheduleForPayment) && (
 <span
                                           className={getAvailabilityBadgeClassName(
@@ -6089,12 +6361,21 @@ export default function SwimmingClassPage() {
                             {selectedTimeSlot?.productType === "diagnosis" ? (
                               <DiagnosisCouponBanner />
                             ) : null}
-                            <p className="text-xs leading-5 text-gray-500">
-                              ※ 세부 반과 레인은 당일 수영 실력과 목표를 확인한
-                              뒤 배정될 수 있습니다.
-                              <br />
-                              ※ 일부 클래스는 통합반으로 운영될 수 있습니다.
-                            </p>
+                            {selectedScheduleForPayment?.specialClass
+                              ?.specialType === "launch-2h" &&
+                            selectedTimeSlot?.productType !== "diagnosis" ? (
+                              <p className="text-xs leading-5 text-gray-500">
+                                ※ 10월 18일 목동 신규 클래스 런칭 특가입니다.
+                                다른 할인·쿠폰과 중복 적용되지 않습니다.
+                              </p>
+                            ) : (
+                              <p className="text-xs leading-5 text-gray-500">
+                                ※ 세부 반과 레인은 당일 수영 실력과 목표를 확인한
+                                뒤 배정될 수 있습니다.
+                                <br />
+                                ※ 일부 클래스는 통합반으로 운영될 수 있습니다.
+                              </p>
+                            )}
                           </div>
                         );
                       })()}
@@ -6403,10 +6684,13 @@ export default function SwimmingClassPage() {
                       <p className="mt-1 text-sm text-gray-600">
                         {isNovemberReservation ? "선택하신 특강을 확인한 뒤 예약대기에 등록해 주세요. 지금 결제하지 않아요." : "선택하신 특강과 결제금액을 확인한 뒤 결제해 주세요"}
                       </p>
-                      {!isNovemberReservation && !isResistanceDiagnosisProduct({
+                      {!isNovemberReservation &&
+                      !isResistanceDiagnosisProduct({
                         className: selectedTimeSlot?.name,
                         productType: selectedProductType,
-                      }) ? (
+                      }) &&
+                      !selectedScheduleForPayment?.specialClass
+                        ?.noExtraDiscount ? (
                         <div className="mt-2 flex justify-center">
                           <CompanionDiscountHint
                             onNavigate={() => {
@@ -6422,6 +6706,15 @@ export default function SwimmingClassPage() {
                             }}
                           />
                         </div>
+                      ) : selectedScheduleForPayment?.specialClass
+                          ?.noExtraDiscount &&
+                        !isResistanceDiagnosisProduct({
+                          className: selectedTimeSlot?.name,
+                          productType: selectedProductType,
+                        }) ? (
+                        <p className="mt-2 text-center text-xs leading-5 text-gray-500">
+                          ※ 런칭 특가는 다른 할인·쿠폰과 중복 적용되지 않습니다.
+                        </p>
                       ) : null}
                     </div>
 
@@ -6486,7 +6779,23 @@ export default function SwimmingClassPage() {
                             결제금액
                           </span>
                           <div className="text-right">
-                            {selectedTimeSlot ? (
+                            {selectedTimeSlot &&
+                            selectedScheduleForPayment?.specialClass
+                              ?.specialType === "launch-2h" &&
+                            selectedTimeSlot.productType !== "diagnosis" ? (
+                              <>
+                                <div className="text-xs font-bold text-blue-700">
+                                  런칭 특가
+                                </div>
+                                <div className="text-xs text-gray-400 line-through">
+                                  {(
+                                    selectedScheduleForPayment.specialClass
+                                      .originalPrice ?? 80000
+                                  ).toLocaleString()}
+                                  원
+                                </div>
+                              </>
+                            ) : selectedTimeSlot ? (
                               <div className="text-xs text-gray-400 line-through">
                                 {formatWon(
                                   selectedTimeSlot.productType === "diagnosis"
@@ -6500,6 +6809,13 @@ export default function SwimmingClassPage() {
                                 ? `${paymentAmountLabel}원`
                                 : "0원"}
                             </div>
+                            {selectedScheduleForPayment?.specialClass
+                              ?.noExtraDiscount &&
+                            selectedTimeSlot?.productType !== "diagnosis" ? (
+                              <p className="mt-1 text-[11px] leading-4 text-gray-500">
+                                다른 할인 중복 불가
+                              </p>
+                            ) : null}
                           </div>
                         </div>
                         )}

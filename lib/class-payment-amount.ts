@@ -2,9 +2,26 @@
  * 특강 카드결제 금액 — 서버가 클래스 키로 결정 (클라이언트 amount 신뢰 금지)
  */
 
+import {
+  resolveClassScheduleFromEnrollmentKey,
+  type SpecialClassInfo,
+} from "@/lib/class-schedule-data";
+
 const DIAGNOSIS_AMOUNT = 40000;
 const ZERO_OR_SPECIAL_AMOUNT = 80000;
 const LEGACY_SEOCHO_AMOUNT = 70000;
+
+function specialOptionMatches(
+  className: string,
+  special: SpecialClassInfo,
+): boolean {
+  return special.classes.some(
+    (option) =>
+      className.includes(`특강 ${option.key}`) ||
+      className.includes(option.name) ||
+      new RegExp(`\\b${option.key}\\b`).test(className),
+  );
+}
 
 /** 활성·과거 특강 키 패턴에 맞는 결제 금액 */
 export function resolveClassPaymentAmount(className: string): number | null {
@@ -18,6 +35,19 @@ export function resolveClassPaymentAmount(className: string): number | null {
       amount: DIAGNOSIS_AMOUNT,
     });
     return DIAGNOSIS_AMOUNT;
+  }
+
+  // 일정 정본의 specialClass 가격 (예: 목동 10/18 런칭 70,000)
+  const resolved = resolveClassScheduleFromEnrollmentKey(name);
+  const special = resolved?.schedule.specialClass;
+  if (special && specialOptionMatches(name, special)) {
+    console.log("[금액검증] 일정별 스페셜 클래스 금액:", {
+      className: name,
+      classId: resolved.schedule.id,
+      specialType: special.specialType,
+      amount: special.price,
+    });
+    return special.price;
   }
 
   // 서초 등 초기 특강(7만) — 키에 서초가 남은 경우

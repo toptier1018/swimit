@@ -30,6 +30,68 @@ function getAuthClient() {
 const wait = (ms: number) =>
   new Promise<void>((resolve) => setTimeout(resolve, ms));
 
+/**
+ * Sheets 일련번호(예: 46299) → YYYY-MM-DD
+ * Excel/Sheets epoch: 1899-12-30
+ */
+function sheetSerialToIsoDate(serial: number): string | null {
+  if (!Number.isFinite(serial) || serial < 20000 || serial > 80000) {
+    return null;
+  }
+  const utc = new Date(Date.UTC(1899, 11, 30) + serial * 86400000);
+  const y = utc.getUTCFullYear();
+  const m = String(utc.getUTCMonth() + 1).padStart(2, "0");
+  const d = String(utc.getUTCDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+/**
+ * 특강일(N열)을 Google Sheets가 날짜 일련번호로 바꾸지 않도록
+ * 텍스트로 저장합니다.
+ *
+ * - USER_ENTERED: 앞에 '를 붙여 텍스트 강제 (셀에는 따옴표가 안 보임)
+ * - RAW: 따옴표 없이 YYYY-MM-DD 문자열만 반환
+ */
+export function toSheetDateCellValue(
+  value: string | number | null | undefined,
+  mode: "USER_ENTERED" | "RAW" = "USER_ENTERED",
+): string {
+  const raw = String(value ?? "").trim();
+  if (!raw) return "";
+
+  const unquoted = raw.startsWith("'") ? raw.slice(1).trim() : raw;
+  let iso = unquoted;
+
+  if (/^\d{5}(\.\d+)?$/.test(unquoted)) {
+    const converted = sheetSerialToIsoDate(Number(unquoted));
+    if (converted) {
+      console.log("[Google Sheets] 날짜 일련번호 → YYYY-MM-DD 텍스트:", {
+        serial: unquoted,
+        iso: converted,
+      });
+      iso = converted;
+    }
+  } else {
+    const matched = unquoted.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (matched) {
+      iso = `${matched[1]}-${matched[2]}-${matched[3]}`;
+    }
+  }
+
+  if (mode === "RAW") return iso;
+  return iso.startsWith("'") ? iso : `'${iso}`;
+}
+
+/** USER_ENTERED에서 날짜/시각처럼 파싱되는 값을 텍스트로 강제 */
+export function toSheetPlainTextCellValue(
+  value: string | null | undefined,
+): string {
+  const v = String(value ?? "").trim();
+  if (!v) return "";
+  if (v.startsWith("'")) return v;
+  return `'${v}`;
+}
+
 export type GoogleSheetRowInput = {
   /** A: 접수일시 */
   접수일시: string;
@@ -138,10 +200,17 @@ export async function appendRowToGoogleSheet(
       };
     }
 
+    // N열 날짜: USER_ENTERED가 YYYY-MM-DD를 일련번호로 바꾸지 않도록 텍스트 강제
+    const sheetDate = toSheetDateCellValue(row["날짜"], "USER_ENTERED");
+    const sheetReceivedAt = toSheetPlainTextCellValue(row["접수일시"]);
+    const sheetDeadline = toSheetPlainTextCellValue(row["입금기한"] ?? "");
+
     console.log("[Google Sheets] 행 추가 시작:", {
       신청번호: row["신청번호"],
       예약상태: row["예약상태"],
-      입금기한: row["입금기한"] ?? "",
+      날짜원본: row["날짜"],
+      날짜저장: sheetDate,
+      입금기한: sheetDeadline || "",
       유입경로: row["유입경로"] ?? "",
       콘텐츠활용동의: row.contentConsent?.agreed ?? false,
       시트명: env.sheetName,
@@ -154,7 +223,7 @@ export async function appendRowToGoogleSheet(
     // 주문 데이터(A~S)를 먼저 추가한 뒤, 반환된 같은 행의 U~Z에 퍼널을 기록한다.
     const coreValues: string[][] = [
       [
-        row["접수일시"],
+        sheetReceivedAt,
         row["신청번호"],
         row["이름"],
         row["전화번호"],
@@ -167,11 +236,11 @@ export async function appendRowToGoogleSheet(
         row["클래스"],
         row["회차"],
         row["레인"],
-        row["날짜"],
+        sheetDate,
         row["특강지역"],
         row["예약상태"],
         row["링크"] ?? "",
-        row["입금기한"] ?? "",
+        sheetDeadline,
         row["대기순번"] ?? "",
       ],
     ];
@@ -555,6 +624,16 @@ export async function appendAdvanceReservationToGoogleSheet(
       "통증부위", "해결문제", "클래스", "회차", "레인", "날짜", "특강지역", "예약상태", "링크", "입금기한", "대기순번",
     ];
     core.forEach((key, index) => { values[index] = String(row[key] ?? ""); });
+    // RAW여도 날짜는 YYYY-MM-DD 문자열로 정규화 (일련번호 유입 방지)
+    const dateCol = core.indexOf("날짜");
+    if (dateCol >= 0) {
+      values[dateCol] = toSheetDateCellValue(row["날짜"], "RAW");
+      console.log("[사전예약] 날짜 텍스트 저장:", {
+        신청번호: row["신청번호"],
+        날짜원본: row["날짜"],
+        날짜저장: values[dateCol],
+      });
+    }
     await sheets.spreadsheets.values.update({ spreadsheetId: env.spreadsheetId, range: `${range}!A1:${end}1`,
       valueInputOption: "RAW", requestBody: { values: [headers.map(v => v ?? "")] } });
     await sheets.spreadsheets.values.append({ spreadsheetId: env.spreadsheetId, range: `${range}!A:${end}`,

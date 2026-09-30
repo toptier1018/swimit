@@ -69,38 +69,7 @@ export const DONGTAN_NOV29_INTENSIVE: SpecialClassInfo = {
   ],
 };
 
-/** 10/18 목동 — 기존 자유형/평영/접영 특강에 추가되는 신규 클래스만 정의 */
-export const MOKDONG_OCT18_LAUNCH: SpecialClassInfo = {
-  specialType: "launch-2h",
-  duration: "2시간",
-  timeLabel: "14:00~16:00",
-  price: 70000,
-  originalPrice: 80000,
-  promotionType: "launch",
-  noExtraDiscount: true,
-  summary:
-    "기존 스윔잇 특강과 함께, 평소 깊게 배우기 어려웠던 턴·배영 2시간 집중 클래스를 추가 운영합니다.",
-  detail:
-    "런칭 특가(70,000원)는 턴·배영 집중반에만 적용됩니다. 다른 할인·쿠폰과 중복되지 않습니다.",
-  classes: [
-    {
-      key: "턴",
-      name: "턴 2시간 집중반",
-      icon: "🔄",
-      flow: "사이드턴 → 플립턴 → 벽차기 → 스트림라인 → 돌핀킥 → 브레이크아웃",
-      short: "사이드턴 · 플립턴 · 벽차기 · 스트림라인 · 돌핀킥 · 브레이크아웃",
-    },
-    {
-      key: "배영",
-      name: "배영 2시간 집중반",
-      icon: "🏊",
-      flow: "수평 자세 → 롤링 → 팔 입수 → 캐치 → 킥 → 몸통 연결",
-      short: "수평 자세 · 롤링 · 입수 · 캐치 · 킥 · 몸통 연결",
-    },
-  ],
-};
-
-/** enrollment key가 해당 일정의 specialClass 옵션(턴/배영 등)인지 */
+/** enrollment key가 해당 일정의 specialClass 옵션인지 (예: 동탄 3시간 집중반) */
 export function matchesSpecialClassOption(
   className: string,
   special: SpecialClassInfo | undefined,
@@ -368,13 +337,12 @@ export const CLASS_SCHEDULES: ClassScheduleItem[] = [
     month: 10,
     venue: "목동스포츠센터",
     address: "서울특별시 양천구 목동서로 130 목동스포츠센터",
-    spots: "자유형 14명 · 평영·접영 각 7명 · 턴·배영 각 7명",
+    spots: "자유형 14명 · 평영·접영 각 7명 · 진단 14명",
     scheduleSummaryLines: [
       "1부 특강 · 14:00~16:00 (2시간)",
-      "턴·배영 2시간 집중 · 14:00~16:00",
+      "1부 진단 프로그램 · 14:00~16:00",
     ],
-    badge: "특강 + NEW 클래스",
-    specialClass: MOKDONG_OCT18_LAUNCH,
+    badge: "특강 + 진단 동시 운영",
   },
   {
     id: 23,
@@ -498,14 +466,11 @@ export const DEFAULT_CAPACITY_BY_CLASS: Record<string, number> = {
   // 부산 10/4 (자유형·진단 미모집)
   "[부산 10/4] 1부 특강 평영": 7,
   "[부산 10/4] 1부 특강 접영": 7,
-  // 목동 10/18: 기존 특강(자유형·평영·접영) + 턴·배영 NEW (진단 미운영)
+  // 목동 10/18
   "[목동 10/18] 1부 특강 자유형": 14,
   "[목동 10/18] 1부 특강 평영": 7,
   "[목동 10/18] 1부 특강 접영": 7,
-  "[목동 10/18] 1부 특강 턴": 7,
-  "[목동 10/18] 1부 특강 배영": 7,
-  // 진단은 10/18 목동에서만 미모집
-  "[목동 10/18] 1부 진단": 0,
+  "[목동 10/18] 1부 진단": 14,
   // 동탄 10/25 스윔스튜디오제이
   "[동탄 10/25] 1부 특강 자유형": 14,
   "[동탄 10/25] 1부 특강 평영": 7,

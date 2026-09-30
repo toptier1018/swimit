@@ -350,77 +350,6 @@ const DongtanIntensivePromo = ({ onViewSchedule }: { onViewSchedule: () => void 
   );
 };
 
-/** 일정 안내 직전. 10/18 목동 턴·배영 신규 추가만 짧게 안내합니다. */
-const MokdongLaunchPromo = ({ onViewSchedule }: { onViewSchedule: () => void }) => {
-  const offer = CLASS_SCHEDULES.find((item) => item.id === 22)?.specialClass;
-  if (!offer || offer.specialType !== "launch-2h") return null;
-  const original = offer.originalPrice ?? 80000;
-  return (
-    <section className="order-3 mt-6 w-full scroll-mt-4 rounded-2xl border border-blue-200 bg-white p-4 shadow-sm sm:p-5">
-      <div className="mx-auto max-w-3xl space-y-3">
-        <div className="space-y-1.5">
-          <p className="text-xs font-bold tracking-wide text-blue-700">
-            <span className="sm:hidden">10.18 목동 · NEW</span>
-            <span className="hidden sm:inline">10.18 목동 · NEW CLASS</span>
-          </p>
-          <h3 className="break-keep text-lg font-bold leading-snug text-gray-950 sm:text-xl">
-            <span className="sm:hidden">
-              턴 &amp; 배영
-              <br />
-              2시간 집중 클래스
-            </span>
-            <span className="hidden sm:inline">
-              평소 강습에서 깊게 배우기 어려웠던
-              <br />
-              턴과 배영을 2시간 집중 클래스로 만나보세요.
-            </span>
-          </h3>
-          <p className="hidden break-keep text-sm leading-5 text-gray-600 sm:block">
-            기존 스윔잇 특강과 함께
-            <br />
-            10월 18일 목동에서만 두 개의 신규 클래스를 추가 운영합니다.
-          </p>
-        </div>
-
-        <div className="grid gap-2 sm:grid-cols-2">
-          {offer.classes.map((item) => (
-            <div key={item.key} className="rounded-xl bg-blue-50/60 px-3 py-2.5">
-              <p className="text-sm font-bold text-gray-950">
-                <span aria-hidden>{(item.icon || "") + " "}</span>
-                {item.name}
-              </p>
-              <p className="mt-1 break-keep text-xs leading-5 text-gray-700">
-                {item.key === "턴"
-                  ? "사이드턴부터 플립턴, 벽차기와 브레이크아웃까지"
-                  : "수평 자세와 롤링부터 입수·캐치·킥 연결까지"}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        <div className="rounded-xl border border-blue-100 px-3.5 py-3">
-          <p className="text-xs font-bold text-blue-700">런칭 특가</p>
-          <p className="mt-0.5 flex flex-wrap items-baseline gap-x-2">
-            <span className="text-sm text-gray-400 line-through">
-              {original.toLocaleString()}원
-            </span>
-            <span className="text-2xl font-extrabold text-blue-800">
-              {offer.price.toLocaleString()}원
-            </span>
-          </p>
-          <p className="mt-1 text-xs text-gray-500">
-            턴·배영만 · 10/18 목동 한정 · 다른 할인 중복 불가
-          </p>
-        </div>
-
-        <Button type="button" className="h-11 w-full font-bold" onClick={onViewSchedule}>
-          10월 18일 목동 신규 클래스 보기 ↓
-        </Button>
-      </div>
-    </section>
-  );
-};
-
 /** 저항 진단 프로그램 전용 쿠폰 안내 (모든 센터 공통) */
 const DiagnosisCouponBanner = () => {
   console.log("[진단쿠폰] 저항 진단 프로그램 쿠폰 배너 표시");
@@ -827,33 +756,6 @@ const TIMETABLE_DONGTAN_INTENSIVE: TimetableRow[] = [
   },
 ];
 
-/** 목동 10/18 — 기존 특강(자유형·평영·접영) + 턴·배영 런칭. 진단 없음 */
-const TIMETABLE_MOKDONG_OCTOBER_LAUNCH: TimetableRow[] = [
-  {
-    session: "1부 특강",
-    time: "14:00 ~ 16:00",
-    lanes: [
-      { lane: UNASSIGNED_LANE, title: "자유형", price: 80000 },
-      { lane: UNASSIGNED_LANE, title: "접영", price: 80000 },
-      { lane: UNASSIGNED_LANE, title: "평영", price: 80000 },
-      {
-        lane: UNASSIGNED_LANE,
-        title: "턴",
-        price:
-          CLASS_SCHEDULES.find((item) => item.id === 22)?.specialClass?.price ??
-          70000,
-      },
-      {
-        lane: UNASSIGNED_LANE,
-        title: "배영",
-        price:
-          CLASS_SCHEDULES.find((item) => item.id === 22)?.specialClass?.price ??
-          70000,
-      },
-    ],
-  },
-];
-
 /** 강남 와이키키 링크&스윔 11/15 — 특강만, 레인 미표시 */
 const TIMETABLE_GANGNAM_NOVEMBER: TimetableRow[] = [
   {
@@ -949,7 +851,7 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   18: TIMETABLE_MOKDONG_SEPTEMBER, // 9/20 목동
   19: TIMETABLE_CHEONGNA_SEPTEMBER, // 9/27 청라
   20: TIMETABLE_BUSAN_OCTOBER, // 10/4 부산 (평영·접영만)
-  22: TIMETABLE_MOKDONG_OCTOBER_LAUNCH, // 10/18 목동 기존특강 + 턴·배영 NEW (진단 없음)
+  22: TIMETABLE_MOKDONG_SEPTEMBER, // 10/18 목동 (특강+진단)
   23: TIMETABLE_DONGTAN_AUGUST, // 10/25 동탄 스윔스튜디오제이
   24: TIMETABLE_MOKDONG_SEPTEMBER, // 11/8 부산 (특강+진단, 레인 미표시)
   25: TIMETABLE_GANGNAM_NOVEMBER, // 11/15 강남 (특강만)
@@ -4281,23 +4183,6 @@ export default function SwimmingClassPage() {
                   </ul>
                 </div>
               </section>
-              ) : null}
-
-              {!isFishtankEntry ? (
-                <MokdongLaunchPromo
-                  onViewSchedule={() => {
-                    console.log("[목동런칭] 홍보 버튼 → 10/18 목동 일정 카드");
-                    setSelectedScheduleRegion("목동");
-                    window.setTimeout(() => {
-                      document
-                        .getElementById("schedule-class-22")
-                        ?.scrollIntoView({
-                          behavior: "smooth",
-                          block: "start",
-                        });
-                    }, 80);
-                  }}
-                />
               ) : null}
 
               {!isFishtankEntry ? (

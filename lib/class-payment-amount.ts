@@ -25,8 +25,8 @@ export function resolveClassPaymentAmount(className: string): number | null {
     return DIAGNOSIS_AMOUNT;
   }
 
-  // 일정 정본의 specialClass 옵션만 특별가 (예: 목동 10/18 턴·배영 70,000)
-  // 같은 일정의 일반 영법(자유형 등)은 아래로 내려 80,000 유지
+  // 일정 정본의 specialClass 옵션만 특별가 (예: 동탄 11/29 3시간 115,000)
+  // 같은 일정의 일반 영법은 아래로 내려 기본가 유지
   const resolved = resolveClassScheduleFromEnrollmentKey(name);
   const special = resolved?.schedule.specialClass;
   if (special && matchesSpecialClassOption(name, special)) {

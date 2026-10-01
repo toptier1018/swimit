@@ -53,6 +53,7 @@ export async function POST(req: NextRequest) {
         httpStatus: result.httpStatus,
         kakaoCode: result.kakaoCode,
         refreshTokenRotated: result.refreshTokenRotated ?? false,
+        refreshTokenPersisted: result.refreshTokenPersisted ?? false,
       },
       { status: result.httpStatus && result.httpStatus >= 400 ? result.httpStatus : 502 },
     );
@@ -62,6 +63,7 @@ export async function POST(req: NextRequest) {
     success: true,
     message: "카카오톡 나에게 보내기 테스트 메시지를 발송했습니다.",
     refreshTokenRotated: result.refreshTokenRotated,
+    refreshTokenPersisted: result.refreshTokenPersisted,
   });
 }
 

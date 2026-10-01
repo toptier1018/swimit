@@ -23,6 +23,7 @@ export type NotifyAdminPaymentResult = {
   success: boolean;
   error?: string;
   refreshTokenRotated?: boolean;
+  refreshTokenPersisted?: boolean;
 };
 
 function maskPhone(phone: string): string {
@@ -145,11 +146,13 @@ export async function notifyAdminPayment(
         httpStatus: result.httpStatus,
         kakaoCode: result.kakaoCode,
         refreshTokenRotated: result.refreshTokenRotated ?? false,
+        refreshTokenPersisted: result.refreshTokenPersisted ?? false,
       });
       return {
         success: false,
         error: result.error,
         refreshTokenRotated: result.refreshTokenRotated,
+        refreshTokenPersisted: result.refreshTokenPersisted,
       };
     }
 
@@ -157,11 +160,13 @@ export async function notifyAdminPayment(
       orderId: payload.orderId,
       orderNumber: payload.orderNumber || "",
       refreshTokenRotated: result.refreshTokenRotated,
+      refreshTokenPersisted: result.refreshTokenPersisted,
     });
 
     return {
       success: true,
       refreshTokenRotated: result.refreshTokenRotated,
+      refreshTokenPersisted: result.refreshTokenPersisted,
     };
   } catch (error) {
     console.error("[관리자알림] 예외 (결제는 유지):", {

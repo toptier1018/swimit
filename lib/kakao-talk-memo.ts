@@ -6,13 +6,18 @@
 import { getKakaoAccessTokenFromRefresh } from "@/lib/kakao-auth";
 
 export type KakaoMemoSendResult =
-  | { success: true; refreshTokenRotated: boolean }
+  | {
+      success: true;
+      refreshTokenRotated: boolean;
+      refreshTokenPersisted: boolean;
+    }
   | {
       success: false;
       error: string;
       httpStatus?: number;
       kakaoCode?: number | string;
       refreshTokenRotated?: boolean;
+      refreshTokenPersisted?: boolean;
     };
 
 const TEST_TEMPLATE = {
@@ -80,15 +85,18 @@ export async function sendKakaoMemoToMe(options?: {
             ? kakaoCode
             : undefined,
       refreshTokenRotated: tokenResult.refreshTokenRotated,
+      refreshTokenPersisted: tokenResult.refreshTokenPersisted,
     };
   }
 
   console.log("[카카오메시지] 발송 성공 (result_code=0)", {
     refreshTokenRotated: tokenResult.refreshTokenRotated,
+    refreshTokenPersisted: tokenResult.refreshTokenPersisted,
   });
 
   return {
     success: true,
     refreshTokenRotated: tokenResult.refreshTokenRotated,
+    refreshTokenPersisted: tokenResult.refreshTokenPersisted,
   };
 }

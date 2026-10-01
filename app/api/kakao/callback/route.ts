@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { saveKakaoRefreshTokenToStore } from "@/lib/kakao-refresh-token-store";
 
 /**
  * [SETUP] 관리자 카카오 「나에게 보내기」 최초 연결용 Callback
- * Refresh Token 확보 후 외부 상시 공개 필요 여부 재검토 예정
  *
  * GET /api/kakao/callback
  * → authorization code로 토큰 발급
  * → talk_message scope 확인
- * → Refresh Token만 화면에 1회 표시 (로그에는 출력하지 않음)
+ * → Refresh Token을 런타임 저장소에 자동 저장
+ * → 화면에도 1회 표시 (로그에는 출력하지 않음)
  * → 실제 talk/memo 발송 API는 호출하지 않음
  */
 export async function GET(req: NextRequest) {
@@ -153,16 +154,22 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    // 런타임 저장소에 자동 저장 (로테이션 정본). 값은 로그에 남기지 않음.
+    const persisted = await saveKakaoRefreshTokenToStore(refreshToken);
+    console.log("[카카오설정] Refresh Token 저장소 반영:", { persisted });
+
     // Refresh Token만 1회 표시 (Access Token / Secret / REST Key 미표시)
     const safeRefresh = escapeHtml(refreshToken);
+    const persistNotice = persisted
+      ? `<p style="color:#166534;font-weight:600">자동 저장 완료 — 이후 카카오가 토큰을 바꿔도 서버가 저장소에 이어서 갱신합니다.</p>
+         <p style="font-size:13px;color:#334155">백업용으로 Vercel <code>KAKAO_REFRESH_TOKEN</code>에도 등록해 두면 더 안전합니다. (등록 후 Redeploy)</p>`
+      : `<p style="color:#b45309;font-weight:600">자동 저장에 실패했습니다. 아래 토큰을 Vercel <code>KAKAO_REFRESH_TOKEN</code>에 등록한 뒤 Redeploy 해 주세요.</p>`;
 
     return htmlResponse(
       "카카오 관리자 인증이 완료되었습니다.",
       `
-      <p>아래 Refresh Token을 <code>KAKAO_REFRESH_TOKEN</code>이라는 이름으로
-      Vercel Production 환경변수에 등록하세요.</p>
-      <p style="font-size:13px;color:#334155">등록 후 배포(Redeploy)가 필요할 수 있습니다.</p>
-      <label for="rt" style="display:block;font-size:13px;font-weight:700;margin:16px 0 6px">KAKAO_REFRESH_TOKEN</label>
+      ${persistNotice}
+      <label for="rt" style="display:block;font-size:13px;font-weight:700;margin:16px 0 6px">KAKAO_REFRESH_TOKEN (백업용)</label>
       <textarea id="rt" readonly rows="4" style="width:100%;font-family:ui-monospace,monospace;font-size:12px;padding:10px;border-radius:8px;border:1px solid #cbd5e1;box-sizing:border-box">${safeRefresh}</textarea>
       <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('rt').value).then(()=>{this.textContent='복사됨';}).catch(()=>{})"
         style="margin-top:10px;padding:10px 16px;border:0;border-radius:8px;background:#2563eb;color:#fff;font-weight:700;cursor:pointer">
@@ -170,7 +177,7 @@ export async function GET(req: NextRequest) {
       </button>
       <p style="margin-top:18px;font-size:12px;color:#64748b">
         talk_message 동의 확인됨 · Access Token은 화면에 표시하지 않습니다.<br/>
-        이 페이지는 관리자 최초 설정용입니다. 실제 카카오톡 메시지는 아직 발송하지 않았습니다.
+        이 페이지는 관리자 설정용입니다. 실제 카카오톡 메시지는 아직 발송하지 않았습니다.
       </p>
       `,
       false,

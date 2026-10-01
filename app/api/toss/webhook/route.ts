@@ -22,7 +22,9 @@ import { fetchTossPaymentByKey } from "@/lib/toss-payment-query";
 /**
  * Toss 재조회 method — 즉시 결제 완료(예약확정 알림톡) 대상
  * - 카드 / 간편결제(카카오페이·토스페이 등)
- * - 가상계좌·계좌이체 등은 입금 확인 흐름을 쓰므로 제외
+ * - 퀵계좌이체: 요청 method=TRANSFER, 조회 응답 method="계좌이체" (DONE 즉시결제)
+ * - 가상계좌는 입금 대기 흐름이므로 제외
+ * - 사이트 「계좌 이체 하기」(수동 입금 안내)와는 별개
  */
 function isTossImmediatePaidMethod(method: string | undefined): boolean {
   const value = String(method || "").trim();
@@ -32,6 +34,8 @@ function isTossImmediatePaidMethod(method: string | undefined): boolean {
   if (value === "간편결제" || upper === "EASYPAY" || upper === "EASY_PAY") {
     return true;
   }
+  // 퀵계좌이체 — Payment.method는 한글 "계좌이체"
+  if (value === "계좌이체" || upper === "TRANSFER") return true;
   return false;
 }
 
@@ -393,12 +397,12 @@ export async function POST(req: NextRequest) {
               }
             }
 
-            // --- 고객 예약확정 알림톡 (카드/간편결제 + NHN Cloud) ---
-            // 입금 안내받기(NHN v1)와 분리: CLASS- 주문 + 즉시결제(카드·간편결제) + DONE
+            // --- 고객 예약확정 알림톡 (카드/간편결제/퀵계좌이체 + NHN Cloud) ---
+            // 입금 안내받기(NHN v1)·수동 계좌이체와 분리: CLASS- + 즉시결제 DONE
             // Aligo 미사용
             if (!isTossImmediatePaidMethod(payment.method)) {
               console.log(
-                "[웹훅] 예약확정 알림톡 스킵 — 즉시결제(카드/간편결제) 아님:",
+                "[웹훅] 예약확정 알림톡 스킵 — 즉시결제(카드/간편결제/계좌이체) 아님:",
                 {
                   orderId,
                   method: payment.method || "",

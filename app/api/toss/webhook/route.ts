@@ -19,11 +19,20 @@ import {
 } from "@/lib/toss-card-order-meta";
 import { fetchTossPaymentByKey } from "@/lib/toss-payment-query";
 
-/** Toss 재조회 method — 카드 결제만 NHN 예약확정 대상 */
-function isTossCardPaymentMethod(method: string | undefined): boolean {
+/**
+ * Toss 재조회 method — 즉시 결제 완료(예약확정 알림톡) 대상
+ * - 카드 / 간편결제(카카오페이·토스페이 등)
+ * - 가상계좌·계좌이체 등은 입금 확인 흐름을 쓰므로 제외
+ */
+function isTossImmediatePaidMethod(method: string | undefined): boolean {
   const value = String(method || "").trim();
-  // Toss Payments 조회 응답: 카드 결제는 보통 "카드"
-  return value === "카드" || value.toUpperCase() === "CARD";
+  if (!value) return false;
+  const upper = value.toUpperCase();
+  if (value === "카드" || upper === "CARD") return true;
+  if (value === "간편결제" || upper === "EASYPAY" || upper === "EASY_PAY") {
+    return true;
+  }
+  return false;
 }
 
 /**
@@ -384,16 +393,23 @@ export async function POST(req: NextRequest) {
               }
             }
 
-            // --- 고객 예약확정 알림톡 (카드결제 + NHN Cloud 전용) ---
-            // 입금 안내받기(NHN v1)와 분리: CLASS- 주문 + Toss method=카드 + DONE 만
+            // --- 고객 예약확정 알림톡 (카드/간편결제 + NHN Cloud) ---
+            // 입금 안내받기(NHN v1)와 분리: CLASS- 주문 + 즉시결제(카드·간편결제) + DONE
             // Aligo 미사용
-            if (!isTossCardPaymentMethod(payment.method)) {
-              console.log("[웹훅] 예약확정 알림톡 스킵 — 카드 결제 아님:", {
+            if (!isTossImmediatePaidMethod(payment.method)) {
+              console.log(
+                "[웹훅] 예약확정 알림톡 스킵 — 즉시결제(카드/간편결제) 아님:",
+                {
+                  orderId,
+                  method: payment.method || "",
+                },
+              );
+              customerAlimtalk = "skipped";
+            } else {
+              console.log("[웹훅] 예약확정 알림톡 대상 결제수단:", {
                 orderId,
                 method: payment.method || "",
               });
-              customerAlimtalk = "skipped";
-            } else {
             const refreshed = await findCardOrderByTossOrderId(orderId);
             if (
               refreshed.success &&

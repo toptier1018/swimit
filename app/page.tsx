@@ -1449,6 +1449,8 @@ export default function SwimmingClassPage() {
   const { toast } = useToast();
   const submittedApplicantsRef = useRef<Set<string>>(new Set());
   const applicationSectionRef = useRef<HTMLDivElement | null>(null);
+  const applicantInfoSectionRef = useRef<HTMLDivElement | null>(null);
+  const paymentMethodIntentRef = useRef<"toss" | "bank">("toss");
   const lastFunnelActionRef = useRef<{ action: string; ts: number } | null>(
     null,
   );
@@ -2529,6 +2531,20 @@ export default function SwimmingClassPage() {
     console.log("[상품] 신청 영역 닫기 — 상품·영법 선택 초기화");
   };
 
+  const scrollToApplicantInfo = () => {
+    console.log("[UX] 영법 선택 후 신청자 정보 입력으로 이동");
+    window.setTimeout(() => {
+      applicantInfoSectionRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+      const nameInput = document.getElementById("combined-name");
+      if (nameInput instanceof HTMLInputElement) {
+        nameInput.focus({ preventScroll: true });
+      }
+    }, 120);
+  };
+
   const applyZeroStrokeSelection = (
     stroke: StrokeType,
     classId?: number,
@@ -2575,6 +2591,7 @@ export default function SwimmingClassPage() {
       strokes: [stroke],
     });
     setStep(3);
+    scrollToApplicantInfo();
   };
 
   /** 진단 프로그램: 영법 선택 없이 바로 신청/결제 */
@@ -2685,10 +2702,10 @@ export default function SwimmingClassPage() {
     ) {
       return "예약하기";
     }
-    return "입금 안내받기";
+    return "결제하기";
   })();
 
-  const cardPaymentLabel = "카드로 결제하기";
+  const bankTransferLabel = "계좌 이체 하기";
 
   const copyDepositAccount = async () => {
     try {
@@ -6140,6 +6157,7 @@ export default function SwimmingClassPage() {
                                           productName: intensiveOption?.name,
                                         });
                                         setStep(3);
+                                        scrollToApplicantInfo();
                                       }}
                                       className={`relative flex min-h-[140px] flex-col justify-between rounded-xl border p-4 text-left transition-all ${
                                         isSelected
@@ -6305,7 +6323,10 @@ export default function SwimmingClassPage() {
                     </CardContent>
                   </Card>
 
-                  <Card className="border-0 shadow-md">
+                  <Card
+                    ref={applicantInfoSectionRef}
+                    className="scroll-mt-24 border-0 shadow-md"
+                  >
                     <CardHeader>
                       <CardTitle className="text-lg">신청자 정보 입력</CardTitle>
                     </CardHeader>
@@ -6759,6 +6780,7 @@ export default function SwimmingClassPage() {
                       ← 이전
                     </Button>
                     <Button
+                      id="enrollment-payment-primary"
                       className={`flex-1 py-6 text-base font-extrabold shadow-md ${
                         selectedTimeSlot &&
                         (isClassFull(selectedTimeSlot.name) ||
@@ -6769,15 +6791,29 @@ export default function SwimmingClassPage() {
                       variant="default"
                       disabled={
                         !canSubmitApplication ||
-                        isSubmitting
+                        isSubmitting ||
+                        isClassPgTestLoading
                       }
-                      onClick={async () => {
+                      onClick={async (event) => {
                         // 중복 클릭 방지: 이미 처리 중이면 리턴
-                        if (isSubmitting) {
+                        if (isSubmitting || isClassPgTestLoading) {
                           console.log(
                             "[결제] 이미 처리 중입니다. 중복 클릭 방지",
                           );
                           return;
+                        }
+
+                        // 직접 클릭한 큰 버튼만 intent 설정
+                        // (계좌 이체 보조 버튼의 click()은 isTrusted=false → bank 유지)
+                        if (event.isTrusted) {
+                          const isWaitlistCta = Boolean(
+                            selectedTimeSlot &&
+                              (isClassFull(selectedTimeSlot.name) ||
+                                hasEnrollment(selectedTimeSlot.name)),
+                          );
+                          paymentMethodIntentRef.current = isWaitlistCta
+                            ? "bank"
+                            : "toss";
                         }
 
                         if (!validateApplicationForPayment()) {
@@ -6796,10 +6832,34 @@ export default function SwimmingClassPage() {
                           return;
                         }
                         setReservationReceipt(null);
-                        console.log("[결제UX] 계좌이체(우선) 버튼 클릭", {
+
+                        const isWaitlistCta = Boolean(
+                          selectedTimeSlot &&
+                            (isClassFull(selectedTimeSlot.name) ||
+                              hasEnrollment(selectedTimeSlot.name)),
+                        );
+                        const useTossPrimary =
+                          paymentMethodIntentRef.current === "toss" &&
+                          !isWaitlistCta;
+
+                        if (useTossPrimary) {
+                          console.log("[결제UX] 결제하기(토스) 버튼 클릭", {
+                            className: selectedTimeSlot?.name,
+                            price: selectedTimeSlot?.price,
+                            label: paymentCtaLabel,
+                          });
+                          incrementFunnelCount(3, "결제하기 버튼 클릭");
+                          markFunnelStep(3);
+                          void handleClassPgTestPayment();
+                          return;
+                        }
+
+                        console.log("[결제UX] 계좌 이체/예약대기 버튼 클릭", {
                           className: selectedTimeSlot?.name,
                           price: selectedTimeSlot?.price,
                           label: paymentCtaLabel,
+                          intent: paymentMethodIntentRef.current,
+                          isWaitlistCta,
                         });
                         incrementFunnelCount(3, "결제하기 버튼 클릭");
                         markFunnelStep(3);
@@ -7404,35 +7464,57 @@ export default function SwimmingClassPage() {
                         }
                       }}
                     >
-                      {isSubmitting
-                        ? "처리 중..."
-                        : paymentCtaLabel}
+                      {isClassPgTestLoading
+                        ? "결제창 여는 중..."
+                        : isSubmitting
+                          ? "처리 중..."
+                          : paymentCtaLabel}
                     </Button>
                     </div>
 
-                    {!isReservationOnly && selectedTimeSlot && (
+                    {!isReservationOnly &&
+                      selectedTimeSlot &&
+                      !(
+                        isClassFull(selectedTimeSlot.name) ||
+                        hasEnrollment(selectedTimeSlot.name)
+                      ) && (
                       <Button
                         type="button"
                         variant="outline"
                         size="sm"
                         className="mt-2 w-full border border-slate-200 bg-white py-2 text-xs font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-700"
-                        disabled={!canSubmitApplication || isClassPgTestLoading}
+                        disabled={
+                          !canSubmitApplication ||
+                          isSubmitting ||
+                          isClassPgTestLoading
+                        }
                         onClick={() => {
-                          console.log("[결제UX] 카드 결제(보조) 버튼 클릭", {
-                            className: selectedTimeSlot.name,
-                            price: selectedTimeSlot.price,
-                            canSubmit: canSubmitApplication,
-                          });
+                          console.log(
+                            "[결제UX] 계좌 이체 하기(보조) 버튼 클릭",
+                            {
+                              className: selectedTimeSlot.name,
+                              price: selectedTimeSlot.price,
+                              canSubmit: canSubmitApplication,
+                            },
+                          );
                           if (!validateApplicationForPayment()) {
                             return;
                           }
-                          void handleClassPgTestPayment();
+                          paymentMethodIntentRef.current = "bank";
+                          const primary = document.getElementById(
+                            "enrollment-payment-primary",
+                          );
+                          if (primary instanceof HTMLButtonElement) {
+                            primary.click();
+                          } else {
+                            console.error(
+                              "[결제UX] 계좌 이체용 기본 버튼을 찾지 못했습니다",
+                            );
+                          }
                         }}
-                        aria-label={cardPaymentLabel}
+                        aria-label={bankTransferLabel}
                       >
-                        {isClassPgTestLoading
-                          ? "결제창 여는 중..."
-                          : cardPaymentLabel}
+                        {isSubmitting ? "처리 중..." : bankTransferLabel}
                       </Button>
                     )}
                   </div>

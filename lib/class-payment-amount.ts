@@ -3,6 +3,7 @@
  */
 
 import {
+  isStartTurnEnrollmentKey,
   matchesSpecialClassOption,
   resolveClassScheduleFromEnrollmentKey,
 } from "@/lib/class-schedule-data";
@@ -25,16 +26,21 @@ export function resolveClassPaymentAmount(className: string): number | null {
     return DIAGNOSIS_AMOUNT;
   }
 
-  // 일정 정본의 specialClass 옵션만 특별가 (예: 동탄 11/29 3시간 115,000)
+  // 일정 정본의 specialClass / addonSpecialClass 옵션만 특별가
   // 같은 일정의 일반 영법은 아래로 내려 기본가 유지
   const resolved = resolveClassScheduleFromEnrollmentKey(name);
-  const special = resolved?.schedule.specialClass;
-  if (special && matchesSpecialClassOption(name, special)) {
+  const specialCandidates = [
+    resolved?.schedule.specialClass,
+    resolved?.schedule.addonSpecialClass,
+  ].filter(Boolean);
+  for (const special of specialCandidates) {
+    if (!special || !matchesSpecialClassOption(name, special)) continue;
     console.log("[금액검증] 일정별 스페셜 클래스 금액:", {
       className: name,
-      classId: resolved.schedule.id,
+      classId: resolved?.schedule.id,
       specialType: special.specialType,
       amount: special.price,
+      startTurn: isStartTurnEnrollmentKey(name),
     });
     return special.price;
   }

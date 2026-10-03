@@ -84,11 +84,17 @@ import {
   DEFAULT_WAITLIST_THRESHOLD,
   DIAGNOSIS_WAITLIST_THRESHOLD,
   DEFAULT_WAITLIST_THRESHOLDS_BY_CLASS,
+  getStartTurnEnrollmentKey,
   isDiagnosisEnrollmentKey,
+  isStartTurnEnrollmentKey,
   matchesSpecialClassOption,
   resolveClassScheduleFromEnrollmentKey,
+  START_TURN_SESSION,
+  START_TURN_SHEET_LABEL,
+  START_TURN_SPECIAL,
   toClassScheduleIsoDate,
   type ClassScheduleItem,
+  type SpecialClassInfo,
 } from "@/lib/class-schedule-data";
 
 type ClassItem = ClassScheduleItem;
@@ -277,6 +283,74 @@ const INTENSIVE_STROKE_ICON: Record<string, string> = {
   접영: "🦋",
   턴: "🔄",
   배영: "🏊",
+};
+
+/** 일정 카드/선택용 스타트·턴 SPECIAL 블록 (기존 장소·일정에 덧붙임) */
+const StartTurnSpecialBlock = ({
+  offer = START_TURN_SPECIAL,
+  compact = false,
+}: {
+  offer?: SpecialClassInfo;
+  compact?: boolean;
+}) => {
+  const option = offer.classes[0];
+  return (
+    <div
+      className={`rounded-xl border border-blue-200 bg-white ${
+        compact ? "p-3.5" : "p-4"
+      } shadow-sm`}
+    >
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="rounded-full bg-blue-800 px-2.5 py-0.5 text-[11px] font-bold tracking-wide text-white">
+          {offer.badgeEn || "START & TURN SPECIAL"}
+        </span>
+        <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[11px] font-bold text-blue-800">
+          2시간 집중
+        </span>
+        <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[11px] font-bold text-blue-800">
+          정원 {offer.capacity ?? 14}명
+        </span>
+      </div>
+      <h4 className="mt-2.5 break-keep text-base font-bold leading-snug text-gray-950 sm:text-lg">
+        {option?.name || "스윔잇 스타트·턴 연결 특강"}
+      </h4>
+      <p className="mt-2 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-sm font-semibold leading-5 text-blue-900">
+        {(option?.flow || "데크 스타트 → 사이드턴 / 플립턴")
+          .split(" → ")
+          .map((step, index) => (
+            <span key={step} className="inline-flex items-center gap-1.5">
+              {index > 0 ? (
+                <span className="text-blue-300" aria-hidden>
+                  →
+                </span>
+              ) : null}
+              {step}
+            </span>
+          ))}
+      </p>
+      <p className="mt-2 break-keep text-sm font-semibold leading-6 text-gray-800">
+        {offer.detail}
+      </p>
+      <p className="mt-2 text-xs font-bold tracking-wide text-blue-700">
+        {offer.timeLabel.replace("~", " - ")} · 2H SPECIAL
+      </p>
+      <div className="mt-2 flex flex-wrap gap-1.5">
+        {["데크 스타트", "사이드턴 / 플립턴", "출발과 턴 연결 집중"].map(
+          (label) => (
+            <span
+              key={label}
+              className="rounded-md border border-blue-100 bg-blue-50/80 px-2 py-1 text-[11px] font-semibold text-blue-800"
+            >
+              {label}
+            </span>
+          ),
+        )}
+      </div>
+      {!compact ? (
+        <p className="mt-2 text-xs leading-5 text-gray-500">{offer.summary}</p>
+      ) : null}
+    </div>
+  );
 };
 
 /** 진단 소개 다음, 일정 안내 직전. 11/29 동탄 3시간 집중반만 안내합니다. */
@@ -506,12 +580,20 @@ const getClassDisplayName = (className: string) => {
 
 const getSelectedClassSheetLabel = (slot: {
   title: string;
+  name?: string;
   productType?: ProductType;
   productName?: string;
   strokes?: StrokeType[];
 }) => {
   // 노션·시트 클래스명: 다른 일정과 동일 규칙
   if (slot.productType === "diagnosis") return "진단";
+  if (
+    isStartTurnEnrollmentKey(slot.name || "") ||
+    isStartTurnEnrollmentKey(slot.title || "") ||
+    isStartTurnEnrollmentKey(slot.productName || "")
+  ) {
+    return START_TURN_SHEET_LABEL;
+  }
   // 제로·기타: 영법명 (예: 자유형) — 노션 키는 [동탄 8/23] 1부 특강 자유형
   return slot.title;
 };
@@ -532,6 +614,11 @@ const getAlimtalkClassLabel = (slot: {
   }
   if (slot.productType === "diagnosis") {
     return "[동탄 8/23] 2부 저항 진단 프로그램";
+  }
+  if (isStartTurnEnrollmentKey(slot.name) || slot.productName?.includes("스타트·턴")) {
+    return slot.name.includes("]")
+      ? `${slot.name.match(/^\[[^\]]+\]/)?.[0] || ""} 스타트·턴 연결 특강`.trim()
+      : START_TURN_SHEET_LABEL;
   }
   if (slot.productType === "zero") {
     const stroke = slot.strokes?.[0];
@@ -1307,6 +1394,12 @@ const INITIAL_ENROLLMENT: Record<string, number> = {
       .map((offering) => [offering.enrollmentKey, 0]),
   ) as Record<string, number>),
   [getDongtanDiagnosisEnrollmentKey()]: 0,
+  // 스타트·턴 연결 특강 (기존 일정에 덧붙는 별도 정원)
+  ...(Object.fromEntries(
+    CLASS_SCHEDULES.filter((item) => item.addonSpecialClass?.specialType === "start-turn-2h").map(
+      (item) => [getStartTurnEnrollmentKey(item), 0],
+    ),
+  ) as Record<string, number>),
 };
 
 /** 특강 날짜 → 부 → 레인 순 (개발자 모드 등 시간 흐름 정렬용) */
@@ -1332,6 +1425,10 @@ const buildClassKeySortIndex = (): Record<string, number> => {
     const diagnosis = getDiagnosisOfferingForClass(classItem.id);
     if (diagnosis && !(diagnosis.enrollmentKey in index)) {
       index[diagnosis.enrollmentKey] = order++;
+    }
+    if (classItem.addonSpecialClass?.specialType === "start-turn-2h") {
+      const startTurnKey = getStartTurnEnrollmentKey(classItem);
+      if (!(startTurnKey in index)) index[startTurnKey] = order++;
     }
   }
 
@@ -1491,9 +1588,15 @@ export default function SwimmingClassPage() {
         ? strokes.map(({ stroke }) => makeClassKey(c.id, session, stroke))
         : [];
       const diagnosis = getDiagnosisOfferingForClass(c.id);
-      return diagnosis
-        ? [...strokeKeys, diagnosis.enrollmentKey]
-        : strokeKeys;
+      const startTurnKey =
+        c.addonSpecialClass?.specialType === "start-turn-2h"
+          ? getStartTurnEnrollmentKey(c)
+          : null;
+      return [
+        ...strokeKeys,
+        ...(diagnosis ? [diagnosis.enrollmentKey] : []),
+        ...(startTurnKey ? [startTurnKey] : []),
+      ];
     }),
   );
 
@@ -1582,10 +1685,22 @@ export default function SwimmingClassPage() {
       "[특강일정] 취소로 신청 목록에서 제외: 서울 중구 스포빌키즈쿠아 10/11",
     );
     console.log("[특강일정] 11월 일정 추가", {
-      "부산 11/8": "특강+진단 14:00~16:00",
+      "부산 11/8": "특강+진단 14:00~16:00 + 스타트·턴 15:50~17:50",
       "강남 11/15": "특강만 16:00~18:00",
-      "목동 11/22": "특강+진단 14:00~16:00",
+      "목동 11/22": "특강+진단 14:00~16:00 + 스타트·턴 15:50~17:50",
       "동탄 11/29": "3시간 집중 14:00~17:00 · 115,000원",
+    });
+    console.log("[특강일정] 스타트·턴 연결 특강 추가", {
+      dates: CLASS_SCHEDULES.filter(
+        (item) => item.addonSpecialClass?.specialType === "start-turn-2h",
+      ).map((item) => ({
+        id: item.id,
+        location: item.location,
+        date: `${item.month}/${item.dateNum}`,
+        key: getStartTurnEnrollmentKey(item),
+        capacity: item.addonSpecialClass?.capacity,
+        time: item.addonSpecialClass?.timeLabel,
+      })),
     });
     console.log("[특강일정] 활성 특강 목록", {
       classIds: getActiveClasses().map((c) => ({
@@ -2661,8 +2776,20 @@ export default function SwimmingClassPage() {
         )),
   );
 
-  const isNovemberReservation = isNovemberSchedule(selectedScheduleForPayment) &&
-    !isResistanceDiagnosisProduct({ className: selectedTimeSlot?.name, productType: selectedTimeSlot?.productType || selectedProductType });
+  const isStartTurnSelection = Boolean(
+    selectedTimeSlot &&
+      (isStartTurnEnrollmentKey(selectedTimeSlot.name) ||
+        isStartTurnEnrollmentKey(selectedTimeSlot.title) ||
+        isStartTurnEnrollmentKey(selectedTimeSlot.productName || "")),
+  );
+  // 스타트·턴은 11월 예약대기(결제 없음) 대상이 아님 — 별도 정원·결제 유지
+  const isNovemberReservation =
+    isNovemberSchedule(selectedScheduleForPayment) &&
+    !isResistanceDiagnosisProduct({
+      className: selectedTimeSlot?.name,
+      productType: selectedTimeSlot?.productType || selectedProductType,
+    }) &&
+    !isStartTurnSelection;
   const novemberDiscount = isNovemberReservation && hasNovemberBenefit(selectedScheduleForPayment)
     ? NOVEMBER_BENEFIT_AMOUNT : 0;
 
@@ -4580,6 +4707,11 @@ export default function SwimmingClassPage() {
                                   <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-bold text-blue-800">
                                     SPECIAL
                                   </span>
+                                ) : classItem.addonSpecialClass?.specialType ===
+                                  "start-turn-2h" ? (
+                                  <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-bold text-blue-800">
+                                    START & TURN
+                                  </span>
                                 ) : classItem.badge ? (
                                   <span className="rounded-full bg-orange-500 px-2 py-0.5 text-xs font-bold text-white">
                                     {classItem.badge}
@@ -4750,6 +4882,14 @@ export default function SwimmingClassPage() {
                                 ))}
                               </div>
                             </div>
+                            {classItem.addonSpecialClass?.specialType ===
+                            "start-turn-2h" ? (
+                              <div className="mb-4">
+                                <StartTurnSpecialBlock
+                                  offer={classItem.addonSpecialClass}
+                                />
+                              </div>
+                            ) : null}
                               </>
                             )}
 
@@ -5101,6 +5241,16 @@ export default function SwimmingClassPage() {
                   <p className="mt-1 text-xs leading-5 text-gray-500">
                     동반 할인도 5,000원입니다. 예약대기 혜택과 중복되지 않습니다.
                   </p>
+                </div>
+              ) : null}
+              {isStartTurnSelection && step !== 4 ? (
+                <div className="mb-4 pr-12">
+                  <StartTurnSpecialBlock
+                    offer={
+                      selectedScheduleClass?.addonSpecialClass ||
+                      START_TURN_SPECIAL
+                    }
+                  />
                 </div>
               ) : null}
               {isNovemberReservation && step !== 4 ? (
@@ -6366,6 +6516,79 @@ export default function SwimmingClassPage() {
                                       </div>
                                       <div className="mt-3">
                                         <DiagnosisCouponBanner />
+                                      </div>
+                                    </button>
+                                  );
+                                })()}
+                              {selectedScheduleForPayment?.addonSpecialClass
+                                ?.specialType === "start-turn-2h" &&
+                                (() => {
+                                  const addon =
+                                    selectedScheduleForPayment.addonSpecialClass;
+                                  const option = addon.classes[0];
+                                  const classKey = getStartTurnEnrollmentKey(
+                                    selectedScheduleForPayment,
+                                  );
+                                  const availabilityBadge =
+                                    getAvailabilityBadge(classKey);
+                                  const isFull = isClassFull(classKey);
+                                  const isSelected =
+                                    selectedTimeSlot?.name === classKey;
+                                  return (
+                                    <button
+                                      key={classKey}
+                                      type="button"
+                                      onClick={() => {
+                                        console.log(
+                                          "[선택] 스타트·턴 연결 특강 선택:",
+                                          {
+                                            className: classKey,
+                                            price: addon.price,
+                                            capacity: addon.capacity,
+                                            remaining:
+                                              availabilityBadge.remaining,
+                                            badge: availabilityBadge.label,
+                                          },
+                                        );
+                                        setSelectedProductType(null);
+                                        setSelectedTimeSlot({
+                                          name: classKey,
+                                          session: START_TURN_SESSION,
+                                          lane: UNASSIGNED_LANE,
+                                          title: START_TURN_SHEET_LABEL,
+                                          time: addon.timeLabel.replace(
+                                            "~",
+                                            " ~ ",
+                                          ),
+                                          price: addon.price,
+                                          isWaitlist: isFull,
+                                          available: !isFull,
+                                          productName: option?.name,
+                                        });
+                                        setStep(3);
+                                        scrollToApplicantInfo();
+                                      }}
+                                      className={`relative flex min-h-[140px] flex-col justify-between rounded-xl border p-4 text-left transition-all sm:col-span-3 ${
+                                        isSelected
+                                          ? "border-primary border-2 bg-primary/5 ring-2 ring-primary/10"
+                                          : "border-blue-200 bg-blue-50/40 hover:border-primary/50 hover:shadow-sm"
+                                      }`}
+                                    >
+                                      <StartTurnSpecialBlock
+                                        offer={addon}
+                                        compact
+                                      />
+                                      <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                                        <span className="text-sm font-extrabold text-blue-800">
+                                          {addon.price.toLocaleString()}원
+                                        </span>
+                                        <span
+                                          className={getAvailabilityBadgeClassName(
+                                            availabilityBadge.tone,
+                                          )}
+                                        >
+                                          {availabilityBadge.label}
+                                        </span>
                                       </div>
                                     </button>
                                   );

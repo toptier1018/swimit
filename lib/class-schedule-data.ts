@@ -22,7 +22,7 @@ export type SpecialClassOption = {
 
 /** 일반 2시간 특강과 다른 한정/스페셜 클래스 */
 export type SpecialClassInfo = {
-  specialType: "intensive-3h" | "launch-2h";
+  specialType: "intensive-3h" | "launch-2h" | "start-turn-2h";
   duration: string;
   timeLabel: string;
   price: number;
@@ -33,6 +33,38 @@ export type SpecialClassInfo = {
   summary: string;
   detail: string;
   classes: SpecialClassOption[];
+  /** 영문 배지 (예: START & TURN SPECIAL) */
+  badgeEn?: string;
+  /** 정원(전체 클래스 기준). UI 안내용 */
+  capacity?: number;
+};
+
+/** enrollment key 끝부분 / 시트 구분용 */
+export const START_TURN_CLASS_KEY = "스타트·턴 연결";
+export const START_TURN_SHEET_LABEL = "스타트·턴 연결 특강";
+export const START_TURN_SESSION = "2부 특강";
+export const START_TURN_CAPACITY = 14;
+
+/** 10/18·11/8·11/22 기존 일정에 덧붙이는 스타트·턴 연결 특강 */
+export const START_TURN_SPECIAL: SpecialClassInfo = {
+  specialType: "start-turn-2h",
+  duration: "2시간",
+  timeLabel: "15:50~17:50",
+  price: 80000,
+  capacity: START_TURN_CAPACITY,
+  badgeEn: "START & TURN SPECIAL",
+  summary: "일반 영법 교정 특강과 구분되는 SPECIAL CLASS입니다.",
+  detail:
+    "출발과 턴에서 끊기는 구간을 2시간 동안 집중적으로 연결합니다.",
+  classes: [
+    {
+      key: START_TURN_CLASS_KEY,
+      name: "스윔잇 스타트·턴 연결 특강",
+      icon: "🚀",
+      flow: "데크 스타트 → 사이드턴 / 플립턴",
+      short: "출발 → 수영 → 턴 → 다시 수영",
+    },
+  ],
 };
 
 export const DONGTAN_NOV29_INTENSIVE: SpecialClassInfo = {
@@ -100,6 +132,11 @@ export type ClassScheduleItem = {
   badge?: string;
   parking?: string;
   specialClass?: SpecialClassInfo;
+  /**
+   * 기존 1부 특강/진단을 유지한 채 추가로 붙는 SPECIAL CLASS
+   * (예: 스타트·턴 연결 특강 15:50~17:50)
+   */
+  addonSpecialClass?: SpecialClassInfo;
 };
 
 export const CLASS_SCHEDULES: ClassScheduleItem[] = [
@@ -337,12 +374,14 @@ export const CLASS_SCHEDULES: ClassScheduleItem[] = [
     month: 10,
     venue: "목동스포츠센터",
     address: "서울특별시 양천구 목동서로 130 목동스포츠센터",
-    spots: "자유형 14명 · 평영·접영 각 7명 · 진단 14명",
+    spots: "자유형 14명 · 평영·접영 각 7명 · 진단 14명 · 스타트·턴 14명",
     scheduleSummaryLines: [
       "1부 특강 · 14:00~16:00 (2시간)",
       "1부 진단 프로그램 · 14:00~16:00",
+      "스타트·턴 연결 특강 · 15:50~17:50 (2시간)",
     ],
-    badge: "특강 + 진단 동시 운영",
+    badge: "특강 + 진단 + SPECIAL",
+    addonSpecialClass: START_TURN_SPECIAL,
   },
   {
     id: 23,
@@ -372,12 +411,14 @@ export const CLASS_SCHEDULES: ClassScheduleItem[] = [
     month: 11,
     venue: "조이풀스윔",
     address: "부산광역시 부산진구 백양관문로 20 현대빌딩 지하 1, 2층",
-    spots: "자유형 14명 · 평영·접영 각 7명 · 진단 14명",
+    spots: "자유형 14명 · 평영·접영 각 7명 · 진단 14명 · 스타트·턴 14명",
     scheduleSummaryLines: [
       "1부 특강 · 14:00~16:00 (2시간)",
       "1부 진단 프로그램 · 14:00~16:00",
+      "스타트·턴 연결 특강 · 15:50~17:50 (2시간)",
     ],
-    badge: "특강 + 진단 동시 운영",
+    badge: "특강 + 진단 + SPECIAL",
+    addonSpecialClass: START_TURN_SPECIAL,
   },
   {
     id: 25,
@@ -403,12 +444,14 @@ export const CLASS_SCHEDULES: ClassScheduleItem[] = [
     month: 11,
     venue: "목동스포츠센터",
     address: "서울특별시 양천구 목동서로 130 목동스포츠센터",
-    spots: "자유형 14명 · 평영·접영 각 7명 · 진단 14명",
+    spots: "자유형 14명 · 평영·접영 각 7명 · 진단 14명 · 스타트·턴 14명",
     scheduleSummaryLines: [
       "1부 특강 · 14:00~16:00 (2시간)",
       "1부 진단 프로그램 · 14:00~16:00",
+      "스타트·턴 연결 특강 · 15:50~17:50 (2시간)",
     ],
-    badge: "특강 + 진단 동시 운영",
+    badge: "특강 + 진단 + SPECIAL",
+    addonSpecialClass: START_TURN_SPECIAL,
   },
   {
     id: 27,
@@ -471,6 +514,7 @@ export const DEFAULT_CAPACITY_BY_CLASS: Record<string, number> = {
   "[목동 10/18] 1부 특강 평영": 7,
   "[목동 10/18] 1부 특강 접영": 7,
   "[목동 10/18] 1부 진단": 14,
+  "[목동 10/18] 2부 특강 스타트·턴 연결": START_TURN_CAPACITY,
   // 동탄 10/25 스윔스튜디오제이
   "[동탄 10/25] 1부 특강 자유형": 14,
   "[동탄 10/25] 1부 특강 평영": 7,
@@ -483,6 +527,7 @@ export const DEFAULT_CAPACITY_BY_CLASS: Record<string, number> = {
   "[부산 11/8] 1부 특강 평영": 7,
   "[부산 11/8] 1부 특강 접영": 7,
   "[부산 11/8] 1부 진단": 14,
+  "[부산 11/8] 2부 특강 스타트·턴 연결": START_TURN_CAPACITY,
   // 강남 11/15 와이키키 링크&스윔 (진단 없음)
   "[강남 11/15] 1부 특강 자유형": 7,
   "[강남 11/15] 1부 특강 평영": 7,
@@ -492,6 +537,7 @@ export const DEFAULT_CAPACITY_BY_CLASS: Record<string, number> = {
   "[목동 11/22] 1부 특강 평영": 7,
   "[목동 11/22] 1부 특강 접영": 7,
   "[목동 11/22] 1부 진단": 14,
+  "[목동 11/22] 2부 특강 스타트·턴 연결": START_TURN_CAPACITY,
   // 동탄 11/29
   "[동탄 11/29] 1부 특강 자유형": 14,
   "[동탄 11/29] 1부 특강 평영": 7,
@@ -515,6 +561,23 @@ export function getClassScheduleLabel(event: {
   dateNum: number;
 }): string {
   return `${event.locationCode} ${event.month}/${event.dateNum}`;
+}
+
+/** `[목동 10/18] 2부 특강 스타트·턴 연결` */
+export function getStartTurnEnrollmentKey(event: {
+  locationCode: string;
+  month: number;
+  dateNum: number;
+}): string {
+  return `[${getClassScheduleLabel(event)}] ${START_TURN_SESSION} ${START_TURN_CLASS_KEY}`;
+}
+
+export function isStartTurnEnrollmentKey(className: string): boolean {
+  return (
+    String(className || "").includes(`특강 ${START_TURN_CLASS_KEY}`) ||
+    String(className || "").includes(START_TURN_SHEET_LABEL) ||
+    String(className || "").includes("스타트·턴 연결")
+  );
 }
 
 export function toClassScheduleIsoDate(event: {

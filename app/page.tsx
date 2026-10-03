@@ -285,88 +285,43 @@ const INTENSIVE_STROKE_ICON: Record<string, string> = {
   배영: "🏊",
 };
 
-/** 일정 카드/선택용 스타트·턴 SPECIAL 블록 (기존 장소·일정에 덧붙임) */
+/** 일정 카드용 스타트·턴 안내 — 다른 클래스 카드와 비슷한 크기 */
 const StartTurnSpecialBlock = ({
   offer = START_TURN_SPECIAL,
-  compact = false,
 }: {
   offer?: SpecialClassInfo;
-  compact?: boolean;
 }) => {
   const option = offer.classes[0];
   return (
-    <div
-      className={`rounded-xl border border-blue-200 bg-white ${
-        compact ? "p-3.5" : "p-4"
-      } shadow-sm`}
-    >
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="rounded-full bg-blue-800 px-2.5 py-0.5 text-[11px] font-bold tracking-wide text-white">
+    <div className="rounded-lg border border-blue-100 px-3 py-2.5">
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span className="text-[11px] font-bold text-blue-700">
           {offer.badgeEn || "START & TURN SPECIAL"}
         </span>
-        <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[11px] font-bold text-blue-800">
-          2시간 집중
-        </span>
-        <span className="rounded-full bg-red-500 px-2 py-0.5 text-[11px] font-bold text-white">
-          런칭 특가
-        </span>
-        <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[11px] font-bold text-blue-800">
-          정원 {offer.capacity ?? 14}명
+        <span className="text-[11px] font-semibold text-gray-500">
+          · 런칭 특가
         </span>
       </div>
-      <h4 className="mt-2.5 break-keep text-base font-bold leading-snug text-gray-950 sm:text-lg">
-        {option?.name || "스윔잇 스타트·턴 연결 특강"}
-      </h4>
-      <p className="mt-2 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-sm font-semibold leading-5 text-blue-900">
-        {(option?.flow || "데크 스타트 → 사이드턴 / 플립턴")
-          .split(" → ")
-          .map((step, index) => (
-            <span key={step} className="inline-flex items-center gap-1.5">
-              {index > 0 ? (
-                <span className="text-blue-300" aria-hidden>
-                  →
-                </span>
-              ) : null}
-              {step}
-            </span>
-          ))}
+      <p className="mt-1 text-sm font-bold text-gray-950">
+        {(option?.icon ? `${option.icon} ` : "") +
+          (option?.name || "스윔잇 스타트·턴 연결 특강")}
       </p>
-      <p className="mt-2 break-keep text-sm font-semibold leading-6 text-gray-800">
-        {offer.detail}
+      <p className="mt-0.5 text-xs leading-5 text-gray-600">
+        {option?.flow || "데크 스타트 → 사이드턴 / 플립턴"}
       </p>
-      <p className="mt-2 text-xs font-bold tracking-wide text-blue-700">
-        {offer.timeLabel.replace("~", " - ")} · 2H SPECIAL
-      </p>
-      <p className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+      <p className="mt-1 flex flex-wrap items-baseline gap-x-2">
         {offer.originalPrice ? (
           <span className="text-xs text-gray-400 line-through">
             {offer.originalPrice.toLocaleString()}원
           </span>
         ) : null}
-        <span className="text-xl font-extrabold tracking-tight text-blue-800">
+        <span className="text-sm font-extrabold text-blue-800">
           {offer.price.toLocaleString()}원
         </span>
-        {offer.originalPrice && offer.originalPrice > offer.price ? (
-          <span className="text-xs font-bold text-red-600">
-            {(offer.originalPrice - offer.price).toLocaleString()}원 할인
-          </span>
-        ) : null}
+        <span className="text-xs text-gray-500">
+          {offer.timeLabel} · 2시간
+        </span>
       </p>
-      <div className="mt-2 flex flex-wrap gap-1.5">
-        {["데크 스타트", "사이드턴 / 플립턴", "출발과 턴 연결 집중"].map(
-          (label) => (
-            <span
-              key={label}
-              className="rounded-md border border-blue-100 bg-blue-50/80 px-2 py-1 text-[11px] font-semibold text-blue-800"
-            >
-              {label}
-            </span>
-          ),
-        )}
-      </div>
-      {!compact ? (
-        <p className="mt-2 text-xs leading-5 text-gray-500">{offer.summary}</p>
-      ) : null}
     </div>
   );
 };
@@ -922,6 +877,19 @@ const TIMETABLE_MOKDONG_SEPTEMBER: TimetableRow[] = [
   },
 ];
 
+/** 목동 10/18 — 특강만 (진단 없음). 스타트·턴은 addonSpecialClass로 별도 신청 */
+const TIMETABLE_MOKDONG_OCTOBER_18: TimetableRow[] = [
+  {
+    session: "1부 특강",
+    time: "14:00 ~ 16:00",
+    lanes: [
+      { lane: UNASSIGNED_LANE, title: "자유형", price: 80000 },
+      { lane: UNASSIGNED_LANE, title: "접영", price: 80000 },
+      { lane: UNASSIGNED_LANE, title: "평영", price: 80000 },
+    ],
+  },
+];
+
 /** 청라스카이스위밍 9/27 특강 — 특강+진단 동시, 레인 미표시 */
 const TIMETABLE_CHEONGNA_SEPTEMBER: TimetableRow[] = [
   {
@@ -956,7 +924,7 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   18: TIMETABLE_MOKDONG_SEPTEMBER, // 9/20 목동
   19: TIMETABLE_CHEONGNA_SEPTEMBER, // 9/27 청라
   20: TIMETABLE_BUSAN_OCTOBER, // 10/4 부산 (평영·접영만)
-  22: TIMETABLE_MOKDONG_SEPTEMBER, // 10/18 목동 (특강+진단)
+  22: TIMETABLE_MOKDONG_OCTOBER_18, // 10/18 목동 (특강만 · 진단 없음)
   23: TIMETABLE_DONGTAN_AUGUST, // 10/25 동탄 스윔스튜디오제이
   24: TIMETABLE_MOKDONG_SEPTEMBER, // 11/8 부산 (특강+진단, 레인 미표시)
   25: TIMETABLE_GANGNAM_NOVEMBER, // 11/15 강남 (특강만)
@@ -4902,7 +4870,7 @@ export default function SwimmingClassPage() {
                             </div>
                             {classItem.addonSpecialClass?.specialType ===
                             "start-turn-2h" ? (
-                              <div className="mb-4">
+                              <div className="mb-4 space-y-2">
                                 <StartTurnSpecialBlock
                                   offer={classItem.addonSpecialClass}
                                 />
@@ -5259,16 +5227,6 @@ export default function SwimmingClassPage() {
                   <p className="mt-1 text-xs leading-5 text-gray-500">
                     동반 할인도 5,000원입니다. 예약대기 혜택과 중복되지 않습니다.
                   </p>
-                </div>
-              ) : null}
-              {isStartTurnSelection && step !== 4 ? (
-                <div className="mb-4 pr-12">
-                  <StartTurnSpecialBlock
-                    offer={
-                      selectedScheduleClass?.addonSpecialClass ||
-                      START_TURN_SPECIAL
-                    }
-                  />
                 </div>
               ) : null}
               {isNovemberReservation && step !== 4 ? (
@@ -6586,18 +6544,23 @@ export default function SwimmingClassPage() {
                                         setStep(3);
                                         scrollToApplicantInfo();
                                       }}
-                                      className={`relative flex min-h-[140px] flex-col justify-between rounded-xl border p-4 text-left transition-all sm:col-span-3 ${
+                                      className={`relative flex min-h-[140px] flex-col justify-between rounded-xl border p-4 text-left transition-all ${
                                         isSelected
                                           ? "border-primary border-2 bg-primary/5 ring-2 ring-primary/10"
-                                          : "border-blue-200 bg-blue-50/40 hover:border-primary/50 hover:shadow-sm"
+                                          : "border-gray-200 bg-white hover:border-primary/50 hover:shadow-sm"
                                       }`}
                                     >
-                                      <StartTurnSpecialBlock
-                                        offer={addon}
-                                        compact
-                                      />
-                                      <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                                        <div className="flex flex-wrap items-baseline gap-x-2">
+                                      <div>
+                                        <div className="text-base font-bold text-gray-900">
+                                          {(option?.icon || "🚀") + " "}
+                                          {option?.name ||
+                                            "스윔잇 스타트·턴 연결 특강"}
+                                        </div>
+                                        <div className="mt-2 text-sm leading-5 text-gray-600">
+                                          {option?.flow ||
+                                            "데크 스타트 → 사이드턴 / 플립턴"}
+                                        </div>
+                                        <p className="mt-2 flex flex-wrap items-baseline gap-x-2">
                                           {addon.originalPrice ? (
                                             <span className="text-xs text-gray-400 line-through">
                                               {addon.originalPrice.toLocaleString()}
@@ -6607,10 +6570,12 @@ export default function SwimmingClassPage() {
                                           <span className="text-sm font-extrabold text-blue-800">
                                             {addon.price.toLocaleString()}원
                                           </span>
-                                          <span className="text-xs font-bold text-red-600">
-                                            런칭 특가
-                                          </span>
-                                        </div>
+                                        </p>
+                                      </div>
+                                      <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+                                        <span className="text-xs font-bold text-blue-700">
+                                          런칭 특가 · 2시간
+                                        </span>
                                         <span
                                           className={getAvailabilityBadgeClassName(
                                             availabilityBadge.tone,

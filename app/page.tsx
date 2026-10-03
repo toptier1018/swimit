@@ -45,6 +45,7 @@ import {
   findOrCreateApplicant,
 } from "@/app/actions/notion";
 import { hasNovemberBenefit, isNovemberSchedule, NOVEMBER_BENEFIT_AMOUNT, NOVEMBER_BENEFIT_END } from "@/lib/november-reservation";
+import { resolveBankTransferDiscount } from "@/lib/bank-transfer-discount";
 import { checkDuplicateForSameClass } from "@/app/actions/google-sheets";
 import {
   EMPTY_TRAFFIC_SOURCE,
@@ -1473,6 +1474,10 @@ export default function SwimmingClassPage() {
   const [checkoutPayMethod, setCheckoutPayMethod] = useState<
     "CARD" | "BANK_MANUAL"
   >("CARD");
+  /** 계좌이체 신청 확정 후 입금안내 화면에 쓸 금액 (할인 반영) */
+  const [confirmedDepositAmount, setConfirmedDepositAmount] = useState<
+    number | null
+  >(null);
   const classPgTestLockRef = useRef(false);
 
   // 현재 활성 특강의 클래스 키 목록 (지난 특강 제거용)
@@ -2691,9 +2696,24 @@ export default function SwimmingClassPage() {
       agreeAll,
   );
 
-  const paymentAmountLabel = selectedTimeSlot
-    ? (selectedTimeSlot.price - novemberDiscount).toLocaleString()
-    : "0";
+  /** 결제수단별 실제 청구/입금 예정 금액 (카드=정상가, 계좌이체=할인 가능) */
+  const checkoutPricing = resolveBankTransferDiscount({
+    originalAmount: selectedTimeSlot?.price ?? 0,
+    isBankManual: checkoutPayMethod === "BANK_MANUAL",
+    isDiagnosis: isResistanceDiagnosisProduct({
+      className: selectedTimeSlot?.name,
+      productType: selectedTimeSlot?.productType || selectedProductType,
+    }),
+    noExtraDiscount: Boolean(
+      isLaunchSpecialSelection ||
+        selectedScheduleForPayment?.specialClass?.noExtraDiscount ||
+        selectedScheduleForPayment?.specialClass?.promotionType === "launch",
+    ),
+  });
+
+  const paymentAmountLabel = checkoutPricing.expectedAmount.toLocaleString();
+  const depositAmountDisplay =
+    confirmedDepositAmount ?? checkoutPricing.expectedAmount;
 
   const paymentClassLabel = selectedTimeSlot
     ? selectedTimeSlot.productName ||
@@ -6749,44 +6769,83 @@ export default function SwimmingClassPage() {
                           </div>
                         )}
                         {!isNovemberReservation && (
-                        <div className="flex items-end justify-between gap-3 bg-slate-50 px-4 py-4 sm:px-5">
-                          <span className="text-sm font-semibold text-gray-600">
-                            결제금액
-                          </span>
-                          <div className="text-right">
-                            {selectedTimeSlot && isLaunchSpecialSelection ? (
-                              <>
-                                <div className="text-xs font-bold text-blue-700">
-                                  런칭 특가
-                                </div>
-                                <div className="text-xs text-gray-400 line-through">
-                                  {(
-                                    selectedScheduleForPayment?.specialClass
-                                      ?.originalPrice ?? 80000
-                                  ).toLocaleString()}
-                                  원
-                                </div>
-                              </>
-                            ) : selectedTimeSlot ? (
-                              <div className="text-xs text-gray-400 line-through">
-                                {formatWon(
-                                  selectedTimeSlot.productType === "diagnosis"
-                                    ? PRODUCT_CATALOG.diagnosis.originalPrice
-                                    : PRODUCT_CATALOG.zero.originalPrice,
-                                )}
+                        <div className="space-y-0 bg-slate-50">
+                          {checkoutPricing.applied ? (
+                            <>
+                              <div className="flex justify-between gap-3 px-4 py-2.5 text-sm sm:px-5">
+                                <span className="text-gray-600">할인 전 금액</span>
+                                <span className="font-medium text-gray-700">
+                                  {checkoutPricing.originalAmount.toLocaleString()}원
+                                </span>
                               </div>
-                            ) : null}
-                            <div className="text-2xl font-extrabold tracking-tight text-primary">
-                              {selectedTimeSlot
-                                ? `${paymentAmountLabel}원`
-                                : "0원"}
+                              <div className="flex justify-between gap-3 px-4 py-2.5 text-sm sm:px-5">
+                                <span className="font-semibold text-blue-800">
+                                  할인 금액
+                                </span>
+                                <span className="font-bold text-blue-800">
+                                  -{checkoutPricing.discountAmount.toLocaleString()}원
+                                </span>
+                              </div>
+                              <div className="flex items-end justify-between gap-3 px-4 py-4 sm:px-5">
+                                <span className="text-sm font-semibold text-gray-600">
+                                  할인 후 예정 금액
+                                </span>
+                                <div className="text-right">
+                                  <div className="text-2xl font-extrabold tracking-tight text-primary">
+                                    {paymentAmountLabel}원
+                                  </div>
+                                  <p className="mt-1 text-[11px] leading-4 text-blue-700">
+                                    계좌이체 할인 적용
+                                  </p>
+                                </div>
+                              </div>
+                            </>
+                          ) : (
+                            <div className="flex items-end justify-between gap-3 px-4 py-4 sm:px-5">
+                              <span className="text-sm font-semibold text-gray-600">
+                                결제금액
+                              </span>
+                              <div className="text-right">
+                                {selectedTimeSlot && isLaunchSpecialSelection ? (
+                                  <>
+                                    <div className="text-xs font-bold text-blue-700">
+                                      런칭 특가
+                                    </div>
+                                    <div className="text-xs text-gray-400 line-through">
+                                      {(
+                                        selectedScheduleForPayment?.specialClass
+                                          ?.originalPrice ?? 80000
+                                      ).toLocaleString()}
+                                      원
+                                    </div>
+                                  </>
+                                ) : selectedTimeSlot &&
+                                  checkoutPayMethod === "CARD" ? (
+                                  <div className="text-xs font-medium text-slate-500">
+                                    정상가
+                                  </div>
+                                ) : selectedTimeSlot ? (
+                                  <div className="text-xs text-gray-400 line-through">
+                                    {formatWon(
+                                      selectedTimeSlot.productType === "diagnosis"
+                                        ? PRODUCT_CATALOG.diagnosis.originalPrice
+                                        : PRODUCT_CATALOG.zero.originalPrice,
+                                    )}
+                                  </div>
+                                ) : null}
+                                <div className="text-2xl font-extrabold tracking-tight text-primary">
+                                  {selectedTimeSlot
+                                    ? `${paymentAmountLabel}원`
+                                    : "0원"}
+                                </div>
+                                {isLaunchSpecialSelection ? (
+                                  <p className="mt-1 text-[11px] leading-4 text-gray-500">
+                                    다른 할인 중복 불가
+                                  </p>
+                                ) : null}
+                              </div>
                             </div>
-                            {isLaunchSpecialSelection ? (
-                              <p className="mt-1 text-[11px] leading-4 text-gray-500">
-                                다른 할인 중복 불가
-                              </p>
-                            ) : null}
-                          </div>
+                          )}
                         </div>
                         )}
                       </div>
@@ -6857,11 +6916,8 @@ export default function SwimmingClassPage() {
                               <div className="font-bold text-slate-900">
                                 계좌이체
                               </div>
-                              <div className="mt-1 text-xs text-slate-500">
-                                계좌 확인 후 직접 입금
-                              </div>
-                              <div className="mt-1 text-[11px] leading-4 text-slate-400">
-                                카드 결제 없이 계좌로 바로 입금할 수 있어요.
+                              <div className="mt-1 text-xs font-semibold text-blue-700">
+                                할인 혜택 적용
                               </div>
                             </button>
                           </div>
@@ -6931,9 +6987,13 @@ export default function SwimmingClassPage() {
                           : "toss";
 
                         if (!useManualBank) {
+                          // 카드/간편결제: 정상가(할인 미적용)로 Toss 결제
+                          setConfirmedDepositAmount(null);
                           console.log("[결제UX] 결제하기(토스 CARD) 버튼 클릭", {
                             className: selectedTimeSlot?.name,
                             price: selectedTimeSlot?.price,
+                            chargeAmount: selectedTimeSlot?.price,
+                            bankDiscountApplied: false,
                             label: paymentCtaLabel,
                             checkoutPayMethod,
                           });
@@ -6943,6 +7003,19 @@ export default function SwimmingClassPage() {
                           return;
                         }
 
+                        // 계좌이체 신청(예약대기 제외)일 때만 할인 금액으로 입금 안내
+                        const bankPricing = isWaitlistCta
+                          ? resolveBankTransferDiscount({
+                              originalAmount: selectedTimeSlot?.price ?? 0,
+                              isBankManual: false,
+                              isDiagnosis: true,
+                              noExtraDiscount: true,
+                            })
+                          : checkoutPricing;
+                        if (!isWaitlistCta) {
+                          setConfirmedDepositAmount(bankPricing.expectedAmount);
+                        }
+
                         console.log("[결제UX] 계좌이체 신청/예약대기 버튼 클릭", {
                           className: selectedTimeSlot?.name,
                           price: selectedTimeSlot?.price,
@@ -6950,6 +7023,9 @@ export default function SwimmingClassPage() {
                           intent: paymentMethodIntentRef.current,
                           isWaitlistCta,
                           checkoutPayMethod,
+                          originalAmount: bankPricing.originalAmount,
+                          discountAmount: bankPricing.discountAmount,
+                          expectedAmount: bankPricing.expectedAmount,
                         });
                         incrementFunnelCount(3, "결제하기 버튼 클릭");
                         markFunnelStep(3);
@@ -7356,10 +7432,35 @@ export default function SwimmingClassPage() {
                                             paymentStartedAt,
                                           ),
                                         contentConsent,
+                                        // 계좌이체 할인만 시트 혜택 컬럼에 기록 (카드는 이 경로 아님)
+                                        ...(bankPricing.applied
+                                          ? {
+                                              benefit: {
+                                                originalAmount:
+                                                  bankPricing.originalAmount,
+                                                discountAmount:
+                                                  bankPricing.discountAmount,
+                                                expectedAmount:
+                                                  bankPricing.expectedAmount,
+                                                benefitName:
+                                                  bankPricing.benefitName,
+                                                reservedAt:
+                                                  paymentStartedAt.toISOString(),
+                                              },
+                                            }
+                                          : {}),
                                         ...toTrafficRecord(trafficSource),
                                       }),
                                     },
                                   );
+
+                                  console.log("[구글시트] 결제대기 할인값:", {
+                                    신청번호: newOrderNumber,
+                                    applied: bankPricing.applied,
+                                    할인전: bankPricing.originalAmount,
+                                    할인액: bankPricing.discountAmount,
+                                    할인후: bankPricing.expectedAmount,
+                                  });
 
                                   const sheetResult = await sheetResponse
                                     .json()
@@ -7644,7 +7745,7 @@ export default function SwimmingClassPage() {
                           <div className="flex justify-between gap-3">
                             <span className="text-gray-600">입금금액</span>
                             <span className="font-bold">
-                              {(selectedTimeSlot?.price ?? 0).toLocaleString()}원
+                              {depositAmountDisplay.toLocaleString()}원
                             </span>
                           </div>
                           <div className="flex justify-between gap-3">
@@ -7819,7 +7920,7 @@ export default function SwimmingClassPage() {
                 <div className="flex justify-between gap-3">
                   <span className="text-gray-600">입금금액</span>
                   <span className="text-lg font-extrabold text-gray-900">
-                    {(selectedTimeSlot?.price ?? 0).toLocaleString()}원
+                    {depositAmountDisplay.toLocaleString()}원
                   </span>
                 </div>
                 <div className="flex justify-between gap-3">
@@ -9331,7 +9432,9 @@ export default function SwimmingClassPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">입금금액</span>
-                  <span className="font-bold text-lg">₩{(selectedTimeSlot?.price ?? 0).toLocaleString()}</span>
+                  <span className="font-bold text-lg">
+                    ₩{depositAmountDisplay.toLocaleString()}
+                  </span>
                 </div>
                 <div className="flex justify-between pt-2 border-t">
                   <span className="text-gray-600">입금기한</span>

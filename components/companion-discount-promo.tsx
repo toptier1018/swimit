@@ -117,7 +117,7 @@ export function CompanionDiscountPromo({
               </p>
               <p className="break-keep text-sm font-semibold leading-6 text-gray-950 sm:text-[15px]">
                 전월 15일까지 사전 예약대기 등록 하시면{" "}
-                <span className="text-blue-800">5,000원 혜택</span>
+                <span className="text-blue-800">5,000원 할인 혜택</span>
               </p>
               <div className="flex flex-wrap items-center gap-1.5 text-xs">
                 <span className="rounded-full bg-blue-50 px-2.5 py-1 font-semibold text-blue-800">

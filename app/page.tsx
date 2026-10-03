@@ -1465,10 +1465,14 @@ export default function SwimmingClassPage() {
   // PG 심사 플래그(로그용). 카드 결제는 정식 노출로 전환됨.
   const pgReviewFromEnv = process.env.NEXT_PUBLIC_PG_REVIEW === "true";
   const [isClassPgTestLoading, setIsClassPgTestLoading] = useState(false);
-  /** Toss requestPayment method — CARD(카드·간편결제) / TRANSFER(퀵계좌이체) */
-  const [tossPayMethod, setTossPayMethod] = useState<"CARD" | "TRANSFER">(
-    "CARD",
-  );
+  /**
+   * 결제수단 선택
+   * - CARD: Toss 카드·간편결제
+   * - BANK_MANUAL: 스윔잇 수동 계좌입금 (Toss TRANSFER 미사용)
+   */
+  const [checkoutPayMethod, setCheckoutPayMethod] = useState<
+    "CARD" | "BANK_MANUAL"
+  >("CARD");
   const classPgTestLockRef = useRef(false);
 
   // 현재 활성 특강의 클래스 키 목록 (지난 특강 제거용)
@@ -2706,10 +2710,9 @@ export default function SwimmingClassPage() {
     ) {
       return "예약하기";
     }
+    if (checkoutPayMethod === "BANK_MANUAL") return "계좌이체 신청하기";
     return "결제하기";
   })();
-
-  const bankTransferLabel = "계좌 이체 하기";
 
   const copyDepositAccount = async () => {
     try {
@@ -2827,9 +2830,7 @@ export default function SwimmingClassPage() {
     }
   };
 
-  const handleClassPgTestPayment = async (
-    payMethod: "CARD" | "TRANSFER" = tossPayMethod,
-  ) => {
+  const handleClassPgTestPayment = async () => {
     if (isNovemberReservation) return;
     if (classPgTestLockRef.current || isClassPgTestLoading || !selectedTimeSlot)
       return;
@@ -2848,14 +2849,13 @@ export default function SwimmingClassPage() {
       return;
     }
 
-    const selectedTossMethod = payMethod === "TRANSFER" ? "TRANSFER" : "CARD";
     classPgTestLockRef.current = true;
     setIsClassPgTestLoading(true);
     console.log("[카드결제] 신청 저장 후 결제창 준비:", {
       className: selectedTimeSlot.name,
       amount,
       name: formData.name,
-      tossMethod: selectedTossMethod,
+      tossMethod: "CARD",
     });
 
     try {
@@ -3045,14 +3045,14 @@ export default function SwimmingClassPage() {
         orderNumber: cardOrderNumber,
         pageId: notionPageId,
         amount: serverAmount,
-        method: selectedTossMethod,
+        method: "CARD",
         hasCustomerName: Boolean(customerName),
         hasCustomerEmail: Boolean(customerEmail),
         phoneTail: customerMobilePhone.slice(-4),
       });
 
       const paymentRequest: {
-        method: "CARD" | "TRANSFER";
+        method: "CARD";
         amount: { currency: "KRW"; value: number };
         orderId: string;
         orderName: string;
@@ -3061,12 +3061,8 @@ export default function SwimmingClassPage() {
         customerName?: string;
         customerEmail?: string;
         customerMobilePhone?: string;
-        transfer?: {
-          cashReceipt: { type: "소득공제" };
-          useEscrow: boolean;
-        };
       } = {
-        method: selectedTossMethod,
+        method: "CARD",
         amount: { currency: "KRW", value: serverAmount },
         orderId: tossOrderId,
         orderName: orderData.orderName,
@@ -3078,14 +3074,6 @@ export default function SwimmingClassPage() {
       if (customerEmail) paymentRequest.customerEmail = customerEmail;
       if (customerMobilePhone.length >= 10) {
         paymentRequest.customerMobilePhone = customerMobilePhone;
-      }
-
-      // 퀵계좌이체(TRANSFER) — 현금영수증 기본 소득공제
-      if (selectedTossMethod === "TRANSFER") {
-        paymentRequest.transfer = {
-          cashReceipt: { type: "소득공제" },
-          useEscrow: false,
-        };
       }
 
       await payment.requestPayment(paymentRequest);
@@ -6834,13 +6822,13 @@ export default function SwimmingClassPage() {
                             <button
                               type="button"
                               onClick={() => {
-                                setTossPayMethod("CARD");
+                                setCheckoutPayMethod("CARD");
                                 console.log(
-                                  "[결제UX] Toss 결제수단 선택: CARD (카드·간편결제)",
+                                  "[결제UX] 결제수단 선택: CARD (카드·간편결제)",
                                 );
                               }}
                               className={`rounded-xl border px-3 py-3 text-left text-sm transition-all ${
-                                tossPayMethod === "CARD"
+                                checkoutPayMethod === "CARD"
                                   ? "border-primary bg-primary/5 ring-2 ring-primary/15"
                                   : "border-slate-200 bg-white hover:border-slate-300"
                               }`}
@@ -6855,13 +6843,13 @@ export default function SwimmingClassPage() {
                             <button
                               type="button"
                               onClick={() => {
-                                setTossPayMethod("TRANSFER");
+                                setCheckoutPayMethod("BANK_MANUAL");
                                 console.log(
-                                  "[결제UX] Toss 결제수단 선택: TRANSFER (계좌이체)",
+                                  "[결제UX] 결제수단 선택: BANK_MANUAL (수동 계좌입금)",
                                 );
                               }}
                               className={`rounded-xl border px-3 py-3 text-left text-sm transition-all ${
-                                tossPayMethod === "TRANSFER"
+                                checkoutPayMethod === "BANK_MANUAL"
                                   ? "border-primary bg-primary/5 ring-2 ring-primary/15"
                                   : "border-slate-200 bg-white hover:border-slate-300"
                               }`}
@@ -6870,7 +6858,10 @@ export default function SwimmingClassPage() {
                                 계좌이체
                               </div>
                               <div className="mt-1 text-xs text-slate-500">
-                                토스 퀵계좌이체
+                                계좌 확인 후 직접 입금
+                              </div>
+                              <div className="mt-1 text-[11px] leading-4 text-slate-400">
+                                카드 결제 없이 계좌로 바로 입금할 수 있어요.
                               </div>
                             </button>
                           </div>
@@ -6899,26 +6890,13 @@ export default function SwimmingClassPage() {
                         isSubmitting ||
                         isClassPgTestLoading
                       }
-                      onClick={async (event) => {
+                      onClick={async () => {
                         // 중복 클릭 방지: 이미 처리 중이면 리턴
                         if (isSubmitting || isClassPgTestLoading) {
                           console.log(
                             "[결제] 이미 처리 중입니다. 중복 클릭 방지",
                           );
                           return;
-                        }
-
-                        // 직접 클릭한 큰 버튼만 intent 설정
-                        // (계좌 이체 보조 버튼의 click()은 isTrusted=false → bank 유지)
-                        if (event.isTrusted) {
-                          const isWaitlistCta = Boolean(
-                            selectedTimeSlot &&
-                              (isClassFull(selectedTimeSlot.name) ||
-                                hasEnrollment(selectedTimeSlot.name)),
-                          );
-                          paymentMethodIntentRef.current = isWaitlistCta
-                            ? "bank"
-                            : "toss";
                         }
 
                         if (!validateApplicationForPayment()) {
@@ -6943,28 +6921,35 @@ export default function SwimmingClassPage() {
                             (isClassFull(selectedTimeSlot.name) ||
                               hasEnrollment(selectedTimeSlot.name)),
                         );
-                        const useTossPrimary =
-                          paymentMethodIntentRef.current === "toss" &&
-                          !isWaitlistCta;
+                        // 예약대기 / 수동 계좌이체 → 기존 계좌입금 플로우
+                        // 카드·간편결제 → Toss CARD
+                        const useManualBank =
+                          isWaitlistCta ||
+                          checkoutPayMethod === "BANK_MANUAL";
+                        paymentMethodIntentRef.current = useManualBank
+                          ? "bank"
+                          : "toss";
 
-                        if (useTossPrimary) {
-                          console.log("[결제UX] 결제하기(토스) 버튼 클릭", {
+                        if (!useManualBank) {
+                          console.log("[결제UX] 결제하기(토스 CARD) 버튼 클릭", {
                             className: selectedTimeSlot?.name,
                             price: selectedTimeSlot?.price,
                             label: paymentCtaLabel,
+                            checkoutPayMethod,
                           });
                           incrementFunnelCount(3, "결제하기 버튼 클릭");
                           markFunnelStep(3);
-                          void handleClassPgTestPayment(tossPayMethod);
+                          void handleClassPgTestPayment();
                           return;
                         }
 
-                        console.log("[결제UX] 계좌 이체/예약대기 버튼 클릭", {
+                        console.log("[결제UX] 계좌이체 신청/예약대기 버튼 클릭", {
                           className: selectedTimeSlot?.name,
                           price: selectedTimeSlot?.price,
                           label: paymentCtaLabel,
                           intent: paymentMethodIntentRef.current,
                           isWaitlistCta,
+                          checkoutPayMethod,
                         });
                         incrementFunnelCount(3, "결제하기 버튼 클릭");
                         markFunnelStep(3);
@@ -7576,52 +7561,6 @@ export default function SwimmingClassPage() {
                           : paymentCtaLabel}
                     </Button>
                     </div>
-
-                    {!isReservationOnly &&
-                      selectedTimeSlot &&
-                      !(
-                        isClassFull(selectedTimeSlot.name) ||
-                        hasEnrollment(selectedTimeSlot.name)
-                      ) && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="mt-2 w-full border border-slate-200 bg-white py-2 text-xs font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-700"
-                        disabled={
-                          !canSubmitApplication ||
-                          isSubmitting ||
-                          isClassPgTestLoading
-                        }
-                        onClick={() => {
-                          console.log(
-                            "[결제UX] 계좌 이체 하기(보조) 버튼 클릭",
-                            {
-                              className: selectedTimeSlot.name,
-                              price: selectedTimeSlot.price,
-                              canSubmit: canSubmitApplication,
-                            },
-                          );
-                          if (!validateApplicationForPayment()) {
-                            return;
-                          }
-                          paymentMethodIntentRef.current = "bank";
-                          const primary = document.getElementById(
-                            "enrollment-payment-primary",
-                          );
-                          if (primary instanceof HTMLButtonElement) {
-                            primary.click();
-                          } else {
-                            console.error(
-                              "[결제UX] 계좌 이체용 기본 버튼을 찾지 못했습니다",
-                            );
-                          }
-                        }}
-                        aria-label={bankTransferLabel}
-                      >
-                        {isSubmitting ? "처리 중..." : bankTransferLabel}
-                      </Button>
-                    )}
                   </div>
                 </div>
               </>

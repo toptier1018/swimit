@@ -50,10 +50,14 @@ export const START_TURN_SPECIAL: SpecialClassInfo = {
   specialType: "start-turn-2h",
   duration: "2시간",
   timeLabel: "15:50~17:50",
-  price: 80000,
+  /** 런칭 특가: 정상가 80,000원에서 5,000원 할인 */
+  price: 75000,
+  originalPrice: 80000,
+  promotionType: "launch",
+  noExtraDiscount: true,
   capacity: START_TURN_CAPACITY,
   badgeEn: "START & TURN SPECIAL",
-  summary: "일반 영법 교정 특강과 구분되는 SPECIAL CLASS입니다.",
+  summary: "일반 영법 교정 특강과 구분되는 SPECIAL CLASS입니다. 런칭 특가 적용 · 다른 할인 중복 불가",
   detail:
     "출발과 턴에서 끊기는 구간을 2시간 동안 집중적으로 연결합니다.",
   classes: [

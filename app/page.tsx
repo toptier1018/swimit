@@ -307,6 +307,9 @@ const StartTurnSpecialBlock = ({
         <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[11px] font-bold text-blue-800">
           2시간 집중
         </span>
+        <span className="rounded-full bg-red-500 px-2 py-0.5 text-[11px] font-bold text-white">
+          런칭 특가
+        </span>
         <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[11px] font-bold text-blue-800">
           정원 {offer.capacity ?? 14}명
         </span>
@@ -333,6 +336,21 @@ const StartTurnSpecialBlock = ({
       </p>
       <p className="mt-2 text-xs font-bold tracking-wide text-blue-700">
         {offer.timeLabel.replace("~", " - ")} · 2H SPECIAL
+      </p>
+      <p className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+        {offer.originalPrice ? (
+          <span className="text-xs text-gray-400 line-through">
+            {offer.originalPrice.toLocaleString()}원
+          </span>
+        ) : null}
+        <span className="text-xl font-extrabold tracking-tight text-blue-800">
+          {offer.price.toLocaleString()}원
+        </span>
+        {offer.originalPrice && offer.originalPrice > offer.price ? (
+          <span className="text-xs font-bold text-red-600">
+            {(offer.originalPrice - offer.price).toLocaleString()}원 할인
+          </span>
+        ) : null}
       </p>
       <div className="mt-2 flex flex-wrap gap-1.5">
         {["데크 스타트", "사이드턴 / 플립턴", "출발과 턴 연결 집중"].map(
@@ -6579,9 +6597,20 @@ export default function SwimmingClassPage() {
                                         compact
                                       />
                                       <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                                        <span className="text-sm font-extrabold text-blue-800">
-                                          {addon.price.toLocaleString()}원
-                                        </span>
+                                        <div className="flex flex-wrap items-baseline gap-x-2">
+                                          {addon.originalPrice ? (
+                                            <span className="text-xs text-gray-400 line-through">
+                                              {addon.originalPrice.toLocaleString()}
+                                              원
+                                            </span>
+                                          ) : null}
+                                          <span className="text-sm font-extrabold text-blue-800">
+                                            {addon.price.toLocaleString()}원
+                                          </span>
+                                          <span className="text-xs font-bold text-red-600">
+                                            런칭 특가
+                                          </span>
+                                        </div>
                                         <span
                                           className={getAvailabilityBadgeClassName(
                                             availabilityBadge.tone,

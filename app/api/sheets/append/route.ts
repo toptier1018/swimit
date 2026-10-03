@@ -14,20 +14,6 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const benefitBody = body?.benefit;
-    const benefit =
-      benefitBody &&
-      Number(benefitBody.discountAmount) > 0 &&
-      Number(benefitBody.originalAmount) > 0
-        ? {
-            originalAmount: Number(benefitBody.originalAmount),
-            discountAmount: Number(benefitBody.discountAmount),
-            expectedAmount: Number(benefitBody.expectedAmount),
-            benefitName: String(benefitBody.benefitName || ""),
-            reservedAt: String(benefitBody.reservedAt || new Date().toISOString()),
-          }
-        : null;
-
     console.log("[Google Sheets API] 예약 행 추가 요청:", {
       신청번호: body?.신청번호,
       예약상태: body?.예약상태,
@@ -38,8 +24,6 @@ export async function POST(request: NextRequest) {
       입금기한: body?.입금기한,
       유입경로: body?.유입경로,
       contentConsentVersion: body?.contentConsent?.version || null,
-      할인적용: Boolean(benefit),
-      할인액: benefit?.discountAmount ?? 0,
     });
 
     if (!body?.이름 || !body?.전화번호 || !body?.예약상태) {
@@ -146,7 +130,6 @@ export async function POST(request: NextRequest) {
       utm_medium: body.utm_medium ?? "",
       utm_campaign: body.utm_campaign ?? "",
       contentConsent,
-      benefit,
     });
 
     if (!result.success) {

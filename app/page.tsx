@@ -889,19 +889,6 @@ const TIMETABLE_MOKDONG_SEPTEMBER: TimetableRow[] = [
   },
 ];
 
-/** 목동 10/18 — 특강만 (진단 없음). 스타트·턴은 addonSpecialClass로 별도 신청 */
-const TIMETABLE_MOKDONG_OCTOBER_18: TimetableRow[] = [
-  {
-    session: "1부 특강",
-    time: "14:00 ~ 16:00",
-    lanes: [
-      { lane: UNASSIGNED_LANE, title: "자유형", price: 80000 },
-      { lane: UNASSIGNED_LANE, title: "접영", price: 80000 },
-      { lane: UNASSIGNED_LANE, title: "평영", price: 80000 },
-    ],
-  },
-];
-
 /** 청라스카이스위밍 9/27 특강 — 특강+진단 동시, 레인 미표시 */
 const TIMETABLE_CHEONGNA_SEPTEMBER: TimetableRow[] = [
   {
@@ -936,7 +923,7 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   18: TIMETABLE_MOKDONG_SEPTEMBER, // 9/20 목동
   19: TIMETABLE_CHEONGNA_SEPTEMBER, // 9/27 청라
   20: TIMETABLE_BUSAN_OCTOBER, // 10/4 부산 (평영·접영만)
-  22: TIMETABLE_MOKDONG_OCTOBER_18, // 10/18 목동 (특강만 · 진단 없음)
+  22: TIMETABLE_MOKDONG_SEPTEMBER, // 10/18 목동 (특강+진단 · 스타트·턴은 addon)
   23: TIMETABLE_DONGTAN_AUGUST, // 10/25 동탄 스윔스튜디오제이
   24: TIMETABLE_MOKDONG_SEPTEMBER, // 11/8 부산 (특강+진단, 레인 미표시)
   25: TIMETABLE_GANGNAM_NOVEMBER, // 11/15 강남 (특강만)

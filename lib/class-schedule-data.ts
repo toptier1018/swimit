@@ -382,12 +382,13 @@ export const CLASS_SCHEDULES: ClassScheduleItem[] = [
     month: 10,
     venue: "목동스포츠센터",
     address: "서울특별시 양천구 목동서로 130 목동스포츠센터",
-    spots: "자유형 14명 · 평영·접영 각 7명 · 스타트·턴 14명",
+    spots: "자유형 14명 · 평영·접영 각 7명 · 진단 14명 · 스타트·턴 14명",
     scheduleSummaryLines: [
       "1부 특강 · 14:00~16:00 (2시간)",
+      "1부 진단 프로그램 · 14:00~16:00",
       "스타트·턴 연결 특강 · 15:50~17:50 (2시간)",
     ],
-    badge: "특강 + SPECIAL",
+    badge: "특강 + 진단 + SPECIAL",
     addonSpecialClass: START_TURN_SPECIAL,
   },
   {

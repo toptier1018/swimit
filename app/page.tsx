@@ -288,19 +288,28 @@ const INTENSIVE_STROKE_ICON: Record<string, string> = {
 /** 일정 카드용 스타트·턴 안내 — 다른 클래스 카드와 비슷한 크기 */
 const StartTurnSpecialBlock = ({
   offer = START_TURN_SPECIAL,
+  badge,
 }: {
   offer?: SpecialClassInfo;
+  badge?: { label: string; tone: AvailabilityTone };
 }) => {
   const option = offer.classes[0];
   return (
     <div className="rounded-lg border border-blue-100 px-3 py-2.5">
-      <div className="flex flex-wrap items-center gap-1.5">
-        <span className="text-[11px] font-bold text-blue-700">
-          {offer.badgeEn || "START & TURN SPECIAL"}
-        </span>
-        <span className="text-[11px] font-semibold text-gray-500">
-          · 런칭 특가
-        </span>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-[11px] font-bold text-blue-700">
+            {offer.badgeEn || "START & TURN SPECIAL"}
+          </span>
+          <span className="text-[11px] font-semibold text-gray-500">
+            · 런칭 특가
+          </span>
+        </div>
+        {badge ? (
+          <span className={getAvailabilityBadgeClassName(badge.tone)}>
+            {badge.label}
+          </span>
+        ) : null}
       </div>
       <p className="mt-1 text-sm font-bold text-gray-950">
         {(option?.icon ? `${option.icon} ` : "") +
@@ -1223,19 +1232,18 @@ const SCARCITY_LABELS = ["잔여 소수", "곧 마감", "마감임박"] as const
 const pickStableScarcityLabel = (className: string, remaining: number) => {
   const stroke = STROKE_ORDER.find((item) => className.includes(item));
   const strokeOffset = stroke ? STROKE_ORDER.indexOf(stroke) : 0;
+  // 스타트·턴 등 영법이 없는 키도 날짜·클래스별로 문구가 갈리도록 전체 키를 시드로 사용
   const classGroup = className
     .replace(/(자유형|평영|접영).*$/, "")
     .trim();
-  const seed = `${classGroup}|${remaining}`;
+  const seed = `${className}|${classGroup}|${remaining}|${strokeOffset}`;
   // 비슷한 클래스명이 같은 문구에 몰리지 않도록 FNV-1a 방식으로 분산
   let hash = 2166136261;
   for (let i = 0; i < seed.length; i += 1) {
     hash ^= seed.charCodeAt(i);
     hash = Math.imul(hash, 16777619) >>> 0;
   }
-  return SCARCITY_LABELS[
-    (hash + strokeOffset) % SCARCITY_LABELS.length
-  ];
+  return SCARCITY_LABELS[hash % SCARCITY_LABELS.length];
 };
 
 const getAvailabilityBadgeClassName = (tone: AvailabilityTone) => {
@@ -4873,6 +4881,9 @@ export default function SwimmingClassPage() {
                               <div className="mb-4 space-y-2">
                                 <StartTurnSpecialBlock
                                   offer={classItem.addonSpecialClass}
+                                  badge={getAvailabilityBadge(
+                                    getStartTurnEnrollmentKey(classItem),
+                                  )}
                                 />
                               </div>
                             ) : null}

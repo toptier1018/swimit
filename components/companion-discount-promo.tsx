@@ -19,7 +19,7 @@ type CompanionDiscountPromoProps = {
 };
 
 /**
- * 친구·가족 동반 신청 할인 프로모션 (UI 안내 · 각 5,000원)
+ * 상시 혜택 안내 섹션 (UI 안내만)
  * — 실제 결제금액/Toss 자동 할인과 연결되지 않음. 고객센터 확인 후 수동 처리.
  */
 export function CompanionDiscountPromo({
@@ -38,7 +38,6 @@ export function CompanionDiscountPromo({
             상시 혜택
           </div>
           <h3 className="break-keep text-xl font-bold leading-snug text-gray-950 sm:text-2xl">
-            <span aria-hidden>🎁 </span>
             스윔잇 특강
             <br />
             <span className="text-blue-800">5,000원 할인</span>
@@ -47,7 +46,8 @@ export function CompanionDiscountPromo({
           <p className="break-keep text-sm leading-6 text-gray-700">
             2시간 특강도, 3시간 집중 특강도
             <br />
-            결제 금액에서 <span className="font-bold text-blue-800">5,000원 할인</span>
+            결제 금액에서{" "}
+            <span className="font-bold text-blue-800">5,000원 할인</span>
           </p>
           <div className="flex flex-wrap gap-2 pt-0.5">
             <span className="rounded-full border border-blue-100 bg-blue-50/80 px-2.5 py-1 text-xs font-medium text-blue-800">
@@ -60,28 +60,32 @@ export function CompanionDiscountPromo({
         </div>
 
         <div
-          className={`overflow-hidden rounded-xl ${
+          className={`overflow-hidden rounded-xl border border-blue-100 ${
             showWaitlist ? "md:grid md:grid-cols-2" : ""
           }`}
         >
           <div className="space-y-3 bg-blue-50/50 p-4">
             <p className="text-xs font-bold tracking-wide text-blue-700">
-              <span aria-hidden>👥 </span>
-              수친·가족과 함께
+              ① 수친·가족과 함께
             </p>
             <p className="break-keep text-sm font-semibold leading-6 text-gray-950 sm:text-[15px]">
               같은 일정의 특강을 같이 신청하면
               <br />
-              두 분 모두 각각 5,000원 할인
+              두 분 모두 각각{" "}
+              <span className="text-blue-800">5,000원 할인</span>
             </p>
             <div className="flex flex-wrap gap-2">
               <span className="rounded-lg bg-white px-2.5 py-1.5 text-sm text-gray-600 shadow-sm">
                 본인{" "}
-                <span className="text-lg font-extrabold text-blue-800">-5,000원</span>
+                <span className="text-lg font-extrabold text-blue-800">
+                  -5,000원
+                </span>
               </span>
               <span className="rounded-lg bg-white px-2.5 py-1.5 text-sm text-gray-600 shadow-sm">
                 동반인{" "}
-                <span className="text-lg font-extrabold text-blue-800">-5,000원</span>
+                <span className="text-lg font-extrabold text-blue-800">
+                  -5,000원
+                </span>
               </span>
             </div>
             <Button asChild className="h-11 w-full font-bold">
@@ -90,7 +94,7 @@ export function CompanionDiscountPromo({
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => {
-                  console.log("[동반할인] CTA 클릭 → 카카오 상담");
+                  console.log("[상시혜택] 동반 할인 CTA → 카카오 상담");
                 }}
               >
                 동반 할인 신청하기
@@ -99,20 +103,22 @@ export function CompanionDiscountPromo({
             <p className="break-keep text-xs leading-5 text-gray-500">
               결제 전 고객센터에서
               <br />
-              두 분의 성함과 신청 일정을 확인해주세요.
+              <span className="font-semibold text-gray-700">
+                두 분의 성함과 신청 일정
+              </span>
+              을 확인해주세요.
             </p>
           </div>
 
           {showWaitlist ? (
             <div className="space-y-3 border-t border-blue-100 bg-white p-4 md:border-l md:border-t-0">
               <p className="text-xs font-bold tracking-wide text-blue-700">
-                <span aria-hidden>📅 </span>
-                다음 달 특강을 미리 기다린다면
+                ② 다음 달 특강을 미리 기다린다면
               </p>
               <p className="break-keep text-sm font-semibold leading-6 text-gray-950 sm:text-[15px]">
                 전월 15일까지 예약대기 등록
-                <br />
-                → 16일 결제 안내 알림톡 + 5,000원 혜택
+                <br />→ 16일 결제 안내 알림톡 +{" "}
+                <span className="text-blue-800">5,000원 혜택</span>
               </p>
               <div className="flex flex-wrap items-center gap-1.5 text-xs">
                 <span className="rounded-full bg-blue-50 px-2.5 py-1 font-semibold text-blue-800">
@@ -136,17 +142,18 @@ export function CompanionDiscountPromo({
                 variant="outline"
                 className="h-11 w-full border-blue-200 font-bold text-blue-800"
                 onClick={() => {
-                  console.log("[예약대기할인] 일정으로 이동");
+                  console.log("[상시혜택] 예약대기 일정 보기 → 11월 일정");
                   onViewWaitlist?.();
                 }}
               >
                 예약대기 일정 보기 ↓
               </Button>
               <p className="break-keep text-xs leading-5 text-gray-600">
-                <span aria-hidden>✨ </span>
                 지금은 결제하지 않아요.
                 <br />
-                안내 후 결제하면 예약이 확정됩니다.
+                <span className="font-semibold text-gray-800">
+                  안내 후 결제하면 예약이 확정됩니다.
+                </span>
               </p>
             </div>
           ) : null}
@@ -157,7 +164,11 @@ export function CompanionDiscountPromo({
           <p>※ 두 할인 및 다른 쿠폰 중복 적용 불가</p>
         </div>
 
-        <Accordion type="single" collapsible className="w-full border-t border-blue-100 pt-1">
+        <Accordion
+          type="single"
+          collapsible
+          className="w-full border-t border-blue-100 pt-1"
+        >
           <AccordionItem value="companion-discount-details" className="border-0">
             <AccordionTrigger className="py-3 text-sm font-bold text-blue-800 hover:no-underline sm:text-[15px]">
               신청 방법 및 유의사항 보기
@@ -169,15 +180,25 @@ export function CompanionDiscountPromo({
                   <ol className="list-decimal space-y-1.5 pl-5 text-gray-800">
                     <li>함께 참여할 같은 특강 일정을 선택</li>
                     <li>결제 전 고객센터에 두 분의 성함과 신청 일정 전달</li>
-                    <li>할인 안내 후 결제 (자동 할인 아님 · 고객센터 확인 후 수동 처리)</li>
+                    <li>
+                      할인 안내 후 결제
+                      <br />
+                      <span className="font-semibold text-gray-900">
+                        (자동 할인 아님 · 고객센터 확인 후 수동 처리)
+                      </span>
+                    </li>
                   </ol>
                   <ul className="mt-2 space-y-1 pl-1 text-gray-700">
                     <li>
-                      <span className="font-semibold text-gray-900">계좌이체:</span>{" "}
+                      <span className="font-semibold text-gray-900">
+                        계좌이체:
+                      </span>{" "}
                       확인 후 정상가에서 각각 5,000원을 뺀 금액으로 안내
                     </li>
                     <li>
-                      <span className="font-semibold text-gray-900">카드 결제:</span>{" "}
+                      <span className="font-semibold text-gray-900">
+                        카드 결제:
+                      </span>{" "}
                       정상가 결제 후 각각 5,000원 부분취소
                     </li>
                   </ul>
@@ -189,10 +210,12 @@ export function CompanionDiscountPromo({
                     <li>· 저항 진단 프로그램은 할인 대상이 아닙니다.</li>
                     <li>· 1인 1회 적용</li>
                     <li>· 다른 할인·쿠폰과 중복 적용되지 않습니다.</li>
-                    <li>· 한 분이 취소 또는 이월하면 동반 할인 혜택도 취소</li>
                     <li>
-                      · 공지 전 이미 결제한 고객도 같은 일정 동반 참여가 확인되면
-                      적용 가능
+                      · 한 분이 취소 또는 이월하면 동반 할인 혜택도 취소됩니다.
+                    </li>
+                    <li>
+                      · 공지 전 이미 결제한 고객도 같은 일정 동반 참여가
+                      확인되면 적용 가능합니다.
                     </li>
                   </ul>
                 </div>
@@ -215,7 +238,7 @@ export function CompanionDiscountHint({
     <button
       type="button"
       onClick={() => {
-        console.log("[동반할인] 한 줄 안내 클릭");
+        console.log("[상시혜택] 한 줄 안내 클릭");
         if (onNavigate) {
           onNavigate();
           return;

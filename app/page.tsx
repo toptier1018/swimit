@@ -4289,13 +4289,7 @@ export default function SwimmingClassPage() {
                 </div>
               </section>
 
-              <CompanionDiscountPromo
-                className="order-3 mt-6"
-                showWaitlist={!isFishtankEntry}
-                onViewWaitlist={scrollToNovemberSchedules}
-              />
-
-              {/* 어항샷 · 저항 진단 — 동반 할인·11월 예약대기 다음 */}
+              {/* 어항샷 · 저항 진단 */}
               {!isFishtankEntry ? (
               <section
                 id="diagnosis-intro-section"
@@ -4366,6 +4360,13 @@ export default function SwimmingClassPage() {
                 </div>
               </section>
               ) : null}
+
+              {/* 상시 혜택 — 저항 진단 OPEN 바로 아래 (안내 UI만, 자동 할인 없음) */}
+              <CompanionDiscountPromo
+                className="order-3 mt-6"
+                showWaitlist={!isFishtankEntry}
+                onViewWaitlist={scrollToNovemberSchedules}
+              />
 
               {!isFishtankEntry ? (
                 <DongtanIntensivePromo

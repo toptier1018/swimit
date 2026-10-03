@@ -89,6 +89,7 @@ import {
   isStartTurnEnrollmentKey,
   matchesSpecialClassOption,
   resolveClassScheduleFromEnrollmentKey,
+  START_TURN_DISPLAY_NAME,
   START_TURN_SESSION,
   START_TURN_SHEET_LABEL,
   START_TURN_SPECIAL,
@@ -313,7 +314,7 @@ const StartTurnSpecialBlock = ({
       </div>
       <p className="mt-1 text-sm font-bold text-gray-950">
         {(option?.icon ? `${option.icon} ` : "") +
-          (option?.name || "스윔잇 스타트·턴 연결 특강")}
+          (option?.name || START_TURN_DISPLAY_NAME)}
       </p>
       <p className="mt-0.5 text-xs leading-5 text-gray-600">
         {option?.flow || "데크 스타트 → 사이드턴 / 플립턴"}
@@ -597,10 +598,12 @@ const getAlimtalkClassLabel = (slot: {
   if (slot.productType === "diagnosis") {
     return "[동탄 8/23] 2부 저항 진단 프로그램";
   }
+  // 알림톡은 고객용 표시명 유지 (시트 저장값 `스타트`와 분리)
   if (isStartTurnEnrollmentKey(slot.name) || slot.productName?.includes("스타트·턴")) {
-    return slot.name.includes("]")
-      ? `${slot.name.match(/^\[[^\]]+\]/)?.[0] || ""} 스타트·턴 연결 특강`.trim()
-      : START_TURN_SHEET_LABEL;
+    const bracket = slot.name.match(/^\[[^\]]+\]/)?.[0];
+    return bracket
+      ? `${bracket} ${START_TURN_DISPLAY_NAME}`
+      : slot.productName || START_TURN_DISPLAY_NAME;
   }
   if (slot.productType === "zero") {
     const stroke = slot.strokes?.[0];
@@ -1122,6 +1125,10 @@ const ENROLLMENT_MERGE_TO: Record<string, string> = {
   "[부산 8/30] 1부 특강 접영": "[부산 9/6] 1부 특강 접영",
   // 동탄 10/25 진단을 2부에서 1부 시간으로 옮긴 뒤, 이미 받은 신청은 1부로 합산
   "[동탄 10/25] 2부 진단": "[동탄 10/25] 1부 진단",
+  // 스타트·턴 저장값 단축 (스타트·턴 연결 → 스타트)
+  "[목동 10/18] 2부 특강 스타트·턴 연결": "[목동 10/18] 2부 특강 스타트",
+  "[부산 11/8] 2부 특강 스타트·턴 연결": "[부산 11/8] 2부 특강 스타트",
+  "[목동 11/22] 2부 특강 스타트·턴 연결": "[목동 11/22] 2부 특강 스타트",
 };
 
 const migrateToStrokeClassKey = (key: string): string => {
@@ -1132,6 +1139,12 @@ const migrateToStrokeClassKey = (key: string): string => {
   migrated = migrated.replace(
     /^(\[[^\]]+\])\s+1부\s*저항제로\s+(자유형|평영|접영)$/,
     "$1 1부 특강 $2",
+  );
+
+  // 스타트·턴: 구 키 → `특강 스타트`
+  migrated = migrated.replace(
+    /^(\[[^\]]+\])\s+(\d+부)\s*특강\s*스타트·턴\s*연결$/,
+    "$1 $2 특강 스타트",
   );
 
   // 진단: 표기가 어떻든 「[지역 날짜] N부 진단」 하나로 통일
@@ -1146,7 +1159,7 @@ const migrateToStrokeClassKey = (key: string): string => {
     return getDongtanDiagnosisEnrollmentKey();
   }
 
-  if (/^\[[^\]]+\]\s+\d+부\s*특강\s+(자유형|평영|접영)$/.test(migrated)) {
+  if (/^\[[^\]]+\]\s+\d+부\s*특강\s+(자유형|평영|접영|스타트)$/.test(migrated)) {
     return migrated;
   }
 
@@ -6542,6 +6555,7 @@ export default function SwimmingClassPage() {
                                           name: classKey,
                                           session: START_TURN_SESSION,
                                           lane: UNASSIGNED_LANE,
+                                          // 시트/정원키 저장값: 스타트 (화면 표시는 productName)
                                           title: START_TURN_SHEET_LABEL,
                                           time: addon.timeLabel.replace(
                                             "~",
@@ -6550,7 +6564,9 @@ export default function SwimmingClassPage() {
                                           price: addon.price,
                                           isWaitlist: isFull,
                                           available: !isFull,
-                                          productName: option?.name,
+                                          productName:
+                                            option?.name ||
+                                            START_TURN_DISPLAY_NAME,
                                         });
                                         setStep(3);
                                         scrollToApplicantInfo();
@@ -6565,7 +6581,7 @@ export default function SwimmingClassPage() {
                                         <div className="text-base font-bold text-gray-900">
                                           {(option?.icon || "🚀") + " "}
                                           {option?.name ||
-                                            "스윔잇 스타트·턴 연결 특강"}
+                                            START_TURN_DISPLAY_NAME}
                                         </div>
                                         <div className="mt-2 text-sm leading-5 text-gray-600">
                                           {option?.flow ||

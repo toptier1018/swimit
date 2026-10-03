@@ -39,9 +39,13 @@ export type SpecialClassInfo = {
   capacity?: number;
 };
 
-/** enrollment key 끝부분 / 시트 구분용 */
-export const START_TURN_CLASS_KEY = "스타트·턴 연결";
-export const START_TURN_SHEET_LABEL = "스타트·턴 연결 특강";
+/**
+ * 저장·정원키용 클래스 값 (자유형/평영/접영/진단과 동일한 짧은 식별값)
+ * 화면 표시명은 classes[].name 을 사용한다.
+ */
+export const START_TURN_CLASS_KEY = "스타트";
+export const START_TURN_SHEET_LABEL = "스타트";
+export const START_TURN_DISPLAY_NAME = "스윔잇 스타트·턴 연결 특강";
 export const START_TURN_SESSION = "2부 특강";
 export const START_TURN_CAPACITY = 14;
 
@@ -63,7 +67,7 @@ export const START_TURN_SPECIAL: SpecialClassInfo = {
   classes: [
     {
       key: START_TURN_CLASS_KEY,
-      name: "스윔잇 스타트·턴 연결 특강",
+      name: START_TURN_DISPLAY_NAME,
       icon: "🚀",
       flow: "데크 스타트 → 사이드턴 / 플립턴",
       short: "출발 → 수영 → 턴 → 다시 수영",
@@ -517,6 +521,8 @@ export const DEFAULT_CAPACITY_BY_CLASS: Record<string, number> = {
   "[목동 10/18] 1부 특강 평영": 7,
   "[목동 10/18] 1부 특강 접영": 7,
   "[목동 10/18] 1부 진단": 14,
+  "[목동 10/18] 2부 특강 스타트": START_TURN_CAPACITY,
+  // 구 키 호환
   "[목동 10/18] 2부 특강 스타트·턴 연결": START_TURN_CAPACITY,
   // 동탄 10/25 스윔스튜디오제이
   "[동탄 10/25] 1부 특강 자유형": 14,
@@ -530,6 +536,7 @@ export const DEFAULT_CAPACITY_BY_CLASS: Record<string, number> = {
   "[부산 11/8] 1부 특강 평영": 7,
   "[부산 11/8] 1부 특강 접영": 7,
   "[부산 11/8] 1부 진단": 14,
+  "[부산 11/8] 2부 특강 스타트": START_TURN_CAPACITY,
   "[부산 11/8] 2부 특강 스타트·턴 연결": START_TURN_CAPACITY,
   // 강남 11/15 와이키키 링크&스윔 (진단 없음)
   "[강남 11/15] 1부 특강 자유형": 7,
@@ -540,6 +547,7 @@ export const DEFAULT_CAPACITY_BY_CLASS: Record<string, number> = {
   "[목동 11/22] 1부 특강 평영": 7,
   "[목동 11/22] 1부 특강 접영": 7,
   "[목동 11/22] 1부 진단": 14,
+  "[목동 11/22] 2부 특강 스타트": START_TURN_CAPACITY,
   "[목동 11/22] 2부 특강 스타트·턴 연결": START_TURN_CAPACITY,
   // 동탄 11/29
   "[동탄 11/29] 1부 특강 자유형": 14,
@@ -566,7 +574,7 @@ export function getClassScheduleLabel(event: {
   return `${event.locationCode} ${event.month}/${event.dateNum}`;
 }
 
-/** `[목동 10/18] 2부 특강 스타트·턴 연결` */
+/** `[목동 10/18] 2부 특강 스타트` */
 export function getStartTurnEnrollmentKey(event: {
   locationCode: string;
   month: number;
@@ -576,11 +584,15 @@ export function getStartTurnEnrollmentKey(event: {
 }
 
 export function isStartTurnEnrollmentKey(className: string): boolean {
-  return (
-    String(className || "").includes(`특강 ${START_TURN_CLASS_KEY}`) ||
-    String(className || "").includes(START_TURN_SHEET_LABEL) ||
-    String(className || "").includes("스타트·턴 연결")
-  );
+  const name = String(className || "").trim();
+  if (!name) return false;
+  // 신규 저장값/정원키: ... 특강 스타트, 시트 클래스명 "스타트"
+  if (/(?:^|\s)특강\s*스타트$/.test(name) || name === "스타트") return true;
+  // 화면 표시명 · 레거시 저장값
+  if (name.includes("스타트·턴") || name.includes(START_TURN_DISPLAY_NAME)) {
+    return true;
+  }
+  return false;
 }
 
 export function toClassScheduleIsoDate(event: {

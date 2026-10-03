@@ -116,6 +116,14 @@ function sessionFromTimeSlot(timeSlot: string): string {
 
 function classSheetLabelFromSelected(selectedClass: string): string {
   if (/진단/.test(selectedClass)) return "진단";
+  // 스타트·턴 연결 특강 → 시트 저장값 `스타트` (화면 표시명과 분리)
+  if (
+    /특강\s*스타트$/.test(selectedClass.trim()) ||
+    selectedClass.includes("스타트·턴") ||
+    selectedClass === "스타트"
+  ) {
+    return "스타트";
+  }
   if (/턴 2시간|특강 턴/.test(selectedClass)) return "턴 2시간 집중반";
   if (/배영 2시간|특강 배영/.test(selectedClass)) return "배영 2시간 집중반";
   const stroke = selectedClass.match(/(자유형|평영|접영|턴|배영)/)?.[1];

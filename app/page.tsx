@@ -353,31 +353,31 @@ const DongtanIntensivePromo = ({ onViewSchedule }: { onViewSchedule: () => void 
   });
   return (
     <section className="order-3 mt-6 w-full scroll-mt-4 rounded-2xl border border-blue-200 bg-white p-4 shadow-sm sm:p-6">
-      <div className="mx-auto max-w-4xl space-y-4">
-        <div className="space-y-2">
-          <p className="text-xs font-bold tracking-wide text-blue-700 sm:text-sm">
+      <div className="mx-auto max-w-4xl space-y-5">
+        <header className="space-y-3">
+          <p className="break-keep text-[11px] font-bold tracking-wide text-blue-700 sm:text-sm">
             11월 29일 동탄 · 3시간 집중 특강
           </p>
-          <h3 className="break-keep text-xl font-bold leading-snug text-gray-950 sm:text-2xl">
+          <h3 className="break-keep text-[1.35rem] font-bold leading-[1.35] tracking-tight text-gray-950 sm:text-2xl sm:leading-snug">
             영법만 좋아져서는
             <br />
             수영이 완성되지 않습니다.
           </h3>
-          <p className="break-keep text-sm font-semibold leading-6 text-blue-900 sm:text-[15px]">
+          <p className="break-keep text-[13px] font-semibold leading-6 text-blue-900 sm:text-[15px] sm:leading-7">
             출발부터 턴, 다시 속도를 붙이는 것까지
             <br />
             한 가지 영법을 3시간 동안 연결합니다.
           </p>
-        </div>
+        </header>
 
-        <div className="grid gap-2 md:grid-cols-3 md:gap-3">
+        <div className="grid gap-2.5 md:grid-cols-3 md:gap-3">
           {offer.classes.map((item) => (
-            <div key={item.key} className="rounded-xl bg-blue-50/60 px-3 py-2.5">
-              <p className="text-sm font-bold text-gray-950">
+            <div key={item.key} className="rounded-xl bg-blue-50/60 px-3.5 py-3">
+              <p className="break-keep text-[13px] font-bold text-gray-950 sm:text-sm">
                 <span aria-hidden>{(item.icon || INTENSIVE_STROKE_ICON[item.key] || "") + " "}</span>
                 {item.name}
               </p>
-              <p className="mt-1.5 flex flex-wrap items-center gap-x-1 gap-y-0.5 text-[11px] font-semibold leading-4 text-blue-900 sm:text-xs">
+              <p className="mt-2 flex flex-wrap items-center gap-x-1 gap-y-1 text-[12px] font-semibold leading-5 text-blue-900 sm:text-xs">
                 {item.flow.split(" → ").map((step, index) => (
                   <span key={`${item.key}-${step}`} className="inline-flex items-center gap-1">
                     {index > 0 ? (
@@ -385,7 +385,7 @@ const DongtanIntensivePromo = ({ onViewSchedule }: { onViewSchedule: () => void 
                         →
                       </span>
                     ) : null}
-                    {step}
+                    <span className="break-keep">{step}</span>
                   </span>
                 ))}
               </p>
@@ -393,29 +393,33 @@ const DongtanIntensivePromo = ({ onViewSchedule }: { onViewSchedule: () => void 
           ))}
         </div>
 
-        <div className="rounded-xl border border-blue-100 bg-blue-50/40 px-3.5 py-4 sm:px-4">
-          <p className="text-sm font-bold text-gray-800">3시간 집중 특강</p>
-          <p className="mt-1 text-sm text-gray-500 line-through decoration-gray-400">
+        <div className="rounded-xl border border-blue-100 bg-blue-50/40 px-4 py-4 sm:px-5 sm:py-5">
+          <p className="text-[13px] font-bold text-gray-800 sm:text-sm">3시간 집중 특강</p>
+          <p className="mt-1 text-[13px] text-gray-500 line-through decoration-gray-400 sm:text-sm">
             {offer.price.toLocaleString()}원
           </p>
-          <p className="mt-3 text-xs font-bold tracking-wide text-blue-700 sm:text-sm">
+          <p className="mt-4 text-[12px] font-bold tracking-wide text-blue-700 sm:text-sm">
             혜택 적용 시
           </p>
-          <p className="mt-0.5 text-4xl font-extrabold tracking-tight text-blue-800 sm:text-5xl">
+          <p className="mt-0.5 text-[2.5rem] font-extrabold leading-none tracking-tight text-blue-800 sm:text-5xl">
             {benefitPrice.toLocaleString()}
-            <span className="ml-0.5 text-2xl font-extrabold sm:text-3xl">원</span>
+            <span className="ml-0.5 text-[1.5rem] font-extrabold sm:text-3xl">원</span>
           </p>
-          <p className="mt-1.5 inline-flex rounded-md bg-white px-2 py-1 text-xs font-bold text-blue-800 shadow-sm sm:text-sm">
+          <p className="mt-2 inline-flex rounded-md bg-white px-2.5 py-1 text-[12px] font-bold text-blue-800 shadow-sm sm:text-sm">
             5,000원 할인
           </p>
-          <p className="mt-3 break-keep text-xs leading-5 text-gray-600 sm:text-[13px]">
+          <p className="mt-3.5 break-keep text-[11px] leading-5 text-gray-600 sm:text-[13px] sm:leading-5">
             예약대기 또는 동반 할인 적용 시
             <br />
             ※ 할인 중복 적용 불가
           </p>
         </div>
 
-        <Button type="button" className="h-11 w-full font-bold" onClick={onViewSchedule}>
+        <Button
+          type="button"
+          className="h-12 w-full text-[15px] font-bold sm:h-11 sm:text-base"
+          onClick={onViewSchedule}
+        >
           11월 29일 동탄 3시간 집중반 보기 ↓
         </Button>
       </div>

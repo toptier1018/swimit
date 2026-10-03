@@ -346,25 +346,27 @@ const StartTurnSpecialBlock = ({
 const DongtanIntensivePromo = ({ onViewSchedule }: { onViewSchedule: () => void }) => {
   const offer = CLASS_SCHEDULES.find((item) => item.id === 27)?.specialClass;
   if (!offer) return null;
+  const benefitPrice = offer.price - NOVEMBER_BENEFIT_AMOUNT;
+  console.log("[3시간집중] 동탄 홍보 섹션 표시", {
+    price: offer.price,
+    benefitPrice,
+  });
   return (
     <section className="order-3 mt-6 w-full scroll-mt-4 rounded-2xl border border-blue-200 bg-white p-4 shadow-sm sm:p-6">
       <div className="mx-auto max-w-4xl space-y-4">
-        <div className="space-y-1.5">
-          <p className="text-xs font-bold tracking-wide text-blue-700">
-            11.29 DONGTAN · SPECIAL CLASS
+        <div className="space-y-2">
+          <p className="text-xs font-bold tracking-wide text-blue-700 sm:text-sm">
+            11월 29일 동탄 · 3시간 집중 특강
           </p>
-          <h3 className="break-keep text-xl font-bold leading-snug text-gray-950">
+          <h3 className="break-keep text-xl font-bold leading-snug text-gray-950 sm:text-2xl">
             영법만 좋아져서는
             <br />
             수영이 완성되지 않습니다.
           </h3>
-          <p className="break-keep text-sm font-semibold leading-6 text-blue-900">
+          <p className="break-keep text-sm font-semibold leading-6 text-blue-900 sm:text-[15px]">
             출발부터 턴, 다시 속도를 붙이는 것까지
             <br />
             한 가지 영법을 3시간 동안 연결합니다.
-          </p>
-          <p className="break-keep text-sm leading-5 text-gray-600">
-            11월 29일 동탄에서만, 각 기술을 따로 배우지 않고 하나의 흐름으로 익힙니다.
           </p>
         </div>
 
@@ -391,17 +393,25 @@ const DongtanIntensivePromo = ({ onViewSchedule }: { onViewSchedule: () => void 
           ))}
         </div>
 
-        <div className="rounded-xl border border-blue-100 px-3.5 py-3">
+        <div className="rounded-xl border border-blue-100 bg-blue-50/40 px-3.5 py-4 sm:px-4">
           <p className="text-sm font-bold text-gray-800">3시간 집중 특강</p>
-          <p className="text-3xl font-extrabold tracking-tight text-blue-800">
+          <p className="mt-1 text-sm text-gray-500 line-through decoration-gray-400">
             {offer.price.toLocaleString()}원
           </p>
-          <p className="mt-1 text-xs text-gray-500">11월 29일 동탄 한정 클래스</p>
-          <p className="mt-1.5 text-xs font-bold leading-5 text-blue-900">
-            혜택 적용 시 {(offer.price - NOVEMBER_BENEFIT_AMOUNT).toLocaleString()}원
+          <p className="mt-3 text-xs font-bold tracking-wide text-blue-700 sm:text-sm">
+            혜택 적용 시
           </p>
-          <p className="text-[11px] leading-4 text-gray-500">
-            예약대기 또는 동반 할인 · 중복 불가
+          <p className="mt-0.5 text-4xl font-extrabold tracking-tight text-blue-800 sm:text-5xl">
+            {benefitPrice.toLocaleString()}
+            <span className="ml-0.5 text-2xl font-extrabold sm:text-3xl">원</span>
+          </p>
+          <p className="mt-1.5 inline-flex rounded-md bg-white px-2 py-1 text-xs font-bold text-blue-800 shadow-sm sm:text-sm">
+            5,000원 할인
+          </p>
+          <p className="mt-3 break-keep text-xs leading-5 text-gray-600 sm:text-[13px]">
+            예약대기 또는 동반 할인 적용 시
+            <br />
+            ※ 할인 중복 적용 불가
           </p>
         </div>
 

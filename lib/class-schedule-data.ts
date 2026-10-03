@@ -37,6 +37,8 @@ export type SpecialClassInfo = {
   badgeEn?: string;
   /** 정원(전체 클래스 기준). UI 안내용 */
   capacity?: number;
+  /** 할인/특가 짧은 안내 (예: 첫 런칭 회차 한정 10,000원 할인) */
+  promoLabel?: string;
 };
 
 /**
@@ -49,18 +51,18 @@ export const START_TURN_DISPLAY_NAME = "스윔잇 스타트·턴 연결 특강";
 export const START_TURN_SESSION = "2부 특강";
 export const START_TURN_CAPACITY = 14;
 
-/** 10/18·11/8·11/22 기존 일정에 덧붙이는 스타트·턴 연결 특강 */
+/** 11/8·11/22 등 — 런칭 특가 75,000원 (5,000원 할인) */
 export const START_TURN_SPECIAL: SpecialClassInfo = {
   specialType: "start-turn-2h",
   duration: "2시간",
   timeLabel: "15:50~17:50",
-  /** 런칭 특가: 정상가 80,000원에서 5,000원 할인 */
   price: 75000,
   originalPrice: 80000,
   promotionType: "launch",
   noExtraDiscount: true,
   capacity: START_TURN_CAPACITY,
   badgeEn: "START & TURN SPECIAL",
+  promoLabel: "런칭 특가",
   summary: "일반 영법 교정 특강과 구분되는 SPECIAL CLASS입니다. 런칭 특가 적용 · 다른 할인 중복 불가",
   detail:
     "출발과 턴에서 끊기는 구간을 2시간 동안 집중적으로 연결합니다.",
@@ -73,6 +75,18 @@ export const START_TURN_SPECIAL: SpecialClassInfo = {
       short: "출발 → 수영 → 턴 → 다시 수영",
     },
   ],
+};
+
+/**
+ * 2026-10-18 목동(id:22) 첫 런칭 회차 전용 — 70,000원 (10,000원 할인)
+ * 다른 회차와 가격을 섞지 않도록 일정 ID에만 연결한다.
+ */
+export const START_TURN_SPECIAL_MOKDONG_OCT18: SpecialClassInfo = {
+  ...START_TURN_SPECIAL,
+  price: 70000,
+  promoLabel: "첫 런칭 회차 한정 10,000원 할인",
+  summary:
+    "첫 런칭 회차 한정 10,000원 할인 · 다른 할인·쿠폰 중복 불가",
 };
 
 export const DONGTAN_NOV29_INTENSIVE: SpecialClassInfo = {
@@ -389,7 +403,7 @@ export const CLASS_SCHEDULES: ClassScheduleItem[] = [
       "스타트·턴 연결 특강 · 15:50~17:50 (2시간)",
     ],
     badge: "특강 + 진단 + SPECIAL",
-    addonSpecialClass: START_TURN_SPECIAL,
+    addonSpecialClass: START_TURN_SPECIAL_MOKDONG_OCT18,
   },
   {
     id: 23,

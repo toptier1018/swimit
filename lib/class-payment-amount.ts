@@ -38,8 +38,11 @@ export function resolveClassPaymentAmount(className: string): number | null {
     console.log("[금액검증] 일정별 스페셜 클래스 금액:", {
       className: name,
       classId: resolved?.schedule.id,
+      locationCode: resolved?.schedule.locationCode,
+      date: `${resolved?.schedule.month}/${resolved?.schedule.dateNum}`,
       specialType: special.specialType,
       amount: special.price,
+      originalPrice: special.originalPrice ?? null,
       startTurn: isStartTurnEnrollmentKey(name),
     });
     return special.price;

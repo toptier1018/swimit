@@ -303,7 +303,7 @@ const StartTurnSpecialBlock = ({
             {offer.badgeEn || "START & TURN SPECIAL"}
           </span>
           <span className="text-[11px] font-semibold text-gray-500">
-            · 런칭 특가
+            · {offer.promoLabel || "런칭 특가"}
           </span>
         </div>
         {badge ? (
@@ -332,6 +332,12 @@ const StartTurnSpecialBlock = ({
           {offer.timeLabel} · 2시간
         </span>
       </p>
+      {offer.originalPrice && offer.originalPrice > offer.price ? (
+        <p className="mt-0.5 text-[11px] font-semibold text-red-600">
+          {offer.promoLabel ||
+            `${(offer.originalPrice - offer.price).toLocaleString()}원 할인`}
+        </p>
+      ) : null}
     </div>
   );
 };
@@ -6585,10 +6591,17 @@ export default function SwimmingClassPage() {
                                             {addon.price.toLocaleString()}원
                                           </span>
                                         </p>
+                                        {addon.promoLabel ? (
+                                          <p className="mt-1 text-[11px] font-semibold text-red-600">
+                                            {addon.promoLabel}
+                                          </p>
+                                        ) : null}
                                       </div>
                                       <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
                                         <span className="text-xs font-bold text-blue-700">
-                                          런칭 특가 · 2시간
+                                          {addon.promoLabel
+                                            ? "2시간 SPECIAL"
+                                            : "런칭 특가 · 2시간"}
                                         </span>
                                         <span
                                           className={getAvailabilityBadgeClassName(

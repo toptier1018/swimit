@@ -116,8 +116,7 @@ export function CompanionDiscountPromo({
                 ② 다음 달 특강을 미리 기다린다면
               </p>
               <p className="break-keep text-sm font-semibold leading-6 text-gray-950 sm:text-[15px]">
-                전월 15일까지 예약대기 등록
-                <br />→ 16일 결제 안내 알림톡 +{" "}
+                전월 15일까지 사전 예약대기 등록 하시면{" "}
                 <span className="text-blue-800">5,000원 혜택</span>
               </p>
               <div className="flex flex-wrap items-center gap-1.5 text-xs">
@@ -152,7 +151,7 @@ export function CompanionDiscountPromo({
                 지금은 결제하지 않아요.
                 <br />
                 <span className="font-semibold text-gray-800">
-                  안내 후 결제하면 예약이 확정됩니다.
+                  할인 안내 톡 보내드리면 예약이 확정됩니다.
                 </span>
               </p>
             </div>

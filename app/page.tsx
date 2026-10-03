@@ -295,13 +295,13 @@ const DongtanIntensivePromo = ({ onViewSchedule }: { onViewSchedule: () => void 
             <br />
             수영이 완성되지 않습니다.
           </h3>
-          <p className="break-keep text-sm font-semibold leading-5 text-blue-900">
-            출발, 턴, 다시 속도를 붙이는 것까지
+          <p className="break-keep text-sm font-semibold leading-6 text-blue-900">
+            출발부터 턴, 다시 속도를 붙이는 것까지
             <br />
-            한 영법을 3시간 동안 연결합니다.
+            한 가지 영법을 3시간 동안 연결합니다.
           </p>
           <p className="break-keep text-sm leading-5 text-gray-600">
-            11월 29일 동탄에서만, 영법 하나를 연결하여 완성합니다.
+            11월 29일 동탄에서만, 각 기술을 따로 배우지 않고 하나의 흐름으로 익힙니다.
           </p>
         </div>
 
@@ -312,9 +312,9 @@ const DongtanIntensivePromo = ({ onViewSchedule }: { onViewSchedule: () => void 
                 <span aria-hidden>{(item.icon || INTENSIVE_STROKE_ICON[item.key] || "") + " "}</span>
                 {item.name}
               </p>
-              <p className="mt-1.5 flex flex-wrap items-center gap-x-1 gap-y-0.5 text-[11px] leading-4 text-gray-700 sm:text-xs">
+              <p className="mt-1.5 flex flex-wrap items-center gap-x-1 gap-y-0.5 text-[11px] font-semibold leading-4 text-blue-900 sm:text-xs">
                 {item.flow.split(" → ").map((step, index) => (
-                  <span key={step} className="inline-flex items-center gap-1">
+                  <span key={`${item.key}-${step}`} className="inline-flex items-center gap-1">
                     {index > 0 ? (
                       <span className="text-blue-300" aria-hidden>
                         →
@@ -4688,20 +4688,36 @@ export default function SwimmingClassPage() {
                                     동반 할인도 5,000원 · 두 할인은 중복 불가
                                   </p>
                                 </div>
+                                <p className="break-keep text-sm font-semibold leading-6 text-blue-900">
+                                  {classItem.specialClass.detail}
+                                </p>
                                 <div className="space-y-2">
                                   {classItem.specialClass.classes.map((option) => (
-                                    <div key={option.key} className="rounded-lg border border-blue-100 px-3 py-2">
+                                    <div key={option.key} className="rounded-lg border border-blue-100 px-3 py-2.5">
                                       <p className="text-sm font-bold text-gray-950">
                                         {(option.icon || INTENSIVE_STROKE_ICON[option.key] || "") + " "}
                                         {option.name}
                                       </p>
-                                      <p className="mt-0.5 text-xs leading-5 text-gray-600">{option.short}</p>
+                                      <p className="mt-1.5 flex flex-wrap items-center gap-x-1 gap-y-0.5 text-xs font-semibold leading-4 text-blue-900">
+                                        {option.flow.split(" → ").map((step, index) => (
+                                          <span
+                                            key={`${option.key}-${step}`}
+                                            className="inline-flex items-center gap-1"
+                                          >
+                                            {index > 0 ? (
+                                              <span className="text-blue-300" aria-hidden>
+                                                →
+                                              </span>
+                                            ) : null}
+                                            {step}
+                                          </span>
+                                        ))}
+                                      </p>
                                     </div>
                                   ))}
                                 </div>
                                 <div className="space-y-1 text-sm leading-6 text-gray-700">
                                   <p>{classItem.specialClass.summary}</p>
-                                  <p>{classItem.specialClass.detail}</p>
                                 </div>
                               </div>
                             ) : (
@@ -6210,7 +6226,30 @@ export default function SwimmingClassPage() {
                                             : `${catalog.icon} ${catalog.label}`}
                                         </div>
                                         <div className="mt-2 text-sm leading-5 text-gray-600">
-                                          {intensiveOption?.short ?? catalog.description}
+                                          {intensiveOption ? (
+                                            <p className="flex flex-wrap items-center gap-x-1 gap-y-0.5 text-xs font-semibold leading-4 text-blue-900 sm:text-sm sm:leading-5">
+                                              {intensiveOption.flow
+                                                .split(" → ")
+                                                .map((step, index) => (
+                                                  <span
+                                                    key={`${stroke}-${step}`}
+                                                    className="inline-flex items-center gap-1"
+                                                  >
+                                                    {index > 0 ? (
+                                                      <span
+                                                        className="text-blue-300"
+                                                        aria-hidden
+                                                      >
+                                                        →
+                                                      </span>
+                                                    ) : null}
+                                                    {step}
+                                                  </span>
+                                                ))}
+                                            </p>
+                                          ) : (
+                                            catalog.description
+                                          )}
                                         </div>
                                         {intensiveOption ? (
                                           <p className="mt-2 flex flex-wrap items-baseline gap-x-2">

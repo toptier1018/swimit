@@ -110,6 +110,7 @@ export function resolveConfirmationClassName(input: {
   const actual = String(input.actualClassName || "").trim();
   if (actual) {
     if (/(?:저항\s*)?진단/.test(actual)) return "진단";
+    if (actual === "스타트" || actual.includes("스타트")) return "스타트";
     return actual.match(/(자유형|평영|접영|배영)/)?.[1] || actual;
   }
 
@@ -117,12 +118,16 @@ export function resolveConfirmationClassName(input: {
   if (/(?:저항\s*)?진단/.test(selectedClass) || input.program === "진단") {
     return "진단";
   }
+  if (selectedClass === "스타트" || selectedClass.includes("스타트")) {
+    return "스타트";
+  }
   const fromKey = selectedClass.match(/(자유형|평영|접영|배영)/)?.[1];
   if (fromKey) return fromKey;
 
   const applied = String(input.className || "").trim();
   if (!applied) return "";
   if (/(?:저항\s*)?진단/.test(applied)) return "진단";
+  if (applied === "스타트" || applied.includes("스타트")) return "스타트";
   return applied.match(/(자유형|평영|접영|배영)/)?.[1] || applied;
 }
 

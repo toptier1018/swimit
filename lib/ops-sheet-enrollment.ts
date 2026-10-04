@@ -72,6 +72,7 @@ function isInvalidGardenKey(value: string): boolean {
 /**
  * 운영 시트 정원키 예:
  * 2026-08-23-1부-접영-경기 동탄 · 스윔스튜디오제이
+ * 2026-10-18-1부-스타트-서울 목동 · 목동스포츠센터
  */
 function parseGardenKey(gardenKey: string): {
   month: number;
@@ -83,7 +84,7 @@ function parseGardenKey(gardenKey: string): {
   const m = String(gardenKey || "")
     .trim()
     .match(
-      /^(\d{4})-(\d{1,2})-(\d{1,2})-(\d+부)-(진단|(?:자유형|평영|접영)(?:\s*[AB]\s*\([^)]+\))?)-(.+)$/,
+      /^(\d{4})-(\d{1,2})-(\d{1,2})-(\d+부)-(진단|스타트|(?:자유형|평영|접영)(?:\s*[AB]\s*\([^)]+\))?)-(.+)$/,
     );
   if (!m) return null;
   return {
@@ -144,6 +145,10 @@ function classPartToEnrollmentSuffix(classPart: string): {
   if (!c) return null;
   if (c === "진단" || c.includes("진단")) {
     return { kind: "diagnosis" };
+  }
+  // 스타트·턴 연결 특강 — 시트 클래스명 `스타트` (자유형 등과 별도 정원)
+  if (c === "스타트" || c.includes("스타트")) {
+    return { kind: "stroke", stroke: "스타트" };
   }
   for (const stroke of ["자유형", "평영", "접영"] as const) {
     if (c.includes(stroke)) return { kind: "stroke", stroke };
@@ -213,6 +218,20 @@ export function opsRowToEnrollmentKey(input: {
       gardenKey: input.gardenKey,
     });
     return null;
+  }
+
+  // 스타트는 회차·시간과 무관하게 항상 1부로 집계 (과거 2부 저장분 포함)
+  if (suffix.kind === "stroke" && suffix.stroke === "스타트") {
+    if (sessionNum !== "1부") {
+      console.log("[운영시트카운트] 스타트 회차 1부로 정규화:", {
+        from: sessionNum,
+        classPart,
+        gardenKey: input.gardenKey,
+        date: `${month}/${day}`,
+        region: regionCode,
+      });
+    }
+    sessionNum = "1부";
   }
 
   const dateLabel = `${month}/${day}`;

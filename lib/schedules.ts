@@ -121,7 +121,7 @@ function parseEnrollmentKey(enrollmentKey: string): {
   }
 
   const special = enrollmentKey.match(
-    /^\[([^\]]+)\]\s+(\d+부)\s*특강\s+(자유형|평영|접영)$/,
+    /^\[([^\]]+)\]\s+(\d+부)\s*특강\s+(자유형|평영|접영|스타트)$/,
   );
   if (special) {
     return {

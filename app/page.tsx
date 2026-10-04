@@ -89,6 +89,7 @@ import {
   isStartTurnEnrollmentKey,
   matchesSpecialClassOption,
   resolveClassScheduleFromEnrollmentKey,
+  START_TURN_CAPACITY,
   START_TURN_DISPLAY_NAME,
   START_TURN_SESSION,
   START_TURN_SHEET_LABEL,
@@ -1134,10 +1135,16 @@ const ENROLLMENT_MERGE_TO: Record<string, string> = {
   "[부산 8/30] 1부 특강 접영": "[부산 9/6] 1부 특강 접영",
   // 동탄 10/25 진단을 2부에서 1부 시간으로 옮긴 뒤, 이미 받은 신청은 1부로 합산
   "[동탄 10/25] 2부 진단": "[동탄 10/25] 1부 진단",
-  // 스타트·턴 저장값 단축 (스타트·턴 연결 → 스타트)
-  "[목동 10/18] 2부 특강 스타트·턴 연결": "[목동 10/18] 2부 특강 스타트",
-  "[부산 11/8] 2부 특강 스타트·턴 연결": "[부산 11/8] 2부 특강 스타트",
-  "[목동 11/22] 2부 특강 스타트·턴 연결": "[목동 11/22] 2부 특강 스타트",
+  // 스타트·턴: 과거 2부/표시명 키 → 현재 1부 특강 스타트
+  "[목동 10/18] 2부 특강 스타트": "[목동 10/18] 1부 특강 스타트",
+  "[목동 10/18] 2부 특강 스타트·턴 연결": "[목동 10/18] 1부 특강 스타트",
+  "[목동 10/18] 1부 특강 스타트·턴 연결": "[목동 10/18] 1부 특강 스타트",
+  "[부산 11/8] 2부 특강 스타트": "[부산 11/8] 1부 특강 스타트",
+  "[부산 11/8] 2부 특강 스타트·턴 연결": "[부산 11/8] 1부 특강 스타트",
+  "[부산 11/8] 1부 특강 스타트·턴 연결": "[부산 11/8] 1부 특강 스타트",
+  "[목동 11/22] 2부 특강 스타트": "[목동 11/22] 1부 특강 스타트",
+  "[목동 11/22] 2부 특강 스타트·턴 연결": "[목동 11/22] 1부 특강 스타트",
+  "[목동 11/22] 1부 특강 스타트·턴 연결": "[목동 11/22] 1부 특강 스타트",
 };
 
 const migrateToStrokeClassKey = (key: string): string => {
@@ -1150,10 +1157,14 @@ const migrateToStrokeClassKey = (key: string): string => {
     "$1 1부 특강 $2",
   );
 
-  // 스타트·턴: 구 키 → `특강 스타트`
+  // 스타트·턴: 구 키 → `1부 특강 스타트` (회차는 항상 1부)
   migrated = migrated.replace(
-    /^(\[[^\]]+\])\s+(\d+부)\s*특강\s*스타트·턴\s*연결$/,
-    "$1 $2 특강 스타트",
+    /^(\[[^\]]+\])\s+\d+부\s*특강\s*스타트·턴\s*연결$/,
+    "$1 1부 특강 스타트",
+  );
+  migrated = migrated.replace(
+    /^(\[[^\]]+\])\s+2부\s*특강\s+스타트$/,
+    "$1 1부 특강 스타트",
   );
 
   // 진단: 표기가 어떻든 「[지역 날짜] N부 진단」 하나로 통일
@@ -1701,12 +1712,12 @@ export default function SwimmingClassPage() {
       "[특강일정] 취소로 신청 목록에서 제외: 서울 중구 스포빌키즈쿠아 10/11",
     );
     console.log("[특강일정] 11월 일정 추가", {
-      "부산 11/8": "특강+진단 14:00~16:00 + 스타트·턴 15:50~17:50",
+      "부산 11/8": "특강+진단 14:00~16:00 + 스타트·턴 14:00~16:00(1부)",
       "강남 11/15": "특강만 16:00~18:00",
-      "목동 11/22": "특강+진단 14:00~16:00 + 스타트·턴 15:50~17:50",
+      "목동 11/22": "특강+진단 14:00~16:00 + 스타트·턴 14:00~16:00(1부)",
       "동탄 11/29": "영법별 장거리 집중 14:00~17:00 · 115,000원",
     });
-    console.log("[특강일정] 스타트·턴 연결 특강 추가", {
+    console.log("[특강일정] 스타트·턴 연결 특강(1부·별도 정원)", {
       dates: CLASS_SCHEDULES.filter(
         (item) => item.addonSpecialClass?.specialType === "start-turn-2h",
       ).map((item) => ({
@@ -1714,8 +1725,10 @@ export default function SwimmingClassPage() {
         location: item.location,
         date: `${item.month}/${item.dateNum}`,
         key: getStartTurnEnrollmentKey(item),
-        capacity: item.addonSpecialClass?.capacity,
+        session: START_TURN_SESSION,
+        capacity: item.addonSpecialClass?.capacity ?? START_TURN_CAPACITY,
         time: item.addonSpecialClass?.timeLabel,
+        sheetClass: START_TURN_SHEET_LABEL,
       })),
     });
     console.log("[특강일정] 활성 특강 목록", {

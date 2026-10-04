@@ -93,20 +93,21 @@ export function parseSelectedClassFull(full: string): {
     /^\[[^\]]+\]\s+(\d+부\s*특강)\s+(자유형|평영|접영|스타트)$/,
   );
   if (strokeMatch) {
+    // 스타트는 회차 1부 고정 (수업시간은 별도)
+    if (strokeMatch[2] === "스타트") {
+      return { 회차: "1부", 레인: "미배정", 클래스: "스타트" };
+    }
     const 회차 =
       strokeMatch[1].replace(/\s+/g, " ").match(/\d+부/)?.[0] ?? strokeMatch[1];
     return { 회차, 레인: "미배정", 클래스: strokeMatch[2] };
   }
 
-  // 레거시: ... 특강 스타트·턴 연결 → 시트 클래스 `스타트`
+  // 레거시: ... 특강 스타트·턴 연결 → 시트 클래스 `스타트` · 회차 1부
   const startTurnLegacy = full.match(
     /^\[[^\]]+\]\s+(\d+부\s*특강)\s+스타트·턴\s*연결$/,
   );
   if (startTurnLegacy) {
-    const 회차 =
-      startTurnLegacy[1].replace(/\s+/g, " ").match(/\d+부/)?.[0] ??
-      startTurnLegacy[1];
-    return { 회차, 레인: "미배정", 클래스: "스타트" };
+    return { 회차: "1부", 레인: "미배정", 클래스: "스타트" };
   }
 
   const m = full.match(/^\[[^\]]+\]\s+(\d+부\s*특강)\s+(\d+레인)\s+(.+)$/);

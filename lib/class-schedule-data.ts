@@ -48,14 +48,15 @@ export type SpecialClassInfo = {
 export const START_TURN_CLASS_KEY = "스타트";
 export const START_TURN_SHEET_LABEL = "스타트";
 export const START_TURN_DISPLAY_NAME = "스윔잇 스타트·턴 연결 특강";
-export const START_TURN_SESSION = "2부 특강";
+/** 회차 저장값 — 수업시간(14:00~16:00)과 별개. 반드시 1부 */
+export const START_TURN_SESSION = "1부 특강";
 export const START_TURN_CAPACITY = 14;
 
 /** 11/8·11/22 등 — 런칭 특가 75,000원 (5,000원 할인) */
 export const START_TURN_SPECIAL: SpecialClassInfo = {
   specialType: "start-turn-2h",
   duration: "2시간",
-  timeLabel: "15:50~17:50",
+  timeLabel: "14:00~16:00",
   price: 75000,
   originalPrice: 80000,
   promotionType: "launch",
@@ -158,7 +159,7 @@ export type ClassScheduleItem = {
   specialClass?: SpecialClassInfo;
   /**
    * 기존 1부 특강/진단을 유지한 채 추가로 붙는 SPECIAL CLASS
-   * (예: 스타트·턴 연결 특강 15:50~17:50)
+   * (예: 스타트·턴 연결 특강 14:00~16:00, 회차 1부)
    */
   addonSpecialClass?: SpecialClassInfo;
 };
@@ -402,7 +403,7 @@ export const CLASS_SCHEDULES: ClassScheduleItem[] = [
     scheduleSummaryLines: [
       "1부 특강 · 14:00~16:00 (2시간)",
       "1부 진단 프로그램 · 14:00~16:00",
-      "스타트·턴 연결 특강 · 15:50~17:50 (2시간)",
+      "1부 스타트·턴 연결 특강 · 14:00~16:00 (2시간)",
     ],
     badge: "특강 + 진단 + SPECIAL",
     addonSpecialClass: START_TURN_SPECIAL_MOKDONG_OCT18,
@@ -439,7 +440,7 @@ export const CLASS_SCHEDULES: ClassScheduleItem[] = [
     scheduleSummaryLines: [
       "1부 특강 · 14:00~16:00 (2시간)",
       "1부 진단 프로그램 · 14:00~16:00",
-      "스타트·턴 연결 특강 · 15:50~17:50 (2시간)",
+      "1부 스타트·턴 연결 특강 · 14:00~16:00 (2시간)",
     ],
     badge: "특강 + 진단 + SPECIAL",
     addonSpecialClass: START_TURN_SPECIAL,
@@ -472,7 +473,7 @@ export const CLASS_SCHEDULES: ClassScheduleItem[] = [
     scheduleSummaryLines: [
       "1부 특강 · 14:00~16:00 (2시간)",
       "1부 진단 프로그램 · 14:00~16:00",
-      "스타트·턴 연결 특강 · 15:50~17:50 (2시간)",
+      "1부 스타트·턴 연결 특강 · 14:00~16:00 (2시간)",
     ],
     badge: "특강 + 진단 + SPECIAL",
     addonSpecialClass: START_TURN_SPECIAL,
@@ -538,9 +539,11 @@ export const DEFAULT_CAPACITY_BY_CLASS: Record<string, number> = {
   "[목동 10/18] 1부 특강 평영": 7,
   "[목동 10/18] 1부 특강 접영": 7,
   "[목동 10/18] 1부 진단": 14,
+  "[목동 10/18] 1부 특강 스타트": START_TURN_CAPACITY,
+  // 구 키 호환 (과거 2부·표시명 저장분)
   "[목동 10/18] 2부 특강 스타트": START_TURN_CAPACITY,
-  // 구 키 호환
   "[목동 10/18] 2부 특강 스타트·턴 연결": START_TURN_CAPACITY,
+  "[목동 10/18] 1부 특강 스타트·턴 연결": START_TURN_CAPACITY,
   // 동탄 10/25 스윔스튜디오제이
   "[동탄 10/25] 1부 특강 자유형": 14,
   "[동탄 10/25] 1부 특강 평영": 7,
@@ -553,8 +556,10 @@ export const DEFAULT_CAPACITY_BY_CLASS: Record<string, number> = {
   "[부산 11/8] 1부 특강 평영": 7,
   "[부산 11/8] 1부 특강 접영": 7,
   "[부산 11/8] 1부 진단": 14,
+  "[부산 11/8] 1부 특강 스타트": START_TURN_CAPACITY,
   "[부산 11/8] 2부 특강 스타트": START_TURN_CAPACITY,
   "[부산 11/8] 2부 특강 스타트·턴 연결": START_TURN_CAPACITY,
+  "[부산 11/8] 1부 특강 스타트·턴 연결": START_TURN_CAPACITY,
   // 강남 11/15 와이키키 링크&스윔 (진단 없음)
   "[강남 11/15] 1부 특강 자유형": 7,
   "[강남 11/15] 1부 특강 평영": 7,
@@ -564,8 +569,10 @@ export const DEFAULT_CAPACITY_BY_CLASS: Record<string, number> = {
   "[목동 11/22] 1부 특강 평영": 7,
   "[목동 11/22] 1부 특강 접영": 7,
   "[목동 11/22] 1부 진단": 14,
+  "[목동 11/22] 1부 특강 스타트": START_TURN_CAPACITY,
   "[목동 11/22] 2부 특강 스타트": START_TURN_CAPACITY,
   "[목동 11/22] 2부 특강 스타트·턴 연결": START_TURN_CAPACITY,
+  "[목동 11/22] 1부 특강 스타트·턴 연결": START_TURN_CAPACITY,
   // 동탄 11/29
   "[동탄 11/29] 1부 특강 자유형": 14,
   "[동탄 11/29] 1부 특강 평영": 7,
@@ -591,7 +598,7 @@ export function getClassScheduleLabel(event: {
   return `${event.locationCode} ${event.month}/${event.dateNum}`;
 }
 
-/** `[목동 10/18] 2부 특강 스타트` */
+/** `[목동 10/18] 1부 특강 스타트` — 회차는 항상 1부 */
 export function getStartTurnEnrollmentKey(event: {
   locationCode: string;
   month: number;

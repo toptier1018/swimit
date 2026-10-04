@@ -181,7 +181,7 @@ export function resolveReservationAlimtalkFields(
     /^\[([^\]]+)\]\s+(\d+부)\s*(?:저항\s*)?진단(?:\s*프로그램)?$/,
   );
   const specialMatch = selectedClass.match(
-    /^\[([^\]]+)\]\s+(\d+부)\s*특강\s+(자유형|평영|접영|배영)/,
+    /^\[([^\]]+)\]\s+(\d+부)\s*특강\s+(자유형|평영|접영|배영|스타트)/,
   );
 
   let program: AlimtalkProgram = "특강";
@@ -209,7 +209,7 @@ export function resolveReservationAlimtalkFields(
   } else {
     program = "특강";
     className =
-      selectedClass.match(/(자유형|평영|접영|배영)/)?.[1] ||
+      selectedClass.match(/(자유형|평영|접영|배영|스타트)/)?.[1] ||
       selectedClass ||
       "특강";
     session =

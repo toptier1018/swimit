@@ -126,7 +126,7 @@ function normalizeClassName(raw: string): string {
   const s = String(raw || "").trim();
   if (!s) return "";
   if (/(?:저항\s*)?진단/.test(s)) return "진단";
-  const stroke = s.match(/(자유형|평영|접영|배영|턴)/)?.[1];
+  const stroke = s.match(/(자유형|평영|접영|배영|턴|스타트)/)?.[1];
   return stroke || s;
 }
 

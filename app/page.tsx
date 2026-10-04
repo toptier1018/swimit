@@ -356,7 +356,7 @@ const DongtanIntensivePromo = ({ onViewSchedule }: { onViewSchedule: () => void 
       <div className="mx-auto max-w-4xl space-y-5">
         <header className="space-y-3">
           <p className="break-keep text-[11px] font-bold tracking-wide text-blue-700 sm:text-sm">
-            11월 29일 동탄 · 3시간 집중 특강
+            11월 29일 동탄 · 영법별 장거리 집중 특강
           </p>
           <h3 className="break-keep text-[1.35rem] font-bold leading-[1.35] tracking-tight text-gray-950 sm:text-2xl sm:leading-snug">
             영법만 좋아져서는
@@ -366,7 +366,7 @@ const DongtanIntensivePromo = ({ onViewSchedule }: { onViewSchedule: () => void 
           <p className="break-keep text-[13px] font-semibold leading-6 text-blue-900 sm:text-[15px] sm:leading-7">
             출발부터 턴, 다시 속도를 붙이는 것까지
             <br />
-            한 가지 영법을 3시간 동안 연결합니다.
+            한 가지 영법을 장거리로 이어갈 수 있도록 연결합니다.
           </p>
         </header>
 
@@ -394,7 +394,9 @@ const DongtanIntensivePromo = ({ onViewSchedule }: { onViewSchedule: () => void 
         </div>
 
         <div className="rounded-xl border border-blue-100 bg-blue-50/40 px-4 py-4 sm:px-5 sm:py-5">
-          <p className="text-[13px] font-bold text-gray-800 sm:text-sm">3시간 집중 특강</p>
+          <p className="text-[13px] font-bold text-gray-800 sm:text-sm">
+            영법별 장거리 집중 특강
+          </p>
           <p className="mt-1 text-[13px] text-gray-500 line-through decoration-gray-400 sm:text-sm">
             {offer.price.toLocaleString()}원
           </p>
@@ -420,7 +422,7 @@ const DongtanIntensivePromo = ({ onViewSchedule }: { onViewSchedule: () => void 
           className="h-12 w-full text-[15px] font-bold sm:h-11 sm:text-base"
           onClick={onViewSchedule}
         >
-          11월 29일 동탄 3시간 집중반 보기 ↓
+          11월 29일 동탄 장거리 집중반 보기 ↓
         </Button>
       </div>
     </section>
@@ -1702,7 +1704,7 @@ export default function SwimmingClassPage() {
       "부산 11/8": "특강+진단 14:00~16:00 + 스타트·턴 15:50~17:50",
       "강남 11/15": "특강만 16:00~18:00",
       "목동 11/22": "특강+진단 14:00~16:00 + 스타트·턴 15:50~17:50",
-      "동탄 11/29": "3시간 집중 14:00~17:00 · 115,000원",
+      "동탄 11/29": "영법별 장거리 집중 14:00~17:00 · 115,000원",
     });
     console.log("[특강일정] 스타트·턴 연결 특강 추가", {
       dates: CLASS_SCHEDULES.filter(
@@ -4820,7 +4822,9 @@ export default function SwimmingClassPage() {
                                       {classItem.date}
                                     </span>
                                   </div>
-                                  <p className="mt-2 text-sm font-bold text-blue-800">3시간 집중 특강</p>
+                                  <p className="mt-2 text-sm font-bold text-blue-800">
+                                    영법별 장거리 집중 특강
+                                  </p>
                                   <p className="text-sm font-semibold text-blue-900">{classItem.specialClass.timeLabel}</p>
                                   <p className="mt-3 text-xs font-bold text-gray-500">특강료</p>
                                   <p className="text-2xl font-extrabold text-blue-800">
@@ -5003,7 +5007,7 @@ export default function SwimmingClassPage() {
                                       openScheduleRegistration(classItem, false);
                                     }}
                                   >
-                                    3시간 집중반 신청하기
+                                    장거리 집중반 신청하기
                                   </Button>
                                 </div>
                               ) : null}
@@ -5236,8 +5240,12 @@ export default function SwimmingClassPage() {
               {selectedScheduleClass?.specialClass?.specialType === "intensive-3h" &&
               step !== 4 ? (
                 <div className="mb-4 rounded-xl border border-blue-200 bg-white p-4 pr-12 shadow-sm">
-                  <p className="text-xs font-bold tracking-wide text-blue-700">🔥 11/29 동탄 SPECIAL</p>
-                  <p className="mt-1 text-lg font-bold text-gray-950">3시간 집중 특강</p>
+                  <p className="text-xs font-bold tracking-wide text-blue-700">
+                    🔥 11/29 동탄 장거리 집중
+                  </p>
+                  <p className="mt-1 text-lg font-bold text-gray-950">
+                    영법별 장거리 집중 특강
+                  </p>
                   <p className="mt-2 text-sm font-semibold text-gray-800">
                     선택한 클래스:{" "}
                     {selectedScheduleClass.specialClass.classes.find(
@@ -6302,7 +6310,7 @@ export default function SwimmingClassPage() {
                               <span className="font-bold text-gray-900">
                                 {selectedScheduleForPayment?.specialClass
                                   ?.specialType === "intensive-3h"
-                                  ? "3시간 집중 특강"
+                                  ? "영법별 장거리 집중 특강"
                                   : strokeSchedule.session}
                               </span>
                               <span className="mx-2 text-gray-400">·</span>
@@ -6432,7 +6440,7 @@ export default function SwimmingClassPage() {
                                             </span>
                                           ) : (
                                             <span className="text-xs font-bold text-blue-700">
-                                              3시간 집중
+                                              장거리 집중
                                             </span>
                                           )
                                         ) : (

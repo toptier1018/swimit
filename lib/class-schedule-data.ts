@@ -95,27 +95,27 @@ export const DONGTAN_NOV29_INTENSIVE: SpecialClassInfo = {
   timeLabel: "14:00~17:00",
   price: 115000,
   summary:
-    "11월 29일 동탄은 일반 2시간 특강이 아닌 3시간 집중 스페셜 클래스입니다.",
+    "11월 29일 동탄은 일반 2시간 특강이 아닌 영법별 장거리 집중 특강입니다.",
   detail:
-    "출발부터 턴, 다시 속도를 붙이는 것까지 한 가지 영법을 3시간 동안 연결합니다.",
+    "출발부터 턴, 다시 속도를 붙이는 것까지 한 가지 영법을 장거리로 이어갈 수 있도록 연결합니다.",
   classes: [
     {
       key: "자유형",
-      name: "자유형 3시간 집중반",
+      name: "자유형 장거리 집중반",
       icon: "🏊",
       flow: "물속 출발 → 돌핀킥 → 한손/두손 사이드턴",
       short: "물속 출발 → 돌핀킥 → 한손/두손 사이드턴",
     },
     {
       key: "평영",
-      name: "평영 3시간 집중반",
+      name: "평영 장거리 집중반",
       icon: "🐸",
       flow: "물속 출발 → 돌핀킥 → 한손/두손 사이드턴",
       short: "물속 출발 → 돌핀킥 → 한손/두손 사이드턴",
     },
     {
       key: "접영",
-      name: "접영 3시간 집중반",
+      name: "접영 장거리 집중반",
       icon: "🦋",
       flow: "물속 출발 → 돌핀킥 → 사이드턴/플립턴",
       short: "물속 출발 → 돌핀킥 → 사이드턴/플립턴",
@@ -134,6 +134,8 @@ export function matchesSpecialClassOption(
     (option) =>
       name.includes(`특강 ${option.key}`) ||
       name.includes(option.name) ||
+      name.includes(`${option.key} 장거리 집중반`) ||
+      name.includes(`${option.key} 3시간 집중반`) ||
       name === option.key ||
       name === option.name,
   );
@@ -487,7 +489,7 @@ export const CLASS_SCHEDULES: ClassScheduleItem[] = [
     address:
       "경기도 화성시 동탄구 동탄신리천로 414 경서타워 4층 스윔스튜디오제이",
     spots: "자유형 14명 · 평영·접영 각 7명",
-    scheduleSummaryLines: ["3시간 집중 특강 · 14:00~17:00"],
+    scheduleSummaryLines: ["영법별 장거리 집중 특강 · 14:00~17:00"],
     badge: "SPECIAL",
     specialClass: DONGTAN_NOV29_INTENSIVE,
   },

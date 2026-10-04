@@ -45,7 +45,7 @@ export function CompanionDiscountPromo({
             {showWaitlist ? "2가지 방법" : "방법"}
           </h3>
           <p className="break-keep text-[13px] leading-6 text-gray-700 sm:text-sm sm:leading-6">
-            2시간 특강도, 3시간 집중 특강도
+            2시간 특강도, 영법별 장거리 집중 특강도
             <br />
             결제 금액에서{" "}
             <span className="font-bold text-blue-800">5,000원 할인</span>

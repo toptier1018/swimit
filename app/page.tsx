@@ -397,20 +397,20 @@ const DongtanIntensivePromo = ({ onViewSchedule }: { onViewSchedule: () => void 
           <p className="text-[13px] font-bold text-gray-800 sm:text-sm">
             영법별 장거리 집중 특강
           </p>
-          <p className="mt-1 text-[13px] text-gray-500 line-through decoration-gray-400 sm:text-sm">
+          <p className="mt-1 text-xs text-gray-500 line-through decoration-gray-400 sm:text-sm">
             {offer.price.toLocaleString()}원
           </p>
-          <p className="mt-4 text-[12px] font-bold tracking-wide text-blue-700 sm:text-sm">
+          <p className="mt-2.5 text-[11px] font-bold tracking-wide text-blue-700 sm:text-xs">
             혜택 적용 시
           </p>
-          <p className="mt-0.5 text-[2.5rem] font-extrabold leading-none tracking-tight text-blue-800 sm:text-5xl">
+          <p className="mt-0.5 text-2xl font-extrabold leading-tight tracking-tight text-blue-800 sm:text-3xl">
             {benefitPrice.toLocaleString()}
-            <span className="ml-0.5 text-[1.5rem] font-extrabold sm:text-3xl">원</span>
+            <span className="ml-0.5 text-base font-extrabold sm:text-xl">원</span>
           </p>
-          <p className="mt-2 inline-flex rounded-md bg-white px-2.5 py-1 text-[12px] font-bold text-blue-800 shadow-sm sm:text-sm">
+          <p className="mt-1.5 inline-flex rounded-md bg-white px-2 py-0.5 text-[11px] font-bold text-blue-800 shadow-sm sm:text-xs">
             5,000원 할인
           </p>
-          <p className="mt-3.5 break-keep text-[11px] leading-5 text-gray-600 sm:text-[13px] sm:leading-5">
+          <p className="mt-2.5 break-keep text-[11px] leading-5 text-gray-600 sm:text-xs sm:leading-5">
             예약대기 또는 동반 할인 적용 시
             <br />
             ※ 할인 중복 적용 불가
@@ -4828,26 +4828,26 @@ export default function SwimmingClassPage() {
                                   <p className="text-sm font-semibold text-blue-900">{classItem.specialClass.timeLabel}</p>
                                   {hasNovemberBenefit(classItem) && !isFishtankEntry ? (
                                     <div className="mt-3">
-                                      <p className="text-xs font-bold text-gray-500">특강료</p>
-                                      <p className="mt-0.5 text-sm text-gray-500 line-through decoration-gray-400">
+                                      <p className="text-[11px] font-bold text-gray-500">특강료</p>
+                                      <p className="mt-0.5 text-xs text-gray-500 line-through decoration-gray-400">
                                         {classItem.specialClass.price.toLocaleString()}원
                                       </p>
-                                      <p className="mt-2 text-xs font-bold tracking-wide text-blue-700">
+                                      <p className="mt-2 text-[11px] font-bold tracking-wide text-blue-700">
                                         예약대기 혜택 적용 시
                                       </p>
-                                      <p className="mt-0.5 text-3xl font-extrabold tracking-tight text-blue-800 sm:text-4xl">
+                                      <p className="mt-0.5 text-2xl font-extrabold leading-tight tracking-tight text-blue-800 sm:text-[1.75rem]">
                                         {(
                                           classItem.specialClass.price -
                                           NOVEMBER_BENEFIT_AMOUNT
                                         ).toLocaleString()}
-                                        <span className="ml-0.5 text-xl font-extrabold sm:text-2xl">
+                                        <span className="ml-0.5 text-base font-extrabold sm:text-lg">
                                           원
                                         </span>
                                       </p>
-                                      <p className="mt-1.5 inline-flex rounded-md bg-white px-2 py-1 text-xs font-bold text-blue-800 shadow-sm">
+                                      <p className="mt-1.5 inline-flex rounded-md bg-white px-2 py-0.5 text-[11px] font-bold text-blue-800 shadow-sm">
                                         5,000원 할인
                                       </p>
-                                      <p className="mt-2 text-xs leading-5 text-gray-600">
+                                      <p className="mt-2 text-[11px] leading-5 text-gray-600">
                                         예약대기 또는 동반 할인 적용 시
                                         <br />
                                         ※ 할인 중복 적용 불가
@@ -5283,24 +5283,24 @@ export default function SwimmingClassPage() {
                   <p className="text-sm text-gray-700">시간: {selectedScheduleClass.specialClass.timeLabel}</p>
                   {novemberDiscount > 0 ? (
                     <div className="mt-2">
-                      <p className="text-sm text-gray-500">가격</p>
-                      <p className="mt-0.5 text-sm text-gray-500 line-through decoration-gray-400">
+                      <p className="text-xs text-gray-500">가격</p>
+                      <p className="mt-0.5 text-xs text-gray-500 line-through decoration-gray-400">
                         {selectedScheduleClass.specialClass.price.toLocaleString()}원
                       </p>
-                      <p className="mt-2 text-xs font-bold tracking-wide text-blue-700">
+                      <p className="mt-2 text-[11px] font-bold tracking-wide text-blue-700">
                         예약대기 혜택 적용 시
                       </p>
-                      <p className="mt-0.5 text-3xl font-extrabold tracking-tight text-blue-800">
+                      <p className="mt-0.5 text-2xl font-extrabold leading-tight tracking-tight text-blue-800">
                         {(
                           selectedScheduleClass.specialClass.price -
                           novemberDiscount
                         ).toLocaleString()}
-                        <span className="ml-0.5 text-xl font-extrabold">원</span>
+                        <span className="ml-0.5 text-base font-extrabold">원</span>
                       </p>
-                      <p className="mt-1.5 inline-flex rounded-md bg-blue-50 px-2 py-1 text-xs font-bold text-blue-800">
+                      <p className="mt-1.5 inline-flex rounded-md bg-blue-50 px-2 py-0.5 text-[11px] font-bold text-blue-800">
                         5,000원 할인
                       </p>
-                      <p className="mt-2 text-xs leading-5 text-gray-500">
+                      <p className="mt-2 text-[11px] leading-5 text-gray-500">
                         예약대기 또는 동반 할인 적용 시
                         <br />
                         ※ 할인 중복 적용 불가
@@ -6475,13 +6475,13 @@ export default function SwimmingClassPage() {
                                               selectedScheduleForPayment,
                                             ) ? (
                                               <>
-                                                <p className="text-xs text-gray-400 line-through">
+                                                <p className="text-[11px] text-gray-400 line-through">
                                                   {price.toLocaleString()}원
                                                 </p>
-                                                <p className="text-[11px] font-bold text-blue-700">
+                                                <p className="text-[10px] font-bold text-blue-700">
                                                   예약대기 혜택 적용 시
                                                 </p>
-                                                <p className="text-lg font-extrabold text-blue-800">
+                                                <p className="text-base font-extrabold text-blue-800">
                                                   {(
                                                     price - NOVEMBER_BENEFIT_AMOUNT
                                                   ).toLocaleString()}

@@ -4826,18 +4826,44 @@ export default function SwimmingClassPage() {
                                     영법별 장거리 집중 특강
                                   </p>
                                   <p className="text-sm font-semibold text-blue-900">{classItem.specialClass.timeLabel}</p>
-                                  <p className="mt-3 text-xs font-bold text-gray-500">특강료</p>
-                                  <p className="text-2xl font-extrabold text-blue-800">
-                                    {classItem.specialClass.price.toLocaleString()}원
-                                  </p>
                                   {hasNovemberBenefit(classItem) && !isFishtankEntry ? (
-                                    <p className="mt-1 text-sm font-bold text-blue-900">
-                                      예약대기 혜택 적용 시 {(classItem.specialClass.price - NOVEMBER_BENEFIT_AMOUNT).toLocaleString()}원
-                                    </p>
-                                  ) : null}
-                                  <p className="mt-1 text-xs leading-5 text-gray-600">
-                                    동반 할인도 5,000원 · 두 할인은 중복 불가
-                                  </p>
+                                    <div className="mt-3">
+                                      <p className="text-xs font-bold text-gray-500">특강료</p>
+                                      <p className="mt-0.5 text-sm text-gray-500 line-through decoration-gray-400">
+                                        {classItem.specialClass.price.toLocaleString()}원
+                                      </p>
+                                      <p className="mt-2 text-xs font-bold tracking-wide text-blue-700">
+                                        예약대기 혜택 적용 시
+                                      </p>
+                                      <p className="mt-0.5 text-3xl font-extrabold tracking-tight text-blue-800 sm:text-4xl">
+                                        {(
+                                          classItem.specialClass.price -
+                                          NOVEMBER_BENEFIT_AMOUNT
+                                        ).toLocaleString()}
+                                        <span className="ml-0.5 text-xl font-extrabold sm:text-2xl">
+                                          원
+                                        </span>
+                                      </p>
+                                      <p className="mt-1.5 inline-flex rounded-md bg-white px-2 py-1 text-xs font-bold text-blue-800 shadow-sm">
+                                        5,000원 할인
+                                      </p>
+                                      <p className="mt-2 text-xs leading-5 text-gray-600">
+                                        예약대기 또는 동반 할인 적용 시
+                                        <br />
+                                        ※ 할인 중복 적용 불가
+                                      </p>
+                                    </div>
+                                  ) : (
+                                    <div className="mt-3">
+                                      <p className="text-xs font-bold text-gray-500">특강료</p>
+                                      <p className="text-2xl font-extrabold text-blue-800">
+                                        {classItem.specialClass.price.toLocaleString()}원
+                                      </p>
+                                      <p className="mt-1 text-xs leading-5 text-gray-600">
+                                        동반 할인도 5,000원 · 두 할인은 중복 불가
+                                      </p>
+                                    </div>
+                                  )}
                                 </div>
                                 <p className="break-keep text-sm font-semibold leading-6 text-blue-900">
                                   {classItem.specialClass.detail}
@@ -5255,18 +5281,42 @@ export default function SwimmingClassPage() {
                     )?.name ?? "영법을 선택해 주세요"}
                   </p>
                   <p className="text-sm text-gray-700">시간: {selectedScheduleClass.specialClass.timeLabel}</p>
-                  <p className="mt-2 text-sm text-gray-500">가격</p>
-                  <p className="text-2xl font-extrabold text-blue-800">
-                    {selectedScheduleClass.specialClass.price.toLocaleString()}원
-                  </p>
                   {novemberDiscount > 0 ? (
-                    <p className="mt-1 text-sm font-bold text-blue-900">
-                      예약대기 혜택 적용 시 {(selectedScheduleClass.specialClass.price - novemberDiscount).toLocaleString()}원
-                    </p>
-                  ) : null}
-                  <p className="mt-1 text-xs leading-5 text-gray-500">
-                    동반 할인도 5,000원입니다. 예약대기 혜택과 중복되지 않습니다.
-                  </p>
+                    <div className="mt-2">
+                      <p className="text-sm text-gray-500">가격</p>
+                      <p className="mt-0.5 text-sm text-gray-500 line-through decoration-gray-400">
+                        {selectedScheduleClass.specialClass.price.toLocaleString()}원
+                      </p>
+                      <p className="mt-2 text-xs font-bold tracking-wide text-blue-700">
+                        예약대기 혜택 적용 시
+                      </p>
+                      <p className="mt-0.5 text-3xl font-extrabold tracking-tight text-blue-800">
+                        {(
+                          selectedScheduleClass.specialClass.price -
+                          novemberDiscount
+                        ).toLocaleString()}
+                        <span className="ml-0.5 text-xl font-extrabold">원</span>
+                      </p>
+                      <p className="mt-1.5 inline-flex rounded-md bg-blue-50 px-2 py-1 text-xs font-bold text-blue-800">
+                        5,000원 할인
+                      </p>
+                      <p className="mt-2 text-xs leading-5 text-gray-500">
+                        예약대기 또는 동반 할인 적용 시
+                        <br />
+                        ※ 할인 중복 적용 불가
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="mt-2">
+                      <p className="text-sm text-gray-500">가격</p>
+                      <p className="text-2xl font-extrabold text-blue-800">
+                        {selectedScheduleClass.specialClass.price.toLocaleString()}원
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-gray-500">
+                        동반 할인도 5,000원입니다. 예약대기 혜택과 중복되지 않습니다.
+                      </p>
+                    </div>
+                  )}
                 </div>
               ) : null}
               {isNovemberReservation && step !== 4 ? (
@@ -6418,17 +6468,41 @@ export default function SwimmingClassPage() {
                                           )}
                                         </div>
                                         {intensiveOption ? (
-                                          <p className="mt-2 flex flex-wrap items-baseline gap-x-2">
+                                          <div className="mt-2 space-y-0.5">
                                             {selectedScheduleForPayment?.specialClass
-                                              ?.originalPrice ? (
-                                              <span className="text-xs text-gray-400 line-through">
-                                                {selectedScheduleForPayment.specialClass.originalPrice.toLocaleString()}원
-                                              </span>
-                                            ) : null}
-                                            <span className="text-sm font-extrabold text-blue-800">
-                                              {price.toLocaleString()}원
-                                            </span>
-                                          </p>
+                                              ?.specialType === "intensive-3h" &&
+                                            hasNovemberBenefit(
+                                              selectedScheduleForPayment,
+                                            ) ? (
+                                              <>
+                                                <p className="text-xs text-gray-400 line-through">
+                                                  {price.toLocaleString()}원
+                                                </p>
+                                                <p className="text-[11px] font-bold text-blue-700">
+                                                  예약대기 혜택 적용 시
+                                                </p>
+                                                <p className="text-lg font-extrabold text-blue-800">
+                                                  {(
+                                                    price - NOVEMBER_BENEFIT_AMOUNT
+                                                  ).toLocaleString()}
+                                                  원
+                                                </p>
+                                              </>
+                                            ) : (
+                                              <p className="flex flex-wrap items-baseline gap-x-2">
+                                                {selectedScheduleForPayment
+                                                  ?.specialClass?.originalPrice ? (
+                                                  <span className="text-xs text-gray-400 line-through">
+                                                    {selectedScheduleForPayment.specialClass.originalPrice.toLocaleString()}
+                                                    원
+                                                  </span>
+                                                ) : null}
+                                                <span className="text-sm font-extrabold text-blue-800">
+                                                  {price.toLocaleString()}원
+                                                </span>
+                                              </p>
+                                            )}
+                                          </div>
                                         ) : null}
                                       </div>
                                       <div className="mt-4 flex flex-wrap items-center justify-between gap-2">

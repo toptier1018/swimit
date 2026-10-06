@@ -27,6 +27,10 @@ export function CompanionDiscountPromo({
   showWaitlist = false,
   onViewWaitlist,
 }: CompanionDiscountPromoProps) {
+  console.log("[상시혜택] 특강·진단 5,000원 할인 안내 표시", {
+    showWaitlist,
+    includesDiagnosis: true,
+  });
   return (
     <section
       id={COMPANION_DISCOUNT_SECTION_ID}
@@ -39,20 +43,20 @@ export function CompanionDiscountPromo({
             상시 혜택
           </div>
           <h3 className="break-keep text-[1.35rem] font-bold leading-[1.35] tracking-tight text-gray-950 sm:text-2xl sm:leading-snug">
-            스윔잇 특강
+            스윔잇 특강·진단
             <br />
             <span className="text-blue-800">5,000원 할인</span>받는{" "}
             {showWaitlist ? "2가지 방법" : "방법"}
           </h3>
           <p className="break-keep text-[13px] leading-6 text-gray-700 sm:text-sm sm:leading-6">
-            2시간 특강도, 영법별 장거리 집중 특강도
+            2시간 특강, 영법별 장거리 집중 특강,
             <br />
-            결제 금액에서{" "}
+            저항 진단 프로그램도 결제 금액에서{" "}
             <span className="font-bold text-blue-800">5,000원 할인</span>
           </p>
           <div className="flex flex-wrap gap-1.5">
             <span className="rounded-md border border-blue-100 bg-blue-50/80 px-2.5 py-1 text-[11px] font-medium leading-4 text-blue-800 sm:text-xs">
-              저항 진단 제외
+              특강·진단 모두 적용
             </span>
             <span className="rounded-md border border-blue-100 bg-blue-50/80 px-2.5 py-1 text-[11px] font-medium leading-4 text-blue-800 sm:text-xs">
               할인 중복 적용 불가
@@ -72,7 +76,7 @@ export function CompanionDiscountPromo({
               ① 수친·가족과 함께
             </p>
             <p className="break-keep text-[13px] font-semibold leading-6 text-gray-950 sm:text-[15px] sm:leading-7">
-              같은 일정의 특강을 같이 신청하면
+              같은 일정의 특강·진단을 같이 신청하면
               <br />
               두 분 모두 각각{" "}
               <span className="text-blue-800">5,000원 할인</span>
@@ -200,7 +204,7 @@ export function CompanionDiscountPromo({
         </div>
 
         <div className="space-y-1 border-t border-blue-50 pt-1 text-[11px] leading-5 text-gray-500 sm:text-xs">
-          <p>※ 저항 진단 프로그램 제외</p>
+          <p>※ 특강·저항 진단 프로그램 모두 적용</p>
           <p>※ 두 할인 및 다른 쿠폰 중복 적용 불가</p>
         </div>
 
@@ -220,7 +224,7 @@ export function CompanionDiscountPromo({
                   <p className="font-bold text-blue-900">[신청 방법]</p>
                   <ol className="list-decimal space-y-2 pl-5 text-gray-800">
                     <li className="break-keep pl-0.5">
-                      함께 참여할 같은 특강 일정을 선택
+                      함께 참여할 같은 특강·진단 일정을 선택
                     </li>
                     <li className="break-keep pl-0.5">
                       결제 전 고객센터에
@@ -261,7 +265,7 @@ export function CompanionDiscountPromo({
                   <p className="font-bold text-blue-900">[유의사항]</p>
                   <ul className="space-y-2 text-gray-700">
                     <li className="break-keep">
-                      · 저항 진단 프로그램은 할인 대상이 아닙니다.
+                      · 특강·저항 진단 프로그램 모두 할인 대상입니다.
                     </li>
                     <li>· 1인 1회 적용</li>
                     <li className="break-keep">
@@ -313,7 +317,7 @@ export function CompanionDiscountHint({
       <span aria-hidden>👥</span>
       <span className="break-keep">
         수친·가족과 함께 신청하면 각각 5,000원 할인
-        <span className="font-medium text-blue-700/80"> (진단 제외)</span>
+        <span className="font-medium text-blue-700/80"> (특강·진단)</span>
       </span>
     </button>
   );

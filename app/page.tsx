@@ -281,7 +281,9 @@ const NovemberWaitlistApplyNotice = ({
         16일 결제 안내 후 결제를 완료하면 예약이 확정됩니다.
       </p>
     )}
-    <p className="mt-2 text-xs leading-5 text-gray-500">진단 제외 · 다른 할인과 중복 불가</p>
+    <p className="mt-2 text-xs leading-5 text-gray-500">
+      특강·진단 적용 · 다른 할인과 중복 불가
+    </p>
   </div>
 );
 

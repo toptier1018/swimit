@@ -912,6 +912,19 @@ const TIMETABLE_MOKDONG_SEPTEMBER: TimetableRow[] = [
   },
 ];
 
+/** 목동스포츠센터 10/18 — 특강 + 스타트·턴만 (진단 미운영) */
+const TIMETABLE_MOKDONG_OCTOBER_NO_DIAGNOSIS: TimetableRow[] = [
+  {
+    session: "1부 특강",
+    time: "14:00 ~ 16:00",
+    lanes: [
+      { lane: UNASSIGNED_LANE, title: "자유형", price: 80000 },
+      { lane: UNASSIGNED_LANE, title: "접영", price: 80000 },
+      { lane: UNASSIGNED_LANE, title: "평영", price: 80000 },
+    ],
+  },
+];
+
 /** 청라스카이스위밍 9/27 특강 — 특강+진단 동시, 레인 미표시 */
 const TIMETABLE_CHEONGNA_SEPTEMBER: TimetableRow[] = [
   {
@@ -946,7 +959,7 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   18: TIMETABLE_MOKDONG_SEPTEMBER, // 9/20 목동
   19: TIMETABLE_CHEONGNA_SEPTEMBER, // 9/27 청라
   20: TIMETABLE_BUSAN_OCTOBER, // 10/4 부산 (평영·접영만)
-  22: TIMETABLE_MOKDONG_SEPTEMBER, // 10/18 목동 (특강+진단 · 스타트·턴은 addon)
+  22: TIMETABLE_MOKDONG_OCTOBER_NO_DIAGNOSIS, // 10/18 목동 (특강+스타트·턴, 진단 없음)
   23: TIMETABLE_DONGTAN_AUGUST, // 10/25 동탄 스윔스튜디오제이
   24: TIMETABLE_MOKDONG_SEPTEMBER, // 11/8 부산 (특강+진단, 레인 미표시)
   25: TIMETABLE_GANGNAM_NOVEMBER, // 11/15 강남 (특강만)
@@ -1710,6 +1723,9 @@ export default function SwimmingClassPage() {
   useEffect(() => {
     console.log(
       "[특강일정] 취소로 신청 목록에서 제외: 서울 중구 스포빌키즈쿠아 10/11",
+    );
+    console.log(
+      "[특강일정] 목동 10/18 진단 프로그램 미운영 — 특강+스타트·턴만 모집",
     );
     console.log("[특강일정] 11월 일정 추가", {
       "부산 11/8": "특강+진단 14:00~16:00 + 스타트·턴 14:00~16:00(1부)",

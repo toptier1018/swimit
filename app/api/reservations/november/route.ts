@@ -1,11 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
-import { resolveNovemberReservation } from "@/lib/november-reservation";
 import { appendAdvanceReservationToGoogleSheet } from "@/lib/google-sheets";
 import { checkGoogleSheetDuplicateForSameClass, getOpsSheetEnrollmentCounts, formatOpsSheetDateTime } from "@/lib/ops-sheet-enrollment";
 import { getClassSettingsFromNotion } from "@/lib/schedules";
-import { DEFAULT_CAPACITY_BY_CLASS, toClassScheduleIsoDate } from "@/lib/class-schedule-data";
+import {
+  CLASS_SCHEDULES,
+  DEFAULT_CAPACITY_BY_CLASS,
+  toClassScheduleIsoDate,
+} from "@/lib/class-schedule-data";
+import {
+  isNovemberAdvanceReservationOpen,
+  isNovemberSchedule,
+  resolveNovemberReservation,
+} from "@/lib/november-reservation";
 import { CLASS_VIDEO_CONSENT_VERSION, parseContentConsent } from "@/lib/resistance-content-consent";
 
 const inputSchema = z.object({
@@ -21,6 +29,24 @@ export async function POST(request: NextRequest) {
     const parsed = inputSchema.safeParse(await request.json());
     if (!parsed.success) return NextResponse.json({ error: "신청 정보와 필수 동의를 확인해 주세요." }, { status: 400 });
     const data = parsed.data;
+    const schedule = CLASS_SCHEDULES.find((item) => item.id === data.classId);
+    if (
+      schedule &&
+      isNovemberSchedule(schedule) &&
+      !isNovemberAdvanceReservationOpen(schedule)
+    ) {
+      console.log("[11월사전예약] API 거절 — 기간 종료, 일반 결제 안내", {
+        classId: data.classId,
+        classKey: data.classKey,
+      });
+      return NextResponse.json(
+        {
+          error:
+            "사전예약 기간이 종료되었습니다. 결제 후 신청해 주세요.",
+        },
+        { status: 400 },
+      );
+    }
     const offer = resolveNovemberReservation(data.classId, data.classKey);
     if (!offer) return NextResponse.json({ error: "예약 가능한 11월 특강이 아닙니다." }, { status: 400 });
     const consent = parseContentConsent(data.contentConsent);

@@ -1,5 +1,5 @@
 import "server-only";
-import { isNovemberSchedule } from "@/lib/november-reservation";
+import { isNovemberAdvanceReservationOpen } from "@/lib/november-reservation";
 
 import { getClassEnrollmentCounts } from "@/app/actions/notion";
 import {
@@ -318,7 +318,7 @@ export async function getSchedules(): Promise<ScheduleItem[]> {
       ? "강제 예약대기"
       : isWaitlist
         ? "예약대기"
-        : isNovemberSchedule(event) && parsed.program === "특강"
+        : isNovemberAdvanceReservationOpen(event) && parsed.program === "특강"
           ? "예약 가능"
           : "결제 가능";
 

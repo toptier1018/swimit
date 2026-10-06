@@ -44,7 +44,13 @@ import {
   getClassEnrollmentCounts,
   findOrCreateApplicant,
 } from "@/app/actions/notion";
-import { hasNovemberBenefit, isNovemberSchedule, NOVEMBER_BENEFIT_AMOUNT, NOVEMBER_BENEFIT_END } from "@/lib/november-reservation";
+import {
+  hasNovemberBenefit,
+  isNovemberAdvanceReservationOpen,
+  isNovemberSchedule,
+  NOVEMBER_BENEFIT_AMOUNT,
+  NOVEMBER_BENEFIT_END,
+} from "@/lib/november-reservation";
 import { checkDuplicateForSameClass } from "@/app/actions/google-sheets";
 import {
   EMPTY_TRAFFIC_SOURCE,
@@ -2827,26 +2833,37 @@ export default function SwimmingClassPage() {
         isStartTurnEnrollmentKey(selectedTimeSlot.title) ||
         isStartTurnEnrollmentKey(selectedTimeSlot.productName || "")),
   );
-  // 스타트·턴은 11월 예약대기(결제 없음) 대상이 아님 — 별도 정원·결제 유지
+  // 전월 15일까지: 결제 없이 사전예약. 16일부터는 일반 결제.
+  // 스타트·턴·진단은 사전예약 대상이 아님.
   const isNovemberReservation =
-    isNovemberSchedule(selectedScheduleForPayment) &&
+    isNovemberAdvanceReservationOpen(selectedScheduleForPayment) &&
     !isResistanceDiagnosisProduct({
       className: selectedTimeSlot?.name,
       productType: selectedTimeSlot?.productType || selectedProductType,
     }) &&
     !isStartTurnSelection;
-  const novemberDiscount = isNovemberReservation && hasNovemberBenefit(selectedScheduleForPayment)
-    ? NOVEMBER_BENEFIT_AMOUNT : 0;
+  const novemberDiscount = isNovemberReservation ? NOVEMBER_BENEFIT_AMOUNT : 0;
 
   useEffect(() => {
-    if (!isNovemberReservation) return;
-    console.log("[11월예약대기] 특강 신청 안내 표시", {
-      classId: selectedScheduleForPayment?.id,
-      date: selectedScheduleForPayment?.date,
-      discount: novemberDiscount,
-      price: selectedScheduleForPayment?.specialClass?.price ?? 80000,
-    });
-  }, [isNovemberReservation, selectedScheduleForPayment?.id, selectedScheduleForPayment?.date, novemberDiscount]);
+    if (isNovemberSchedule(selectedScheduleForPayment)) {
+      console.log("[11월특강] 신청 모드", {
+        classId: selectedScheduleForPayment?.id,
+        date: selectedScheduleForPayment?.date,
+        advanceReservationOpen: isNovemberAdvanceReservationOpen(
+          selectedScheduleForPayment,
+        ),
+        mode: isNovemberReservation ? "사전예약(결제없음)" : "일반결제",
+        discount: novemberDiscount,
+        price: selectedScheduleForPayment?.specialClass?.price ?? 80000,
+        benefitEndsAt: new Date(NOVEMBER_BENEFIT_END).toISOString(),
+      });
+    }
+  }, [
+    isNovemberReservation,
+    selectedScheduleForPayment?.id,
+    selectedScheduleForPayment?.date,
+    novemberDiscount,
+  ]);
 
   const isReservationOnly = isNovemberReservation || Boolean(
     selectedTimeSlot &&
@@ -6169,7 +6186,7 @@ export default function SwimmingClassPage() {
                                         </p>
                                         <div className="mt-1">
                                           <ProductPriceLabel
-                                          reservationOnly={isNovemberSchedule(selectedScheduleForPayment) && product.name === PRODUCT_CATALOG.zero.name}
+                                          reservationOnly={isNovemberAdvanceReservationOpen(selectedScheduleForPayment) && product.name === PRODUCT_CATALOG.zero.name}
                                           reservationBenefit={hasNovemberBenefit(selectedScheduleForPayment)}
                                             price={product.price}
                                             originalPrice={product.originalPrice}
@@ -6239,7 +6256,7 @@ export default function SwimmingClassPage() {
                                 </p>
                                 <div className="mt-1">
                                   <ProductPriceLabel
-                                          reservationOnly={isNovemberSchedule(selectedScheduleForPayment) && product.name === PRODUCT_CATALOG.zero.name}
+                                          reservationOnly={isNovemberAdvanceReservationOpen(selectedScheduleForPayment) && product.name === PRODUCT_CATALOG.zero.name}
                                           reservationBenefit={hasNovemberBenefit(selectedScheduleForPayment)}
                                     price={product.price}
                                     originalPrice={product.originalPrice}
@@ -6321,7 +6338,7 @@ export default function SwimmingClassPage() {
                                           </div>
                                           <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
                                             <ProductPriceLabel
-                                          reservationOnly={isNovemberSchedule(selectedScheduleForPayment) && product.name === PRODUCT_CATALOG.zero.name}
+                                          reservationOnly={isNovemberAdvanceReservationOpen(selectedScheduleForPayment) && product.name === PRODUCT_CATALOG.zero.name}
                                           reservationBenefit={hasNovemberBenefit(selectedScheduleForPayment)}
                                               price={product.price}
                                               originalPrice={
@@ -6329,7 +6346,7 @@ export default function SwimmingClassPage() {
                                               }
                                               badge={product.priceBadge}
                                             />
-                                            {!isNovemberSchedule(selectedScheduleForPayment) && (
+                                            {!isNovemberAdvanceReservationOpen(selectedScheduleForPayment) && (
 <span
                                               className={getAvailabilityBadgeClassName(
                                                 availabilityBadge.tone,
@@ -6548,7 +6565,7 @@ export default function SwimmingClassPage() {
                                           )
                                         ) : (
                                           <ProductPriceLabel
-                                            reservationOnly={isNovemberSchedule(selectedScheduleForPayment)}
+                                            reservationOnly={isNovemberAdvanceReservationOpen(selectedScheduleForPayment)}
                                             reservationBenefit={hasNovemberBenefit(selectedScheduleForPayment)}
                                             price={price}
                                             originalPrice={
@@ -6559,7 +6576,7 @@ export default function SwimmingClassPage() {
                                             }
                                           />
                                         )}
-                                        {!isNovemberSchedule(selectedScheduleForPayment) && (
+                                        {!isNovemberAdvanceReservationOpen(selectedScheduleForPayment) && (
 <span
                                           className={getAvailabilityBadgeClassName(
                                             availabilityBadge.tone,
@@ -6623,7 +6640,7 @@ export default function SwimmingClassPage() {
                                           badge={diagnosisProduct.priceBadge}
                                         />
 )}
-                                        {!isNovemberSchedule(selectedScheduleForPayment) && (
+                                        {!isNovemberAdvanceReservationOpen(selectedScheduleForPayment) && (
 <span
                                           className={getAvailabilityBadgeClassName(
                                             availabilityBadge.tone,

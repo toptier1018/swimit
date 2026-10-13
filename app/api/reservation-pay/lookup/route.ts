@@ -25,7 +25,14 @@ export async function POST(request: NextRequest) {
     if (!result.ok) {
       return NextResponse.json(
         { success: false, error: result.error, code: result.code },
-        { status: result.code === "NOT_FOUND" ? 404 : 400 },
+        {
+          status:
+            result.code === "NOT_FOUND"
+              ? 404
+              : result.code === "WINDOW_CLOSED"
+                ? 403
+                : 400,
+        },
       );
     }
 
@@ -35,6 +42,8 @@ export async function POST(request: NextRequest) {
         needFullPhone: true,
         message: result.message,
         items: [],
+        targetYear: result.targetYear,
+        targetMonth: result.targetMonth,
       });
     }
 
@@ -42,6 +51,8 @@ export async function POST(request: NextRequest) {
       success: true,
       needFullPhone: false,
       items: result.items,
+      targetYear: result.targetYear,
+      targetMonth: result.targetMonth,
     });
   } catch (error) {
     console.error("[사전예약결제API] 조회 예외:", error);

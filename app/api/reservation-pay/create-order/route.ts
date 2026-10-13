@@ -31,7 +31,9 @@ export async function POST(request: NextRequest) {
           ? 409
           : result.code === "NOT_FOUND"
             ? 404
-            : 400;
+            : result.code === "WINDOW_CLOSED"
+              ? 403
+              : 400;
       return NextResponse.json(
         { success: false, error: result.error, code: result.code },
         { status },

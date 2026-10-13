@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 
 type ReservationItem = {
@@ -19,7 +19,18 @@ type ReservationItem = {
 
 type Step = "phone" | "fullPhone" | "select" | "pay";
 
+type WindowStatus = {
+  open: boolean;
+  message: string;
+  windowLabel: string;
+  targetLabel: string;
+  targetYear: number;
+  targetMonth: number;
+};
+
 export default function ReservationPayPage() {
+  const [windowStatus, setWindowStatus] = useState<WindowStatus | null>(null);
+  const [windowLoading, setWindowLoading] = useState(true);
   const [step, setStep] = useState<Step>("phone");
   const [last4, setLast4] = useState("");
   const [fullPhone, setFullPhone] = useState("");
@@ -38,6 +49,65 @@ export default function ReservationPayPage() {
     () => items.filter((item) => item.status === "unpaid"),
     [items],
   );
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      setWindowLoading(true);
+      try {
+        const res = await fetch("/api/reservation-pay/status", {
+          cache: "no-store",
+        });
+        const data = await res.json().catch(() => null);
+        if (cancelled) return;
+        if (!res.ok || !data?.success) {
+          console.error("[사전예약결제UI] 기간 상태 조회 실패:", data);
+          setWindowStatus({
+            open: false,
+            message:
+              "결제 기간을 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+            windowLabel: "",
+            targetLabel: "",
+            targetYear: 0,
+            targetMonth: 0,
+          });
+          return;
+        }
+        console.log("[사전예약결제UI] 서버 기간 상태:", {
+          open: data.open,
+          kst: data.kst,
+          target: data.targetLabel,
+        });
+        setWindowStatus({
+          open: Boolean(data.open),
+          message: String(data.message || ""),
+          windowLabel: String(data.windowLabel || ""),
+          targetLabel: String(data.targetLabel || ""),
+          targetYear: Number(data.targetYear) || 0,
+          targetMonth: Number(data.targetMonth) || 0,
+        });
+      } catch (err) {
+        console.error("[사전예약결제UI] 기간 상태 오류:", err);
+        if (!cancelled) {
+          setWindowStatus({
+            open: false,
+            message:
+              "결제 기간을 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+            windowLabel: "",
+            targetLabel: "",
+            targetYear: 0,
+            targetMonth: 0,
+          });
+        }
+      } finally {
+        if (!cancelled) setWindowLoading(false);
+      }
+    };
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const lookup = async (mode: "last4" | "full") => {
     setError("");
@@ -62,6 +132,21 @@ export default function ReservationPayPage() {
         body: JSON.stringify(body),
       });
       const data = await res.json().catch(() => null);
+
+      if (data?.code === "WINDOW_CLOSED") {
+        setWindowStatus((prev) => ({
+          open: false,
+          message:
+            data.error ||
+            "이번 달 사전예약 결제 기간이 종료되었습니다.\n\n사전예약 결제는 매월 13일~15일에 진행됩니다.",
+          windowLabel: prev?.windowLabel || "",
+          targetLabel: prev?.targetLabel || "",
+          targetYear: prev?.targetYear || 0,
+          targetMonth: prev?.targetMonth || 0,
+        }));
+        setItems([]);
+        return;
+      }
 
       if (!res.ok || !data?.success) {
         setError(data?.error || "예약을 찾지 못했습니다.");
@@ -88,6 +173,8 @@ export default function ReservationPayPage() {
         count: list.length,
         unpaid: list.filter((i: ReservationItem) => i.status === "unpaid")
           .length,
+        targetYear: data.targetYear,
+        targetMonth: data.targetMonth,
       });
     } catch (err) {
       console.error("[사전예약결제UI] 조회 오류:", err);
@@ -118,6 +205,20 @@ export default function ReservationPayPage() {
         }),
       });
       const data = await res.json().catch(() => null);
+
+      if (data?.code === "WINDOW_CLOSED") {
+        setWindowStatus((prev) => ({
+          open: false,
+          message:
+            data.error ||
+            "이번 달 사전예약 결제 기간이 종료되었습니다.\n\n사전예약 결제는 매월 13일~15일에 진행됩니다.",
+          windowLabel: prev?.windowLabel || "",
+          targetLabel: prev?.targetLabel || "",
+          targetYear: prev?.targetYear || 0,
+          targetMonth: prev?.targetMonth || 0,
+        }));
+        return;
+      }
 
       if (!res.ok || !data?.success) {
         if (data?.code === "NEED_FULL_PHONE") {
@@ -179,215 +280,246 @@ export default function ReservationPayPage() {
           </p>
         </header>
 
-        <ol className="mb-6 grid grid-cols-4 gap-1 text-center text-[11px] font-semibold text-gray-500">
-          {[
-            { key: "phone", label: "번호" },
-            { key: "select", label: "예약" },
-            { key: "pay", label: "결제" },
-            { key: "done", label: "완료" },
-          ].map((item, index) => {
-            const active =
-              (step === "phone" && index === 0) ||
-              (step === "fullPhone" && index === 0) ||
-              (step === "select" && index <= 1) ||
-              (step === "pay" && index <= 2);
-            return (
-              <li
-                key={item.key}
-                className={`rounded-lg px-1 py-2 ${
-                  active
-                    ? "bg-blue-600 text-white"
-                    : "bg-white text-gray-400 ring-1 ring-slate-200"
-                }`}
-              >
-                {index + 1}. {item.label}
-              </li>
-            );
-          })}
-        </ol>
-
-        {step === "phone" ? (
-          <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-            <h2 className="text-lg font-bold text-gray-950">
-              휴대폰 뒤 4자리
-            </h2>
-            <p className="mt-1 text-sm text-gray-600">
-              예: 010-4454-9986 → <strong>9986</strong>
-            </p>
-            <input
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              maxLength={4}
-              value={last4}
-              onChange={(e) =>
-                setLast4(e.target.value.replace(/\D/g, "").slice(0, 4))
-              }
-              placeholder="0000"
-              className="mt-4 h-14 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-center text-2xl font-bold tracking-[0.35em] text-gray-950 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-            />
-            <Button
-              className="mt-4 h-12 w-full text-base font-bold"
-              disabled={last4.length !== 4 || loading}
-              onClick={() => void lookup("last4")}
-            >
-              {loading ? "조회 중..." : "내 예약 찾기"}
-            </Button>
+        {windowLoading ? (
+          <section className="rounded-2xl bg-white p-5 text-center shadow-sm ring-1 ring-slate-200">
+            <p className="text-sm text-gray-600">결제 기간 확인 중...</p>
           </section>
         ) : null}
 
-        {step === "fullPhone" ? (
-          <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-            <h2 className="text-lg font-bold text-gray-950">
-              휴대폰 전체 번호
-            </h2>
-            <p className="mt-2 whitespace-pre-line text-sm leading-6 text-gray-700">
-              동일한 번호가 있습니다.
-              {"\n"}
-              예약 시 입력한 휴대폰 전체 번호를 입력해주세요.
+        {!windowLoading && windowStatus && !windowStatus.open ? (
+          <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <p className="text-xs font-bold text-slate-500">결제 기간 종료</p>
+            <p className="mt-3 whitespace-pre-line text-base font-semibold leading-7 text-gray-900">
+              {windowStatus.message ||
+                "이번 달 사전예약 결제 기간이 종료되었습니다.\n\n사전예약 결제는 매월 13일~15일에 진행됩니다."}
             </p>
-            <input
-              inputMode="tel"
-              autoComplete="tel"
-              value={fullPhone}
-              onChange={(e) =>
-                setFullPhone(e.target.value.replace(/[^\d-]/g, "").slice(0, 13))
-              }
-              placeholder="010-0000-0000"
-              className="mt-4 h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-center text-lg font-semibold text-gray-950 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-            />
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              <Button
-                variant="outline"
-                className="h-12"
-                onClick={() => {
-                  setError("");
-                  setFullPhone("");
-                  setStep("phone");
-                }}
-              >
-                뒤로
-              </Button>
-              <Button
-                className="h-12 font-bold"
-                disabled={fullPhone.replace(/\D/g, "").length < 10 || loading}
-                onClick={() => void lookup("full")}
-              >
-                {loading ? "조회 중..." : "확인"}
-              </Button>
-            </div>
           </section>
         ) : null}
 
-        {step === "select" || step === "pay" ? (
-          <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-            <h2 className="text-lg font-bold text-gray-950">내 사전예약</h2>
-            {items[0] ? (
-              <p className="mt-1 text-sm text-gray-600">
-                {items[0].customerName} · {items[0].phoneMasked}
-              </p>
-            ) : null}
+        {!windowLoading && windowStatus?.open ? (
+          <>
+            <p className="mb-4 rounded-xl bg-blue-50 px-3 py-2 text-xs leading-5 text-blue-900">
+              {windowStatus.windowLabel} · {windowStatus.targetLabel} 일정
+              사전예약 결제
+            </p>
 
-            <ul className="mt-4 space-y-2">
-              {items.map((item) => {
-                const selectable = item.status === "unpaid";
-                const isSelected = selectedOrder === item.orderNumber;
+            <ol className="mb-6 grid grid-cols-4 gap-1 text-center text-[11px] font-semibold text-gray-500">
+              {[
+                { key: "phone", label: "번호" },
+                { key: "select", label: "예약" },
+                { key: "pay", label: "결제" },
+                { key: "done", label: "완료" },
+              ].map((item, index) => {
+                const active =
+                  (step === "phone" && index === 0) ||
+                  (step === "fullPhone" && index === 0) ||
+                  (step === "select" && index <= 1) ||
+                  (step === "pay" && index <= 2);
                 return (
-                  <li key={item.orderNumber}>
-                    <button
-                      type="button"
-                      disabled={!selectable}
-                      onClick={() => {
-                        if (!selectable) return;
-                        setSelectedOrder(item.orderNumber);
-                        setError("");
-                      }}
-                      className={`w-full rounded-xl border px-4 py-3 text-left transition ${
-                        !selectable
-                          ? "cursor-not-allowed border-slate-100 bg-slate-50 opacity-80"
-                          : isSelected
-                            ? "border-blue-600 bg-blue-50 ring-2 ring-blue-100"
-                            : "border-slate-200 bg-white hover:border-blue-300"
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <p className="text-sm font-bold text-gray-950">
-                          {item.label}
-                        </p>
-                        <span
-                          className={`shrink-0 rounded-md px-2 py-0.5 text-[11px] font-bold ${
-                            item.status === "paid"
-                              ? "bg-emerald-100 text-emerald-800"
-                              : "bg-blue-100 text-blue-800"
-                          }`}
-                        >
-                          {item.statusLabel}
-                        </span>
-                      </div>
-                      {item.status === "unpaid" ? (
-                        <p className="mt-2 text-base font-extrabold text-blue-800">
-                          {item.amount.toLocaleString()}원
-                          <span className="ml-1 text-xs font-semibold text-gray-500">
-                            (사전예약 혜택 적용)
-                          </span>
-                        </p>
-                      ) : (
-                        <p className="mt-2 text-xs text-gray-500">
-                          다시 결제할 수 없습니다.
-                        </p>
-                      )}
-                    </button>
+                  <li
+                    key={item.key}
+                    className={`rounded-lg px-1 py-2 ${
+                      active
+                        ? "bg-blue-600 text-white"
+                        : "bg-white text-gray-400 ring-1 ring-slate-200"
+                    }`}
+                  >
+                    {index + 1}. {item.label}
                   </li>
                 );
               })}
-            </ul>
+            </ol>
 
-            {selected && selected.status === "unpaid" ? (
-              <div className="mt-5 rounded-xl bg-slate-50 px-4 py-3">
-                <p className="text-xs font-semibold text-gray-500">결제 금액</p>
-                <p className="mt-1 text-2xl font-extrabold text-gray-950">
-                  {selected.amount.toLocaleString()}
-                  <span className="text-base">원</span>
+            {step === "phone" ? (
+              <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+                <h2 className="text-lg font-bold text-gray-950">
+                  휴대폰 뒤 4자리
+                </h2>
+                <p className="mt-1 text-sm text-gray-600">
+                  예: 010-4454-9986 → <strong>9986</strong>
                 </p>
-                <p className="mt-1 text-xs text-gray-500">
-                  금액은 변경할 수 없습니다.
-                </p>
-              </div>
+                <input
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  maxLength={4}
+                  value={last4}
+                  onChange={(e) =>
+                    setLast4(e.target.value.replace(/\D/g, "").slice(0, 4))
+                  }
+                  placeholder="0000"
+                  className="mt-4 h-14 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-center text-2xl font-bold tracking-[0.35em] text-gray-950 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                />
+                <Button
+                  className="mt-4 h-12 w-full text-base font-bold"
+                  disabled={last4.length !== 4 || loading}
+                  onClick={() => void lookup("last4")}
+                >
+                  {loading ? "조회 중..." : "내 예약 찾기"}
+                </Button>
+              </section>
             ) : null}
 
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              <Button
-                variant="outline"
-                className="h-12"
-                disabled={paying}
-                onClick={() => {
-                  setError("");
-                  setItems([]);
-                  setSelectedOrder("");
-                  setStep(fullPhone ? "fullPhone" : "phone");
-                }}
-              >
-                다시 조회
-              </Button>
-              <Button
-                className="h-12 font-bold"
-                disabled={
-                  paying ||
-                  !selected ||
-                  selected.status !== "unpaid" ||
-                  unpaidItems.length === 0
-                }
-                onClick={() => void startPayment()}
-              >
-                {paying ? "결제창 여는 중..." : "결제하기"}
-              </Button>
-            </div>
-          </section>
-        ) : null}
+            {step === "fullPhone" ? (
+              <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+                <h2 className="text-lg font-bold text-gray-950">
+                  휴대폰 전체 번호
+                </h2>
+                <p className="mt-2 whitespace-pre-line text-sm leading-6 text-gray-700">
+                  동일한 번호가 있습니다.
+                  {"\n"}
+                  예약 시 입력한 휴대폰 전체 번호를 입력해주세요.
+                </p>
+                <input
+                  inputMode="tel"
+                  autoComplete="tel"
+                  value={fullPhone}
+                  onChange={(e) =>
+                    setFullPhone(
+                      e.target.value.replace(/[^\d-]/g, "").slice(0, 13),
+                    )
+                  }
+                  placeholder="010-0000-0000"
+                  className="mt-4 h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-center text-lg font-semibold text-gray-950 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                />
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    className="h-12"
+                    onClick={() => {
+                      setError("");
+                      setFullPhone("");
+                      setStep("phone");
+                    }}
+                  >
+                    뒤로
+                  </Button>
+                  <Button
+                    className="h-12 font-bold"
+                    disabled={
+                      fullPhone.replace(/\D/g, "").length < 10 || loading
+                    }
+                    onClick={() => void lookup("full")}
+                  >
+                    {loading ? "조회 중..." : "확인"}
+                  </Button>
+                </div>
+              </section>
+            ) : null}
 
-        {error ? (
-          <p className="mt-4 whitespace-pre-line rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700">
-            {error}
-          </p>
+            {step === "select" || step === "pay" ? (
+              <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+                <h2 className="text-lg font-bold text-gray-950">내 사전예약</h2>
+                {items[0] ? (
+                  <p className="mt-1 text-sm text-gray-600">
+                    {items[0].customerName} · {items[0].phoneMasked}
+                  </p>
+                ) : null}
+
+                <ul className="mt-4 space-y-2">
+                  {items.map((item) => {
+                    const selectable = item.status === "unpaid";
+                    const isSelected = selectedOrder === item.orderNumber;
+                    return (
+                      <li key={item.orderNumber}>
+                        <button
+                          type="button"
+                          disabled={!selectable}
+                          onClick={() => {
+                            if (!selectable) return;
+                            setSelectedOrder(item.orderNumber);
+                            setError("");
+                          }}
+                          className={`w-full rounded-xl border px-4 py-3 text-left transition ${
+                            !selectable
+                              ? "cursor-not-allowed border-slate-100 bg-slate-50 opacity-80"
+                              : isSelected
+                                ? "border-blue-600 bg-blue-50 ring-2 ring-blue-100"
+                                : "border-slate-200 bg-white hover:border-blue-300"
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="text-sm font-bold text-gray-950">
+                              {item.label}
+                            </p>
+                            <span
+                              className={`shrink-0 rounded-md px-2 py-0.5 text-[11px] font-bold ${
+                                item.status === "paid"
+                                  ? "bg-emerald-100 text-emerald-800"
+                                  : "bg-blue-100 text-blue-800"
+                              }`}
+                            >
+                              {item.statusLabel}
+                            </span>
+                          </div>
+                          {item.status === "unpaid" ? (
+                            <p className="mt-2 text-base font-extrabold text-blue-800">
+                              {item.amount.toLocaleString()}원
+                              <span className="ml-1 text-xs font-semibold text-gray-500">
+                                (사전예약 혜택 적용)
+                              </span>
+                            </p>
+                          ) : (
+                            <p className="mt-2 text-xs text-gray-500">
+                              다시 결제할 수 없습니다.
+                            </p>
+                          )}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+
+                {selected && selected.status === "unpaid" ? (
+                  <div className="mt-5 rounded-xl bg-slate-50 px-4 py-3">
+                    <p className="text-xs font-semibold text-gray-500">
+                      결제 금액
+                    </p>
+                    <p className="mt-1 text-2xl font-extrabold text-gray-950">
+                      {selected.amount.toLocaleString()}
+                      <span className="text-base">원</span>
+                    </p>
+                    <p className="mt-1 text-xs text-gray-500">
+                      금액은 변경할 수 없습니다.
+                    </p>
+                  </div>
+                ) : null}
+
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    className="h-12"
+                    disabled={paying}
+                    onClick={() => {
+                      setError("");
+                      setItems([]);
+                      setSelectedOrder("");
+                      setStep(fullPhone ? "fullPhone" : "phone");
+                    }}
+                  >
+                    다시 조회
+                  </Button>
+                  <Button
+                    className="h-12 font-bold"
+                    disabled={
+                      paying ||
+                      !selected ||
+                      selected.status !== "unpaid" ||
+                      unpaidItems.length === 0
+                    }
+                    onClick={() => void startPayment()}
+                  >
+                    {paying ? "결제창 여는 중..." : "결제하기"}
+                  </Button>
+                </div>
+              </section>
+            ) : null}
+
+            {error ? (
+              <p className="mt-4 whitespace-pre-line rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700">
+                {error}
+              </p>
+            ) : null}
+          </>
         ) : null}
 
         <p className="mt-auto pt-8 text-center text-xs leading-5 text-gray-400">

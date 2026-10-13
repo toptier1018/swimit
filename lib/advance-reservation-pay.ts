@@ -12,6 +12,12 @@ import {
 } from "@/lib/class-schedule-data";
 import { resolveClassBasePaymentAmount } from "@/lib/class-payment-amount";
 import { updateCardPaymentSheetStatusByOrderNumber } from "@/lib/google-sheets";
+import {
+  ADVANCE_PAY_CLOSED_MESSAGE,
+  getAdvancePayTargetYearMonth,
+  getAdvanceReservationPayWindowStatus,
+  isAdvanceReservationPayWindowOpen,
+} from "@/lib/advance-reservation-window";
 
 const ADVANCE_BENEFIT_AMOUNT = 5000;
 const TOSS_ORDER_HEADER = "토스주문번호";
@@ -209,12 +215,16 @@ export type AdvanceLookupResult =
       ok: true;
       needFullPhone: false;
       items: AdvanceReservationItem[];
+      targetYear: number;
+      targetMonth: number;
     }
   | {
       ok: true;
       needFullPhone: true;
       message: string;
       items: [];
+      targetYear: number;
+      targetMonth: number;
     }
   | { ok: false; error: string; code?: string };
 
@@ -324,6 +334,64 @@ async function loadAdvanceRows(): Promise<{
   return { sheets, header, rows };
 }
 
+/** 예약 일정의 연·월 (다음 달 대상 필터용) */
+function resolveRowYearMonth(
+  row: Pick<SheetRowRef, "date" | "className">,
+): { year: number; month: number } | null {
+  const date = String(row.date || "").trim();
+  const iso = date.match(/^(\d{4})-(\d{2})/);
+  if (iso) {
+    return { year: Number(iso[1]), month: Number(iso[2]) };
+  }
+  const korean = date.match(/(\d{4})\s*년\s*(\d{1,2})\s*월/);
+  if (korean) {
+    return { year: Number(korean[1]), month: Number(korean[2]) };
+  }
+
+  const resolved = resolveClassScheduleFromEnrollmentKey(row.className);
+  if (resolved?.schedule?.year && resolved.schedule.month) {
+    return {
+      year: resolved.schedule.year,
+      month: resolved.schedule.month,
+    };
+  }
+
+  // [부산 11/8] — 연도 없음 → month만 (year=0). 필터에서 대상 연·월과 month 비교
+  const label = String(row.className || "").match(
+    /\[\s*[^\]]*?(?:(\d{4})\s*[./-]\s*)?(\d{1,2})\s*[./]\s*(\d{1,2})\s*\]/,
+  );
+  if (label) {
+    const year = label[1] ? Number(label[1]) : 0;
+    const month = Number(label[2]);
+    if (month >= 1 && month <= 12) return { year, month };
+  }
+  return null;
+}
+
+function isTargetScheduleRow(
+  row: Pick<SheetRowRef, "date" | "className">,
+  targetYear: number,
+  targetMonth: number,
+): boolean {
+  const ym = resolveRowYearMonth(row);
+  if (!ym) return false;
+  if (ym.year === 0) return ym.month === targetMonth;
+  return ym.year === targetYear && ym.month === targetMonth;
+}
+
+function assertPayWindowOpen():
+  | { ok: true }
+  | { ok: false; error: string; code: "WINDOW_CLOSED" } {
+  if (isAdvanceReservationPayWindowOpen()) return { ok: true };
+  const status = getAdvanceReservationPayWindowStatus();
+  console.warn("[사전예약결제] 기간 외 요청 거부:", status.kst);
+  return {
+    ok: false,
+    error: ADVANCE_PAY_CLOSED_MESSAGE,
+    code: "WINDOW_CLOSED",
+  };
+}
+
 function toPublicItem(row: SheetRowRef): AdvanceReservationItem | null {
   const paid = isPaidRow(row.confirmedRaw, row.paymentRaw, row.statusRaw);
   const amount = resolveAdvanceReservationPayAmount({
@@ -368,6 +436,16 @@ export async function lookupAdvanceReservations(input: {
   phoneFull?: string;
 }): Promise<AdvanceLookupResult> {
   try {
+    const windowGate = assertPayWindowOpen();
+    if (!windowGate.ok) {
+      return {
+        ok: false,
+        error: windowGate.error,
+        code: windowGate.code,
+      };
+    }
+
+    const target = getAdvancePayTargetYearMonth();
     const full = normalizePhoneDigits(input.phoneFull || "");
     const last4 = normalizePhoneDigits(input.phoneLast4 || "").slice(-4);
 
@@ -388,18 +466,30 @@ export async function lookupAdvanceReservations(input: {
     }
 
     const { rows } = await loadAdvanceRows();
-    const matched = full
+    const phoneMatched = full
       ? rows.filter((r) => r.phoneDigits === full)
       : rows.filter((r) => r.phoneDigits.endsWith(last4));
+
+    // 결제 대상: 다음 달 일정만 (과거·다른 달 제외)
+    const matched = phoneMatched.filter((r) =>
+      isTargetScheduleRow(r, target.year, target.month),
+    );
+
+    console.log("[사전예약결제] 대상 월 필터:", {
+      target: `${target.year}-${target.month}`,
+      phoneMatched: phoneMatched.length,
+      targetMatched: matched.length,
+    });
 
     if (matched.length === 0) {
       console.log("[사전예약결제] 조회 결과 없음:", {
         mode: full ? "full" : "last4",
         last4: full ? full.slice(-4) : last4,
+        target,
       });
       return {
         ok: false,
-        error: "일치하는 사전예약을 찾지 못했습니다. 번호를 다시 확인해 주세요.",
+        error: `${target.year}년 ${target.month}월 사전예약을 찾지 못했습니다. 번호를 다시 확인해 주세요.`,
         code: "NOT_FOUND",
       };
     }
@@ -418,6 +508,8 @@ export async function lookupAdvanceReservations(input: {
           message:
             "동일한 번호가 있습니다.\n예약 시 입력한 휴대폰 전체 번호를 입력해주세요.",
           items: [],
+          targetYear: target.year,
+          targetMonth: target.month,
         };
       }
     }
@@ -440,11 +532,18 @@ export async function lookupAdvanceReservations(input: {
 
     console.log("[사전예약결제] 조회 성공:", {
       mode: full ? "full" : "last4",
+      target,
       count: items.length,
       unpaid: items.filter((i) => i.status === "unpaid").length,
     });
 
-    return { ok: true, needFullPhone: false, items };
+    return {
+      ok: true,
+      needFullPhone: false,
+      items,
+      targetYear: target.year,
+      targetMonth: target.month,
+    };
   } catch (error) {
     console.error("[사전예약결제] 조회 실패:", error);
     return {
@@ -473,6 +572,15 @@ export async function createAdvanceReservationTossOrder(input: {
     }
   | { success: false; error: string; code?: string }
 > {
+  const windowGate = assertPayWindowOpen();
+  if (!windowGate.ok) {
+    return {
+      success: false,
+      error: windowGate.error,
+      code: windowGate.code,
+    };
+  }
+
   const orderNumber = String(input.orderNumber || "").trim();
   if (!orderNumber.startsWith("NR-")) {
     return { success: false, error: "신청번호가 올바르지 않습니다.", code: "BAD_ORDER" };
@@ -489,6 +597,7 @@ export async function createAdvanceReservationTossOrder(input: {
   }
 
   try {
+    const target = getAdvancePayTargetYearMonth();
     const { sheets, header, rows } = await loadAdvanceRows();
     const row = rows.find((r) => r.orderNumber === orderNumber);
     if (!row) {
@@ -496,6 +605,20 @@ export async function createAdvanceReservationTossOrder(input: {
         success: false,
         error: "사전예약을 찾지 못했습니다.",
         code: "NOT_FOUND",
+      };
+    }
+
+    if (!isTargetScheduleRow(row, target.year, target.month)) {
+      console.warn("[사전예약결제] 주문 생성 — 대상 월 아님:", {
+        orderNumber,
+        target,
+        date: row.date,
+        className: row.className,
+      });
+      return {
+        success: false,
+        error: `${target.year}년 ${target.month}월 사전예약만 결제할 수 있습니다.`,
+        code: "NOT_TARGET_MONTH",
       };
     }
 
@@ -515,7 +638,11 @@ export async function createAdvanceReservationTossOrder(input: {
 
     // 뒤4자리만으로 생성할 때도 다른 번호와 충돌하면 거부
     if (!full) {
-      const sameLast4 = rows.filter((r) => r.phoneDigits.endsWith(last4));
+      const sameLast4 = rows.filter(
+        (r) =>
+          r.phoneDigits.endsWith(last4) &&
+          isTargetScheduleRow(r, target.year, target.month),
+      );
       const unique = new Set(sameLast4.map((r) => r.phoneDigits));
       if (unique.size >= 2) {
         return {
@@ -679,6 +806,25 @@ export async function confirmAdvanceReservationPayment(input: {
         }) ?? 0,
         label: formatReservationLabel(row),
         customerName: row.name,
+      };
+    }
+
+    // 신규 승인은 결제 기간(매월 13~15일 KST)에만 허용
+    const windowGate = assertPayWindowOpen();
+    if (!windowGate.ok) {
+      return {
+        success: false,
+        error: windowGate.error,
+        code: windowGate.code,
+      };
+    }
+
+    const target = getAdvancePayTargetYearMonth();
+    if (!isTargetScheduleRow(row, target.year, target.month)) {
+      return {
+        success: false,
+        error: `${target.year}년 ${target.month}월 사전예약만 결제할 수 있습니다.`,
+        code: "NOT_TARGET_MONTH",
       };
     }
 

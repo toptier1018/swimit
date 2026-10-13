@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     if (!result.success) {
       return NextResponse.json(
         { success: false, error: result.error, code: result.code },
-        { status: 400 },
+        { status: result.code === "WINDOW_CLOSED" ? 403 : 400 },
       );
     }
 

@@ -2938,13 +2938,6 @@ export default function SwimmingClassPage() {
   const novemberDiscount = novemberDiscountEligible
     ? NOVEMBER_BENEFIT_AMOUNT
     : 0;
-  const showNovemberOpenPromo =
-    hasNovemberOpenDiscount(selectedScheduleForPayment) &&
-    !isResistanceDiagnosisProduct({
-      className: selectedTimeSlot?.name,
-      productType: selectedTimeSlot?.productType || selectedProductType,
-    });
-
   useEffect(() => {
     if (isNovemberSchedule(selectedScheduleForPayment)) {
       console.log("[11월특강] 신청 모드", {
@@ -5492,15 +5485,6 @@ export default function SwimmingClassPage() {
                     </div>
                   )}
                 </div>
-              ) : null}
-              {showNovemberOpenPromo && step !== 4 ? (
-                <NovemberOpenPromoNotice
-                  originalPrice={
-                    selectedTimeSlot?.price ??
-                    selectedScheduleClass?.specialClass?.price ??
-                    80000
-                  }
-                />
               ) : null}
             <div className="mb-6 grid grid-cols-3 gap-2 sm:mb-8 sm:flex sm:flex-wrap sm:items-center sm:justify-center sm:gap-4">
               {/* Step 1 */}

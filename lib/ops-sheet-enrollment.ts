@@ -645,7 +645,11 @@ export async function getOpsSheetEnrollmentCounts(): Promise<{
             reservationStatus: statusRaw,
           });
         } else if (compactStatus(statusRaw) === "사전예약") {
-          kind = "hold";
+          // 사전예약(미결제)은 정원에 포함하지 않음 — 결제·확정 후에만 카운트
+          console.log("[운영시트카운트] 사전예약 미포함:", {
+            order,
+            reservationStatus: statusRaw,
+          });
         } else if (isReservationConfirmed(confirmedRaw)) {
           kind = "confirmed";
         } else if (
@@ -712,8 +716,15 @@ export async function getOpsSheetEnrollmentCounts(): Promise<{
 
         const statusRaw =
           colStatus >= 0 ? String(row[colStatus] ?? "") : "";
-        const isAdvanceReservation = compactStatus(statusRaw) === "사전예약";
-        if (!isAdvanceReservation && !isPendingPaymentStatus(statusRaw)) continue;
+        // 사전예약(미결제)은 정원 홀드에 넣지 않음
+        if (compactStatus(statusRaw) === "사전예약") {
+          console.log("[운영시트카운트] 수강자 사전예약 미포함:", {
+            order,
+            row: i + 1,
+          });
+          continue;
+        }
+        if (!isPendingPaymentStatus(statusRaw)) continue;
 
         const deadlineMs = resolveHoldDeadlineMs({
           deadlineRaw:
@@ -721,7 +732,7 @@ export async function getOpsSheetEnrollmentCounts(): Promise<{
           receivedRaw:
             colReceived >= 0 ? String(row[colReceived] ?? "") : "",
         });
-        if (!isAdvanceReservation && !isHoldStillValid(deadlineMs, nowMs)) continue;
+        if (!isHoldStillValid(deadlineMs, nowMs)) continue;
 
         const enrollmentKey = opsRowToEnrollmentKey({
           date: colDate >= 0 ? String(row[colDate] ?? "") : "",

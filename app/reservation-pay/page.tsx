@@ -336,7 +336,7 @@ export default function ReservationPayPage() {
                   휴대폰 뒤 4자리
                 </h2>
                 <p className="mt-1 text-sm text-gray-600">
-                  예: 010-4454-9986 → <strong>9986</strong>
+                  예: 010-1234-1234 → <strong>1234</strong>
                 </p>
                 <input
                   inputMode="numeric"

@@ -533,11 +533,15 @@ export async function updateCardPaymentSheetStatusByOrderNumber(
 
       // 운영 시트만 R/S 관례 fallback (수강자 시트의 R=입금기한, S=대기순번과 충돌 방지)
       // 헤더에 확정예약상태/입금상태가 있으면 수강자 시트에서도 갱신
+      // T(마지막알림)는 알림톡 발송용 — 입금완료를 T에 쓰지 않음
       if (isOpsSheet) {
         if (colConfirmed < 0) colConfirmed = 17; // R
         if (colPayment < 0) colPayment = 18; // S
       }
-      if (colNotify < 0) colNotify = 19; // T
+      // 마지막알림(T)은 헤더가 있을 때만, lastNotify를 명시한 경우에만 기록
+      if (colNotify < 0 && isOpsSheet && params.lastNotify !== undefined) {
+        colNotify = 19; // T
+      }
 
       for (let i = 1; i < rows.length; i += 1) {
         const row = rows[i] || [];
@@ -562,6 +566,8 @@ export async function updateCardPaymentSheetStatusByOrderNumber(
             values: [[params.paymentStatus]],
           });
         }
+        // T열은 문자(알림톡) 발송 표시 전용 — lastNotify를 명시한 경우에만 갱신
+        // (사전예약 결제 완료 시에는 lastNotify를 넘기지 않아 T를 비워 둠)
         if (params.lastNotify !== undefined && colNotify >= 0) {
           data.push({
             range: `'${sheetName}'!${columnIndexToLetter(colNotify)}${rowNumber}`,

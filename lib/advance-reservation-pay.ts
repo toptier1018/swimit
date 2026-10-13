@@ -911,13 +911,15 @@ export async function confirmAdvanceReservationPayment(input: {
     }
 
     // 기존 NR- row 업데이트 (새 row 생성 금지)
+    // - 입금상태(S) = 입금완료
+    // - 확정예약상태(R) = 예약확정 (정원·알림톡 대상)
+    // - 마지막알림(T)는 건드리지 않음 (문자 발송 표시 전용)
     const sheetUpdate = await updateCardPaymentSheetStatusByOrderNumber({
       orderNumber: row.orderNumber,
       confirmedStatus: "예약확정",
       paymentStatus: "입금완료",
     });
 
-    // 수강자 시트 예약상태도 결제완료로 (정원·운영 동기화에 유리)
     await markRawReservationPaid(row.orderNumber);
 
     if (!sheetUpdate.success) {
@@ -957,6 +959,10 @@ export async function confirmAdvanceReservationPayment(input: {
   }
 }
 
+/**
+ * 수강자 시트: 입금상태=입금완료, 확정예약상태=예약확정만 기록.
+ * 마지막알림(T)은 문자 발송 표시용이므로 절대 쓰지 않음.
+ */
 async function markRawReservationPaid(orderNumber: string): Promise<void> {
   try {
     if (!env.spreadsheetId) return;
@@ -988,9 +994,9 @@ async function markRawReservationPaid(orderNumber: string): Promise<void> {
     }
 
     const colOrder = findHeaderIndex(header, ["신청번호"]);
-    const colStatus = findHeaderIndex(header, ["예약상태"]);
     const colConfirmed = findHeaderIndex(header, ["확정예약상태"]);
     const colPayment = findHeaderIndex(header, ["입금상태"]);
+    const colNotify = findHeaderIndex(header, ["마지막알림"]);
     if (colOrder < 0) return;
 
     const all = await sheets.spreadsheets.values.get({
@@ -1004,37 +1010,42 @@ async function markRawReservationPaid(orderNumber: string): Promise<void> {
       if (cell !== orderNumber) continue;
       const rowNumber = i + 1;
       const data: { range: string; values: string[][] }[] = [];
-      if (colStatus >= 0) {
-        data.push({
-          range: `${rangeName}!${columnIndexToLetter(colStatus)}${rowNumber}`,
-          values: [["결제완료"]],
-        });
-      }
-      if (colConfirmed >= 0) {
-        data.push({
-          range: `${rangeName}!${columnIndexToLetter(colConfirmed)}${rowNumber}`,
-          values: [["예약확정"]],
-        });
-      }
-      if (colPayment >= 0) {
+
+      // 입금상태 → 입금완료 (결제 완료 표시)
+      if (colPayment >= 0 && colPayment !== colNotify) {
         data.push({
           range: `${rangeName}!${columnIndexToLetter(colPayment)}${rowNumber}`,
           values: [["입금완료"]],
         });
       }
-      if (data.length === 0) return;
+      // 확정예약상태 → 예약확정 (정원·알림톡 대상). T열과 절대 혼동하지 않음
+      if (colConfirmed >= 0 && colConfirmed !== colNotify) {
+        data.push({
+          range: `${rangeName}!${columnIndexToLetter(colConfirmed)}${rowNumber}`,
+          values: [["예약확정"]],
+        });
+      }
+
+      if (data.length === 0) {
+        console.warn("[사전예약결제] 입금상태/확정예약상태 열을 찾지 못함:", {
+          orderNumber,
+        });
+        return;
+      }
       await sheets.spreadsheets.values.batchUpdate({
         spreadsheetId: env.spreadsheetId,
         requestBody: { valueInputOption: "USER_ENTERED", data },
       });
-      console.log("[사전예약결제] 수강자 row 확정 기록:", {
+      console.log("[사전예약결제] 수강자 입금완료 기록 (T열 미변경):", {
         orderNumber,
         row: rowNumber,
-        fields: data.length,
+        입금상태: colPayment >= 0,
+        확정예약상태: colConfirmed >= 0,
+        마지막알림열: colNotify,
       });
       return;
     }
   } catch (error) {
-    console.error("[사전예약결제] 예약상태 갱신 실패(확정은 별도):", error);
+    console.error("[사전예약결제] 입금상태 갱신 실패(확정은 별도):", error);
   }
 }

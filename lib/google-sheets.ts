@@ -469,6 +469,8 @@ export type SheetLastNotifyValue = "예약확정" | "발송실패" | "";
 
 export type CardPaymentSheetStatusUpdate = {
   orderNumber: string;
+  /** 예약상태(Q) — 사전예약 결제 완료 시 결제완료 */
+  reservationStatus?: "결제완료";
   /** 확정예약상태(R) — 카드결제 완료 시 예약확정 */
   confirmedStatus?: "예약확정";
   /** 입금상태(S) — 카드결제 완료 시 입금완료 */
@@ -478,9 +480,9 @@ export type CardPaymentSheetStatusUpdate = {
 };
 
 /**
- * 신청번호로 행을 찾아 카드결제 확정 상태(R/S/T)를 갱신한다.
- * - 운영 시트: 확정예약상태·입금상태·마지막알림 (헤더 우선, 없으면 R/S/T)
- * - 수강자 시트: 마지막알림(T)만 (R/S는 입금기한·대기순번이라 건드리지 않음)
+ * 신청번호로 행을 찾아 결제 확정 상태(Q/R/S/T)를 갱신한다.
+ * - 운영 시트: 예약상태·확정예약상태·입금상태·마지막알림 (헤더 우선, 없으면 Q/R/S/T)
+ * - 수강자 시트: 헤더명으로만 갱신 (열 위치 관례 fallback 없음)
  */
 export async function updateCardPaymentSheetStatusByOrderNumber(
   params: CardPaymentSheetStatusUpdate,
@@ -527,14 +529,15 @@ export async function updateCardPaymentSheetStatusByOrderNumber(
       let colOrder = header.findIndex((h) => h === "신청번호");
       if (colOrder < 0) colOrder = 1;
 
+      let colReservation = header.findIndex((h) => h === "예약상태");
       let colConfirmed = header.findIndex((h) => h === "확정예약상태");
       let colPayment = header.findIndex((h) => h === "입금상태");
       let colNotify = header.findIndex((h) => h === "마지막알림");
 
-      // 운영 시트만 R/S 관례 fallback (수강자 시트의 R=입금기한, S=대기순번과 충돌 방지)
-      // 헤더에 확정예약상태/입금상태가 있으면 수강자 시트에서도 갱신
+      // 운영 시트만 Q/R/S 관례 fallback (수강자 시트의 R/S는 입금기한·대기순번과 충돌 방지)
       // T(마지막알림)는 알림톡 발송용 — 입금완료를 T에 쓰지 않음
       if (isOpsSheet) {
+        if (colReservation < 0) colReservation = 16; // Q
         if (colConfirmed < 0) colConfirmed = 17; // R
         if (colPayment < 0) colPayment = 18; // S
       }
@@ -551,9 +554,16 @@ export async function updateCardPaymentSheetStatusByOrderNumber(
         const rowNumber = i + 1;
         const data: { range: string; values: string[][] }[] = [];
 
+        const canWriteReservation = colReservation >= 0;
         const canWriteConfirmed = colConfirmed >= 0;
         const canWritePayment = colPayment >= 0;
 
+        if (params.reservationStatus && canWriteReservation) {
+          data.push({
+            range: `'${sheetName}'!${columnIndexToLetter(colReservation)}${rowNumber}`,
+            values: [[params.reservationStatus]],
+          });
+        }
         if (params.confirmedStatus && canWriteConfirmed) {
           data.push({
             range: `'${sheetName}'!${columnIndexToLetter(colConfirmed)}${rowNumber}`,
@@ -590,6 +600,9 @@ export async function updateCardPaymentSheetStatusByOrderNumber(
           sheetName,
           rowNumber,
           orderNumber,
+          reservationStatus: canWriteReservation
+            ? params.reservationStatus
+            : undefined,
           confirmedStatus: canWriteConfirmed
             ? params.confirmedStatus
             : undefined,

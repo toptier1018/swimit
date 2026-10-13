@@ -34,6 +34,10 @@ export const NHN_BANK_CONFIRM_TEMPLATE_CODES = {
     special: "SWIMIT_SHARK_V1",
     diagnosis: "SWIMIT_SHARK_V1",
   },
+  "강남 · 와이키키 링크&스윔": {
+    special: "SWIMIT_KM_V1",
+    diagnosis: "SWIMIT_KM_V1",
+  },
   "수원·화성": {
     special: "SWIMIT_SUWON_V1",
     diagnosis: "SWIMIT_SUWON_V1",
@@ -107,7 +111,24 @@ export function getNhnBankConfirmTemplateCode(input: {
     return { templateCode: templateCode.trim(), program, centerKey: center };
   }
 
-  // 별칭: 김포 / 수원·화성 (시트 장소 문자열이 약간 달라도 허용)
+  // 별칭: 강남 / 김포 / 수원·화성 (시트 장소 문자열이 약간 달라도 허용)
+  if (center.includes("강남") || center.includes("와이키키")) {
+    const templateCode =
+      NHN_BANK_CONFIRM_TEMPLATE_CODES["강남 · 와이키키 링크&스윔"].special;
+    console.log("[NHN입금확정템플릿] 선택", {
+      center,
+      centerKey: "강남 · 와이키키 링크&스윔",
+      program,
+      templateCode,
+      kakaoTemplateCode: "SWIMIT_KM_V1_XuIzbdWv3",
+    });
+    return {
+      templateCode,
+      program,
+      centerKey: "강남 · 와이키키 링크&스윔",
+    };
+  }
+
   if (center.includes("김포")) {
     const templateCode =
       NHN_BANK_CONFIRM_TEMPLATE_CODES["김포"].special;

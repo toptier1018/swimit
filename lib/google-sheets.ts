@@ -145,6 +145,12 @@ export type GoogleSheetRowInput = {
   utm_campaign?: string;
   /** AA~AC: 프로그램별 영상 촬영/콘텐츠 활용 동의 */
   contentConsent?: ResistanceContentConsent | null;
+  /** 11월 오픈 한정 할인 등 (헤더명으로 기록) */
+  예약혜택?: string;
+  할인전금액?: number;
+  예약할인액?: number;
+  할인후예정금액?: number;
+  혜택확정일시?: string;
 };
 
 /** B열(신청번호) 목록 — 중복 복구 방지 */
@@ -292,6 +298,69 @@ export async function appendRowToGoogleSheet(
         신청번호: row["신청번호"],
         updatedRange,
       });
+    }
+
+    // 11월 오픈 한정 할인 등 — 기존「예약 혜택」열에 기록 (없으면 헤더 추가)
+    if (
+      appendedRow &&
+      row["예약혜택"] &&
+      Number(row["예약할인액"] || 0) > 0
+    ) {
+      try {
+        const headerRes = await sheets.spreadsheets.values.get({
+          spreadsheetId: env.spreadsheetId,
+          range: `'${env.sheetName}'!1:1`,
+        });
+        const headers = (headerRes.data.values?.[0] || []).map((h) =>
+          String(h || ""),
+        );
+        const benefitEntries: Record<string, string | number> = {
+          "예약 혜택": row["예약혜택"] || "",
+          "할인 전 금액": row["할인전금액"] ?? "",
+          "예약 할인액": row["예약할인액"] ?? "",
+          "할인 후 예정 금액": row["할인후예정금액"] ?? "",
+          "혜택 확정 일시": row["혜택확정일시"] || "",
+        };
+        for (const key of Object.keys(benefitEntries)) {
+          if (!headers.includes(key)) headers.push(key);
+        }
+        const end = columnIndexToLetter(headers.length - 1);
+        await sheets.spreadsheets.values.update({
+          spreadsheetId: env.spreadsheetId,
+          range: `'${env.sheetName}'!A1:${end}1`,
+          valueInputOption: "RAW",
+          requestBody: { values: [headers] },
+        });
+        const updates = Object.entries(benefitEntries).map(([key, value]) => {
+          const col = headers.indexOf(key);
+          return {
+            range: `'${env.sheetName}'!${columnIndexToLetter(col)}${appendedRow}`,
+            values: [[value]],
+          };
+        });
+        await sheets.spreadsheets.values.batchUpdate({
+          spreadsheetId: env.spreadsheetId,
+          requestBody: {
+            valueInputOption: "USER_ENTERED",
+            data: updates,
+          },
+        });
+        console.log("[Google Sheets] 오픈 혜택 기록 성공:", {
+          신청번호: row["신청번호"],
+          행: appendedRow,
+          예약혜택: row["예약혜택"],
+          예약할인액: row["예약할인액"],
+        });
+      } catch (benefitError) {
+        console.error("[Google Sheets] 주문은 저장됐지만 혜택 기록 실패:", {
+          신청번호: row["신청번호"],
+          행: appendedRow,
+          error:
+            benefitError instanceof Error
+              ? benefitError.message
+              : String(benefitError),
+        });
+      }
     }
 
     if (row.contentConsent?.agreed) {

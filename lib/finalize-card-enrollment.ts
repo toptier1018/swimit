@@ -17,6 +17,8 @@ import {
   buildSheetScheduleLink,
   resolveClassScheduleFromEnrollmentKey,
 } from "@/lib/class-schedule-data";
+import { resolveClassBasePaymentAmount } from "@/lib/class-payment-amount";
+import { resolveNovemberOpenBenefit } from "@/lib/november-reservation";
 import {
   isContentConsentVersion,
   parseContentConsent,
@@ -515,15 +517,25 @@ export async function finalizeCardEnrollmentCore(
 
   if (customerName && phone) {
     const runSheetWrite = async () => {
+      if (!meta) {
+        sheetOk = false;
+        console.error("[카드후처리] 시트 저장 불가 — meta 없음:", orderNumber);
+        return;
+      }
+      const sheetMeta = meta;
       const claim = await claimSheetWrite({
         orderId,
         pageId: found.pageId,
-        meta,
-        selectedClass: selectedClassName || found.selectedClass || meta.tossOrderId,
+        meta: sheetMeta,
+        selectedClass:
+          selectedClassName ||
+          found.selectedClass ||
+          sheetMeta.tossOrderId ||
+          orderId,
         timeSlot: timeSlot || found.timeSlot || "",
         region: sheetRegion || region || found.region || "",
       });
-      meta = claim.meta;
+      if (claim.meta) meta = claim.meta;
 
       if (claim.action === "skip") {
         sheetSkippedDuplicate = true;
@@ -533,6 +545,22 @@ export async function finalizeCardEnrollmentCore(
           reason: claim.reason,
         });
         return;
+      }
+
+      const enrollmentKeyForBenefit =
+        selectedClassName || found.selectedClass || "";
+      const baseAmount =
+        resolveClassBasePaymentAmount(enrollmentKeyForBenefit) ?? null;
+      const openBenefit =
+        baseAmount != null
+          ? resolveNovemberOpenBenefit(enrollmentKeyForBenefit, baseAmount)
+          : null;
+      if (openBenefit) {
+        console.log("[카드후처리] 11월 오픈 혜택 시트 기록:", {
+          orderNumber,
+          className: enrollmentKeyForBenefit,
+          ...openBenefit,
+        });
       }
 
       const sheetResult = await appendRowToGoogleSheet({
@@ -560,6 +588,15 @@ export async function finalizeCardEnrollmentCore(
         utm_medium: traffic.utm_medium || "",
         utm_campaign: traffic.utm_campaign || "",
         contentConsent,
+        ...(openBenefit
+          ? {
+              예약혜택: openBenefit.benefitName,
+              할인전금액: openBenefit.originalAmount,
+              예약할인액: openBenefit.discountAmount,
+              할인후예정금액: openBenefit.expectedAmount,
+              혜택확정일시: openBenefit.reservedAt,
+            }
+          : {}),
       });
       if (!sheetResult.success) {
         sheetOk = false;
@@ -568,14 +605,17 @@ export async function finalizeCardEnrollmentCore(
       }
 
       const written: CardPendingMeta = {
-        ...meta,
+        ...(meta ?? sheetMeta),
         sheetWrite: "SHEET_WRITTEN",
       };
       const markWritten = await persistCardMeta({
         pageId: found.pageId,
         meta: written,
         selectedClass:
-          selectedClassName || found.selectedClass || meta.tossOrderId,
+          selectedClassName ||
+          found.selectedClass ||
+          written.tossOrderId ||
+          orderId,
         timeSlot: timeSlot || found.timeSlot || "",
         region: sheetRegion || region || found.region || "",
       });

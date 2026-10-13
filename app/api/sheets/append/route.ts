@@ -4,6 +4,8 @@ import {
   buildSheetScheduleLink,
   resolveClassScheduleFromEnrollmentKey,
 } from "@/lib/class-schedule-data";
+import { resolveClassBasePaymentAmount } from "@/lib/class-payment-amount";
+import { resolveNovemberOpenBenefit } from "@/lib/november-reservation";
 import {
   isDiagnosisPaymentConsentVersion,
   isResistanceDiagnosisProduct,
@@ -96,11 +98,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 10/13~10/15 오픈 한정 할인만 시트에 기록 (정상가·진단·기간 외는 미기록)
+    const benefitKey = classKey || String(body.클래스 || "").trim();
+    const baseAmount = resolveClassBasePaymentAmount(benefitKey);
+    const openBenefit =
+      baseAmount != null
+        ? resolveNovemberOpenBenefit(benefitKey, baseAmount)
+        : null;
+    if (openBenefit) {
+      console.log("[Google Sheets API] 11월 오픈 혜택 적용:", {
+        신청번호: body?.신청번호,
+        benefitKey,
+        ...openBenefit,
+      });
+    }
+
     console.log("[Google Sheets API] 저장 일정 확정:", {
       classKey,
       날짜: isoDate,
       특강지역: location,
       링크: link,
+      openDiscount: openBenefit?.discountAmount ?? 0,
     });
 
     const result = await appendRowToGoogleSheet({
@@ -130,6 +148,15 @@ export async function POST(request: NextRequest) {
       utm_medium: body.utm_medium ?? "",
       utm_campaign: body.utm_campaign ?? "",
       contentConsent,
+      ...(openBenefit
+        ? {
+            예약혜택: openBenefit.benefitName,
+            할인전금액: openBenefit.originalAmount,
+            예약할인액: openBenefit.discountAmount,
+            할인후예정금액: openBenefit.expectedAmount,
+            혜택확정일시: openBenefit.reservedAt,
+          }
+        : {}),
     });
 
     if (!result.success) {

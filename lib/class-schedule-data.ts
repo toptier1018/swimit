@@ -418,7 +418,7 @@ export const CLASS_SCHEDULES: ClassScheduleItem[] = [
     venue: "스윔스튜디오제이",
     address:
       "경기도 화성시 동탄구 동탄신리천로 414 경서타워 4층 스윔스튜디오제이",
-    spots: "자유형 14명 · 평영·접영 각 7명 · 진단 14명",
+    spots: "자유형 14명 · 접영 7명 · 진단 14명",
     scheduleSummaryLines: [
       "1부 제로 특강 · 14:00~16:00 (2시간)",
       "1부 진단 프로그램 · 14:00~16:00 (2시간)",
@@ -543,7 +543,7 @@ export const DEFAULT_CAPACITY_BY_CLASS: Record<string, number> = {
   "[목동 10/18] 2부 특강 스타트": START_TURN_CAPACITY,
   "[목동 10/18] 2부 특강 스타트·턴 연결": START_TURN_CAPACITY,
   "[목동 10/18] 1부 특강 스타트·턴 연결": START_TURN_CAPACITY,
-  // 동탄 10/25 스윔스튜디오제이
+  // 동탄 10/25 스윔스튜디오제이 (평영 미운영 — 구 키는 기존 신청 집계용으로만 유지)
   "[동탄 10/25] 1부 특강 자유형": 14,
   "[동탄 10/25] 1부 특강 평영": 7,
   "[동탄 10/25] 1부 특강 접영": 7,

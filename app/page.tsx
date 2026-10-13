@@ -787,6 +787,18 @@ const TIMETABLE_DONGTAN_AUGUST: TimetableRow[] = [
   },
 ];
 
+/** 스윔스튜디오제이 10/25 특강 (동탄) — 평영 미운영 */
+const TIMETABLE_DONGTAN_OCTOBER: TimetableRow[] = [
+  {
+    session: PRODUCT_CATALOG.zero.session,
+    time: PRODUCT_CATALOG.zero.time,
+    lanes: [
+      { lane: "1레인", title: "자유형", price: PRODUCT_CATALOG.zero.price },
+      { lane: "3레인", title: "접영", price: PRODUCT_CATALOG.zero.price },
+    ],
+  },
+];
+
 /** 목동스포츠센터 8/30 특강 — 1부에 특강과 저항 진단 프로그램(5·6레인) 동시 운영 */
 const TIMETABLE_MOKDONG_AUGUST: TimetableRow[] = [
   {
@@ -968,7 +980,7 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   19: TIMETABLE_CHEONGNA_SEPTEMBER, // 9/27 청라
   20: TIMETABLE_BUSAN_OCTOBER, // 10/4 부산 (평영·접영만)
   22: TIMETABLE_MOKDONG_OCTOBER_NO_DIAGNOSIS, // 10/18 목동 (특강+스타트·턴, 진단 없음)
-  23: TIMETABLE_DONGTAN_AUGUST, // 10/25 동탄 스윔스튜디오제이
+  23: TIMETABLE_DONGTAN_OCTOBER, // 10/25 동탄 (평영 미운영)
   24: TIMETABLE_MOKDONG_SEPTEMBER, // 11/8 부산 (특강+진단, 레인 미표시)
   25: TIMETABLE_GANGNAM_NOVEMBER, // 11/15 강남 (특강만)
   26: TIMETABLE_MOKDONG_SEPTEMBER, // 11/22 목동
@@ -1734,6 +1746,9 @@ export default function SwimmingClassPage() {
     );
     console.log(
       "[특강일정] 목동 10/18 진단 프로그램 미운영 — 특강+스타트·턴만 모집",
+    );
+    console.log(
+      "[특강일정] 동탄 10/25 평영 클래스 미운영 — 자유형·접영·진단만 모집",
     );
     console.log("[특강일정] 11월 일정 추가", {
       "부산 11/8": "특강+진단 14:00~16:00 + 스타트·턴 14:00~16:00(1부)",

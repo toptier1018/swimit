@@ -911,15 +911,18 @@ export async function confirmAdvanceReservationPayment(input: {
     }
 
     // 기존 NR- row 업데이트 (새 row 생성 금지)
-    // - 예약상태(Q) = 결제완료  ← 알림톡 자동 발송 트리거
-    // - 입금상태(S) = 입금완료
-    // - 확정예약상태(R) = 예약확정
+    // - 수강자 시트만: 예약상태(Q) = 결제완료  ← 알림톡 자동 발송 트리거
+    // - 운영 시트: 예약상태(Q)는 변경하지 않음
+    // - 입금상태(S) = 입금완료 / 확정예약상태(R) = 예약확정
     // - 마지막알림(T)는 건드리지 않음 (문자 발송 표시 전용)
     const sheetUpdate = await updateCardPaymentSheetStatusByOrderNumber({
       orderNumber: row.orderNumber,
-      reservationStatus: "결제완료",
+      reservationStatus: "결제완료", // 수강자 시트에만 적용
       confirmedStatus: "예약확정",
       paymentStatus: "입금완료",
+    });
+    console.log("[사전예약결제] 시트 갱신 — Q는 수강자만, 운영 Q 미변경", {
+      orderNumber: row.orderNumber,
     });
 
     await markRawReservationPaid(row.orderNumber);

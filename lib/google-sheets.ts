@@ -481,8 +481,8 @@ export type CardPaymentSheetStatusUpdate = {
 
 /**
  * 신청번호로 행을 찾아 결제 확정 상태(Q/R/S/T)를 갱신한다.
- * - 운영 시트: 예약상태·확정예약상태·입금상태·마지막알림 (헤더 우선, 없으면 Q/R/S/T)
- * - 수강자 시트: 헤더명으로만 갱신 (열 위치 관례 fallback 없음)
+ * - 수강자 시트: 예약상태(Q)·확정예약상태·입금상태 (헤더명)
+ * - 운영 시트: 확정예약상태·입금상태만 (예약상태 Q는 수강자 시트 전용 — 운영에서는 변경하지 않음)
  */
 export async function updateCardPaymentSheetStatusByOrderNumber(
   params: CardPaymentSheetStatusUpdate,
@@ -534,10 +534,11 @@ export async function updateCardPaymentSheetStatusByOrderNumber(
       let colPayment = header.findIndex((h) => h === "입금상태");
       let colNotify = header.findIndex((h) => h === "마지막알림");
 
-      // 운영 시트만 Q/R/S 관례 fallback (수강자 시트의 R/S는 입금기한·대기순번과 충돌 방지)
+      // 운영 시트만 R/S 관례 fallback (수강자 시트의 R/S는 입금기한·대기순번과 충돌 방지)
+      // 예약상태(Q)는 수강자 시트에서만 변경 — 운영 시트 Q는 절대 쓰지 않음
       // T(마지막알림)는 알림톡 발송용 — 입금완료를 T에 쓰지 않음
       if (isOpsSheet) {
-        if (colReservation < 0) colReservation = 16; // Q
+        colReservation = -1; // 운영 시트 예약상태 변경 금지
         if (colConfirmed < 0) colConfirmed = 17; // R
         if (colPayment < 0) colPayment = 18; // S
       }
@@ -554,7 +555,8 @@ export async function updateCardPaymentSheetStatusByOrderNumber(
         const rowNumber = i + 1;
         const data: { range: string; values: string[][] }[] = [];
 
-        const canWriteReservation = colReservation >= 0;
+        // 수강자 시트만: 사전예약 → 결제완료
+        const canWriteReservation = !isOpsSheet && colReservation >= 0;
         const canWriteConfirmed = colConfirmed >= 0;
         const canWritePayment = colPayment >= 0;
 

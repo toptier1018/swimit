@@ -1706,9 +1706,12 @@ export default function SwimmingClassPage() {
   const activeClassKeys = new Set(
     getActiveClasses().flatMap((c) => {
       if (isDongtanDualProductClass(c.id)) {
+        // 시간표에 있는 영법만 (예: 동탄 10/25 평영 미운영)
+        const { session, strokes } = getAvailableStrokesForClass(c.id);
+        const strokeSession = session || PRODUCT_CATALOG.zero.session;
         return [
-          ...STROKE_ORDER.map((stroke) =>
-            makeClassKey(c.id, PRODUCT_CATALOG.zero.session, stroke),
+          ...strokes.map(({ stroke }) =>
+            makeClassKey(c.id, strokeSession, stroke),
           ),
           getDongtanDiagnosisEnrollmentKey(c.id),
         ];
@@ -6416,7 +6419,14 @@ export default function SwimmingClassPage() {
                               ) : (
                                 <>
                                   <div className="grid gap-3 sm:grid-cols-3">
-                                    {STROKE_ORDER.map((stroke) => {
+                                    {(getAvailableStrokesForClass(
+                                      selectedClassIdNum,
+                                    ).strokes.length > 0
+                                      ? getAvailableStrokesForClass(
+                                          selectedClassIdNum,
+                                        ).strokes.map((s) => s.stroke)
+                                      : STROKE_ORDER
+                                    ).map((stroke) => {
                                       const catalog = STROKE_CATALOG[stroke];
                                       const classKey = makeClassKey(
                                         selectedClassIdNum,

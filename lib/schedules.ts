@@ -249,6 +249,8 @@ function getActiveEnrollmentKeys(): string[] {
 
   return Object.keys(DEFAULT_CAPACITY_BY_CLASS)
     .filter((key) => {
+      // 정원 0 = 모집 중단 (예: 동탄 10/25 평영)
+      if ((DEFAULT_CAPACITY_BY_CLASS[key] ?? 0) <= 0) return false;
       const parsed = parseEnrollmentKey(key);
       return parsed ? activeLabels.has(parsed.label) : false;
     })

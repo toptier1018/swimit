@@ -1,5 +1,6 @@
 import "server-only";
 import { google } from "googleapis";
+import { toClassSheetLabel } from "@/lib/class-sheet-label";
 import type { ResistanceContentConsent } from "@/lib/resistance-content-consent";
 
 const env = {
@@ -239,7 +240,7 @@ export async function appendRowToGoogleSheet(
         row["수영경력"],
         row["통증부위"],
         row["해결문제"],
-        row["클래스"],
+        toClassSheetLabel(row["클래스"]),
         row["회차"],
         row["레인"],
         sheetDate,
@@ -714,6 +715,8 @@ export async function appendAdvanceReservationToGoogleSheet(
       "통증부위", "해결문제", "클래스", "회차", "레인", "날짜", "특강지역", "예약상태", "링크", "입금기한", "대기순번",
     ];
     core.forEach((key, index) => { values[index] = String(row[key] ?? ""); });
+    // 사전예약도 클래스 열에는 이름만 저장하고 날짜·지역·회차는 별도 열을 사용한다.
+    values[core.indexOf("클래스")] = toClassSheetLabel(row.클래스);
     // RAW여도 날짜는 YYYY-MM-DD 문자열로 정규화 (일련번호 유입 방지)
     const dateCol = core.indexOf("날짜");
     if (dateCol >= 0) {

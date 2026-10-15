@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
       이름: data.form.name, 전화번호: data.form.phone, 이메일: data.form.email,
       성별: data.form.gender === "male" ? "남성" : "여성", 거주지역: data.form.location,
       수영경력: data.form.swimmingExperience, 통증부위: data.form.painAreas.join(", "), 해결문제: data.form.message,
-      클래스: data.classKey, 회차: "1부", 레인: "", 날짜: toClassScheduleIsoDate(offer.schedule), 특강지역: offer.schedule.location,
+      클래스: confirmedOffer.stroke, 회차: "1부", 레인: "", 날짜: toClassScheduleIsoDate(offer.schedule), 특강지역: offer.schedule.location,
       예약상태: status, 입금기한: "", contentConsent: { ...consent, agreedAt: confirmedOffer.reservedAt },
     }, confirmedOffer);
     if (!result.success) throw new Error(result.error);

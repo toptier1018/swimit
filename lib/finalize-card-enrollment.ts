@@ -116,20 +116,32 @@ function sessionFromTimeSlot(timeSlot: string): string {
   return matched?.[0] ?? timeSlot;
 }
 
+/** 시트「클래스」열 저장값 — 화면 표시명과 분리 (장거리 집중반 → 자유형 등) */
 function classSheetLabelFromSelected(selectedClass: string): string {
-  if (/진단/.test(selectedClass)) return "진단";
+  const raw = String(selectedClass || "").trim();
+  if (/진단/.test(raw)) return "진단";
   // 스타트·턴 연결 특강 → 시트 저장값 `스타트` (화면 표시명과 분리)
   if (
-    /특강\s*스타트$/.test(selectedClass.trim()) ||
-    selectedClass.includes("스타트·턴") ||
-    selectedClass === "스타트"
+    /특강\s*스타트$/.test(raw) ||
+    raw.includes("스타트·턴") ||
+    raw === "스타트"
   ) {
     return "스타트";
   }
-  if (/턴 2시간|특강 턴/.test(selectedClass)) return "턴 2시간 집중반";
-  if (/배영 2시간|특강 배영/.test(selectedClass)) return "배영 2시간 집중반";
-  const stroke = selectedClass.match(/(자유형|평영|접영|턴|배영)/)?.[1];
-  return stroke || selectedClass;
+  if (/턴 2시간|특강 턴/.test(raw)) return "턴 2시간 집중반";
+  if (/배영 2시간|특강 배영/.test(raw)) return "배영 2시간 집중반";
+  // 「자유형 장거리 집중반」→「자유형」
+  const stroke = raw.match(/^(자유형|평영|접영)/)?.[1]
+    || raw.match(/특강\s+(자유형|평영|접영)/)?.[1]
+    || raw.match(/(자유형|평영|접영|턴|배영)/)?.[1];
+  if (stroke) {
+    console.log("[카드후처리] 시트 클래스명 정규화:", {
+      from: raw,
+      to: stroke,
+    });
+    return stroke;
+  }
+  return raw;
 }
 
 async function persistCardMeta(params: {
@@ -422,9 +434,10 @@ export async function finalizeCardEnrollmentCore(
     enrollment?.timeSlot?.trim() || found.timeSlot || "";
   const region =
     enrollment?.region?.trim() || found.region || location || "";
-  const classSheetLabel =
-    enrollment?.classSheetLabel?.trim() ||
-    classSheetLabelFromSelected(selectedClassName);
+  // 클라이언트가「자유형 장거리 집중반」을 보내도 시트에는 영법만 저장
+  const classSheetLabel = classSheetLabelFromSelected(
+    enrollment?.classSheetLabel?.trim() || selectedClassName,
+  );
   const sessionLabel =
     enrollment?.sessionLabel?.trim() || sessionFromTimeSlot(timeSlot);
   // 웹훅만 먼저 오면 enrollment가 없어 날짜/레인이 비기 쉬움 → enrollment key 정본으로 확정

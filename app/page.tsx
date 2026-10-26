@@ -667,7 +667,22 @@ const getSelectedClassSheetLabel = (slot: {
   ) {
     return START_TURN_SHEET_LABEL;
   }
-  // 제로·기타: 영법명 (예: 자유형) — 노션 키는 [동탄 8/23] 1부 특강 자유형
+  // 장거리 집중반 등 화면 표시명 → 시트에는 영법만 (자유형/평영/접영)
+  const strokeFromTitle = String(slot.title || "").match(
+    /^(자유형|평영|접영)/,
+  )?.[1];
+  if (strokeFromTitle) {
+    console.log("[시트클래스명] 표시명→영법만:", {
+      title: slot.title,
+      sheetLabel: strokeFromTitle,
+    });
+    return strokeFromTitle;
+  }
+  const strokeFromKey = String(slot.name || "").match(
+    /특강\s+(자유형|평영|접영|스타트)\s*$/,
+  )?.[1];
+  if (strokeFromKey) return strokeFromKey;
+  // 제로·기타: 영법명 (예: 자유형)
   return slot.title;
 };
 

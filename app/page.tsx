@@ -1019,6 +1019,18 @@ const TIMETABLE_MOKDONG_OCTOBER_NO_DIAGNOSIS: TimetableRow[] = [
   },
 ];
 
+/** 조이풀스윔 11/8 특강 (부산) — 자유형·접영만 (평영·진단·스타트·턴 미운영) */
+const TIMETABLE_BUSAN_NOVEMBER: TimetableRow[] = [
+  {
+    session: "1부 특강",
+    time: "14:00 ~ 16:00",
+    lanes: [
+      { lane: UNASSIGNED_LANE, title: "자유형", price: 80000 },
+      { lane: UNASSIGNED_LANE, title: "접영", price: 80000 },
+    ],
+  },
+];
+
 /** 청라스카이스위밍 9/27 특강 — 특강+진단 동시, 레인 미표시 */
 const TIMETABLE_CHEONGNA_SEPTEMBER: TimetableRow[] = [
   {
@@ -1055,7 +1067,7 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   20: TIMETABLE_BUSAN_OCTOBER, // 10/4 부산 (평영·접영만)
   22: TIMETABLE_MOKDONG_OCTOBER_NO_DIAGNOSIS, // 10/18 목동 (특강+스타트·턴, 진단 없음)
   23: TIMETABLE_DONGTAN_OCTOBER, // 10/25 동탄 (평영 미운영)
-  24: TIMETABLE_MOKDONG_SEPTEMBER, // 11/8 부산 (특강+진단, 레인 미표시)
+  24: TIMETABLE_BUSAN_NOVEMBER, // 11/8 부산 (자유형·접영만)
   25: TIMETABLE_GANGNAM_NOVEMBER, // 11/15 강남 (특강만)
   26: TIMETABLE_MOKDONG_SEPTEMBER, // 11/22 목동
   27: TIMETABLE_DONGTAN_INTENSIVE, // 11/29 동탄 3시간 집중 (진단 없음)
@@ -1838,8 +1850,11 @@ export default function SwimmingClassPage() {
     console.log(
       "[특강일정] 동탄 10/25 평영 클래스 미운영 — 자유형·접영·진단만 모집",
     );
+    console.log(
+      "[특강일정] 부산 11/8 평영·진단·스타트·턴 미운영 — 자유형·접영만 모집",
+    );
     console.log("[특강일정] 11월 일정 추가", {
-      "부산 11/8": "특강+진단 14:00~16:00 + 스타트·턴 14:00~16:00(1부)",
+      "부산 11/8": "특강만 14:00~16:00 · 자유형·접영 (평영·진단·스타트·턴 미운영)",
       "강남 11/15": "특강만 16:00~18:00",
       "목동 11/22": "특강+진단 14:00~16:00 (스타트·턴 미운영)",
       "동탄 11/29": "영법별 장거리 집중 14:00~17:00 · 115,000원",

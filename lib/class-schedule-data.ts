@@ -52,7 +52,7 @@ export const START_TURN_DISPLAY_NAME = "스윔잇 스타트·턴 연결 특강";
 export const START_TURN_SESSION = "1부 특강";
 export const START_TURN_CAPACITY = 14;
 
-/** 11/8·11/22 등 — 런칭 특가 75,000원 (5,000원 할인) */
+/** 스타트·턴 런칭 특가 75,000원 (5,000원 할인) — 일정의 addonSpecialClass로 붙일 때만 노출 */
 export const START_TURN_SPECIAL: SpecialClassInfo = {
   specialType: "start-turn-2h",
   duration: "2시간",
@@ -435,14 +435,12 @@ export const CLASS_SCHEDULES: ClassScheduleItem[] = [
     month: 11,
     venue: "조이풀스윔",
     address: "부산광역시 부산진구 백양관문로 20 현대빌딩 지하 1, 2층",
-    spots: "자유형 14명 · 평영·접영 각 7명 · 진단 14명 · 스타트·턴 14명",
+    spots: "자유형 14명 · 접영 7명",
     scheduleSummaryLines: [
-      "1부 특강 · 14:00~16:00 (2시간)",
-      "1부 진단 프로그램 · 14:00~16:00",
-      "1부 스타트·턴 연결 특강 · 14:00~16:00 (2시간)",
+      "1부 특강 · 14:00~16:00 (2시간) · 자유형·접영 (평영·진단·스타트·턴 제외)",
     ],
-    badge: "특강 + 진단 + SPECIAL",
-    addonSpecialClass: START_TURN_SPECIAL,
+    badge: "특강 운영",
+    // 평영·진단·스타트·턴 미운영 (11/8)
   },
   {
     id: 25,
@@ -550,15 +548,16 @@ export const DEFAULT_CAPACITY_BY_CLASS: Record<string, number> = {
   "[동탄 10/25] 1부 진단": 14,
   // 구 키 호환 (2부에서 1부로 옮기기 전)
   "[동탄 10/25] 2부 진단": 14,
-  // 부산 11/8
+  // 부산 11/8 (평영·진단·스타트·턴 미운영)
   "[부산 11/8] 1부 특강 자유형": 14,
-  "[부산 11/8] 1부 특강 평영": 7,
   "[부산 11/8] 1부 특강 접영": 7,
-  "[부산 11/8] 1부 진단": 14,
-  "[부산 11/8] 1부 특강 스타트": START_TURN_CAPACITY,
-  "[부산 11/8] 2부 특강 스타트": START_TURN_CAPACITY,
-  "[부산 11/8] 2부 특강 스타트·턴 연결": START_TURN_CAPACITY,
-  "[부산 11/8] 1부 특강 스타트·턴 연결": START_TURN_CAPACITY,
+  // 구 키 — 모집 중단. 기존 신청 집계 호환용(신규 노출·선택 불가)
+  "[부산 11/8] 1부 특강 평영": 0,
+  "[부산 11/8] 1부 진단": 0,
+  "[부산 11/8] 1부 특강 스타트": 0,
+  "[부산 11/8] 2부 특강 스타트": 0,
+  "[부산 11/8] 2부 특강 스타트·턴 연결": 0,
+  "[부산 11/8] 1부 특강 스타트·턴 연결": 0,
   // 강남 11/15 와이키키 링크&스윔 (진단 없음)
   "[강남 11/15] 1부 특강 자유형": 7,
   "[강남 11/15] 1부 특강 평영": 7,

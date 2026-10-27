@@ -1083,13 +1083,14 @@ const TIMETABLE_BUSAN_DECEMBER: TimetableRow[] = [
   },
 ];
 
-/** 북한산힐스테이트3차 12/13 (은평) — 자유형·접영만 + 스타트·턴 (평영·진단 미운영) */
+/** 북한산힐스테이트3차 12/13 (은평) — 자유형·평영·접영 + 스타트·턴 (진단 미운영) */
 const TIMETABLE_EUNPYEONG_DECEMBER: TimetableRow[] = [
   {
     session: "1부 특강",
     time: "17:00 ~ 19:00",
     lanes: [
       { lane: UNASSIGNED_LANE, title: "자유형", price: 80000 },
+      { lane: UNASSIGNED_LANE, title: "평영", price: 80000 },
       { lane: UNASSIGNED_LANE, title: "접영", price: 80000 },
     ],
   },
@@ -1154,7 +1155,7 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   26: TIMETABLE_MOKDONG_SEPTEMBER, // 11/22 목동
   27: TIMETABLE_DONGTAN_INTENSIVE, // 11/29 동탄 3시간 집중 (진단 없음)
   28: TIMETABLE_BUSAN_DECEMBER, // 12/6 부산 (특강+진단)
-  29: TIMETABLE_EUNPYEONG_DECEMBER, // 12/13 은평 (자유형·접영 + 스타트)
+  29: TIMETABLE_EUNPYEONG_DECEMBER, // 12/13 은평 (자유형·평영·접영 + 스타트)
   30: TIMETABLE_SONGPA_DECEMBER, // 12/19 송파 (특강+진단)
   31: TIMETABLE_MOKDONG_SEPTEMBER, // 12/20 목동 (특강+진단)
 };
@@ -1952,7 +1953,7 @@ export default function SwimmingClassPage() {
     });
     console.log("[특강일정] 12월 일정 추가", {
       "부산 12/6": "특강+진단 14:00~16:00",
-      "은평 12/13": "특강+스타트 17:00~19:00 · 자유형·접영 (평영·진단 제외)",
+      "은평 12/13": "특강+스타트 17:00~19:00 · 자유형·평영·접영 (진단 제외)",
       "송파 12/19": "특강+진단 17:15~19:15",
       "목동 12/20": "특강+진단 14:00~16:00 · 접영 14명",
       advance: "11/15까지 사전예약 · 특강·스타트·진단 5,000원 혜택(진단 기본 35,000→사전예약 30,000)",

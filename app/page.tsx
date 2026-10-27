@@ -4557,9 +4557,31 @@ export default function SwimmingClassPage() {
                     <li>· 1가지 영법 저항분석리포트 제공</li>
                   </ul>
 
-                  <p className="break-keep text-center text-sm font-bold leading-6 text-gray-800 sm:text-[15px]">
-                    저항 진단 프로그램은 별도의 상품입니다.
-                  </p>
+                  <div className="space-y-2.5 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3.5 sm:py-4">
+                    <p className="text-[15px] font-bold leading-6 text-gray-950">
+                      특강과 다른 상품입니다
+                    </p>
+                    <ul className="space-y-1.5 break-keep text-sm leading-6 text-gray-700 sm:text-[15px] sm:leading-7">
+                      <li>
+                        · 저항 진단은{" "}
+                        <span className="font-bold text-gray-950">
+                          특강에 포함되지 않습니다
+                        </span>
+                        . 따로 신청하는 별도 상품입니다.
+                      </li>
+                      <li>
+                        · 특강만 신청하거나, 진단만 신청하거나,{" "}
+                        <span className="font-bold text-gray-950">
+                          둘 다 신청
+                        </span>
+                        할 수도 있습니다.
+                      </li>
+                      <li>
+                        · 진단으로 원인을 확인한 뒤, 같은 날·같은 센터 특강으로
+                        교정까지 이어갈 수 있습니다.
+                      </li>
+                    </ul>
+                  </div>
                 </div>
               </section>
               ) : null}

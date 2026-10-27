@@ -35,6 +35,18 @@ export const ALIMTALK_TEMPLATE_CODES = {
     diagnosis: "UL_0791",
   },
 
+  /** 은평 12/13 북한산힐스테이트 — 기존 은평 템플릿 코드 재사용 */
+  "서울 은평 · 북한산힐스테이트3차": {
+    special: "UL_0787",
+    diagnosis: "UL_0787",
+  },
+
+  /** 송파 12/19 — 알림톡 코드 확인 전 임시(은평과 동일 계열). 확정 코드 받으면 교체 */
+  "서울 송파 · 헬스보이짐": {
+    special: "UL_0787",
+    diagnosis: "UL_0787",
+  },
+
   "서울 중구 · 스포빌키즈쿠아": {
     special: "UL_0848",
     diagnosis: "UL_0848",

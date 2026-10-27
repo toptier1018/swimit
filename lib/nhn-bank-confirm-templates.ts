@@ -22,6 +22,15 @@ export const NHN_BANK_CONFIRM_TEMPLATE_CODES = {
     special: "SWIMIT_BS_V1",
     diagnosis: "SWIMIT_BS_V1",
   },
+  "서울 은평 · 북한산힐스테이트3차": {
+    special: "SWIMIT_EP_V1",
+    diagnosis: "SWIMIT_EP_V1",
+  },
+  /** 송파 — NHN 템플릿 코드 확정 전 임시. 확정 코드 받으면 교체 */
+  "서울 송파 · 헬스보이짐": {
+    special: "SWIMIT_EP_V1",
+    diagnosis: "SWIMIT_EP_V1",
+  },
   "서울 중구 · 스포빌키즈쿠아": {
     special: "SWIMIT_SPVIL_V1",
     diagnosis: "SWIMIT_SPVIL_V1",

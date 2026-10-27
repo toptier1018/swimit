@@ -54,6 +54,14 @@ import {
   NOVEMBER_BENEFIT_END,
   NOVEMBER_PAID_OPEN_START,
 } from "@/lib/november-reservation";
+import {
+  DECEMBER_ADVANCE_END,
+  DECEMBER_BENEFIT_AMOUNT,
+  isDecemberAdvanceReservationOpen,
+  isDecemberDiscountEligibleClass,
+  isDecemberPaidOpen,
+  isDecemberSchedule,
+} from "@/lib/december-reservation";
 import { checkDuplicateForSameClass } from "@/app/actions/google-sheets";
 import {
   EMPTY_TRAFFIC_SOURCE,
@@ -213,6 +221,8 @@ const ProductPriceLabel = ({
   className = "",
   reservationOnly = false,
   reservationBenefit = false,
+  reservationOnlyHint = "10월 13일부터 정식 오픈·결제",
+  reservationOnlyTitle = "우선예약",
 }: {
   price: number;
   originalPrice: number;
@@ -220,17 +230,19 @@ const ProductPriceLabel = ({
   className?: string;
   reservationOnly?: boolean;
   reservationBenefit?: boolean;
+  reservationOnlyHint?: string;
+  reservationOnlyTitle?: string;
 }) =>
   reservationOnly ? (
     <span className="block rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-sm leading-5 text-blue-950">
       {reservationBenefit ? (
         <>
           <span className="block text-xs font-bold text-blue-700">
-            우선예약
+            {reservationOnlyTitle}
           </span>
           <strong className="font-bold">지금 결제 없이 등록</strong>
           <span className="mt-0.5 block text-xs font-medium text-blue-800">
-            10월 13일부터 정식 오픈·결제
+            {reservationOnlyHint}
           </span>
         </>
       ) : (
@@ -1031,6 +1043,54 @@ const TIMETABLE_BUSAN_NOVEMBER: TimetableRow[] = [
   },
 ];
 
+/** 조이풀스윔 12/6 특강 (부산) — 특강+진단, 레인 미표시 */
+const TIMETABLE_BUSAN_DECEMBER: TimetableRow[] = [
+  {
+    session: "1부 특강",
+    time: "14:00 ~ 16:00",
+    lanes: [
+      { lane: UNASSIGNED_LANE, title: "자유형", price: 80000 },
+      { lane: UNASSIGNED_LANE, title: "평영", price: 80000 },
+      { lane: UNASSIGNED_LANE, title: "접영", price: 80000 },
+      {
+        lane: UNASSIGNED_LANE,
+        title: DIAGNOSIS_LANE_TITLE,
+        price: PRODUCT_CATALOG.diagnosis.price,
+      },
+    ],
+  },
+];
+
+/** 북한산힐스테이트3차 12/13 (은평) — 자유형·접영만 + 스타트·턴 (평영·진단 미운영) */
+const TIMETABLE_EUNPYEONG_DECEMBER: TimetableRow[] = [
+  {
+    session: "1부 특강",
+    time: "17:00 ~ 19:00",
+    lanes: [
+      { lane: UNASSIGNED_LANE, title: "자유형", price: 80000 },
+      { lane: UNASSIGNED_LANE, title: "접영", price: 80000 },
+    ],
+  },
+];
+
+/** 헬스보이짐 12/19 (송파) — 특강+진단 17:15~19:15 */
+const TIMETABLE_SONGPA_DECEMBER: TimetableRow[] = [
+  {
+    session: "1부 특강",
+    time: "17:15 ~ 19:15",
+    lanes: [
+      { lane: UNASSIGNED_LANE, title: "자유형", price: 80000 },
+      { lane: UNASSIGNED_LANE, title: "평영", price: 80000 },
+      { lane: UNASSIGNED_LANE, title: "접영", price: 80000 },
+      {
+        lane: UNASSIGNED_LANE,
+        title: DIAGNOSIS_LANE_TITLE,
+        price: PRODUCT_CATALOG.diagnosis.price,
+      },
+    ],
+  },
+];
+
 /** 청라스카이스위밍 9/27 특강 — 특강+진단 동시, 레인 미표시 */
 const TIMETABLE_CHEONGNA_SEPTEMBER: TimetableRow[] = [
   {
@@ -1071,6 +1131,10 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   25: TIMETABLE_GANGNAM_NOVEMBER, // 11/15 강남 (특강만)
   26: TIMETABLE_MOKDONG_SEPTEMBER, // 11/22 목동
   27: TIMETABLE_DONGTAN_INTENSIVE, // 11/29 동탄 3시간 집중 (진단 없음)
+  28: TIMETABLE_BUSAN_DECEMBER, // 12/6 부산 (특강+진단)
+  29: TIMETABLE_EUNPYEONG_DECEMBER, // 12/13 은평 (자유형·접영 + 스타트)
+  30: TIMETABLE_SONGPA_DECEMBER, // 12/19 송파 (특강+진단)
+  31: TIMETABLE_MOKDONG_SEPTEMBER, // 12/20 목동 (특강+진단)
 };
 
 const getAvailableStrokesForClass = (classId: number) => {
@@ -1648,17 +1712,22 @@ export default function SwimmingClassPage() {
   const [reservationReceipt, setReservationReceipt] = useState<{
     orderNumber: string; status: "사전예약" | "예약대기"; discountAmount: number;
     originalAmount: number; expectedAmount: number; reservedAt: string;
+    benefitName?: string;
   } | null>(null);
   const reservationSubmittingRef = useRef(false);
   const [, refreshReservationBenefit] = useState(0);
   useEffect(() => {
     const now = Date.now();
-    const nextBoundary = [NOVEMBER_PAID_OPEN_START, NOVEMBER_BENEFIT_END]
+    const nextBoundary = [
+      NOVEMBER_PAID_OPEN_START,
+      NOVEMBER_BENEFIT_END,
+      DECEMBER_ADVANCE_END,
+    ]
       .filter((t) => t > now)
       .sort((a, b) => a - b)[0];
     if (nextBoundary == null) return;
     const remaining = nextBoundary - now;
-    console.log("[11월오픈] 다음 UI 갱신 시각", {
+    console.log("[사전예약UI] 다음 갱신 시각", {
       at: new Date(nextBoundary).toISOString(),
       remainingMs: remaining,
     });
@@ -1858,6 +1927,13 @@ export default function SwimmingClassPage() {
       "강남 11/15": "특강만 16:00~18:00",
       "목동 11/22": "특강+진단 14:00~16:00 (스타트·턴 미운영)",
       "동탄 11/29": "영법별 장거리 집중 14:00~17:00 · 115,000원",
+    });
+    console.log("[특강일정] 12월 일정 추가", {
+      "부산 12/6": "특강+진단 14:00~16:00",
+      "은평 12/13": "특강+스타트 17:00~19:00 · 자유형·접영 (평영·진단 제외)",
+      "송파 12/19": "특강+진단 17:15~19:15",
+      "목동 12/20": "특강+진단 14:00~16:00 · 접영 14명",
+      advance: "11/15까지 사전예약 · 특강·스타트·진단 5,000원 혜택(진단 35,000원)",
     });
     console.log("[특강일정] 스타트·턴 연결 특강(1부·별도 정원)", {
       dates: CLASS_SCHEDULES.filter(
@@ -2954,7 +3030,7 @@ export default function SwimmingClassPage() {
         isStartTurnEnrollmentKey(selectedTimeSlot.productName || "")),
   );
   // 10/13 미만: 우선예약(결제 없음). 10/13부터: 정식 결제 오픈(되돌리지 않음).
-  // 스타트·턴·진단은 우선예약 대상이 아님.
+  // 스타트·턴·진단은 11월 우선예약 대상이 아님.
   const isNovemberReservation =
     isNovemberAdvanceReservationOpen(selectedScheduleForPayment) &&
     !isResistanceDiagnosisProduct({
@@ -2962,6 +3038,14 @@ export default function SwimmingClassPage() {
       productType: selectedTimeSlot?.productType || selectedProductType,
     }) &&
     !isStartTurnSelection;
+  // 12월: 11/15까지 사전예약(결제 없음). 특강·스타트·진단 모두 포함.
+  const isDecemberReservation = Boolean(
+    selectedTimeSlot &&
+      isDecemberAdvanceReservationOpen(selectedScheduleForPayment) &&
+      isDecemberDiscountEligibleClass(selectedTimeSlot.name),
+  );
+  const isAdvanceNoPayReservation =
+    isNovemberReservation || isDecemberReservation;
   // 10/13~10/15: 진단 제외 특강·스타트·장거리에 5,000원 오픈 할인
   const novemberDiscountEligible = Boolean(
     selectedTimeSlot &&
@@ -2971,6 +3055,16 @@ export default function SwimmingClassPage() {
   const novemberDiscount = novemberDiscountEligible
     ? NOVEMBER_BENEFIT_AMOUNT
     : 0;
+  // 12월 사전예약 기간 UI 할인 표시 (진단 포함 → 35,000원)
+  const decemberDiscountEligible = Boolean(
+    selectedTimeSlot &&
+      isDecemberAdvanceReservationOpen(selectedScheduleForPayment) &&
+      isDecemberDiscountEligibleClass(selectedTimeSlot.name),
+  );
+  const decemberDiscount = decemberDiscountEligible
+    ? DECEMBER_BENEFIT_AMOUNT
+    : 0;
+  const openDiscount = novemberDiscount || decemberDiscount;
   useEffect(() => {
     if (isNovemberSchedule(selectedScheduleForPayment)) {
       console.log("[11월특강] 신청 모드", {
@@ -2991,16 +3085,38 @@ export default function SwimmingClassPage() {
         benefitEndsAt: new Date(NOVEMBER_BENEFIT_END).toISOString(),
       });
     }
+    if (isDecemberSchedule(selectedScheduleForPayment)) {
+      console.log("[12월특강] 신청 모드", {
+        classId: selectedScheduleForPayment?.id,
+        date: selectedScheduleForPayment?.date,
+        classKey: selectedTimeSlot?.name,
+        advanceReservationOpen: isDecemberAdvanceReservationOpen(
+          selectedScheduleForPayment,
+        ),
+        paidOpen: isDecemberPaidOpen(selectedScheduleForPayment),
+        mode: isDecemberReservation
+          ? "사전예약(결제없음·5천원혜택)"
+          : "정식오픈(정상가)",
+        discount: decemberDiscount,
+        price:
+          selectedTimeSlot?.price ??
+          selectedScheduleForPayment?.specialClass?.price ??
+          80000,
+        advanceEndsAt: new Date(DECEMBER_ADVANCE_END).toISOString(),
+      });
+    }
   }, [
     isNovemberReservation,
+    isDecemberReservation,
     selectedScheduleForPayment?.id,
     selectedScheduleForPayment?.date,
     novemberDiscount,
+    decemberDiscount,
     selectedTimeSlot?.name,
     selectedTimeSlot?.price,
   ]);
 
-  const isReservationOnly = isNovemberReservation || Boolean(
+  const isReservationOnly = isAdvanceNoPayReservation || Boolean(
     selectedTimeSlot &&
       (isClassFull(selectedTimeSlot.name) ||
         hasEnrollment(selectedTimeSlot.name) ||
@@ -3017,7 +3133,7 @@ export default function SwimmingClassPage() {
 
   // 결제수단과 할인은 분리: 계좌이체 선택만으로 가격이 바뀌지 않음 (정상가)
   const paymentAmountLabel = selectedTimeSlot
-    ? (selectedTimeSlot.price - novemberDiscount).toLocaleString()
+    ? (selectedTimeSlot.price - openDiscount).toLocaleString()
     : "0";
 
   const paymentClassLabel = selectedTimeSlot
@@ -3028,6 +3144,7 @@ export default function SwimmingClassPage() {
 
   const paymentCtaLabel = (() => {
     if (!selectedTimeSlot) return "일정을 선택해 주세요";
+    if (isDecemberReservation) return "12월 사전예약 등록하기";
     if (isNovemberReservation) return "11월 예약대기 등록하기";
     if (
       isClassFull(selectedTimeSlot.name) ||
@@ -3127,12 +3244,20 @@ export default function SwimmingClassPage() {
     return () => window.clearTimeout(timer);
   }, [reservationReceipt, step]);
 
-  const submitNovemberReservation = async () => {
+  const submitAdvanceNoPayReservation = async (month: "november" | "december") => {
     if (!selectedTimeSlot || !selectedScheduleForPayment || reservationSubmittingRef.current) return;
     reservationSubmittingRef.current = true;
     setIsSubmitting(true);
+    const apiPath =
+      month === "december"
+        ? "/api/reservations/december"
+        : "/api/reservations/november";
     try {
-      const response = await fetch("/api/reservations/november", {
+      console.log(`[사전예약] ${month} 등록 요청:`, {
+        classId: selectedScheduleForPayment.id,
+        classKey: selectedTimeSlot.name,
+      });
+      const response = await fetch(apiPath, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           classId: selectedScheduleForPayment.id, classKey: selectedTimeSlot.name,
@@ -3141,6 +3266,11 @@ export default function SwimmingClassPage() {
       });
       const result = await response.json();
       if (!response.ok || !result.success) throw new Error(result.error || "예약을 저장하지 못했습니다.");
+      console.log(`[사전예약] ${month} 등록 성공:`, {
+        orderNumber: result.orderNumber,
+        expectedAmount: result.expectedAmount,
+        status: result.status,
+      });
       setReservationReceipt(result);
       setOrderNumber(result.orderNumber);
       setPaymentDate(new Date(result.reservedAt));
@@ -3155,8 +3285,13 @@ export default function SwimmingClassPage() {
     }
   };
 
+  const submitNovemberReservation = () =>
+    submitAdvanceNoPayReservation("november");
+  const submitDecemberReservation = () =>
+    submitAdvanceNoPayReservation("december");
+
   const handleClassPgTestPayment = async () => {
-    if (isNovemberReservation) return;
+    if (isAdvanceNoPayReservation) return;
     if (classPgTestLockRef.current || isClassPgTestLoading || !selectedTimeSlot)
       return;
 
@@ -3164,7 +3299,7 @@ export default function SwimmingClassPage() {
       return;
     }
 
-    const amount = selectedTimeSlot.price - novemberDiscount;
+    const amount = selectedTimeSlot.price - openDiscount;
     if (!amount || amount <= 0) {
       toast({
         title: "결제 불가",
@@ -4850,14 +4985,40 @@ export default function SwimmingClassPage() {
                         const isSelectedSchedule =
                           selectedClass === String(classItem.id);
                         const isNovemberCard = isNovemberSchedule(classItem);
+                        const isDecemberCard = isDecemberSchedule(classItem);
+                        const isAdvanceCard =
+                          (isNovemberCard &&
+                            isNovemberAdvanceReservationOpen(classItem)) ||
+                          (isDecemberCard &&
+                            isDecemberAdvanceReservationOpen(classItem));
                         const isFirstNovemberCard =
                           isNovemberCard &&
                           (scheduleIndex === 0 ||
                             !isNovemberSchedule(
                               activeScheduleClasses[scheduleIndex - 1],
                             ));
+                        const isFirstDecemberCard =
+                          isDecemberCard &&
+                          (scheduleIndex === 0 ||
+                            !isDecemberSchedule(
+                              activeScheduleClasses[scheduleIndex - 1],
+                            ));
                         return (
                           <div key={classItem.id} className="space-y-3">
+                          {isFirstDecemberCard ? (
+                            <div
+                              id="december-schedule-start"
+                              className="rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-3 text-sm leading-6 text-blue-950"
+                            >
+                              <p className="font-bold text-blue-800">
+                                12월 특강 사전예약
+                              </p>
+                              <p className="mt-1 break-keep">
+                                11월 15일까지 결제 없이 사전예약 · 특강·스타트·진단
+                                모두 5,000원 혜택 (진단 35,000원)
+                              </p>
+                            </div>
+                          ) : null}
                           {isFirstNovemberCard &&
                           hasNovemberOpenDiscount(classItem) &&
                           !isFishtankEntry ? (
@@ -5179,27 +5340,33 @@ export default function SwimmingClassPage() {
                               <div className="flex items-start gap-2 pt-2">
                                 <Clock
                                   className={`mt-1 h-4 w-4 shrink-0 ${
-                                    isNovemberCard && !isFishtankEntry
+                                    isAdvanceCard && !isFishtankEntry
                                       ? "text-blue-700"
                                       : "text-green-600"
                                   }`}
                                 />
                                 <span
                                   className={`break-keep text-sm font-bold leading-6 sm:text-[15px] ${
-                                    isNovemberCard && !isFishtankEntry
+                                    isAdvanceCard && !isFishtankEntry
                                       ? "text-blue-800"
                                       : "text-green-600"
                                   }`}
                                 >
-                                  {isNovemberCard &&
+                                  {isDecemberCard &&
                                   !isFishtankEntry &&
-                                  isNovemberAdvanceReservationOpen(classItem)
-                                    ? "우선예약 접수 중 · 지금 결제하지 않아요"
+                                  isDecemberAdvanceReservationOpen(classItem)
+                                    ? "사전예약 접수 중 · 11/15까지 · 지금 결제하지 않아요"
                                     : isNovemberCard &&
                                         !isFishtankEntry &&
-                                        hasNovemberOpenDiscount(classItem)
-                                      ? "신청·결제 가능 · 오픈 혜택 5,000원 할인 (10/15까지)"
-                                      : "예약 가능 · 코치 1명 당 최대 7명 소수 정예 클래스"}
+                                        isNovemberAdvanceReservationOpen(
+                                          classItem,
+                                        )
+                                      ? "우선예약 접수 중 · 지금 결제하지 않아요"
+                                      : isNovemberCard &&
+                                          !isFishtankEntry &&
+                                          hasNovemberOpenDiscount(classItem)
+                                        ? "신청·결제 가능 · 오픈 혜택 5,000원 할인 (10/15까지)"
+                                        : "예약 가능 · 코치 1명 당 최대 7명 소수 정예 클래스"}
                                 </span>
                               </div>
                               {isFishtankEntry && !classItem.specialClass ? (
@@ -5420,8 +5587,8 @@ export default function SwimmingClassPage() {
                           : selectedProductType
                             ? ` · ${PRODUCT_CATALOG[selectedProductType].timeLabel}`
                             : ""}
-                      {!isNovemberReservation && selectedTimeSlot?.price
-                        ? ` · ₩${(selectedTimeSlot.price - novemberDiscount).toLocaleString()}`
+                      {!isAdvanceNoPayReservation && selectedTimeSlot?.price
+                        ? ` · ₩${(selectedTimeSlot.price - openDiscount).toLocaleString()}`
                         : ""}
                     </p>
                   )}
@@ -5564,7 +5731,7 @@ export default function SwimmingClassPage() {
                 >
                   {step > 3 ? "✓" : "2"}
                 </div>
-                <span className="text-xs font-medium sm:ml-2 sm:text-sm">{isNovemberReservation ? "예약대기" : "신청/결제"}</span>
+                <span className="text-xs font-medium sm:ml-2 sm:text-sm">{isAdvanceNoPayReservation ? "사전예약" : "신청/결제"}</span>
               </div>
 
               <div className="hidden h-0.5 w-12 bg-gray-300 sm:block" />
@@ -5609,9 +5776,9 @@ export default function SwimmingClassPage() {
                 </div>
 
                 <div className="mb-4 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm leading-6 text-blue-900 sm:text-[15px]">
-                  <p>{isNovemberReservation ? "지금은 결제하지 않습니다. 이름과 연락처만 입력해 예약대기에 등록해 주세요." : "선택하신 클래스는 결제 완료 순으로 자리가 확정됩니다."}</p>
+                  <p>{isAdvanceNoPayReservation ? "지금은 결제하지 않습니다. 이름과 연락처만 입력해 사전예약에 등록해 주세요." : "선택하신 클래스는 결제 완료 순으로 자리가 확정됩니다."}</p>
                   <p>
-                    {isNovemberReservation ? "정식 예약 안내 후 결제를 완료하면 예약이 확정됩니다." : "아래에 이름과 연락처를 입력하시면 결제 단계로 이동합니다."}
+                    {isAdvanceNoPayReservation ? "사전예약 결제 기간에 결제를 완료하면 예약이 확정됩니다." : "아래에 이름과 연락처를 입력하시면 결제 단계로 이동합니다."}
                   </p>
                 </div>
 
@@ -6202,10 +6369,10 @@ export default function SwimmingClassPage() {
                         <path d="M3 10h18" strokeWidth="2" />
                       </svg>
                     </div>
-                    {isNovemberReservation ? "예약대기" : "신청/결제"}
+                    {isAdvanceNoPayReservation ? "사전예약" : "신청/결제"}
                   </h1>
                   <p className="mt-2 text-center text-sm text-gray-600">
-                    {isNovemberReservation ? "클래스를 선택하고 정보를 입력하면 예약대기에 등록됩니다. 지금 결제하지 않아요." : "클래스를 선택하고 정보를 입력한 뒤 결제까지 한 번에 진행합니다."}
+                    {isAdvanceNoPayReservation ? "클래스를 선택하고 정보를 입력하면 사전예약에 등록됩니다. 지금 결제하지 않아요." : "클래스를 선택하고 정보를 입력한 뒤 결제까지 한 번에 진행합니다."}
                   </p>
                 </div>
 
@@ -6267,7 +6434,7 @@ export default function SwimmingClassPage() {
                       </div>
                       <p className="text-base md:text-sm text-blue-100 ml-8 md:ml-7">
                         {selectedProductType === "diagnosis"
-                          ? (isNovemberReservation ? "아래 정보를 입력하고 예약해 주세요." : "아래 정보를 입력하고 결제해 주세요.")
+                          ? (isAdvanceNoPayReservation ? "아래 정보를 입력하고 예약해 주세요." : "아래 정보를 입력하고 결제해 주세요.")
                           : selectedProductType === "zero"
                             ? "영법 1개를 선택해주세요."
                             : selectedClassDiagnosis
@@ -6347,8 +6514,30 @@ export default function SwimmingClassPage() {
                                         </p>
                                         <div className="mt-1">
                                           <ProductPriceLabel
-                                          reservationOnly={isNovemberAdvanceReservationOpen(selectedScheduleForPayment) && product.name === PRODUCT_CATALOG.zero.name}
-                                          reservationBenefit={hasNovemberOpenDiscount(selectedScheduleForPayment) && product.name === PRODUCT_CATALOG.zero.name}
+                                          reservationOnly={
+                                            (isNovemberAdvanceReservationOpen(selectedScheduleForPayment) &&
+                                              product.name === PRODUCT_CATALOG.zero.name) ||
+                                            isDecemberAdvanceReservationOpen(selectedScheduleForPayment)
+                                          }
+                                          reservationBenefit={
+                                            (hasNovemberOpenDiscount(selectedScheduleForPayment) &&
+                                              product.name === PRODUCT_CATALOG.zero.name) ||
+                                            isDecemberAdvanceReservationOpen(selectedScheduleForPayment)
+                                          }
+                                          reservationOnlyTitle={
+                                            isDecemberAdvanceReservationOpen(
+                                              selectedScheduleForPayment,
+                                            )
+                                              ? "사전예약"
+                                              : "우선예약"
+                                          }
+                                          reservationOnlyHint={
+                                            isDecemberAdvanceReservationOpen(
+                                              selectedScheduleForPayment,
+                                            )
+                                              ? "11월 15일까지 · 특강·진단 5,000원 혜택"
+                                              : "10월 13일부터 정식 오픈·결제"
+                                          }
                                             price={product.price}
                                             originalPrice={product.originalPrice}
                                             badge={product.priceBadge}
@@ -6417,8 +6606,26 @@ export default function SwimmingClassPage() {
                                 </p>
                                 <div className="mt-1">
                                   <ProductPriceLabel
-                                          reservationOnly={isNovemberAdvanceReservationOpen(selectedScheduleForPayment) && product.name === PRODUCT_CATALOG.zero.name}
-                                          reservationBenefit={hasNovemberOpenDiscount(selectedScheduleForPayment) && product.name === PRODUCT_CATALOG.zero.name}
+                                          reservationOnly={
+                                            (isNovemberAdvanceReservationOpen(selectedScheduleForPayment) &&
+                                              product.name === PRODUCT_CATALOG.zero.name) ||
+                                            isDecemberAdvanceReservationOpen(selectedScheduleForPayment)
+                                          }
+                                          reservationBenefit={
+                                            (hasNovemberOpenDiscount(selectedScheduleForPayment) &&
+                                              product.name === PRODUCT_CATALOG.zero.name) ||
+                                            isDecemberAdvanceReservationOpen(selectedScheduleForPayment)
+                                          }
+                                          reservationOnlyTitle={
+                                            isDecemberAdvanceReservationOpen(selectedScheduleForPayment)
+                                              ? "사전예약"
+                                              : "우선예약"
+                                          }
+                                          reservationOnlyHint={
+                                            isDecemberAdvanceReservationOpen(selectedScheduleForPayment)
+                                              ? "11월 15일까지 · 특강·진단 5,000원 혜택"
+                                              : "10월 13일부터 정식 오픈·결제"
+                                          }
                                     price={product.price}
                                     originalPrice={product.originalPrice}
                                     badge={product.priceBadge}
@@ -6451,7 +6658,7 @@ export default function SwimmingClassPage() {
                                   )}
                                   <DiagnosisCouponBanner />
                                   <p className="rounded-lg border border-dashed border-blue-200 bg-blue-50/60 px-3 py-3 text-sm leading-6 text-blue-900">
-                                    {isNovemberReservation ? "아래 정보를 입력하고 예약해 주세요." : "아래 정보를 입력하고 결제해 주세요."}
+                                    {isAdvanceNoPayReservation ? "아래 정보를 입력하고 예약해 주세요." : "아래 정보를 입력하고 결제해 주세요."}
                                     <br />
                                     <span className="text-xs text-blue-800">
                                       ※ 교정 수업이 아닌 어항샷 진단
@@ -6506,15 +6713,33 @@ export default function SwimmingClassPage() {
                                           </div>
                                           <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
                                             <ProductPriceLabel
-                                          reservationOnly={isNovemberAdvanceReservationOpen(selectedScheduleForPayment) && product.name === PRODUCT_CATALOG.zero.name}
-                                          reservationBenefit={hasNovemberOpenDiscount(selectedScheduleForPayment) && product.name === PRODUCT_CATALOG.zero.name}
+                                          reservationOnly={
+                                            (isNovemberAdvanceReservationOpen(selectedScheduleForPayment) &&
+                                              product.name === PRODUCT_CATALOG.zero.name) ||
+                                            isDecemberAdvanceReservationOpen(selectedScheduleForPayment)
+                                          }
+                                          reservationBenefit={
+                                            (hasNovemberOpenDiscount(selectedScheduleForPayment) &&
+                                              product.name === PRODUCT_CATALOG.zero.name) ||
+                                            isDecemberAdvanceReservationOpen(selectedScheduleForPayment)
+                                          }
+                                          reservationOnlyTitle={
+                                            isDecemberAdvanceReservationOpen(selectedScheduleForPayment)
+                                              ? "사전예약"
+                                              : "우선예약"
+                                          }
+                                          reservationOnlyHint={
+                                            isDecemberAdvanceReservationOpen(selectedScheduleForPayment)
+                                              ? "11월 15일까지 · 특강·진단 5,000원 혜택"
+                                              : "10월 13일부터 정식 오픈·결제"
+                                          }
                                               price={product.price}
                                               originalPrice={
                                                 product.originalPrice
                                               }
                                               badge={product.priceBadge}
                                             />
-                                            {!isNovemberAdvanceReservationOpen(selectedScheduleForPayment) && (
+                                            {!(isNovemberAdvanceReservationOpen(selectedScheduleForPayment) || isDecemberAdvanceReservationOpen(selectedScheduleForPayment)) && (
 <span
                                               className={getAvailabilityBadgeClassName(
                                                 availabilityBadge.tone,
@@ -6529,7 +6754,7 @@ export default function SwimmingClassPage() {
                                     })}
                                   </div>
                                   <p className="text-xs leading-5 text-gray-500">
-                                    {isNovemberReservation ? "※ 영법 1개 선택 → 예약대기 등록. 지금 결제하지 않아요." : "※ 영법 1개 선택 → 결제. 코치당 최대 7명."}
+                                    {isAdvanceNoPayReservation ? "※ 영법 1개 선택 → 사전예약 등록. 지금 결제하지 않아요." : "※ 영법 1개 선택 → 결제. 코치당 최대 7명."}
                                   </p>
                                 </>
                               )}
@@ -6733,8 +6958,21 @@ export default function SwimmingClassPage() {
                                           )
                                         ) : (
                                           <ProductPriceLabel
-                                            reservationOnly={isNovemberAdvanceReservationOpen(selectedScheduleForPayment)}
-                                            reservationBenefit={hasNovemberOpenDiscount(selectedScheduleForPayment)}
+                                            reservationOnly={isNovemberAdvanceReservationOpen(selectedScheduleForPayment) || isDecemberAdvanceReservationOpen(selectedScheduleForPayment)}
+                                            reservationBenefit={
+                                              hasNovemberOpenDiscount(selectedScheduleForPayment) ||
+                                              isDecemberAdvanceReservationOpen(selectedScheduleForPayment)
+                                            }
+                                            reservationOnlyTitle={
+                                              isDecemberAdvanceReservationOpen(selectedScheduleForPayment)
+                                                ? "사전예약"
+                                                : "우선예약"
+                                            }
+                                            reservationOnlyHint={
+                                              isDecemberAdvanceReservationOpen(selectedScheduleForPayment)
+                                                ? "11월 15일까지 · 특강·진단 5,000원 혜택"
+                                                : "10월 13일부터 정식 오픈·결제"
+                                            }
                                             price={price}
                                             originalPrice={
                                               PRODUCT_CATALOG.zero.originalPrice
@@ -6744,7 +6982,7 @@ export default function SwimmingClassPage() {
                                             }
                                           />
                                         )}
-                                        {!isNovemberAdvanceReservationOpen(selectedScheduleForPayment) && (
+                                        {!(isNovemberAdvanceReservationOpen(selectedScheduleForPayment) || isDecemberAdvanceReservationOpen(selectedScheduleForPayment)) && (
 <span
                                           className={getAvailabilityBadgeClassName(
                                             availabilityBadge.tone,
@@ -6799,7 +7037,7 @@ export default function SwimmingClassPage() {
                                         </div>
                                       </div>
                                       <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
-                                        {!isNovemberReservation && (
+                                        {!isAdvanceNoPayReservation && (
 <ProductPriceLabel
                                           price={selectedClassDiagnosis.price}
                                           originalPrice={
@@ -6808,7 +7046,7 @@ export default function SwimmingClassPage() {
                                           badge={diagnosisProduct.priceBadge}
                                         />
 )}
-                                        {!isNovemberAdvanceReservationOpen(selectedScheduleForPayment) && (
+                                        {!(isNovemberAdvanceReservationOpen(selectedScheduleForPayment) || isDecemberAdvanceReservationOpen(selectedScheduleForPayment)) && (
 <span
                                           className={getAvailabilityBadgeClassName(
                                             availabilityBadge.tone,
@@ -7258,9 +7496,9 @@ export default function SwimmingClassPage() {
                         신청내용 확인
                       </h2>
                       <p className="mt-1 text-sm text-gray-600">
-                        {isNovemberReservation ? "선택하신 특강을 확인한 뒤 예약대기에 등록해 주세요. 지금 결제하지 않아요." : "선택하신 특강과 결제금액을 확인한 뒤 결제해 주세요"}
+                        {isAdvanceNoPayReservation ? "선택하신 특강을 확인한 뒤 사전예약에 등록해 주세요. 지금 결제하지 않아요." : "선택하신 특강과 결제금액을 확인한 뒤 결제해 주세요"}
                       </p>
-                      {!isNovemberReservation &&
+                      {!isAdvanceNoPayReservation &&
                       !isResistanceDiagnosisProduct({
                         className: selectedTimeSlot?.name,
                         productType: selectedProductType,
@@ -7343,7 +7581,7 @@ export default function SwimmingClassPage() {
                             <strong className="text-blue-800">5,000원 할인</strong>
                           </div>
                         )}
-                        {!isNovemberReservation && (
+                        {!isAdvanceNoPayReservation && (
                         <div className="flex items-end justify-between gap-3 bg-slate-50 px-4 py-4 sm:px-5">
                           <span className="text-sm font-semibold text-gray-600">
                             결제금액
@@ -7388,13 +7626,20 @@ export default function SwimmingClassPage() {
                     </div>
                   </div>
 
+                  {isDecemberReservation && (
+                    <p className="mt-3 text-center text-sm leading-6 text-gray-600">
+                      지금은 결제하지 않아요. 사전예약은 11월 15일까지입니다.
+                      특강·스타트·진단 모두 5,000원 혜택(진단 35,000원)이
+                      적용됩니다.
+                    </p>
+                  )}
                   {isNovemberReservation && (
                     <p className="mt-3 text-center text-sm leading-6 text-gray-600">
                       지금은 결제하지 않아요. 10월 13일부터 정식 오픈·결제가
                       가능합니다. 진단은 제외입니다.
                     </p>
                   )}
-                  {!isNovemberReservation && novemberDiscount > 0 && (
+                  {!isAdvanceNoPayReservation && novemberDiscount > 0 && (
                     <p className="mt-3 text-center text-sm leading-6 text-gray-600">
                       10월 15일까지 오픈 혜택 5,000원 할인이 적용됩니다. 저항
                       진단 제외 · 다른 할인과 중복 불가.
@@ -7505,6 +7750,10 @@ export default function SwimmingClassPage() {
                         }
                         setRegionError(false);
 
+                        if (isDecemberReservation) {
+                          await submitDecemberReservation();
+                          return;
+                        }
                         if (isNovemberReservation) {
                           await submitNovemberReservation();
                           return;
@@ -8164,7 +8413,10 @@ export default function SwimmingClassPage() {
                 {reservationReceipt ? (
                   <div className="rounded-xl border border-emerald-200 bg-white p-6 text-center shadow-sm">
                     <h2 className="text-2xl font-bold">
-                      11월 우선예약 등록이 완료되었습니다.
+                      {isDecemberSchedule(selectedScheduleForPayment) ||
+                      reservationReceipt?.benefitName?.includes("12월")
+                        ? "12월 사전예약 등록이 완료되었습니다."
+                        : "11월 우선예약 등록이 완료되었습니다."}
                     </h2>
                     <p className="mt-3 leading-7 text-gray-700">
                       10월 13일부터 정식 오픈되며, 입력하신 연락처로 결제·신청을

@@ -175,7 +175,14 @@ export function resolveAdvanceReservationPayAmount(input: {
           : null);
 
   if (base == null) return null;
-  if (/진단/.test(className)) return base;
+  // 진단: 시트 혜택값(expectedAmount)이 있으면 위에서 이미 반환. 폴백은 기본가 35,000
+  if (/진단/.test(className)) {
+    console.log("[사전예약결제] 진단 금액 폴백(시트 혜택 없음):", {
+      className,
+      amount: base,
+    });
+    return base;
+  }
 
   const resolved = resolveClassScheduleFromEnrollmentKey(className);
   const intensive =

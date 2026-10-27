@@ -9,12 +9,12 @@ import {
 
 /**
  * 12월 사전예약 — 2026-11-15 23:59:59 KST까지 (11/16 0시 미만)
- * 특강·스타트·진단 모두 5,000원 할인 (진단 예정가 35,000원)
+ * 특강·스타트·진단 모두 5,000원 할인 (진단 기본 35,000 → 사전예약 30,000)
  */
 export const DECEMBER_ADVANCE_END = Date.parse("2026-11-16T00:00:00+09:00");
 export const DECEMBER_BENEFIT_AMOUNT = 5000;
 export const DECEMBER_BENEFIT_NAME = "12월 사전예약 혜택";
-export const DECEMBER_DIAGNOSIS_BASE_AMOUNT = 40000;
+export const DECEMBER_DIAGNOSIS_BASE_AMOUNT = 35000;
 export const DECEMBER_SPECIAL_BASE_AMOUNT = 80000;
 
 export function isDecemberSchedule(
@@ -84,7 +84,7 @@ function resolveDecemberBaseAmount(className: string): number | null {
 
 /**
  * 사전예약 API용 (11/15까지).
- * 특강·스타트·진단 모두 접수. 진단 예정가 35,000원.
+ * 특강·스타트·진단 모두 접수. 진단 기본 35,000원 · 사전예약 30,000원.
  */
 export function resolveDecemberReservation(
   classId: number,

@@ -9,7 +9,8 @@ import {
 } from "@/lib/class-schedule-data";
 import { resolveNovemberOpenBenefit } from "@/lib/november-reservation";
 
-const DIAGNOSIS_AMOUNT = 40000;
+/** 저항 진단 프로그램 기본가 (쿠폰 혜택 없음) */
+const DIAGNOSIS_AMOUNT = 35000;
 const ZERO_OR_SPECIAL_AMOUNT = 80000;
 const LEGACY_SEOCHO_AMOUNT = 70000;
 

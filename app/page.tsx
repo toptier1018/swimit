@@ -190,8 +190,8 @@ const PRODUCT_CATALOG: Record<
     timeLabel: "16:00~18:00 · 2시간",
     time: "16:00 ~ 18:00",
     session: "2부 진단",
-    price: 40000,
-    originalPrice: 80000,
+    price: 35000,
+    originalPrice: 35000,
     strokeCount: 2,
     buttonLabel: "내 수영 저항 진단받기",
     description:
@@ -202,8 +202,7 @@ const PRODUCT_CATALOG: Record<
       "연습 PDF 제공",
       "2시간 자유수영 (촬영가능)",
     ],
-    couponNote: "이후 저항 제로 특강 수강 시 1만원 할인 쿠폰 제공",
-    priceBadge: "런칭특가",
+    priceBadge: "진단",
   },
 };
 
@@ -542,18 +541,8 @@ const DongtanIntensivePromo = ({ onViewSchedule }: { onViewSchedule: () => void 
   );
 };
 
-/** 저항 진단 프로그램 전용 쿠폰 안내 (모든 센터 공통) */
-const DiagnosisCouponBanner = () => {
-  console.log("[진단쿠폰] 저항 진단 프로그램 쿠폰 배너 표시");
-  return (
-    <div className="rounded-lg border-2 border-orange-400 bg-orange-50 px-3 py-2.5 text-sm font-extrabold leading-5 text-orange-950">
-      <span className="mr-1.5 inline-block rounded bg-orange-500 px-1.5 py-0.5 text-xs font-bold text-white">
-        쿠폰
-      </span>
-      진단 후 저항 제로 특강 수강 시 1만원 할인 쿠폰 제공
-    </div>
-  );
-};
+/** 진단 1만원 쿠폰 혜택 종료 — 배너 미표시 */
+const DiagnosisCouponBanner = () => null;
 
 /**
  * 동탄처럼 제로·진단을 나눠 받을 때, 진단이 열리는 회차.
@@ -1966,7 +1955,7 @@ export default function SwimmingClassPage() {
       "은평 12/13": "특강+스타트 17:00~19:00 · 자유형·접영 (평영·진단 제외)",
       "송파 12/19": "특강+진단 17:15~19:15",
       "목동 12/20": "특강+진단 14:00~16:00 · 접영 14명",
-      advance: "11/15까지 사전예약 · 특강·스타트·진단 5,000원 혜택(진단 35,000원)",
+      advance: "11/15까지 사전예약 · 특강·스타트·진단 5,000원 혜택(진단 기본 35,000→사전예약 30,000)",
     });
     console.log("[특강일정] 스타트·턴 연결 특강(1부·별도 정원)", {
       dates: CLASS_SCHEDULES.filter(
@@ -3088,7 +3077,7 @@ export default function SwimmingClassPage() {
   const novemberDiscount = novemberDiscountEligible
     ? NOVEMBER_BENEFIT_AMOUNT
     : 0;
-  // 12월 사전예약 기간 UI 할인 표시 (진단 포함 → 35,000원)
+  // 12월 사전예약 기간 UI 할인 표시 (진단 기본 35,000 → 사전예약 30,000)
   const decemberDiscountEligible = Boolean(
     selectedTimeSlot &&
       isDecemberAdvanceReservationOpen(selectedScheduleForPayment) &&
@@ -4239,9 +4228,7 @@ export default function SwimmingClassPage() {
                               <li>· 2영법 어항샷 촬영</li>
                               <li>· 저항 분석 리포트</li>
                               <li>· 2시간 자유수영</li>
-                              <li>· 이후 저항 제로 특강 1만원 쿠폰</li>
                             </ul>
-                            <DiagnosisCouponBanner />
                           </div>
                           <div className="grid gap-2">
                             <Button
@@ -4372,7 +4359,6 @@ export default function SwimmingClassPage() {
                           <li>· 자유수영 2시간 (개인 촬영 가능)</li>
                           <li>· 2가지 영법 어항샷</li>
                           <li>· 1가지 영법 저항분석리포트 제공</li>
-                          <li>· 이후 저항 제로 특강 1만원 쿠폰</li>
                         </ul>
                       </div>
                     ) : null}
@@ -5048,7 +5034,7 @@ export default function SwimmingClassPage() {
                               </p>
                               <p className="mt-1 break-keep">
                                 11월 15일까지 결제 없이 사전예약 · 특강·스타트·진단
-                                모두 5,000원 혜택 (진단 35,000원)
+                                모두 5,000원 혜택 (진단 30,000원)
                               </p>
                             </div>
                           ) : null}
@@ -7678,7 +7664,7 @@ export default function SwimmingClassPage() {
                   {isDecemberReservation && (
                     <p className="mt-3 text-center text-sm leading-6 text-gray-600">
                       지금은 결제하지 않아요. 사전예약은 11월 15일까지입니다.
-                      특강·스타트·진단 모두 5,000원 혜택(진단 35,000원)이
+                      특강·스타트·진단 모두 5,000원 혜택(진단 30,000원)이
                       적용됩니다.
                     </p>
                   )}

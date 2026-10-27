@@ -35,7 +35,7 @@ export const ALIMTALK_TEMPLATE_CODES = {
     diagnosis: "UL_0791",
   },
 
-  /** 은평 12/13 북한산힐스테이트 — 기존 은평 템플릿 코드 재사용 */
+  /** 은평 12/12 북한산힐스테이트 — 기존 은평 템플릿 코드 재사용 */
   "서울 은평 · 북한산힐스테이트3차": {
     special: "UL_0787",
     diagnosis: "UL_0787",

@@ -1137,7 +1137,7 @@ const TIMETABLE_BUSAN_DECEMBER: TimetableRow[] = [
   },
 ];
 
-/** 북한산힐스테이트3차 12/13 (은평) — 자유형·평영·접영 + 스타트·턴 (진단 미운영) */
+/** 북한산힐스테이트3차 12/12 (은평) — 자유형·평영·접영 + 스타트·턴 (진단 미운영) */
 const TIMETABLE_EUNPYEONG_DECEMBER: TimetableRow[] = [
   {
     session: "1부 특강",
@@ -1209,7 +1209,7 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   26: TIMETABLE_MOKDONG_SEPTEMBER, // 11/22 목동
   27: TIMETABLE_DONGTAN_INTENSIVE, // 11/29 동탄 3시간 집중 (진단 없음)
   28: TIMETABLE_BUSAN_DECEMBER, // 12/6 부산 (특강+진단)
-  29: TIMETABLE_EUNPYEONG_DECEMBER, // 12/13 은평 (자유형·평영·접영 + 스타트)
+  29: TIMETABLE_EUNPYEONG_DECEMBER, // 12/12 은평 (자유형·평영·접영 + 스타트)
   30: TIMETABLE_SONGPA_DECEMBER, // 12/19 송파 (특강+진단)
   31: TIMETABLE_MOKDONG_SEPTEMBER, // 12/20 목동 (특강+진단)
   32: TIMETABLE_DONGTAN_INTENSIVE, // 12/27 동탄 3시간 집중 (진단 없음)
@@ -1406,6 +1406,13 @@ const ENROLLMENT_MERGE_TO: Record<string, string> = {
   "[목동 11/22] 2부 특강 스타트": "[목동 11/22] 1부 특강 스타트",
   "[목동 11/22] 2부 특강 스타트·턴 연결": "[목동 11/22] 1부 특강 스타트",
   "[목동 11/22] 1부 특강 스타트·턴 연결": "[목동 11/22] 1부 특강 스타트",
+  // 은평 12/13 → 12/12로 일정 변경
+  "[은평 12/13] 1부 특강 자유형": "[은평 12/12] 1부 특강 자유형",
+  "[은평 12/13] 1부 특강 평영": "[은평 12/12] 1부 특강 평영",
+  "[은평 12/13] 1부 특강 접영": "[은평 12/12] 1부 특강 접영",
+  "[은평 12/13] 1부 특강 스타트": "[은평 12/12] 1부 특강 스타트",
+  "[은평 12/13] 1부 특강 스타트·턴 연결": "[은평 12/12] 1부 특강 스타트",
+  "[은평 12/13] 1부 진단": "[은평 12/12] 1부 진단",
 };
 
 const migrateToStrokeClassKey = (key: string): string => {
@@ -2008,7 +2015,7 @@ export default function SwimmingClassPage() {
     });
     console.log("[특강일정] 12월 일정 추가", {
       "부산 12/6": "특강+진단 14:00~16:00",
-      "은평 12/13": "특강+스타트 17:00~19:00 · 자유형·평영·접영 (진단 제외)",
+      "은평 12/12": "특강+스타트 17:00~19:00 · 자유형·평영·접영 (진단 제외)",
       "송파 12/19": "특강+진단 17:15~19:15",
       "목동 12/20": "특강+진단 14:00~16:00 · 접영 14명",
       "동탄 12/27": "영법별 장거리 집중 14:00~17:00 · 115,000원 (11/29와 동일)",

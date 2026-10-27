@@ -90,12 +90,16 @@ export const START_TURN_SPECIAL_MOKDONG_OCT18: SpecialClassInfo = {
     "첫 런칭 회차 한정 10,000원 할인 · 다른 할인·쿠폰 중복 불가",
 };
 
-/** 은평 12/13 북한산힐스테이트 — 17:00~19:00 · 정원 7 */
-export const START_TURN_SPECIAL_EUNPYEONG_DEC13: SpecialClassInfo = {
+/** 은평 12/12 북한산힐스테이트 — 17:00~19:00 · 정원 7 */
+export const START_TURN_SPECIAL_EUNPYEONG_DEC12: SpecialClassInfo = {
   ...START_TURN_SPECIAL,
   timeLabel: "17:00~19:00",
   capacity: 7,
 };
+
+/** @deprecated 이름 호환 — DEC12와 동일 */
+export const START_TURN_SPECIAL_EUNPYEONG_DEC13 =
+  START_TURN_SPECIAL_EUNPYEONG_DEC12;
 
 const DONGTAN_INTENSIVE_3H_CLASSES: SpecialClassInfo["classes"] = [
   {
@@ -533,8 +537,8 @@ export const CLASS_SCHEDULES: ClassScheduleItem[] = [
     year: 2026,
     location: "서울 은평 · 북한산힐스테이트3차",
     locationCode: "은평",
-    date: "12월 13일 (일)",
-    dateNum: 13,
+    date: "12월 12일 (토)",
+    dateNum: 12,
     month: 12,
     venue: "북한산힐스테이트3차 커뮤니티센터",
     address: "서울시 은평구 불광로 122-10 커뮤니티센터",
@@ -544,7 +548,7 @@ export const CLASS_SCHEDULES: ClassScheduleItem[] = [
       "1부 스타트·턴 연결 특강 · 17:00~19:00 (2시간)",
     ],
     badge: "특강 + SPECIAL",
-    addonSpecialClass: START_TURN_SPECIAL_EUNPYEONG_DEC13,
+    addonSpecialClass: START_TURN_SPECIAL_EUNPYEONG_DEC12,
   },
   {
     id: 30,
@@ -691,7 +695,14 @@ export const DEFAULT_CAPACITY_BY_CLASS: Record<string, number> = {
   "[부산 12/6] 1부 특강 평영": 7,
   "[부산 12/6] 1부 특강 접영": 7,
   "[부산 12/6] 1부 진단": 14,
-  // 은평 12/13 북한산힐스테이트 (진단 미운영)
+  // 은평 12/12 북한산힐스테이트 (진단 미운영)
+  "[은평 12/12] 1부 특강 자유형": 7,
+  "[은평 12/12] 1부 특강 평영": 7,
+  "[은평 12/12] 1부 특강 접영": 7,
+  "[은평 12/12] 1부 특강 스타트": 7,
+  "[은평 12/12] 1부 특강 스타트·턴 연결": 7,
+  "[은평 12/12] 1부 진단": 0,
+  // 구 키 호환 (12/13 → 12/12)
   "[은평 12/13] 1부 특강 자유형": 7,
   "[은평 12/13] 1부 특강 평영": 7,
   "[은평 12/13] 1부 특강 접영": 7,

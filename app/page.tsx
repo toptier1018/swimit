@@ -8413,8 +8413,9 @@ export default function SwimmingClassPage() {
                 {reservationReceipt ? (
                   <div className="rounded-xl border border-emerald-200 bg-white p-6 text-center shadow-sm">
                     <h2 className="text-2xl font-bold">
-                      {isDecemberSchedule(selectedScheduleForPayment) ||
-                      reservationReceipt?.benefitName?.includes("12월")
+                      {String(reservationReceipt?.benefitName || "").includes(
+                        "12월",
+                      ) || isDecemberSchedule(selectedScheduleForPayment)
                         ? "12월 사전예약 등록이 완료되었습니다."
                         : "11월 우선예약 등록이 완료되었습니다."}
                     </h2>

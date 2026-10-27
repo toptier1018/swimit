@@ -49,10 +49,18 @@ export function isDecemberDiscountEligibleClass(className: string): boolean {
     return false;
   }
 
-  if (DEFAULT_CAPACITY_BY_CLASS[name] === 0) return false;
+  if (Object.hasOwn(DEFAULT_CAPACITY_BY_CLASS, name) && DEFAULT_CAPACITY_BY_CLASS[name] === 0) {
+    return false;
+  }
 
-  if (isDiagnosisEnrollmentKey(name) || /진단/.test(name)) return true;
-  if (isStartTurnEnrollmentKey(name)) return true;
+  if (isDiagnosisEnrollmentKey(name) || /진단/.test(name)) {
+    console.log("[12월사전예약] 진단 클래스 할인 대상:", name);
+    return true;
+  }
+  if (isStartTurnEnrollmentKey(name)) {
+    console.log("[12월사전예약] 스타트 클래스 할인 대상:", name);
+    return true;
+  }
   if (/^\[[^\]]+\]\s+\d+부\s*특강\s+(자유형|평영|접영)$/.test(name)) {
     return true;
   }

@@ -7084,7 +7084,7 @@ export default function SwimmingClassPage() {
                                               diagnosisAdvanceOpen
                                             }
                                             reservationOnlyTitle="사전예약"
-                                            reservationOnlyHint="11월 15일까지 · 진단 30,000원"
+                                            reservationOnlyHint="11월 15일까지"
                                             price={selectedClassDiagnosis.price}
                                             originalPrice={
                                               diagnosisProduct.originalPrice
@@ -7093,20 +7093,20 @@ export default function SwimmingClassPage() {
                                           />
                                         </div>
                                       </div>
-                                      <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
-                                        <span className="text-xs font-bold text-blue-700">
-                                          {diagnosisAdvanceOpen
-                                            ? "사전예약 · 2시간"
-                                            : "진단 · 2시간"}
-                                        </span>
-                                        <span
-                                          className={getAvailabilityBadgeClassName(
-                                            availabilityBadge.tone,
-                                          )}
-                                        >
-                                          {availabilityBadge.label}
-                                        </span>
-                                      </div>
+                                      {!diagnosisAdvanceOpen ? (
+                                        <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+                                          <span className="text-xs font-bold text-blue-700">
+                                            진단 · 2시간
+                                          </span>
+                                          <span
+                                            className={getAvailabilityBadgeClassName(
+                                              availabilityBadge.tone,
+                                            )}
+                                          >
+                                            {availabilityBadge.label}
+                                          </span>
+                                        </div>
+                                      ) : null}
                                     </button>
                                   );
                                 })()}

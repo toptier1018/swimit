@@ -182,7 +182,7 @@ const PRODUCT_CATALOG: Record<
       "After 수중 촬영",
       "개인 영상 피드백 후 연습 방향 제시",
     ],
-    priceBadge: "프리미엄 특가",
+    priceBadge: "",
   },
   diagnosis: {
     name: "저항 진단 프로그램",
@@ -272,9 +272,11 @@ const ProductPriceLabel = ({
       <span className="text-base font-extrabold text-blue-800">
         {formatWon(price)}
       </span>
-      <span className="rounded bg-red-500 px-1.5 py-0.5 text-[11px] font-bold text-white sm:text-xs">
-        {badge}
-      </span>
+      {badge ? (
+        <span className="rounded bg-red-500 px-1.5 py-0.5 text-[11px] font-bold text-white sm:text-xs">
+          {badge}
+        </span>
+      ) : null}
     </span>
   );
 

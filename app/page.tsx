@@ -339,16 +339,22 @@ const StartTurnSpecialBlock = ({
   offer = START_TURN_SPECIAL,
   badge,
   openDiscount = false,
+  advanceReservation = false,
 }: {
   offer?: SpecialClassInfo;
   badge?: { label: string; tone: AvailabilityTone };
   /** 10/13~10/15 오픈 한정 5,000원 추가 할인 */
   openDiscount?: boolean;
+  /** 12월 사전예약(결제 없음) — 다른 특강과 동일 문구 */
+  advanceReservation?: boolean;
 }) => {
   const option = offer.classes[0];
-  const displayPrice = openDiscount
-    ? offer.price - NOVEMBER_BENEFIT_AMOUNT
-    : offer.price;
+  const baseForAdvance = offer.originalPrice ?? 80000;
+  const displayPrice = advanceReservation
+    ? baseForAdvance - DECEMBER_BENEFIT_AMOUNT
+    : openDiscount
+      ? offer.price - NOVEMBER_BENEFIT_AMOUNT
+      : offer.price;
   return (
     <div className="rounded-lg border border-blue-100 px-3 py-2.5">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -357,7 +363,12 @@ const StartTurnSpecialBlock = ({
             {offer.badgeEn || "START & TURN SPECIAL"}
           </span>
           <span className="text-[11px] font-semibold text-gray-500">
-            · {openDiscount ? "오픈 혜택" : offer.promoLabel || "런칭 특가"}
+            ·{" "}
+            {advanceReservation
+              ? "사전예약"
+              : openDiscount
+                ? "오픈 혜택"
+                : offer.promoLabel || "런칭 특가"}
           </span>
         </div>
         {badge ? (
@@ -373,33 +384,55 @@ const StartTurnSpecialBlock = ({
       <p className="mt-0.5 text-xs leading-5 text-gray-600">
         {option?.flow || "데크 스타트 → 사이드턴 / 플립턴"}
       </p>
-      <p className="mt-1 flex flex-wrap items-baseline gap-x-2">
-        {openDiscount ? (
-          <span className="text-xs text-gray-400 line-through">
-            {offer.price.toLocaleString()}원
+      {advanceReservation ? (
+        <div className="mt-2 rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-sm leading-5 text-blue-950">
+          <strong className="font-bold">지금 결제 없이 등록</strong>
+          <span className="mt-0.5 block text-xs font-medium text-blue-800">
+            11월 15일까지 · 사전예약 5,000원 혜택
           </span>
-        ) : offer.originalPrice ? (
-          <span className="text-xs text-gray-400 line-through">
-            {offer.originalPrice.toLocaleString()}원
-          </span>
-        ) : null}
-        <span className="text-sm font-extrabold text-blue-800">
-          {displayPrice.toLocaleString()}원
-        </span>
-        <span className="text-xs text-gray-500">
-          {offer.timeLabel} · 2시간
-        </span>
-      </p>
-      {openDiscount ? (
-        <p className="mt-0.5 text-[11px] font-semibold text-blue-700">
-          오픈 혜택 5,000원 할인 · 10월 15일까지
-        </p>
-      ) : offer.originalPrice && offer.originalPrice > offer.price ? (
-        <p className="mt-0.5 text-[11px] font-semibold text-red-600">
-          {offer.promoLabel ||
-            `${(offer.originalPrice - offer.price).toLocaleString()}원 할인`}
-        </p>
-      ) : null}
+          <p className="mt-1.5 flex flex-wrap items-baseline gap-x-2">
+            <span className="text-xs text-gray-400 line-through">
+              {baseForAdvance.toLocaleString()}원
+            </span>
+            <span className="text-sm font-extrabold text-blue-800">
+              {displayPrice.toLocaleString()}원
+            </span>
+            <span className="text-xs text-gray-500">
+              {offer.timeLabel} · 2시간
+            </span>
+          </p>
+        </div>
+      ) : (
+        <>
+          <p className="mt-1 flex flex-wrap items-baseline gap-x-2">
+            {openDiscount ? (
+              <span className="text-xs text-gray-400 line-through">
+                {offer.price.toLocaleString()}원
+              </span>
+            ) : offer.originalPrice ? (
+              <span className="text-xs text-gray-400 line-through">
+                {offer.originalPrice.toLocaleString()}원
+              </span>
+            ) : null}
+            <span className="text-sm font-extrabold text-blue-800">
+              {displayPrice.toLocaleString()}원
+            </span>
+            <span className="text-xs text-gray-500">
+              {offer.timeLabel} · 2시간
+            </span>
+          </p>
+          {openDiscount ? (
+            <p className="mt-0.5 text-[11px] font-semibold text-blue-700">
+              오픈 혜택 5,000원 할인 · 10월 15일까지
+            </p>
+          ) : offer.originalPrice && offer.originalPrice > offer.price ? (
+            <p className="mt-0.5 text-[11px] font-semibold text-red-600">
+              {offer.promoLabel ||
+                `${(offer.originalPrice - offer.price).toLocaleString()}원 할인`}
+            </p>
+          ) : null}
+        </>
+      )}
     </div>
   );
 };
@@ -5301,6 +5334,9 @@ export default function SwimmingClassPage() {
                                   openDiscount={hasNovemberOpenDiscount(
                                     classItem,
                                   )}
+                                  advanceReservation={isDecemberAdvanceReservationOpen(
+                                    classItem,
+                                  )}
                                   badge={getAvailabilityBadge(
                                     getStartTurnEnrollmentKey(classItem),
                                   )}
@@ -7076,6 +7112,17 @@ export default function SwimmingClassPage() {
                                   const isFull = isClassFull(classKey);
                                   const isSelected =
                                     selectedTimeSlot?.name === classKey;
+                                  const startAdvanceOpen =
+                                    isDecemberAdvanceReservationOpen(
+                                      selectedScheduleForPayment,
+                                    );
+                                  const startBasePrice =
+                                    addon.originalPrice ?? 80000;
+                                  console.log("[스타트·턴] 선택 카드 표시:", {
+                                    classKey,
+                                    startAdvanceOpen,
+                                    price: addon.price,
+                                  });
                                   return (
                                     <button
                                       key={classKey}
@@ -7090,6 +7137,7 @@ export default function SwimmingClassPage() {
                                             remaining:
                                               availabilityBadge.remaining,
                                             badge: availabilityBadge.label,
+                                            advanceReservation: startAdvanceOpen,
                                           },
                                         );
                                         setSelectedProductType(null);
@@ -7103,7 +7151,9 @@ export default function SwimmingClassPage() {
                                             "~",
                                             " ~ ",
                                           ),
-                                          price: addon.price,
+                                          price: startAdvanceOpen
+                                            ? startBasePrice
+                                            : addon.price,
                                           isWaitlist: isFull,
                                           available: !isFull,
                                           productName:
@@ -7129,28 +7179,27 @@ export default function SwimmingClassPage() {
                                           {option?.flow ||
                                             "데크 스타트 → 사이드턴 / 플립턴"}
                                         </div>
-                                        <p className="mt-2 flex flex-wrap items-baseline gap-x-2">
-                                          {addon.originalPrice ? (
-                                            <span className="text-xs text-gray-400 line-through">
-                                              {addon.originalPrice.toLocaleString()}
-                                              원
-                                            </span>
-                                          ) : null}
-                                          <span className="text-sm font-extrabold text-blue-800">
-                                            {addon.price.toLocaleString()}원
-                                          </span>
-                                        </p>
-                                        {addon.promoLabel ? (
-                                          <p className="mt-1 text-[11px] font-semibold text-red-600">
-                                            {addon.promoLabel}
-                                          </p>
-                                        ) : null}
+                                        <div className="mt-2">
+                                          <ProductPriceLabel
+                                            reservationOnly={startAdvanceOpen}
+                                            reservationBenefit={startAdvanceOpen}
+                                            reservationOnlyTitle="사전예약"
+                                            reservationOnlyHint="11월 15일까지 · 특강·진단 5,000원 혜택"
+                                            price={addon.price}
+                                            originalPrice={startBasePrice}
+                                            badge={
+                                              addon.promoLabel || "런칭특가"
+                                            }
+                                          />
+                                        </div>
                                       </div>
                                       <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
                                         <span className="text-xs font-bold text-blue-700">
-                                          {addon.promoLabel
-                                            ? "2시간 SPECIAL"
-                                            : "런칭 특가 · 2시간"}
+                                          {startAdvanceOpen
+                                            ? "사전예약 · 2시간"
+                                            : addon.promoLabel
+                                              ? "2시간 SPECIAL"
+                                              : "런칭 특가 · 2시간"}
                                         </span>
                                         <span
                                           className={getAvailabilityBadgeClassName(

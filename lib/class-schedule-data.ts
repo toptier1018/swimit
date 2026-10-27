@@ -97,38 +97,52 @@ export const START_TURN_SPECIAL_EUNPYEONG_DEC13: SpecialClassInfo = {
   capacity: 7,
 };
 
-export const DONGTAN_NOV29_INTENSIVE: SpecialClassInfo = {
+const DONGTAN_INTENSIVE_3H_CLASSES: SpecialClassInfo["classes"] = [
+  {
+    key: "자유형",
+    name: "자유형 장거리 집중반",
+    icon: "🏊",
+    flow: "물속 출발 → 돌핀킥 → 한손/두손 사이드턴",
+    short: "물속 출발 → 돌핀킥 → 한손/두손 사이드턴",
+  },
+  {
+    key: "평영",
+    name: "평영 장거리 집중반",
+    icon: "🐸",
+    flow: "물속 출발 → 돌핀킥 → 한손/두손 사이드턴",
+    short: "물속 출발 → 돌핀킥 → 한손/두손 사이드턴",
+  },
+  {
+    key: "접영",
+    name: "접영 장거리 집중반",
+    icon: "🦋",
+    flow: "물속 출발 → 돌핀킥 → 사이드턴/플립턴",
+    short: "물속 출발 → 돌핀킥 → 사이드턴/플립턴",
+  },
+];
+
+/** 동탄 영법별 장거리 집중(3시간) 공통 */
+export const DONGTAN_INTENSIVE_3H: SpecialClassInfo = {
   specialType: "intensive-3h",
   duration: "3시간",
   timeLabel: "14:00~17:00",
   price: 115000,
-  summary:
-    "11월 29일 동탄은 일반 2시간 특강이 아닌 영법별 장거리 집중 특강입니다.",
+  summary: "일반 2시간 특강이 아닌 영법별 장거리 집중 특강입니다.",
   detail:
     "출발부터 턴, 다시 속도를 붙이는 것까지 한 가지 영법을 장거리로 이어갈 수 있도록 연결합니다.",
-  classes: [
-    {
-      key: "자유형",
-      name: "자유형 장거리 집중반",
-      icon: "🏊",
-      flow: "물속 출발 → 돌핀킥 → 한손/두손 사이드턴",
-      short: "물속 출발 → 돌핀킥 → 한손/두손 사이드턴",
-    },
-    {
-      key: "평영",
-      name: "평영 장거리 집중반",
-      icon: "🐸",
-      flow: "물속 출발 → 돌핀킥 → 한손/두손 사이드턴",
-      short: "물속 출발 → 돌핀킥 → 한손/두손 사이드턴",
-    },
-    {
-      key: "접영",
-      name: "접영 장거리 집중반",
-      icon: "🦋",
-      flow: "물속 출발 → 돌핀킥 → 사이드턴/플립턴",
-      short: "물속 출발 → 돌핀킥 → 사이드턴/플립턴",
-    },
-  ],
+  classes: DONGTAN_INTENSIVE_3H_CLASSES,
+};
+
+export const DONGTAN_NOV29_INTENSIVE: SpecialClassInfo = {
+  ...DONGTAN_INTENSIVE_3H,
+  summary:
+    "11월 29일 동탄은 일반 2시간 특강이 아닌 영법별 장거리 집중 특강입니다.",
+};
+
+export const DONGTAN_DEC27_INTENSIVE: SpecialClassInfo = {
+  ...DONGTAN_INTENSIVE_3H,
+  summary:
+    "12월 27일 동탄은 일반 2시간 특강이 아닌 영법별 장거리 집중 특강입니다.",
 };
 
 /** enrollment key가 해당 일정의 specialClass 옵션인지 (예: 동탄 3시간 집중반) */
@@ -566,6 +580,22 @@ export const CLASS_SCHEDULES: ClassScheduleItem[] = [
     ],
     badge: "특강 + 진단 운영",
   },
+  {
+    id: 32,
+    year: 2026,
+    location: "경기 동탄 · 스윔스튜디오제이",
+    locationCode: "동탄",
+    date: "12월 27일 (일)",
+    dateNum: 27,
+    month: 12,
+    venue: "스윔스튜디오제이",
+    address:
+      "경기도 화성시 동탄구 동탄신리천로 414 경서타워 4층 스윔스튜디오제이",
+    spots: "자유형 14명 · 평영·접영 각 7명",
+    scheduleSummaryLines: ["영법별 장거리 집중 특강 · 14:00~17:00"],
+    badge: "SPECIAL",
+    specialClass: DONGTAN_DEC27_INTENSIVE,
+  },
 ];
 
 export const DEFAULT_CAPACITY_BY_CLASS: Record<string, number> = {
@@ -652,6 +682,10 @@ export const DEFAULT_CAPACITY_BY_CLASS: Record<string, number> = {
   "[동탄 11/29] 1부 특강 자유형": 14,
   "[동탄 11/29] 1부 특강 평영": 7,
   "[동탄 11/29] 1부 특강 접영": 7,
+  // 동탄 12/27 장거리 집중 (11/29와 동일)
+  "[동탄 12/27] 1부 특강 자유형": 14,
+  "[동탄 12/27] 1부 특강 평영": 7,
+  "[동탄 12/27] 1부 특강 접영": 7,
   // 부산 12/6
   "[부산 12/6] 1부 특강 자유형": 7,
   "[부산 12/6] 1부 특강 평영": 7,

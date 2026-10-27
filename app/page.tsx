@@ -954,7 +954,7 @@ const TIMETABLE_BUSAN_SEPTEMBER: TimetableRow[] = [
   },
 ];
 
-/** 동탄 스윔스튜디오제이 11/29 — 3시간 집중 특강만. 가격은 일정 데이터의 specialClass */
+/** 동탄 스윔스튜디오제이 장거리 집중(3시간) — 11/29·12/27 공통. 가격은 specialClass */
 const TIMETABLE_DONGTAN_INTENSIVE: TimetableRow[] = [
   {
     session: "1부 특강",
@@ -963,17 +963,23 @@ const TIMETABLE_DONGTAN_INTENSIVE: TimetableRow[] = [
       {
         lane: UNASSIGNED_LANE,
         title: "자유형",
-        price: CLASS_SCHEDULES.find((item) => item.id === 27)?.specialClass?.price ?? 115000,
+        price:
+          CLASS_SCHEDULES.find((item) => item.specialClass?.specialType === "intensive-3h")
+            ?.specialClass?.price ?? 115000,
       },
       {
         lane: UNASSIGNED_LANE,
         title: "평영",
-        price: CLASS_SCHEDULES.find((item) => item.id === 27)?.specialClass?.price ?? 115000,
+        price:
+          CLASS_SCHEDULES.find((item) => item.specialClass?.specialType === "intensive-3h")
+            ?.specialClass?.price ?? 115000,
       },
       {
         lane: UNASSIGNED_LANE,
         title: "접영",
-        price: CLASS_SCHEDULES.find((item) => item.id === 27)?.specialClass?.price ?? 115000,
+        price:
+          CLASS_SCHEDULES.find((item) => item.specialClass?.specialType === "intensive-3h")
+            ?.specialClass?.price ?? 115000,
       },
     ],
   },
@@ -1158,6 +1164,7 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   29: TIMETABLE_EUNPYEONG_DECEMBER, // 12/13 은평 (자유형·평영·접영 + 스타트)
   30: TIMETABLE_SONGPA_DECEMBER, // 12/19 송파 (특강+진단)
   31: TIMETABLE_MOKDONG_SEPTEMBER, // 12/20 목동 (특강+진단)
+  32: TIMETABLE_DONGTAN_INTENSIVE, // 12/27 동탄 3시간 집중 (진단 없음)
 };
 
 const getAvailableStrokesForClass = (classId: number) => {
@@ -1956,6 +1963,7 @@ export default function SwimmingClassPage() {
       "은평 12/13": "특강+스타트 17:00~19:00 · 자유형·평영·접영 (진단 제외)",
       "송파 12/19": "특강+진단 17:15~19:15",
       "목동 12/20": "특강+진단 14:00~16:00 · 접영 14명",
+      "동탄 12/27": "영법별 장거리 집중 14:00~17:00 · 115,000원 (11/29와 동일)",
       advance: "11/15까지 사전예약 · 특강·스타트·진단 5,000원 혜택(진단 기본 35,000→사전예약 30,000)",
     });
     console.log("[특강일정] 스타트·턴 연결 특강(1부·별도 정원)", {

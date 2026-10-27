@@ -4,6 +4,7 @@ import {
   getClassScheduleLabel,
   isDiagnosisEnrollmentKey,
   isStartTurnEnrollmentKey,
+  matchesSpecialClassOption,
   resolveClassScheduleFromEnrollmentKey,
 } from "./class-schedule-data";
 
@@ -85,6 +86,16 @@ function resolveDecemberBaseAmount(className: string): number | null {
     return DECEMBER_SPECIAL_BASE_AMOUNT;
   }
   if (/^\[[^\]]+\]\s+\d+부\s*특강\s+(자유형|평영|접영)$/.test(name)) {
+    const resolved = resolveClassScheduleFromEnrollmentKey(name);
+    const specialPrice = resolved?.schedule.specialClass?.price;
+    if (
+      Number.isFinite(specialPrice) &&
+      (specialPrice as number) > 0 &&
+      matchesSpecialClassOption(name, resolved?.schedule.specialClass)
+    ) {
+      // 장거리 집중 등 SPECIAL 정상가 (예: 115,000)
+      return specialPrice as number;
+    }
     return DECEMBER_SPECIAL_BASE_AMOUNT;
   }
   return null;

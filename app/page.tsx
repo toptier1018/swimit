@@ -4556,6 +4556,10 @@ export default function SwimmingClassPage() {
                     <li>· 2가지 영법 어항샷</li>
                     <li>· 1가지 영법 저항분석리포트 제공</li>
                   </ul>
+
+                  <p className="break-keep text-center text-sm font-bold leading-6 text-gray-800 sm:text-[15px]">
+                    저항 진단 프로그램은 별도의 상품입니다.
+                  </p>
                 </div>
               </section>
               ) : null}

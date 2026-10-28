@@ -95,6 +95,8 @@ import {
   COMPANION_DISCOUNT_SECTION_ID,
 } from "@/components/companion-discount-promo";
 import { SwimitTourPromo } from "@/components/swimit-tour-promo";
+import { DiagnosisProgramSection } from "@/components/diagnosis-program-section";
+import { DIAGNOSIS_BASE_AMOUNT } from "@/lib/class-payment-amount";
 
 import {
   CLASS_SCHEDULES,
@@ -186,23 +188,23 @@ const PRODUCT_CATALOG: Record<
   },
   diagnosis: {
     name: "저항 진단 프로그램",
-    tag: "어항샷 진단",
-    timeLabel: "16:00~18:00 · 2시간",
-    time: "16:00 ~ 18:00",
-    session: "2부 진단",
-    price: 35000,
-    originalPrice: 35000,
-    strokeCount: 2,
-    buttonLabel: "내 수영 저항 진단받기",
+    tag: "촬영 · 분석",
+    timeLabel: "2시간",
+    time: "2시간",
+    session: "1부 진단",
+    price: DIAGNOSIS_BASE_AMOUNT,
+    originalPrice: DIAGNOSIS_BASE_AMOUNT,
+    strokeCount: 4,
+    buttonLabel: "저항 진단 프로그램 예약하기",
     description:
-      "어항샷으로 저항 원인을 확인합니다.",
+      "4가지 영법 촬영과 어항샷, 저항분석리포트로 현재 자세를 확인합니다.",
     includes: [
-      "디테일 어항샷 촬영",
-      "저항 분석 리포트",
-      "연습 PDF 제공",
-      "2시간 자유수영 (촬영가능)",
+      "4가지 영법 모두 촬영 (자유형·배영·평영·접영)",
+      "2가지 영법 어항샷 촬영",
+      "1가지 영법 저항분석리포트와 교본 비교 편집본",
+      "자유수영 2시간 (개인 촬영 가능)",
     ],
-    priceBadge: "진단",
+    priceBadge: "",
   },
 };
 
@@ -212,7 +214,7 @@ const AQUARIUM_SHOT_EMBED_URL = `https://www.youtube.com/embed/${AQUARIUM_SHOT_Y
 
 const formatWon = (amount: number) => `₩${amount.toLocaleString()}`;
 
-/** 12월 사전예약 정상가 — 특강/스타트 8만 · 진단 3.5만 · 동탄 장거리 11.5만 */
+/** 12월 사전예약 정상가 — 특강/스타트 8만 · 진단 4만 · 동탄 장거리 11.5만 */
 const getDecemberListPrice = (input: {
   schedule?: { specialClass?: SpecialClassInfo | null } | null;
   productType?: ProductType | null;
@@ -222,7 +224,7 @@ const getDecemberListPrice = (input: {
     input.productType === "diagnosis" ||
     /진단/.test(String(input.classKey || ""))
   ) {
-    return 35000;
+    return DIAGNOSIS_BASE_AMOUNT;
   }
   if (input.schedule?.specialClass?.specialType === "intensive-3h") {
     return input.schedule.specialClass.price || 115000;
@@ -309,9 +311,11 @@ const ProductPriceLabel = ({
     <span
       className={`inline-flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 ${className}`}
     >
-      <span className="text-xs font-medium text-gray-400 line-through">
-        {formatWon(originalPrice)}
-      </span>
+      {originalPrice > price ? (
+        <span className="text-xs font-medium text-gray-400 line-through">
+          {formatWon(originalPrice)}
+        </span>
+      ) : null}
       <span className="text-base font-extrabold text-blue-800">
         {formatWon(price)}
       </span>
@@ -1870,6 +1874,8 @@ export default function SwimmingClassPage() {
     "clinic",
   );
   const isFishtankEntry = landingEntry === "fishtank";
+  /** 12월 사전예약 기간(11/15까지) — 진단 소개·가격 UI에 사전예약가 표시 */
+  const diagnosisAdvanceMarketingOpen = Date.now() < DECEMBER_ADVANCE_END;
   // PG 심사 플래그(로그용). 카드 결제는 정식 노출로 전환됨.
   const pgReviewFromEnv = process.env.NEXT_PUBLIC_PG_REVIEW === "true";
   const [isClassPgTestLoading, setIsClassPgTestLoading] = useState(false);
@@ -2019,7 +2025,7 @@ export default function SwimmingClassPage() {
       "송파 12/19": "특강+진단 17:15~19:15",
       "목동 12/20": "특강+진단 14:00~16:00 · 접영 14명",
       "동탄 12/27": "영법별 장거리 집중 14:00~17:00 · 115,000원 (11/29와 동일)",
-      advance: "11/15까지 사전예약 · 특강·스타트·진단 5,000원 혜택(진단 기본 35,000→사전예약 30,000)",
+      advance: "11/15까지 사전예약 · 특강·스타트·진단 5,000원 혜택(진단 정상가 40,000→사전예약 35,000)",
     });
     console.log("[특강일정] 스타트·턴 연결 특강(1부·별도 정원)", {
       dates: CLASS_SCHEDULES.filter(
@@ -2792,8 +2798,8 @@ export default function SwimmingClassPage() {
 
   const scheduleApplyButtonText = selectedScheduleClass
     ? isFishtankEntry
-      ? `${getScheduleShortLabel(selectedScheduleClass)} 어항샷 진단 예약하기`
-      : `${getScheduleShortLabel(selectedScheduleClass)} 특강 신청하기`
+      ? `${getScheduleShortLabel(selectedScheduleClass)} 저항 진단 프로그램 예약하기`
+      : `${getScheduleShortLabel(selectedScheduleClass)} 수영 특강 예약하기`
     : isFishtankEntry
       ? "먼저 지역 일정을 선택해 주세요"
       : "먼저 일정을 선택해 주세요";
@@ -3152,7 +3158,7 @@ export default function SwimmingClassPage() {
   const novemberDiscount = novemberDiscountEligible
     ? NOVEMBER_BENEFIT_AMOUNT
     : 0;
-  // 12월 사전예약 기간 UI 할인 표시 (진단 기본 35,000 → 사전예약 30,000)
+  // 12월 사전예약 기간 UI 할인 표시 (진단 정상가 40,000 → 사전예약 35,000)
   const decemberDiscountEligible = Boolean(
     selectedTimeSlot && isDecemberReservation,
   );
@@ -4282,59 +4288,25 @@ export default function SwimmingClassPage() {
                     {/* Main Title */}
                     <div className="space-y-4 sm:space-y-5">
                       {isFishtankEntry ? (
-                        <>
-                          <div className="inline-flex rounded-full border border-blue-200 bg-white px-3 py-1 text-xs font-bold text-blue-700">
-                            어항샷 · 저항 진단
-                          </div>
-                          <h3 className="text-[1.625rem] sm:text-[2rem] font-bold tracking-tight text-gray-950 leading-[1.35] sm:leading-tight text-balance break-keep">
-                            내 수영이 왜 힘든지, 물속에서 직접 확인하세요.
-                          </h3>
-                          <p className="text-[17px] sm:text-xl font-extrabold text-blue-800 leading-snug break-keep">
-                            스윔잇 어항샷 저항 진단 프로그램
-                          </p>
-                          <div className="rounded-xl border border-blue-100 bg-white p-4 shadow-sm space-y-3">
-                            <ProductPriceLabel
-                              price={PRODUCT_CATALOG.diagnosis.price}
-                              originalPrice={
-                                PRODUCT_CATALOG.diagnosis.originalPrice
-                              }
-                              badge={PRODUCT_CATALOG.diagnosis.priceBadge}
-                              className="text-base"
-                            />
-                            <ul className="space-y-1.5 text-sm sm:text-[15px] font-semibold leading-6 text-gray-800">
-                              <li>· 자유수영 2시간 (개인 촬영 가능)</li>
-                              <li>· 4가지 영법 중 2가지 영법 어항샷</li>
-                              <li>
-                                · 1가지 영법 저항분석리포트와 교본 비교 편집본
-                                제공
-                              </li>
-                            </ul>
-                          </div>
-                          <div className="grid gap-2">
-                            <Button
-                              size="lg"
-                              className="w-full text-base font-bold"
-                              onClick={() =>
-                                scrollToScheduleSection("fishtank-hero")
-                              }
-                            >
-                              어항샷 진단 예약하기
-                            </Button>
-                          </div>
-                          <div
-                            className="relative w-full overflow-hidden rounded-xl shadow-md"
-                            style={{ paddingBottom: "56.25%" }}
-                          >
-                            <iframe
-                              src={AQUARIUM_SHOT_EMBED_URL}
-                              title="스윔잇 어항샷 샘플"
-                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                              allowFullScreen
-                              referrerPolicy="strict-origin-when-cross-origin"
-                              className="absolute inset-0 h-full w-full"
-                            />
-                          </div>
-                        </>
+                        <DiagnosisProgramSection
+                          id="fishtank-diagnosis-hero"
+                          advanceOpen={diagnosisAdvanceMarketingOpen}
+                          embedUrl={AQUARIUM_SHOT_EMBED_URL}
+                          showCompare
+                          showFaq
+                          onReserveDiagnosis={() => {
+                            console.log(
+                              "[저항진단] fishtank 히어로 → 진단 일정",
+                            );
+                            scrollToScheduleSection("fishtank-hero");
+                          }}
+                          onViewSpecialSchedule={() => {
+                            console.log(
+                              "[저항진단] fishtank 히어로 → 특강 일정",
+                            );
+                            scrollToScheduleSection("schedule-section");
+                          }}
+                        />
                       ) : (
                         <>
                           <div className="inline-flex rounded-full border border-blue-200 bg-white px-3 py-1 text-xs font-bold text-blue-700">
@@ -4395,57 +4367,7 @@ export default function SwimmingClassPage() {
                       )}
                     </div>
 
-                    {/* fishtank: 어항샷 섹션을 특강 설명보다 위(히어로 직후)에 배치 */}
-                    {isFishtankEntry ? (
-                      <div
-                        id="diagnosis-intro-section"
-                        className="space-y-4 rounded-2xl border border-blue-100 bg-white p-4 shadow-sm"
-                      >
-                        <div className="space-y-1.5">
-                          <p className="text-xs font-bold tracking-wide text-blue-700 sm:text-sm">
-                            스윔잇 어항샷 저항 진단 프로그램
-                          </p>
-                          <p className="text-[17px] font-bold leading-snug text-gray-950 sm:text-lg">
-                            내 수영 저항 상태부터 보고 싶으신가요?
-                          </p>
-                          <p className="text-sm leading-6 text-gray-700 sm:text-[15px]">
-                            정밀 어항샷 기반으로
-                            <br />
-                            저항 진단 리포트를 제공합니다.
-                          </p>
-                        </div>
-                        <div className="rounded-xl bg-blue-50/80 px-3.5 py-3">
-                          <p className="text-sm font-bold text-gray-950">
-                            어항샷이란?
-                          </p>
-                          <p className="mt-1 text-sm leading-6 text-gray-700">
-                            위·아래를 동시에 찍어 저항이 보이게 촬영합니다.
-                          </p>
-                        </div>
-                        <p className="rounded-xl border border-orange-200 bg-orange-50 px-3.5 py-3 text-sm font-bold leading-6 text-orange-950">
-                          진단 후 직접 교정까지 원한다면 저항 제로 특강으로
-                          이어갈 수 있습니다
-                        </p>
-                        <Button
-                          size="lg"
-                          className="h-12 w-full text-[15px] font-bold sm:h-11 sm:text-base"
-                          onClick={() =>
-                            scrollToScheduleSection("fishtank-diagnosis-block")
-                          }
-                        >
-                          어항샷 진단 예약하기
-                        </Button>
-                        <ul className="space-y-1.5 rounded-xl border border-blue-100 bg-blue-50/60 px-3.5 py-3 text-sm font-bold leading-6 text-blue-700">
-                          <li>· 자유수영 2시간 (개인 촬영 가능)</li>
-                          <li>· 4가지 영법 중 2가지 영법 어항샷</li>
-                          <li>
-                            · 1가지 영법 저항분석리포트와 교본 비교 편집본 제공
-                          </li>
-                        </ul>
-                      </div>
-                    ) : null}
-
-                    {/* fishtank: 진단 다음에 특강 소개로 자연스럽게 연결 */}
+                    {/* fishtank: 진단 히어로 다음에 특강 소개로 자연스럽게 연결 */}
                     {isFishtankEntry ? (
                       <div
                         id="zero-class-intro-section"
@@ -4724,91 +4646,27 @@ export default function SwimmingClassPage() {
                 </div>
               </section>
 
-              {/* 어항샷 · 저항 진단 */}
+              {/* 저항 진단 프로그램 (특강 랜딩) */}
               {!isFishtankEntry ? (
-              <section
-                id="diagnosis-intro-section"
-                className="order-3 mt-6 w-full scroll-mt-4 rounded-2xl border border-blue-100 bg-white p-4 shadow-sm sm:p-5"
-              >
-                <div className="space-y-3.5 sm:space-y-4">
-                  <div className="space-y-2">
-                    <p className="text-xs font-bold tracking-wide text-blue-700 sm:text-sm">
-                      스윔잇 저항 진단 프로그램 OPEN
-                    </p>
-                    <p className="text-lg font-bold leading-7 text-gray-950 sm:text-xl">
-                      내 수영 자세부터 보고 싶으신가요?
-                    </p>
-                    <p className="break-keep text-sm leading-6 text-gray-700 sm:text-[15px] sm:leading-7">
-                      정밀 어항샷 기반으로
-                      <br />
-                      저항 진단 리포트를 제공합니다.
-                    </p>
-                  </div>
-
-                  <div className="rounded-xl bg-blue-50/80 px-3.5 py-3.5 sm:py-4">
-                    <p className="text-[15px] font-bold leading-6 text-gray-950">
-                      어항샷이란?
-                    </p>
-                    <p className="mt-1.5 break-keep text-sm leading-6 text-gray-700 sm:text-[15px]">
-                      위·아래를 동시에 찍어 저항이 보이게 촬영합니다.
-                    </p>
-                  </div>
-
-                  <div
-                    className="relative w-full overflow-hidden rounded-xl shadow-md"
-                    style={{ paddingBottom: "56.25%" }}
-                  >
-                    <iframe
-                      src={AQUARIUM_SHOT_EMBED_URL}
-                      title="스윔잇 어항샷 샘플"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                      allowFullScreen
-                      referrerPolicy="strict-origin-when-cross-origin"
-                      className="absolute inset-0 h-full w-full"
-                      onLoad={() =>
-                        console.log(
-                          "[어항샷] 샘플 영상 로드:",
-                          AQUARIUM_SHOT_YOUTUBE_ID,
-                        )
-                      }
-                    />
-                  </div>
-
-                  <Button
-                    size="lg"
-                    className="h-12 w-full text-[15px] font-bold sm:h-11 sm:text-base"
-                    onClick={() => {
-                      console.log(
-                        "[CTA] 어항샷 섹션 → 진단 프로그램 신청(일정으로 이동)",
-                      );
-                      scrollToScheduleSection("clinic-diagnosis-section");
-                    }}
-                  >
-                    저항 진단 프로그램 신청하기
-                  </Button>
-
-                  <ul className="space-y-1.5 rounded-xl border border-blue-100 bg-blue-50/60 px-3.5 py-3 text-sm font-bold leading-6 text-blue-700">
-                    <li>· 자유수영 2시간 (개인 촬영 가능)</li>
-                    <li>· 4가지 영법 중 2가지 영법 어항샷</li>
-                    <li>
-                      · 1가지 영법 저항분석리포트와 교본 비교 편집본 제공
-                    </li>
-                  </ul>
-
-                  <div className="space-y-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3.5 sm:py-4">
-                    <p className="text-[15px] font-bold leading-6 text-gray-950">
-                      특강과 다른 상품입니다
-                    </p>
-                    <p className="break-keep text-sm leading-6 text-gray-700 sm:text-[15px] sm:leading-7">
-                      저항 진단은{" "}
-                      <span className="font-bold text-gray-950">
-                        특강에 포함되지 않습니다
-                      </span>
-                      . 따로 신청하는 별도 상품입니다.
-                    </p>
-                  </div>
-                </div>
-              </section>
+                <DiagnosisProgramSection
+                  className="order-3 mt-6"
+                  advanceOpen={diagnosisAdvanceMarketingOpen}
+                  embedUrl={AQUARIUM_SHOT_EMBED_URL}
+                  showCompare
+                  showFaq
+                  onReserveDiagnosis={() => {
+                    console.log(
+                      "[저항진단] 클리닉 랜딩 → 진단 일정",
+                    );
+                    scrollToScheduleSection("clinic-diagnosis-section");
+                  }}
+                  onViewSpecialSchedule={() => {
+                    console.log(
+                      "[저항진단] 클리닉 랜딩 → 특강 일정",
+                    );
+                    scrollToScheduleSection("schedule-section");
+                  }}
+                />
               ) : null}
 
               {/* 상시 혜택 — 저항 진단 OPEN 바로 아래 (안내 UI만, 자동 할인 없음) */}
@@ -4844,7 +4702,7 @@ export default function SwimmingClassPage() {
                   </h3>
                   <p className="mt-1.5 text-sm sm:text-[15px] font-medium leading-6 text-gray-600">
                     {isFishtankEntry
-                      ? "지역을 고른 뒤, 어항샷 진단 또는 저항 제로 특강 중 원하는 프로그램을 신청하세요."
+                      ? "지역을 고른 뒤, 저항 진단 프로그램 또는 수영 특강 중 원하는 프로그램을 신청하세요."
                       : "지역을 먼저 선택한 뒤, 일정을 확인하세요."}
                   </p>
                   <CompanionDiscountHint
@@ -5118,8 +4976,9 @@ export default function SwimmingClassPage() {
                               </p>
                               <p className="mt-1 break-keep">
                                 11월 15일까지 결제 없이 사전예약 · 특강·스타트
-                                80,000원 · 진단 35,000원 · 동탄 3시간 115,000원
-                                · 모두 5,000원 할인 (나중에 결제)
+                                80,000원 · 진단 40,000원 · 동탄 3시간 115,000원
+                                · 모두 5,000원 할인 (진단 사전예약가 35,000원 ·
+                                나중에 결제)
                               </p>
                             </div>
                           ) : null}
@@ -5518,7 +5377,7 @@ export default function SwimmingClassPage() {
                                       );
                                     }}
                                   >
-                                    어항샷 진단 예약하기
+                                    저항 진단 프로그램 예약하기
                                   </Button>
                                   <Button
                                     type="button"
@@ -5533,7 +5392,7 @@ export default function SwimmingClassPage() {
                                       );
                                     }}
                                   >
-                                    저항 제로 특강 신청하기
+                                    수영 특강 예약하기
                                   </Button>
                                 </div>
                               ) : null}
@@ -5575,7 +5434,7 @@ export default function SwimmingClassPage() {
                 <div className="mt-4 rounded-xl border border-orange-200 bg-orange-50 p-4 sm:p-5">
                   <p className="text-base sm:text-lg font-bold text-gray-900 mb-2">
                     {isFishtankEntry
-                      ? "📌 일정을 고르셨다면, 어항샷 진단을 예약하세요"
+                      ? "📌 일정을 고르셨다면, 저항 진단 프로그램을 예약하세요"
                       : "📌 일정 확인하셨다면, 지금 바로 자리 확보하세요"}
                   </p>
                   <div className="mt-3">
@@ -5606,7 +5465,7 @@ export default function SwimmingClassPage() {
                           openScheduleRegistration(selectedScheduleClass, false)
                         }
                       >
-                        저항 제로 특강 신청하기
+                        수영 특강 예약하기
                       </Button>
                     ) : null}
                   </div>
@@ -5633,7 +5492,7 @@ export default function SwimmingClassPage() {
                         }
                       }}
                     >
-                      어항샷 진단 예약하기
+                      저항 진단 프로그램 예약하기
                     </Button>
                   </div>
                 </div>
@@ -6841,8 +6700,8 @@ export default function SwimmingClassPage() {
                                     {isAdvanceNoPayReservation ? "아래 정보를 입력하고 예약해 주세요." : "아래 정보를 입력하고 결제해 주세요."}
                                     <br />
                                     <span className="text-xs text-blue-800">
-                                      ※ 교정 수업이 아닌 어항샷 진단
-                                      프로그램입니다.
+                                      ※ 촬영·분석 프로그램이며, 현장 자세 교정
+                                      수업은 포함되지 않습니다.
                                     </span>
                                   </p>
                                 </div>
@@ -7260,7 +7119,8 @@ export default function SwimmingClassPage() {
                                           🔍 저항 진단 프로그램
                                         </div>
                                         <div className="mt-2 text-sm leading-5 text-gray-600">
-                                          어항샷으로 저항 원인을 확인합니다.
+                                          4영법 촬영 · 2영법 어항샷 · 1영법
+                                          분석리포트 · 자유수영 2시간
                                         </div>
                                         <div className="mt-2">
                                           <ProductPriceLabel
@@ -7268,10 +7128,18 @@ export default function SwimmingClassPage() {
                                             reservationBenefit={
                                               diagnosisAdvanceOpen
                                             }
-                                            reservationOnlyTitle="사전예약"
-                                            reservationOnlyHint="11월 15일까지"
-                                            advanceListPrice={diagnosisAdvanceOpen ? 35000 : undefined}
-                                            price={selectedClassDiagnosis.price}
+                                            reservationOnlyTitle="사전예약 혜택"
+                                            reservationOnlyHint="11월 15일까지 · 5,000원 할인"
+                                            advanceListPrice={
+                                              diagnosisAdvanceOpen
+                                                ? DIAGNOSIS_BASE_AMOUNT
+                                                : undefined
+                                            }
+                                            price={
+                                              diagnosisAdvanceOpen
+                                                ? DIAGNOSIS_BASE_AMOUNT
+                                                : selectedClassDiagnosis.price
+                                            }
                                             originalPrice={
                                               diagnosisProduct.originalPrice
                                             }

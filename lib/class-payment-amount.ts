@@ -9,8 +9,8 @@ import {
 } from "@/lib/class-schedule-data";
 import { resolveNovemberOpenBenefit } from "@/lib/november-reservation";
 
-/** 저항 진단 프로그램 기본가 (쿠폰 혜택 없음) */
-const DIAGNOSIS_AMOUNT = 35000;
+/** 저항 진단 프로그램 정상가 (사전예약 할인은 december-reservation에서 처리) */
+export const DIAGNOSIS_BASE_AMOUNT = 40000;
 const ZERO_OR_SPECIAL_AMOUNT = 80000;
 const LEGACY_SEOCHO_AMOUNT = 70000;
 
@@ -21,9 +21,9 @@ export function resolveClassBasePaymentAmount(
   const name = String(className || "").trim();
   if (!name) return null;
 
-  // 저항 진단 프로그램 — 오픈 할인 제외
+  // 저항 진단 프로그램 — 정상가 40,000원 (사전예약 할인은 별도 플로우)
   if (/진단/.test(name)) {
-    return DIAGNOSIS_AMOUNT;
+    return DIAGNOSIS_BASE_AMOUNT;
   }
 
   const resolved = resolveClassScheduleFromEnrollmentKey(name);

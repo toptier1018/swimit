@@ -4302,9 +4302,12 @@ export default function SwimmingClassPage() {
                               className="text-base"
                             />
                             <ul className="space-y-1.5 text-sm sm:text-[15px] font-semibold leading-6 text-gray-800">
-                              <li>· 2영법 어항샷 촬영</li>
-                              <li>· 저항 분석 리포트</li>
-                              <li>· 2시간 자유수영</li>
+                              <li>· 자유수영 2시간 (개인 촬영 가능)</li>
+                              <li>· 4가지 영법 중 2가지 영법 어항샷</li>
+                              <li>
+                                · 1가지 영법 저항분석리포트와 교본 비교 편집본
+                                제공
+                              </li>
                             </ul>
                           </div>
                           <div className="grid gap-2">
@@ -4434,8 +4437,10 @@ export default function SwimmingClassPage() {
                         </Button>
                         <ul className="space-y-1.5 rounded-xl border border-blue-100 bg-blue-50/60 px-3.5 py-3 text-sm font-bold leading-6 text-blue-700">
                           <li>· 자유수영 2시간 (개인 촬영 가능)</li>
-                          <li>· 2가지 영법 어항샷</li>
-                          <li>· 1가지 영법 저항분석리포트 제공</li>
+                          <li>· 4가지 영법 중 2가지 영법 어항샷</li>
+                          <li>
+                            · 1가지 영법 저항분석리포트와 교본 비교 편집본 제공
+                          </li>
                         </ul>
                       </div>
                     ) : null}
@@ -4784,8 +4789,10 @@ export default function SwimmingClassPage() {
 
                   <ul className="space-y-1.5 rounded-xl border border-blue-100 bg-blue-50/60 px-3.5 py-3 text-sm font-bold leading-6 text-blue-700">
                     <li>· 자유수영 2시간 (개인 촬영 가능)</li>
-                    <li>· 2가지 영법 어항샷</li>
-                    <li>· 1가지 영법 저항분석리포트 제공</li>
+                    <li>· 4가지 영법 중 2가지 영법 어항샷</li>
+                    <li>
+                      · 1가지 영법 저항분석리포트와 교본 비교 편집본 제공
+                    </li>
                   </ul>
 
                   <div className="space-y-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3.5 sm:py-4">

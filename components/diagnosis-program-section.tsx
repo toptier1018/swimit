@@ -248,7 +248,7 @@ export function DiagnosisProgramSection({
         <p className="break-keep text-sm leading-6 text-gray-700 sm:text-[15px] sm:leading-7">
           자유형·배영·평영·접영, 4가지 영법을 모두 촬영합니다.
           <br />
-          그중 2가지 영법은 어항샷으로 추가 촬영하고, 1가지 영법은
+          그중 2가지 영법은 어항샷으로 촬영하고, 1가지 영법은
           저항분석리포트를 제공합니다.
         </p>
       </div>

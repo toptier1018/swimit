@@ -516,6 +516,22 @@ export const CLASS_SCHEDULES: ClassScheduleItem[] = [
     specialClass: DONGTAN_NOV29_INTENSIVE,
   },
   {
+    id: 33,
+    year: 2026,
+    location: "대구 · 올스위머 상인점",
+    locationCode: "대구",
+    date: "12월 5일 (토)",
+    dateNum: 5,
+    month: 12,
+    venue: "올스위머 상인점",
+    address: "대구 달서구 월곡로 330 지하1층",
+    spots: "평영·접영 각 7명",
+    scheduleSummaryLines: [
+      "1부 특강 · 14:00~16:00 (2시간) · 평영·접영 (자유형·진단 제외)",
+    ],
+    badge: "특강 운영",
+  },
+  {
     id: 28,
     year: 2026,
     location: "부산 · 조이풀스윔",
@@ -690,6 +706,11 @@ export const DEFAULT_CAPACITY_BY_CLASS: Record<string, number> = {
   "[동탄 12/27] 1부 특강 자유형": 14,
   "[동탄 12/27] 1부 특강 평영": 7,
   "[동탄 12/27] 1부 특강 접영": 7,
+  // 대구 12/5 올스위머 상인점 (자유형·진단 미운영)
+  "[대구 12/5] 1부 특강 평영": 7,
+  "[대구 12/5] 1부 특강 접영": 7,
+  "[대구 12/5] 1부 특강 자유형": 0,
+  "[대구 12/5] 1부 진단": 0,
   // 부산 12/6
   "[부산 12/6] 1부 특강 자유형": 7,
   "[부산 12/6] 1부 특강 평영": 7,

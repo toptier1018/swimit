@@ -1123,6 +1123,18 @@ const TIMETABLE_BUSAN_NOVEMBER: TimetableRow[] = [
   },
 ];
 
+/** 올스위머 상인점 12/5 특강 (대구) — 평영·접영만 (자유형·진단 미운영) */
+const TIMETABLE_DAEGU_DECEMBER: TimetableRow[] = [
+  {
+    session: "1부 특강",
+    time: "14:00 ~ 16:00",
+    lanes: [
+      { lane: UNASSIGNED_LANE, title: "평영", price: 80000 },
+      { lane: UNASSIGNED_LANE, title: "접영", price: 80000 },
+    ],
+  },
+];
+
 /** 조이풀스윔 12/6 특강 (부산) — 특강+진단, 레인 미표시 */
 const TIMETABLE_BUSAN_DECEMBER: TimetableRow[] = [
   {
@@ -1212,6 +1224,7 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   25: TIMETABLE_GANGNAM_NOVEMBER, // 11/15 강남 (특강만)
   26: TIMETABLE_MOKDONG_SEPTEMBER, // 11/22 목동
   27: TIMETABLE_DONGTAN_INTENSIVE, // 11/29 동탄 3시간 집중 (진단 없음)
+  33: TIMETABLE_DAEGU_DECEMBER, // 12/5 대구 (평영·접영만, 진단 없음)
   28: TIMETABLE_BUSAN_DECEMBER, // 12/6 부산 (특강+진단)
   29: TIMETABLE_EUNPYEONG_DECEMBER, // 12/12 은평 (자유형·평영·접영 + 스타트)
   30: TIMETABLE_SONGPA_DECEMBER, // 12/19 송파 (특강+진단)
@@ -2020,6 +2033,7 @@ export default function SwimmingClassPage() {
       "동탄 11/29": "영법별 장거리 집중 14:00~17:00 · 115,000원",
     });
     console.log("[특강일정] 12월 일정 추가", {
+      "대구 12/5": "특강만 14:00~16:00 · 평영·접영 (자유형·진단 제외)",
       "부산 12/6": "특강+진단 14:00~16:00",
       "은평 12/12": "특강+스타트 17:00~19:00 · 자유형·평영·접영 (진단 제외)",
       "송파 12/19": "특강+진단 17:15~19:15",

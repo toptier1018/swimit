@@ -47,6 +47,12 @@ export const ALIMTALK_TEMPLATE_CODES = {
     diagnosis: "UL_0787",
   },
 
+  /** 대구 12/5 올스위머 상인점 — 센터 전용 코드 확정 전 임시. 확정 코드 받으면 교체 */
+  "대구 · 올스위머 상인점": {
+    special: "UL_0787",
+    diagnosis: "UL_0787",
+  },
+
   "서울 중구 · 스포빌키즈쿠아": {
     special: "UL_0848",
     diagnosis: "UL_0848",

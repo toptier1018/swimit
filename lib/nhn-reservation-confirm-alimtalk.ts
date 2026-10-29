@@ -22,6 +22,7 @@ const CENTER_BY_LABEL: Record<string, string> = {
   강남: "강남 · 와이키키 링크&스윔",
   중구: "서울 중구 · 스포빌키즈쿠아",
   수원: "수원·화성",
+  대구: "대구 · 올스위머 상인점",
 };
 
 export type SendReservationConfirmationAlimtalkInput = {

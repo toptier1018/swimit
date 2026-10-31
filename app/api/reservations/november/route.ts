@@ -7,6 +7,7 @@ import { getClassSettingsFromNotion } from "@/lib/schedules";
 import {
   CLASS_SCHEDULES,
   DEFAULT_CAPACITY_BY_CLASS,
+  isDiagnosisEnrollmentKey,
   toClassScheduleIsoDate,
 } from "@/lib/class-schedule-data";
 import {
@@ -14,7 +15,11 @@ import {
   isNovemberSchedule,
   resolveNovemberReservation,
 } from "@/lib/november-reservation";
-import { CLASS_VIDEO_CONSENT_VERSION, parseContentConsent } from "@/lib/resistance-content-consent";
+import {
+  CLASS_VIDEO_CONSENT_VERSION,
+  isDiagnosisPaymentConsentVersion,
+  parseContentConsent,
+} from "@/lib/resistance-content-consent";
 
 const inputSchema = z.object({
   classId: z.number().int(), classKey: z.string().max(150), agreed: z.literal(true),
@@ -50,8 +55,23 @@ export async function POST(request: NextRequest) {
     const offer = resolveNovemberReservation(data.classId, data.classKey);
     if (!offer) return NextResponse.json({ error: "예약 가능한 11월 특강이 아닙니다." }, { status: 400 });
     const consent = parseContentConsent(data.contentConsent);
-    if (!consent || consent.version !== CLASS_VIDEO_CONSENT_VERSION || consent.className !== data.classKey)
+    const isDiagnosisClass =
+      isDiagnosisEnrollmentKey(data.classKey) || /진단/.test(data.classKey);
+    const consentVersionOk = consent
+      ? isDiagnosisClass
+        ? isDiagnosisPaymentConsentVersion(consent.version)
+        : consent.version === CLASS_VIDEO_CONSENT_VERSION
+      : false;
+    if (!consent || !consentVersionOk || consent.className !== data.classKey) {
+      console.warn("[11월사전예약] 영상 촬영 동의 검증 실패", {
+        classKey: data.classKey,
+        isDiagnosisClass,
+        hasConsent: Boolean(consent),
+        consentVersion: consent?.version ?? null,
+        consentClassName: consent?.className ?? null,
+      });
       return NextResponse.json({ error: "영상 촬영 및 활용 동의가 필요합니다." }, { status: 400 });
+    }
     const duplicate = await checkGoogleSheetDuplicateForSameClass({ ...data.form, selectedClass: data.classKey });
     if (!duplicate.success) throw new Error("기존 예약을 확인하지 못했습니다.");
     if (duplicate.hasDuplicate) return NextResponse.json({ error: "이미 같은 특강을 예약하셨습니다. 기존 예약은 고객센터에서 확인해 주세요." }, { status: 409 });

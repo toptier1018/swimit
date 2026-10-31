@@ -11,6 +11,7 @@ import { getClassSettingsFromNotion } from "@/lib/schedules";
 import {
   CLASS_SCHEDULES,
   DEFAULT_CAPACITY_BY_CLASS,
+  isDiagnosisEnrollmentKey,
   toClassScheduleIsoDate,
 } from "@/lib/class-schedule-data";
 import {
@@ -20,6 +21,7 @@ import {
 } from "@/lib/december-reservation";
 import {
   CLASS_VIDEO_CONSENT_VERSION,
+  isDiagnosisPaymentConsentVersion,
   parseContentConsent,
 } from "@/lib/resistance-content-consent";
 
@@ -81,11 +83,21 @@ export async function POST(request: NextRequest) {
     }
 
     const consent = parseContentConsent(data.contentConsent);
-    if (
-      !consent ||
-      consent.version !== CLASS_VIDEO_CONSENT_VERSION ||
-      consent.className !== data.classKey
-    ) {
+    const isDiagnosisClass =
+      isDiagnosisEnrollmentKey(data.classKey) || /진단/.test(data.classKey);
+    const consentVersionOk = consent
+      ? isDiagnosisClass
+        ? isDiagnosisPaymentConsentVersion(consent.version)
+        : consent.version === CLASS_VIDEO_CONSENT_VERSION
+      : false;
+    if (!consent || !consentVersionOk || consent.className !== data.classKey) {
+      console.warn("[12월사전예약] 영상 촬영 동의 검증 실패", {
+        classKey: data.classKey,
+        isDiagnosisClass,
+        hasConsent: Boolean(consent),
+        consentVersion: consent?.version ?? null,
+        consentClassName: consent?.className ?? null,
+      });
       return NextResponse.json(
         { error: "영상 촬영 및 활용 동의가 필요합니다." },
         { status: 400 },

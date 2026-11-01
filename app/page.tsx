@@ -1221,7 +1221,7 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   22: TIMETABLE_MOKDONG_OCTOBER_NO_DIAGNOSIS, // 10/18 목동 (특강+스타트·턴, 진단 없음)
   23: TIMETABLE_DONGTAN_OCTOBER, // 10/25 동탄 (평영 미운영)
   24: TIMETABLE_BUSAN_NOVEMBER, // 11/8 부산 (자유형·접영만)
-  25: TIMETABLE_GANGNAM_NOVEMBER, // 11/15 강남 (특강만)
+  // 25: 강남 11/15 취소 — TIMETABLE 보관만 (목록 미노출)
   26: TIMETABLE_MOKDONG_SEPTEMBER, // 11/22 목동
   27: TIMETABLE_DONGTAN_INTENSIVE, // 11/29 동탄 3시간 집중 (진단 없음)
   33: TIMETABLE_DAEGU_DECEMBER, // 12/5 대구 (평영·접영만, 진단 없음)

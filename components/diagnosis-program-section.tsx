@@ -241,10 +241,11 @@ export function DiagnosisProgramSection({
           촬영 및 분석 프로그램
         </p>
         <h3 className="break-keep text-[1.35rem] font-bold leading-[1.4] tracking-tight text-gray-950 sm:text-[1.75rem] sm:leading-tight">
-          내 수영을 직접 보고,
-          <br />
-          저항이 생기는 이유를 찾아보세요.
+          혹시 내 수영의 저항 원인부터 확인해보고 싶으신가요?
         </h3>
+        <p className="break-keep text-sm leading-6 text-gray-700 sm:text-[15px] sm:leading-7">
+          어항샷으로 저항의 원인을 확인하고 리포트까지 제공해드립니다.
+        </p>
         <p className="break-keep text-sm leading-6 text-gray-700 sm:text-[15px] sm:leading-7">
           자유형·배영·평영·접영, 4가지 영법을 모두 촬영합니다.
           <br />

@@ -692,17 +692,17 @@ const CARE_PROCESS_STEPS = [
   {
     step: "STEP4",
     title: "맞춤 드릴 및 교정",
-    desc: "문제의 원인에 맞는 드릴을 적용해 교정된 동작을 몸으로 익힙니다.",
+    desc: "문제의 원인에 맞는 드릴과 교정을 통해 동작을 몸으로 익힙니다.",
   },
   {
     step: "STEP5",
     title: "After 촬영",
-    desc: "교정한 동작을 다시 촬영해 Before 영상과 변화를 비교합니다.",
+    desc: "교정되었는지 After 영상을 재촬영하여 Before 영상과 변화를 비교합니다.",
   },
   {
     step: "STEP6",
     title: "1:1 영상 피드백",
-    desc: "Before/After 영상을 바탕으로 변화한 점과 이후 연습 방향을 안내합니다.",
+    desc: "Before/After 영상을 바탕으로 변화한 점과 이후 연습 방향까지 안내합니다.",
   },
 ];
 
@@ -4368,8 +4368,8 @@ export default function SwimmingClassPage() {
                               <span className="font-bold text-blue-700">
                                 저항
                               </span>
-                              이 생기는 이유를 찾고, 맞춤 드릴로 힘이 새는
-                              자세를 교정하는{" "}
+                              이 생기는 이유를 찾고, 맞춤 드릴과 교정으로 힘이
+                              새는 자세를 교정하는{" "}
                               <span className="font-bold text-blue-700">
                                 수영 특강
                               </span>
@@ -4438,8 +4438,8 @@ export default function SwimmingClassPage() {
                               <span className="font-bold text-blue-700">
                                 저항
                               </span>
-                              이 생기는 이유를 찾고, 맞춤 드릴로 힘이 새는
-                              자세를 교정하는{" "}
+                              이 생기는 이유를 찾고, 맞춤 드릴과 교정으로 힘이
+                              새는 자세를 교정하는{" "}
                               <span className="font-bold text-blue-700">
                                 수영 특강
                               </span>
@@ -4540,7 +4540,7 @@ export default function SwimmingClassPage() {
                             스윔잇 저항 교정 특강
                           </p>
                           <p className="mt-2 text-lg font-bold leading-7 text-blue-900 sm:text-xl">
-                            "내 자세는 왜 안 될까?"
+                            "나는 왜 안 될까?"
                           </p>
                           <p className="mt-1.5 break-keep text-sm leading-6 text-blue-800 sm:text-[15px]">
                             수중 촬영으로 저항이 생기는 원인을 확인하고 내

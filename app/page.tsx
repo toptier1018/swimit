@@ -512,7 +512,7 @@ const DongtanIntensivePromo = ({ onViewSchedule }: { onViewSchedule: () => void 
             수영이 완성되지 않습니다.
           </h3>
           <p className="break-keep text-[13px] font-semibold leading-6 text-blue-900 sm:text-[15px] sm:leading-7">
-            출발부터 턴, 다시 속도를 붙이는 것까지
+            저항 교정과 출발부터 턴, 다시 속도를 붙이는 것까지
             <br />
             한 가지 영법을 장거리로 이어갈 수 있도록 연결합니다.
           </p>
@@ -4361,7 +4361,7 @@ export default function SwimmingClassPage() {
                               </span>
                             </h3>
                             <p className="text-sm sm:text-[17px] font-medium text-gray-800 leading-6 sm:leading-7 break-keep">
-                              물은 공기보다 약 800배 밀도가 높습니다.
+                              물은 공기보다 약 800배 저항이 높습니다.
                             </p>
                             <p className="text-sm sm:text-[17px] font-medium text-gray-800 leading-6 sm:leading-7 break-keep">
                               스윔잇은 수중 촬영으로 내 몸에서{" "}
@@ -4431,7 +4431,7 @@ export default function SwimmingClassPage() {
                               </span>
                             </h3>
                             <p className="text-sm sm:text-[16px] font-medium text-gray-800 leading-6 sm:leading-[1.7] break-keep">
-                              물은 공기보다 약 800배 밀도가 높습니다.
+                              물은 공기보다 약 800배 저항이 높습니다.
                             </p>
                             <p className="text-sm sm:text-[16px] font-medium text-gray-800 leading-6 sm:leading-[1.7] break-keep">
                               스윔잇은 수중 촬영으로 내 몸에서{" "}

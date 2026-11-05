@@ -133,7 +133,7 @@ export const DONGTAN_INTENSIVE_3H: SpecialClassInfo = {
   price: 115000,
   summary: "일반 2시간 특강이 아닌 영법별 장거리 집중 특강입니다.",
   detail:
-    "출발부터 턴, 다시 속도를 붙이는 것까지 한 가지 영법을 장거리로 이어갈 수 있도록 연결합니다.",
+    "저항 교정과 출발부터 턴, 다시 속도를 붙이는 것까지 한 가지 영법을 장거리로 이어갈 수 있도록 연결합니다.",
   classes: DONGTAN_INTENSIVE_3H_CLASSES,
 };
 

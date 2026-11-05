@@ -665,28 +665,52 @@ const STROKE_CATALOG: Record<
 };
 
 const PROBLEM_CHECKLIST = [
-  "25m만 가도 숨이 찹니다.",
-  "힘은 많이 드는데 앞으로 안 나갑니다.",
-  "평영 킥을 차도 추진이 없습니다.",
-  "접영을 하면 허리만 아픕니다.",
-  "유튜브를 봐도 내 문제가 무엇인지 모르겠습니다.",
-  "어깨가 항상 아픕니다.",
+  "25m만 가도 숨이 차고 호흡이 급해집니다.",
+  "힘껏 팔을 저어도 앞으로 잘 나가지 않습니다.",
+  "평영 발차기를 열심히 해도 추진력이 부족합니다.",
+  "접영을 하면 몸이 가라앉고 팔이 무겁습니다.",
+  "수영 영상을 봐도 내 자세의 문제가 무엇인지 모르겠습니다.",
+  "수영할 때 어깨나 허리에 불편함이 반복됩니다.",
 ];
 
 const CARE_PROCESS_STEPS = [
-  { step: "STEP1", title: "사전 문제 체크", desc: "수영 경력, 통증, 가장 답답한 문제를 먼저 확인합니다." },
-  { step: "STEP2", title: "Before 수중 촬영", desc: "현재 자세와 물속 움직임을 영상으로 남깁니다." },
-  { step: "STEP3", title: "저항 원인 진단", desc: "숨참, 가라앉음, 통증이 어디서 시작되는지 찾습니다." },
-  { step: "STEP4", title: "맞춤 드릴 및 교정", desc: "문제 원인에 맞는 드릴로 바로 몸에서 바꿔봅니다." },
-  { step: "STEP5", title: "After 촬영", desc: "교정 후 움직임을 다시 촬영해 자세의 변화를 확인합니다." },
-  { step: "STEP6", title: "1:1 영상 피드백", desc: "수업 후 혼자 연습할 방향까지 영상 기반으로 안내합니다." },
+  {
+    step: "STEP1",
+    title: "사전 문제 체크",
+    desc: "수영 경력과 통증, 가장 답답했던 문제를 먼저 확인합니다.",
+  },
+  {
+    step: "STEP2",
+    title: "Before 수중 촬영",
+    desc: "현재 수영 자세를 촬영해 저항이 크게 생기는 동작을 확인합니다.",
+  },
+  {
+    step: "STEP3",
+    title: "저항 원인 분석",
+    desc: "호흡이 힘들거나 몸이 가라앉는 등 문제가 발생하는 원인을 분석합니다.",
+  },
+  {
+    step: "STEP4",
+    title: "맞춤 드릴 및 교정",
+    desc: "문제의 원인에 맞는 드릴을 적용해 교정된 동작을 몸으로 익힙니다.",
+  },
+  {
+    step: "STEP5",
+    title: "After 촬영",
+    desc: "교정한 동작을 다시 촬영해 Before 영상과 변화를 비교합니다.",
+  },
+  {
+    step: "STEP6",
+    title: "1:1 영상 피드백",
+    desc: "Before/After 영상을 바탕으로 변화한 점과 이후 연습 방향을 안내합니다.",
+  },
 ];
 
 const TRUST_METRICS = [
-  { value: "누적", label: "수강생 데이터 기반 진단" },
-  { value: "Before/After", label: "수중 촬영 비교" },
-  { value: "1:1", label: "개인별 영상 피드백" },
+  { value: "수중 촬영", label: "저항이 생기는 원인 확인" },
+  { value: "Before / After", label: "교정 전후 자세 비교" },
   { value: "최대 7명", label: "레인당 소수 정예" },
+  { value: "1:1", label: "개인별 영상 피드백" },
 ];
 
 const REVIEW_QUOTES = [
@@ -4324,29 +4348,30 @@ export default function SwimmingClassPage() {
                       ) : (
                         <>
                           <div className="inline-flex rounded-full border border-blue-200 bg-white px-3 py-1 text-xs font-bold text-blue-700">
-                            수영 클리닉 · 저항 교정 특강
+                            서울·경기·부산·대구 전국 주요 도시에서 만나는 저항
+                            교정 특강
                           </div>
                           <div className="space-y-2.5 sm:space-y-3">
                             <h3 className="text-[1.45rem] sm:text-[2rem] font-bold tracking-tight text-gray-950 leading-[1.4] sm:leading-tight text-balance break-keep">
                               <span className="block">
-                                수영이 힘든 건, 힘이 부족해서가 아니라
+                                수영이 힘든 이유,
                               </span>
                               <span className="block">
-                                힘이 새고 있기 때문입니다.
+                                힘이 부족해서가 아닐 수 있습니다.
                               </span>
                             </h3>
                             <p className="text-sm sm:text-[17px] font-medium text-gray-800 leading-6 sm:leading-7 break-keep">
-                              더 세게 수영하기 전에, 어느 자세에서{" "}
+                              물은 공기보다 약 800배 밀도가 높습니다.
+                            </p>
+                            <p className="text-sm sm:text-[17px] font-medium text-gray-800 leading-6 sm:leading-7 break-keep">
+                              스윔잇은 수중 촬영으로 내 몸에서{" "}
                               <span className="font-bold text-blue-700">
                                 저항
                               </span>
-                              이 생기는지부터 찾아보세요.
-                            </p>
-                            <p className="text-sm sm:text-[17px] font-medium text-gray-800 leading-6 sm:leading-7 break-keep">
-                              스윔잇은 수중 촬영으로 내 수영 자세에서 가장 큰
-                              저항을 찾아, 코치가 직접 미끄러지게 교정하는{" "}
+                              이 생기는 이유를 찾고, 맞춤 드릴로 힘이 새는
+                              자세를 교정하는{" "}
                               <span className="font-bold text-blue-700">
-                                저항 제로 수영 특강
+                                수영 특강
                               </span>
                               입니다.
                             </p>
@@ -4389,33 +4414,34 @@ export default function SwimmingClassPage() {
                       >
                         <div className="space-y-3">
                           <div className="inline-flex rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">
-                            수영 클리닉 · 저항 교정 특강
+                            서울·경기·부산·대구 전국 주요 도시에서 만나는 저항
+                            교정 특강
                           </div>
                           <p className="text-sm font-bold leading-6 text-blue-800">
                             어항샷으로 원인을 확인했다면, 같은 날·같은 센터에서
-                            저항 제로 특강으로 바로 교정할 수도 있습니다.
+                            수영 특강으로 바로 교정할 수도 있습니다.
                           </p>
                           <div className="space-y-2.5 sm:space-y-3">
                             <h3 className="text-xl sm:text-[1.625rem] font-bold tracking-tight text-gray-950 leading-[1.4] break-keep">
                               <span className="block">
-                                수영이 힘든 건, 힘이 부족해서가 아니라
+                                수영이 힘든 이유,
                               </span>
                               <span className="block">
-                                힘이 새고 있기 때문입니다.
+                                힘이 부족해서가 아닐 수 있습니다.
                               </span>
                             </h3>
                             <p className="text-sm sm:text-[16px] font-medium text-gray-800 leading-6 sm:leading-[1.7] break-keep">
-                              더 세게 수영하기 전에, 어느 자세에서{" "}
+                              물은 공기보다 약 800배 밀도가 높습니다.
+                            </p>
+                            <p className="text-sm sm:text-[16px] font-medium text-gray-800 leading-6 sm:leading-[1.7] break-keep">
+                              스윔잇은 수중 촬영으로 내 몸에서{" "}
                               <span className="font-bold text-blue-700">
                                 저항
                               </span>
-                              이 생기는지부터 찾아보세요.
-                            </p>
-                            <p className="text-sm sm:text-[16px] font-medium text-gray-800 leading-6 sm:leading-[1.7] break-keep">
-                              스윔잇은 수중 촬영으로 내 수영 자세에서 가장 큰
-                              저항을 찾아, 코치가 직접 미끄러지게 교정하는{" "}
+                              이 생기는 이유를 찾고, 맞춤 드릴로 힘이 새는
+                              자세를 교정하는{" "}
                               <span className="font-bold text-blue-700">
-                                저항 제로 수영 특강
+                                수영 특강
                               </span>
                               입니다.
                             </p>
@@ -4452,8 +4478,8 @@ export default function SwimmingClassPage() {
                     <div className="space-y-3 rounded-2xl border border-blue-100 bg-white p-4 shadow-sm">
                       <p className="text-base sm:text-lg font-bold text-gray-950">
                         {isFishtankEntry
-                          ? "특강이 필요한 분들, 혹시 하나라도 해당되나요?"
-                          : "혹시 하나라도 해당되나요?"}
+                          ? "특강이 필요한 분들, 열심히 수영하는데 왜 이렇게 힘들까요?"
+                          : "열심히 수영하는데, 왜 이렇게 힘들까요?"}
                       </p>
                       <div className="grid gap-2 sm:grid-cols-2">
                         {PROBLEM_CHECKLIST.map((item) => (
@@ -4467,10 +4493,13 @@ export default function SwimmingClassPage() {
                         ))}
                       </div>
                       <p className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-bold leading-6 text-gray-900">
-                        문제는 운동신경이 아니라, 내 몸에서 생기는{" "}
+                        문제는 단순히 체력이나 운동신경이 아닐 수 있습니다.
+                        <br />
+                        내 몸의 어떤 자세에서{" "}
                         <span className="text-blue-700 underline decoration-blue-700/70 underline-offset-2">
-                          저항을 제거하지 못했기 때문입니다.
-                        </span>
+                          저항이 생기고 힘이 새는지
+                        </span>{" "}
+                        먼저 확인해야 합니다.
                       </p>
                       <Button
                         size="lg"
@@ -4492,38 +4521,39 @@ export default function SwimmingClassPage() {
                     {/* Differentiation Section */}
                     <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                       <p className="text-base sm:text-lg font-bold text-gray-950">
-                        {isFishtankEntry
-                          ? "저항 제로 특강은 왜 다를까요?"
-                          : "왜 스윔잇은 다른 특강과 다를까요?"}
+                        동작을 배우기 전에, 왜 안 되는지부터 찾습니다.
                       </p>
                       <div className="grid gap-3 sm:grid-cols-2">
                         <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                           <p className="text-xs font-bold text-gray-500">
-                            대부분의 특강
+                            일반적인 동작 중심 수업
                           </p>
                           <p className="mt-2 text-lg font-bold text-gray-900">
-                            "어떻게 해야 하는지"
+                            "어떻게 움직여야 할까?"
                           </p>
                           <p className="mt-1 text-sm text-gray-600">
-                            동작과 방법을 먼저 설명합니다.
+                            올바른 동작과 수행 방법을 중심으로 배웁니다.
                           </p>
                         </div>
                         <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
                           <p className="text-xs font-bold text-blue-600">
-                            스윔잇
+                            스윔잇 저항 교정 특강
                           </p>
                           <p className="mt-2 text-lg font-bold leading-7 text-blue-900 sm:text-xl">
-                            "왜 안 되는지"
+                            "내 자세는 왜 안 될까?"
                           </p>
                           <p className="mt-1.5 break-keep text-sm leading-6 text-blue-800 sm:text-[15px]">
-                            앞으로 안 나가는 자세의 원인부터 찾습니다.
+                            수중 촬영으로 저항이 생기는 원인을 확인하고 내
+                            문제에 맞는 동작부터 교정합니다.
                           </p>
                         </div>
                       </div>
                       <p className="text-sm sm:text-[15px] leading-6 text-gray-700">
-                        왜 숨이 차는지, 왜 물과 싸우는지, 왜 힘이 많이 드는지
-                        알아야 가장 빠르게 좋아질 수 있습니다. 스윔잇은 수중
-                        촬영과 현장 피드백으로 문제의 원인을 먼저 진단합니다.
+                        호흡이 힘든 이유, 몸이 가라앉는 이유, 앞으로 잘 나가지
+                        않는 이유.
+                        <br />
+                        스윔잇은 그 원인을 영상으로 확인한 뒤 맞춤 드릴을 통해
+                        자세를 교정합니다.
                       </p>
                     </div>
 
@@ -4531,11 +4561,11 @@ export default function SwimmingClassPage() {
                     <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                       <div>
                         <p className="text-base sm:text-lg font-bold text-gray-950">
-                          스윔잇 저항 제로 특강 6단계 Process
+                          저항을 찾아 줄이는 스윔잇 6단계 교정 과정
                         </p>
                         <p className="mt-1 text-sm text-gray-600">
-                          Before / After를 비교하며, 수업 후 혼자 연습할 방향까지
-                          남깁니다.
+                          문제 확인부터 교정 후 영상 피드백까지, 내 수영에서
+                          힘이 새는 원인을 단계별로 찾아갑니다.
                         </p>
                       </div>
                       <div className="grid gap-3 sm:grid-cols-2">
@@ -4596,20 +4626,20 @@ export default function SwimmingClassPage() {
               {/* CTA Copy Section */}
               <div className="order-5 mt-6 w-full rounded-2xl border border-blue-200 bg-blue-50 p-4 shadow-sm sm:p-5">
                 <p className="mb-3 text-[17px] font-bold leading-6 text-blue-900 sm:text-lg">
-                  런칭 특가로 진행 중입니다
+                  그냥 동작만 배우고 끝나는 특강이 아닙니다.
                 </p>
                 <div className="space-y-3 text-sm leading-6 sm:text-[15px] sm:leading-7">
                   <p className="break-keep text-gray-900">
-                    스윔잇은 많은 인원을 한 번에 돌리는 수업이 아니라, 한 명 한
-                    명 수중 움직임을 보고 직접 교정하는 자세 진단형 특강입니다.
+                    스윔잇은 수중 촬영을 통해 왜 저항이 생기는지부터 확인합니다.
                   </p>
                   <p className="break-keep text-gray-700">
-                    레인당 최대 7명 기준으로 운영하며, Before / After 촬영과 1:1
-                    영상 피드백까지 포함됩니다.
+                    레인당 최대 7명 소수 정예로 운영해 한 사람 한 사람의 자세와
+                    문제에 집중합니다.
                   </p>
                   <p className="break-keep font-bold text-blue-800">
-                    단순히 수업을 듣는 것이 아니라, 내 수영 자세의 문제를
-                    진단받고 실시간으로 교정하는 방향으로 설계했습니다.
+                    수업 후에는 Before/After 영상을 바탕으로 1:1 영상 피드백을
+                    제공해, 혼자 수영할 때도 무엇을 연습해야 하는지 알 수 있도록
+                    돕습니다.
                   </p>
                 </div>
               </div>
@@ -4618,8 +4648,13 @@ export default function SwimmingClassPage() {
               <section className="order-3 w-full mt-6 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm">
                 <div className="mx-auto max-w-2xl">
                   <h3 className="text-lg sm:text-xl font-bold text-gray-900">
-                    실제 카톡 후기
+                    왜 안 되는지 알게 되면, 연습의 방향이 달라집니다.
                   </h3>
+                  <p className="mt-2 break-keep text-sm leading-6 text-gray-600 sm:text-[15px] sm:leading-7">
+                    단순히 동작을 따라 하는 것을 넘어, 내 수영의 문제를 이해하는
+                    경험. 스윔잇은 원인을 찾고 교정하는 과정을 중요하게
+                    생각합니다.
+                  </p>
 
                   <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3 sm:p-4">
                     <div className="overflow-hidden rounded-xl bg-white">
@@ -4633,7 +4668,7 @@ export default function SwimmingClassPage() {
 
                     <div className="mt-4 space-y-3">
                       <p className="text-base sm:text-lg font-bold text-gray-900 leading-tight">
-                        Before / After의 차이는 원인을 찾는 데서 시작됩니다.
+                        실제 수강생 후기
                       </p>
 
                       <div className="grid gap-2 text-sm sm:text-[15px] text-gray-800 leading-6 sm:grid-cols-2">
@@ -4648,11 +4683,11 @@ export default function SwimmingClassPage() {
                       </div>
 
                       <p className="text-sm sm:text-[15px] leading-6 text-gray-700">
-                        물과 싸우던 분들이 달라지는 이유는 단순 반복이 아니라{" "}
+                        수영이 힘든 이유를 이해하는 것부터{" "}
                         <span className="font-bold text-red-600">
-                          내 몸에서 생기는 저항의 원인
+                          나에게 맞는 연습
                         </span>
-                        을 확인했기 때문입니다.
+                        이 시작됩니다.
                       </p>
 
                     </div>
@@ -4712,12 +4747,14 @@ export default function SwimmingClassPage() {
               >
                 <div className="mb-3 sm:mb-4">
                   <h3 className="text-lg sm:text-xl font-bold text-gray-900 flex items-center gap-2">
-                    📌 수강 지역 · 일정 안내
+                    {isFishtankEntry
+                      ? "📌 수강 지역 · 일정 안내"
+                      : "내 수영에서 힘이 새는 이유, 이제 직접 확인해 보세요."}
                   </h3>
                   <p className="mt-1.5 text-sm sm:text-[15px] font-medium leading-6 text-gray-600">
                     {isFishtankEntry
                       ? "지역을 고른 뒤, 저항 진단 프로그램 또는 수영 특강 중 원하는 프로그램을 신청하세요."
-                      : "지역을 먼저 선택한 뒤, 일정을 확인하세요."}
+                      : "서울·경기·부산·대구 등 전국 주요 도시에서 진행하는 스윔잇 저항 교정 특강. 가까운 지역의 특강 일정을 확인하고 내 수영의 문제를 찾아보세요."}
                   </p>
                   <CompanionDiscountHint
                     onNavigate={() => {
@@ -5449,7 +5486,7 @@ export default function SwimmingClassPage() {
                   <p className="text-base sm:text-lg font-bold text-gray-900 mb-2">
                     {isFishtankEntry
                       ? "📌 일정을 고르셨다면, 저항 진단 프로그램을 예약하세요"
-                      : "📌 일정 확인하셨다면, 지금 바로 자리 확보하세요"}
+                      : "가까운 지역 특강 일정을 확인하고, 내 수영의 문제를 찾아보세요."}
                   </p>
                   <div className="mt-3">
                     <Button

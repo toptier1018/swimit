@@ -143,10 +143,11 @@ export const DONGTAN_NOV29_INTENSIVE: SpecialClassInfo = {
     "11월 29일 동탄은 일반 2시간 특강이 아닌 영법별 장거리 집중 특강입니다.",
 };
 
+/** @deprecated 12/27은 일반 2시간 특강으로 변경됨 — 과거 참조 호환용 */
 export const DONGTAN_DEC27_INTENSIVE: SpecialClassInfo = {
   ...DONGTAN_INTENSIVE_3H,
   summary:
-    "12월 27일 동탄은 일반 2시간 특강이 아닌 영법별 장거리 집중 특강입니다.",
+    "12월 27일 동탄은 일반 2시간 특강으로 운영합니다.",
 };
 
 /** enrollment key가 해당 일정의 specialClass 옵션인지 (예: 동탄 3시간 집중반) */
@@ -599,9 +600,8 @@ export const CLASS_SCHEDULES: ClassScheduleItem[] = [
     address:
       "경기도 화성시 동탄구 동탄신리천로 414 경서타워 4층 스윔스튜디오제이",
     spots: "자유형 14명 · 평영·접영 각 7명",
-    scheduleSummaryLines: ["영법별 장거리 집중 특강 · 14:00~17:00"],
-    badge: "SPECIAL",
-    specialClass: DONGTAN_DEC27_INTENSIVE,
+    scheduleSummaryLines: ["1부 특강 · 14:00~16:00 (2시간)"],
+    badge: "특강 운영",
   },
 ];
 
@@ -689,10 +689,11 @@ export const DEFAULT_CAPACITY_BY_CLASS: Record<string, number> = {
   "[동탄 11/29] 1부 특강 자유형": 14,
   "[동탄 11/29] 1부 특강 평영": 7,
   "[동탄 11/29] 1부 특강 접영": 7,
-  // 동탄 12/27 장거리 집중 (11/29와 동일)
+  // 동탄 12/27 일반 2시간 특강 (진단 미운영)
   "[동탄 12/27] 1부 특강 자유형": 14,
   "[동탄 12/27] 1부 특강 평영": 7,
   "[동탄 12/27] 1부 특강 접영": 7,
+  "[동탄 12/27] 1부 진단": 0,
   // 대구 12/5 올스위머 상인점 (자유형·진단 미운영)
   "[대구 12/5] 1부 특강 평영": 7,
   "[대구 12/5] 1부 특강 접영": 7,

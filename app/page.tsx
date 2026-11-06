@@ -1030,7 +1030,20 @@ const TIMETABLE_BUSAN_SEPTEMBER: TimetableRow[] = [
   },
 ];
 
-/** 동탄 스윔스튜디오제이 장거리 집중(3시간) — 11/29·12/27 공통. 가격은 specialClass */
+/** 동탄 12/27 일반 2시간 특강 — 자유형·평영·접영 (진단 미운영) */
+const TIMETABLE_DONGTAN_DECEMBER: TimetableRow[] = [
+  {
+    session: "1부 특강",
+    time: "14:00 ~ 16:00",
+    lanes: [
+      { lane: UNASSIGNED_LANE, title: "자유형", price: 80000 },
+      { lane: UNASSIGNED_LANE, title: "평영", price: 80000 },
+      { lane: UNASSIGNED_LANE, title: "접영", price: 80000 },
+    ],
+  },
+];
+
+/** 동탄 스윔스튜디오제이 장거리 집중(3시간) — 11/29. 가격은 specialClass */
 const TIMETABLE_DONGTAN_INTENSIVE: TimetableRow[] = [
   {
     session: "1부 특강",
@@ -1253,7 +1266,7 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   29: TIMETABLE_EUNPYEONG_DECEMBER, // 12/12 은평 (자유형·평영·접영 + 스타트)
   30: TIMETABLE_SONGPA_DECEMBER, // 12/19 송파 (특강+진단)
   31: TIMETABLE_MOKDONG_SEPTEMBER, // 12/20 목동 (특강+진단)
-  32: TIMETABLE_DONGTAN_INTENSIVE, // 12/27 동탄 3시간 집중 (진단 없음)
+  32: TIMETABLE_DONGTAN_DECEMBER, // 12/27 동탄 일반 2시간 특강 (진단 없음)
 };
 
 const getAvailableStrokesForClass = (classId: number) => {
@@ -2062,7 +2075,7 @@ export default function SwimmingClassPage() {
       "은평 12/12": "특강+스타트 17:00~19:00 · 자유형·평영·접영 (진단 제외)",
       "송파 12/19": "특강+진단 17:15~19:15",
       "목동 12/20": "특강+진단 14:00~16:00 · 접영 14명",
-      "동탄 12/27": "영법별 장거리 집중 14:00~17:00 · 115,000원 (11/29와 동일)",
+      "동탄 12/27": "특강만 14:00~16:00 · 80,000원 (진단 제외)",
       advance: "11/15까지 사전예약 · 특강·스타트·진단 5,000원 혜택(진단 정상가 40,000→사전예약 35,000)",
     });
     console.log("[특강일정] 스타트·턴 연결 특강(1부·별도 정원)", {
@@ -5027,9 +5040,8 @@ export default function SwimmingClassPage() {
                               </p>
                               <p className="mt-1 break-keep">
                                 11월 15일까지 결제 없이 사전예약 · 특강·스타트
-                                80,000원 · 진단 40,000원 · 동탄 3시간 115,000원
-                                · 모두 5,000원 할인 (진단 사전예약가 35,000원 ·
-                                나중에 결제)
+                                80,000원 · 진단 40,000원 · 모두 5,000원 할인
+                                (진단 사전예약가 35,000원 · 나중에 결제)
                               </p>
                             </div>
                           ) : null}

@@ -123,15 +123,21 @@ function formatReservationLabel(input: {
     "센터";
 
   let classLabel = String(input.className || "").trim();
-  const stroke = classLabel.match(
-    /(자유형|평영|접영|배영|스타트|턴)(?:\s*장거리\s*집중반)?/,
-  );
-  if (stroke) {
-    classLabel = classLabel.includes("장거리")
-      ? `${stroke[1]} 장거리`
-      : stroke[1];
+  if (/진단/.test(classLabel)) {
+    classLabel = "진단";
   } else {
-    classLabel = classLabel.replace(/^\[[^\]]+\]\s*/, "").replace(/^\d+부\s*/, "");
+    const stroke = classLabel.match(
+      /(자유형|평영|접영|배영|스타트|턴)(?:\s*장거리\s*집중반)?/,
+    );
+    if (stroke) {
+      classLabel = classLabel.includes("장거리")
+        ? `${stroke[1]} 장거리`
+        : stroke[1];
+    } else {
+      classLabel = classLabel
+        .replace(/^\[[^\]]+\]\s*/, "")
+        .replace(/^\d+부\s*/, "");
+    }
   }
 
   return `${dateLabel} ${region} ${classLabel}`.replace(/\s+/g, " ").trim();
@@ -175,15 +181,8 @@ export function resolveAdvanceReservationPayAmount(input: {
           : null);
 
   if (base == null) return null;
-  // 진단: 시트 혜택값(expectedAmount)이 있으면 위에서 이미 반환. 폴백은 정상가 40,000
-  if (/진단/.test(className)) {
-    console.log("[사전예약결제] 진단 금액 폴백(시트 혜택 없음):", {
-      className,
-      amount: base,
-    });
-    return base;
-  }
 
+  // 시트 혜택값이 없을 때: 정상가(또는 진단 4만)에서 5,000원 할인
   const resolved = resolveClassScheduleFromEnrollmentKey(className);
   const intensive =
     resolved?.schedule.specialClass &&
@@ -194,7 +193,7 @@ export function resolveAdvanceReservationPayAmount(input: {
     ? resolved!.schedule.specialClass!.price
     : base;
   const amount = Math.max(0, normal - ADVANCE_BENEFIT_AMOUNT);
-  console.log("[사전예약결제] 금액 계산:", {
+  console.log("[사전예약결제] 금액 폴백 계산:", {
     className,
     normal,
     discount: ADVANCE_BENEFIT_AMOUNT,

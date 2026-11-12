@@ -55,6 +55,7 @@ export default function ReservationPayPage() {
     const load = async () => {
       setWindowLoading(true);
       try {
+        console.log("[사전예약결제UI] 기간 상태 조회 시작");
         const res = await fetch("/api/reservation-pay/status", {
           cache: "no-store",
         });
@@ -77,6 +78,7 @@ export default function ReservationPayPage() {
           open: data.open,
           kst: data.kst,
           target: data.targetLabel,
+          windowLabel: data.windowLabel,
         });
         setWindowStatus({
           open: Boolean(data.open),
@@ -138,7 +140,7 @@ export default function ReservationPayPage() {
           open: false,
           message:
             data.error ||
-            "이번 달 사전예약 결제 기간이 종료되었습니다.\n\n사전예약 결제는 매월 13일~15일에 진행됩니다.",
+            "이번 달 사전예약 결제 기간이 종료되었습니다.\n\n사전예약 결제는 매월 12일~15일에 진행됩니다.",
           windowLabel: prev?.windowLabel || "",
           targetLabel: prev?.targetLabel || "",
           targetYear: prev?.targetYear || 0,
@@ -211,7 +213,7 @@ export default function ReservationPayPage() {
           open: false,
           message:
             data.error ||
-            "이번 달 사전예약 결제 기간이 종료되었습니다.\n\n사전예약 결제는 매월 13일~15일에 진행됩니다.",
+            "이번 달 사전예약 결제 기간이 종료되었습니다.\n\n사전예약 결제는 매월 12일~15일에 진행됩니다.",
           windowLabel: prev?.windowLabel || "",
           targetLabel: prev?.targetLabel || "",
           targetYear: prev?.targetYear || 0,
@@ -291,7 +293,7 @@ export default function ReservationPayPage() {
             <p className="text-xs font-bold text-slate-500">결제 기간 종료</p>
             <p className="mt-3 whitespace-pre-line text-base font-semibold leading-7 text-gray-900">
               {windowStatus.message ||
-                "이번 달 사전예약 결제 기간이 종료되었습니다.\n\n사전예약 결제는 매월 13일~15일에 진행됩니다."}
+                "이번 달 사전예약 결제 기간이 종료되었습니다.\n\n사전예약 결제는 매월 12일~15일에 진행됩니다."}
             </p>
           </section>
         ) : null}

@@ -1,15 +1,15 @@
 /**
  * 사전예약 공용 결제 기간 — 매월 자동 반복 (Asia/Seoul)
- * 13일 00:00:00 ~ 15일 23:59:59 (달력 일 기준 day 13~15)
+ * 12일 00:00:00 ~ 15일 23:59:59 (달력 일 기준 day 12~15)
  * 결제 대상 일정 = 다음 달
  */
 
 export const ADVANCE_PAY_TIMEZONE = "Asia/Seoul";
-export const ADVANCE_PAY_WINDOW_START_DAY = 13;
+export const ADVANCE_PAY_WINDOW_START_DAY = 12;
 export const ADVANCE_PAY_WINDOW_END_DAY = 15;
 
 export const ADVANCE_PAY_CLOSED_MESSAGE =
-  "이번 달 사전예약 결제 기간이 종료되었습니다.\n\n사전예약 결제는 매월 13일~15일에 진행됩니다.";
+  "이번 달 사전예약 결제 기간이 종료되었습니다.\n\n사전예약 결제는 매월 12일~15일에 진행됩니다.";
 
 export type KstDateParts = {
   year: number;
@@ -46,7 +46,7 @@ export function getKstDateParts(now = Date.now()): KstDateParts {
   };
 }
 
-/** 매월 13~15일(KST)만 true — 하드코딩된 연·월 없음 */
+/** 매월 12~15일(KST)만 true — 하드코딩된 연·월 없음 */
 export function isAdvanceReservationPayWindowOpen(now = Date.now()): boolean {
   const { day } = getKstDateParts(now);
   return (

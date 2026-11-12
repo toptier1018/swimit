@@ -18,6 +18,7 @@ import {
   resolveClassScheduleFromEnrollmentKey,
 } from "@/lib/class-schedule-data";
 import { resolveClassBasePaymentAmount } from "@/lib/class-payment-amount";
+import { resolveDecemberOpenBenefit } from "@/lib/december-reservation";
 import { resolveNovemberOpenBenefit } from "@/lib/november-reservation";
 import {
   isContentConsentVersion,
@@ -566,10 +567,11 @@ export async function finalizeCardEnrollmentCore(
         resolveClassBasePaymentAmount(enrollmentKeyForBenefit) ?? null;
       const openBenefit =
         baseAmount != null
-          ? resolveNovemberOpenBenefit(enrollmentKeyForBenefit, baseAmount)
+          ? (resolveNovemberOpenBenefit(enrollmentKeyForBenefit, baseAmount) ??
+            resolveDecemberOpenBenefit(enrollmentKeyForBenefit, baseAmount))
           : null;
       if (openBenefit) {
-        console.log("[카드후처리] 11월 오픈 혜택 시트 기록:", {
+        console.log("[카드후처리] 오픈 혜택 시트 기록:", {
           orderNumber,
           className: enrollmentKeyForBenefit,
           ...openBenefit,

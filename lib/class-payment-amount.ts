@@ -7,9 +7,10 @@ import {
   matchesSpecialClassOption,
   resolveClassScheduleFromEnrollmentKey,
 } from "@/lib/class-schedule-data";
+import { resolveDecemberOpenBenefit } from "@/lib/december-reservation";
 import { resolveNovemberOpenBenefit } from "@/lib/november-reservation";
 
-/** 저항 진단 프로그램 정상가 (사전예약 할인은 december-reservation에서 처리) */
+/** 저항 진단 프로그램 정상가 (12월 오픈 할인은 december-reservation에서 처리) */
 export const DIAGNOSIS_BASE_AMOUNT = 40000;
 const ZERO_OR_SPECIAL_AMOUNT = 80000;
 const LEGACY_SEOCHO_AMOUNT = 70000;
@@ -21,7 +22,7 @@ export function resolveClassBasePaymentAmount(
   const name = String(className || "").trim();
   if (!name) return null;
 
-  // 저항 진단 프로그램 — 정상가 40,000원 (사전예약 할인은 별도 플로우)
+  // 저항 진단 프로그램 — 정상가 40,000원 (12월 오픈 할인은 별도 플로우)
   if (/진단/.test(name)) {
     return DIAGNOSIS_BASE_AMOUNT;
   }
@@ -45,7 +46,7 @@ export function resolveClassBasePaymentAmount(
   return null;
 }
 
-/** 활성·과거 특강 키 패턴에 맞는 결제 금액 (11월 오픈 한정 할인 반영) */
+/** 활성·과거 특강 키 패턴에 맞는 결제 금액 (11·12월 오픈 한정 할인 반영) */
 export function resolveClassPaymentAmount(className: string): number | null {
   const name = String(className || "").trim();
   if (!name) return null;
@@ -56,20 +57,28 @@ export function resolveClassPaymentAmount(className: string): number | null {
     return null;
   }
 
+  // 진단: 12월 오픈 할인만 적용 (11월 오픈 할인은 진단 제외)
   if (/진단/.test(name)) {
+    const decemberBenefit = resolveDecemberOpenBenefit(name, base);
+    const amount = decemberBenefit ? decemberBenefit.expectedAmount : base;
     console.log("[금액검증] 진단 프로그램 금액:", {
       className: name,
-      amount: base,
+      base,
+      openDiscount: decemberBenefit?.discountAmount ?? 0,
+      amount,
     });
-    return base;
+    return amount;
   }
 
-  const benefit = resolveNovemberOpenBenefit(name, base);
+  const novemberBenefit = resolveNovemberOpenBenefit(name, base);
+  const decemberBenefit = resolveDecemberOpenBenefit(name, base);
+  const benefit = novemberBenefit ?? decemberBenefit;
   const amount = benefit ? benefit.expectedAmount : base;
   console.log("[금액검증] 클래스 결제 금액:", {
     className: name,
     base,
     openDiscount: benefit?.discountAmount ?? 0,
+    benefitName: benefit?.benefitName ?? null,
     amount,
     startTurn: isStartTurnEnrollmentKey(name),
   });

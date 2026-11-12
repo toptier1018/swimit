@@ -1,5 +1,6 @@
 import "server-only";
 
+import { resolveClassScheduleFromEnrollmentKey } from "@/lib/class-schedule-data";
 import {
   getNhnBankConfirmTemplateCode,
   NhnBankConfirmTemplateError,
@@ -7,12 +8,13 @@ import {
 } from "@/lib/nhn-bank-confirm-templates";
 import { formatAlimtalkClassDateLabel } from "@/lib/reservation-confirm-alimtalk";
 
-/** /api/schedules center 와 동일한 센터 표기 */
+/** /api/schedules center 와 동일한 센터 표기 (짧은 지역명 fallback) */
 const CENTER_BY_LABEL: Record<string, string> = {
   서초: "서울 서초 인근",
   김포: "경기 김포 · 아스타스포츠센터",
   화성: "경기 화성 · 와이풀앤와이에스씨",
   목동: "서울 목동 · 목동스포츠센터",
+  /** 은평은 삼정/힐스테이트가 공존 — 일정 키·장소 문자열로 우선 판별 */
   은평: "서울 은평구 · 삼정스포츠 수영장",
   인천: "인천 청라 · 청라스카이스위밍",
   청라: "인천 청라 · 청라스카이스위밍",
@@ -23,6 +25,7 @@ const CENTER_BY_LABEL: Record<string, string> = {
   중구: "서울 중구 · 스포빌키즈쿠아",
   수원: "수원·화성",
   대구: "대구 · 올스위머 상인점",
+  송파: "서울 송파 · 헬스보이짐",
 };
 
 export type SendReservationConfirmationAlimtalkInput = {
@@ -74,21 +77,63 @@ function resolveCenter(input: {
   selectedClass?: string;
 }): string {
   const direct = String(input.center || "").trim();
-  if (direct.includes("·") || direct.includes("김포") || direct.includes("화성") || direct.includes("수원")) {
+  const region = String(input.region || "").trim();
+  const selectedClass = String(input.selectedClass || "").trim();
+
+  // 1) 일정 enrollment key → 스케줄 location (은평 힐스 vs 삼정 구분에 필수)
+  if (selectedClass) {
+    const resolved = resolveClassScheduleFromEnrollmentKey(selectedClass);
+    const scheduleLocation = String(resolved?.schedule?.location || "").trim();
+    if (scheduleLocation) {
+      console.log("[카드 예약확정] 센터 매핑(일정키)", {
+        selectedClass,
+        scheduleLocation,
+      });
+      return scheduleLocation;
+    }
+  }
+
+  // 2) 장소 고유 키워드 (짧은 '은평' 매핑보다 우선)
+  const hint = `${direct} ${region} ${selectedClass}`;
+  if (hint.includes("헬스보이") || hint.includes("송파")) {
+    return "서울 송파 · 헬스보이짐";
+  }
+  if (hint.includes("올스위머") || hint.includes("대구")) {
+    return "대구 · 올스위머 상인점";
+  }
+  if (hint.includes("힐스테이트") || hint.includes("북한산")) {
+    return "서울 은평 · 북한산힐스테이트3차";
+  }
+  if (hint.includes("삼정")) {
+    return "서울 은평구 · 삼정스포츠 수영장";
+  }
+  if (hint.includes("와이키키") || hint.includes("강남")) {
+    return "강남 · 와이키키 링크&스윔";
+  }
+
+  if (
+    direct.includes("·") ||
+    direct.includes("김포") ||
+    direct.includes("화성") ||
+    direct.includes("수원") ||
+    direct.includes("대구")
+  ) {
     return direct;
   }
 
-  const region = String(input.region || "").trim();
   if (region.includes("·")) return region;
   if (region.includes("김포")) return CENTER_BY_LABEL["김포"] || region;
   if (region.includes("화성") || region.includes("수원")) {
     return "수원·화성";
   }
+  if (region.includes("대구")) return CENTER_BY_LABEL["대구"] || region;
+  if (region.includes("송파")) return CENTER_BY_LABEL["송파"] || region;
 
-  const selectedClass = String(input.selectedClass || "").trim();
   const label = selectedClass.match(/^\[([^\]]+)\]/)?.[1]?.trim() || "";
   const regionCode = label.replace(/\s+\d{1,2}\/\d{1,2}$/, "").trim();
   if (regionCode.includes("샤크베이")) return CENTER_BY_LABEL["샤크베이"];
+  if (regionCode.includes("송파")) return CENTER_BY_LABEL["송파"];
+  if (regionCode.includes("대구")) return CENTER_BY_LABEL["대구"];
   if (CENTER_BY_LABEL[regionCode]) return CENTER_BY_LABEL[regionCode];
 
   if (region && CENTER_BY_LABEL[region]) return CENTER_BY_LABEL[region];
@@ -213,6 +258,8 @@ export async function sendReservationConfirmationAlimtalk(
       center: placeLabel,
       program,
       templateCode,
+      kakaoTemplateCode: picked.kakaoTemplateCode,
+      templateParameterKeys: ["고객명", "특강일", "장소", "클래스명", "타임"],
     });
 
     const appKey = process.env.NHN_APPKEY?.trim() || "";

@@ -35,19 +35,20 @@ export const ALIMTALK_TEMPLATE_CODES = {
     diagnosis: "UL_0791",
   },
 
-  /** 은평 12/12 북한산힐스테이트 — 기존 은평 템플릿 코드 재사용 */
+  /**
+   * Aligo(구) 경로용. 실제 예약확정 발송은 NHN
+   * (SWIMIT_HS_V1 / SWIMIT_SH_V1 / SWIMIT_DA_V1) 를 사용한다.
+   */
   "서울 은평 · 북한산힐스테이트3차": {
     special: "UL_0787",
     diagnosis: "UL_0787",
   },
 
-  /** 송파 12/19 — 알림톡 코드 확인 전 임시(은평과 동일 계열). 확정 코드 받으면 교체 */
   "서울 송파 · 헬스보이짐": {
     special: "UL_0787",
     diagnosis: "UL_0787",
   },
 
-  /** 대구 12/5 올스위머 상인점 — 센터 전용 코드 확정 전 임시. 확정 코드 받으면 교체 */
   "대구 · 올스위머 상인점": {
     special: "UL_0787",
     diagnosis: "UL_0787",

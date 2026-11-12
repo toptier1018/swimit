@@ -5,7 +5,6 @@ import {
   resolveClassScheduleFromEnrollmentKey,
 } from "@/lib/class-schedule-data";
 import { resolveClassBasePaymentAmount } from "@/lib/class-payment-amount";
-import { resolveDecemberOpenBenefit } from "@/lib/december-reservation";
 import { resolveNovemberOpenBenefit } from "@/lib/november-reservation";
 import {
   isDiagnosisPaymentConsentVersion,
@@ -99,16 +98,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 11·12월 오픈 한정 할인만 시트에 기록 (기간 외·비대상은 미기록)
+    // 10/13~10/15 오픈 한정 할인만 시트에 기록 (정상가·진단·기간 외는 미기록)
     const benefitKey = classKey || String(body.클래스 || "").trim();
     const baseAmount = resolveClassBasePaymentAmount(benefitKey);
     const openBenefit =
       baseAmount != null
-        ? (resolveNovemberOpenBenefit(benefitKey, baseAmount) ??
-          resolveDecemberOpenBenefit(benefitKey, baseAmount))
+        ? resolveNovemberOpenBenefit(benefitKey, baseAmount)
         : null;
     if (openBenefit) {
-      console.log("[Google Sheets API] 오픈 혜택 적용:", {
+      console.log("[Google Sheets API] 11월 오픈 혜택 적용:", {
         신청번호: body?.신청번호,
         benefitKey,
         ...openBenefit,

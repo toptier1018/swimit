@@ -52,19 +52,18 @@ const BENEFIT_CARDS = [
   },
 ] as const;
 
-/** 할인/정상가 표시 — 화면 금액과 결제 정책이 같아야 함 */
+/** 사전예약/정상가 표시 — 화면 금액과 결제 정책이 같아야 함 */
 export function DiagnosisPriceBlock({
   advanceOpen = false,
   className = "",
 }: {
-  /** 11/15까지 5,000원 할인 표시 (결제 가능) */
   advanceOpen?: boolean;
   className?: string;
 }) {
   if (advanceOpen) {
-    console.log("[저항진단] 할인가 표시", {
+    console.log("[저항진단] 사전예약가 표시", {
       list: DIAGNOSIS_BASE_AMOUNT,
-      discounted: DIAGNOSIS_ADVANCE_PRICE,
+      advance: DIAGNOSIS_ADVANCE_PRICE,
       discount: DECEMBER_BENEFIT_AMOUNT,
     });
     return (
@@ -72,7 +71,7 @@ export function DiagnosisPriceBlock({
         className={`rounded-xl border border-blue-100 bg-blue-50/70 px-3.5 py-3.5 ${className}`}
       >
         <p className="text-xs font-bold tracking-wide text-blue-700">
-          오픈 혜택 · 11월 15일까지
+          사전예약 혜택
         </p>
         <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
           <span className="text-sm text-gray-500 line-through">
@@ -83,7 +82,7 @@ export function DiagnosisPriceBlock({
           </span>
         </div>
         <p className="mt-1 text-sm font-bold text-blue-700">
-          {DECEMBER_BENEFIT_AMOUNT.toLocaleString()}원 할인 · 지금 결제 가능
+          {DECEMBER_BENEFIT_AMOUNT.toLocaleString()}원 할인
         </p>
       </div>
     );

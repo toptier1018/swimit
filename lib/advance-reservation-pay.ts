@@ -18,6 +18,7 @@ import {
   getAdvanceReservationPayWindowStatus,
   isAdvanceReservationPayWindowOpen,
 } from "@/lib/advance-reservation-window";
+import { sendReservationConfirmationAlimtalk } from "@/lib/nhn-reservation-confirm-alimtalk";
 
 const ADVANCE_BENEFIT_AMOUNT = 5000;
 const TOSS_ORDER_HEADER = "토스주문번호";
@@ -917,10 +918,10 @@ export async function confirmAdvanceReservationPayment(input: {
     }
 
     // 기존 NR- row 업데이트 (새 row 생성 금지)
-    // - 수강자 시트만: 예약상태(Q) = 결제완료  ← 알림톡 자동 발송 트리거
+    // - 수강자 시트만: 예약상태(Q) = 결제완료
     // - 운영 시트: 예약상태(Q)는 변경하지 않음
     // - 입금상태(S) = 입금완료 / 확정예약상태(R) = 예약확정
-    // - 마지막알림(T)는 건드리지 않음 (문자 발송 표시 전용)
+    // - API로 S를 바꾸면 Apps Script onEdit이 안 도므로, 아래에서 NHN 알림톡을 직접 발송한다
     const sheetUpdate = await updateCardPaymentSheetStatusByOrderNumber({
       orderNumber: row.orderNumber,
       reservationStatus: "결제완료", // 수강자 시트에만 적용
@@ -946,11 +947,57 @@ export async function confirmAdvanceReservationPayment(input: {
       };
     }
 
+    // 예약확정 알림톡 (카드결제 웹훅과 동일 경로). 실패해도 결제는 유지.
+    console.log("[사전예약결제] 예약확정 알림톡 발송 시작", {
+      orderNumber: row.orderNumber,
+      center: row.region,
+      className: row.className,
+      phoneTail: row.phoneDigits.slice(-4),
+    });
+    const alimtalk = await sendReservationConfirmationAlimtalk({
+      orderId: row.orderNumber,
+      customerName: row.name,
+      phone: row.phoneDigits,
+      center: row.region,
+      region: row.region,
+      className: row.className,
+      actualClassName: row.className,
+      classDate: row.date,
+      session: row.session,
+      selectedClass: "",
+    });
+    if (alimtalk.success) {
+      console.log("[사전예약결제] 예약확정 알림톡 발송 성공", {
+        orderNumber: row.orderNumber,
+        templateCode: alimtalk.templateCode,
+        requestId: alimtalk.requestId,
+      });
+      const notifyUpdate = await updateCardPaymentSheetStatusByOrderNumber({
+        orderNumber: row.orderNumber,
+        lastNotify: "예약확정",
+      });
+      if (!notifyUpdate.success) {
+        console.error("[사전예약결제] 알림톡은 갔지만 T열(마지막알림) 기록 실패", {
+          orderNumber: row.orderNumber,
+          error: notifyUpdate.error,
+        });
+      }
+    } else {
+      console.error("[사전예약결제] 예약확정 알림톡 발송 실패 — 결제는 유지", {
+        orderNumber: row.orderNumber,
+        error: alimtalk.error,
+        templateCode: alimtalk.templateCode,
+        errorCode: alimtalk.errorCode,
+      });
+    }
+
     console.log("[사전예약결제] 확정 완료:", {
       orderNumber: row.orderNumber,
       tossOrderId,
       amount,
       updated: sheetUpdate.updated,
+      alimtalkSent: alimtalk.success,
+      alimtalkTemplate: alimtalk.templateCode,
     });
 
     return {

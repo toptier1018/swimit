@@ -10,7 +10,10 @@ import {
   matchesSpecialClassOption,
   resolveClassScheduleFromEnrollmentKey,
 } from "@/lib/class-schedule-data";
-import { resolveClassBasePaymentAmount } from "@/lib/class-payment-amount";
+import {
+  resolveClassBasePaymentAmount,
+  resolveClassPaymentAmount,
+} from "@/lib/class-payment-amount";
 import { updateCardPaymentSheetStatusByOrderNumber } from "@/lib/google-sheets";
 import {
   ADVANCE_PAY_CLOSED_MESSAGE,
@@ -182,6 +185,17 @@ export function resolveAdvanceReservationPayAmount(input: {
           : null);
 
   if (base == null) return null;
+
+  // 시트 혜택값이 없을 때: 현재 오픈 할인(12월 등) 반영 금액 → 없으면 정상가-5,000
+  const liveAmount = resolveClassPaymentAmount(className);
+  if (liveAmount != null && liveAmount > 0) {
+    console.log("[사전예약결제] 금액 폴백(실시간 할인 반영):", {
+      className,
+      base,
+      amount: liveAmount,
+    });
+    return liveAmount;
+  }
 
   // 시트 혜택값이 없을 때: 정상가(또는 진단 4만)에서 5,000원 할인
   const resolved = resolveClassScheduleFromEnrollmentKey(className);

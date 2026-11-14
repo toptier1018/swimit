@@ -9,12 +9,22 @@ import {
 } from "./class-schedule-data";
 
 /**
- * 12월 사전예약 — 2026-11-15 23:59:59 KST까지 (11/16 0시 미만)
- * 특강·스타트·진단 모두 5,000원 할인 (진단 정상가 40,000 → 사전예약 35,000)
+ * 12월 사전예약 → 할인 결제
+ * - 사전예약(결제 없음): DECEMBER_PAID_OPEN_START 미만
+ * - 할인 결제(5,000원): PAID_OPEN ~ BENEFIT_END(11/15 23:59:59 KST)
+ * - 정상가: 11/16 0시부터
+ * 특강·스타트·진단 모두 5,000원 할인 (진단 정상가 40,000 → 35,000)
  */
-export const DECEMBER_ADVANCE_END = Date.parse("2026-11-16T00:00:00+09:00");
+/** 사전예약 종료 · 할인 결제 시작 — 2026-11-12 00:00 KST */
+export const DECEMBER_PAID_OPEN_START = Date.parse(
+  "2026-11-12T00:00:00+09:00",
+);
+/** 할인 종료(=정상가) — 2026-11-16 00:00 KST (11/15까지 할인) */
+export const DECEMBER_BENEFIT_END = Date.parse("2026-11-16T00:00:00+09:00");
+/** @deprecated 호환 — 할인 종료와 동일 */
+export const DECEMBER_ADVANCE_END = DECEMBER_BENEFIT_END;
 export const DECEMBER_BENEFIT_AMOUNT = 5000;
-export const DECEMBER_BENEFIT_NAME = "12월 사전예약 혜택";
+export const DECEMBER_BENEFIT_NAME = "12월 오픈 혜택";
 export const DECEMBER_DIAGNOSIS_BASE_AMOUNT = 40000;
 export const DECEMBER_SPECIAL_BASE_AMOUNT = 80000;
 
@@ -24,23 +34,46 @@ export function isDecemberSchedule(
   return schedule?.year === 2026 && schedule.month === 12;
 }
 
-/** 사전예약(결제 없음) — 11/15까지 */
+/** 사전예약(결제 없음) — 11/12 0시 미만만. 이후에는 절대 사전예약으로 되돌리지 않는다. */
 export function isDecemberAdvanceReservationOpen(
   schedule?: { year: number; month: number } | null,
   now = Date.now(),
 ) {
-  return isDecemberSchedule(schedule) && now < DECEMBER_ADVANCE_END;
+  return isDecemberSchedule(schedule) && now < DECEMBER_PAID_OPEN_START;
 }
 
-/** 11/16 0시부터 정식 결제 오픈(정상가) */
+/** 12월 일정 정식 오픈(결제 가능) — 11/12 0시부터 계속 */
 export function isDecemberPaidOpen(
   schedule?: { year: number; month: number } | null,
   now = Date.now(),
 ) {
-  return isDecemberSchedule(schedule) && now >= DECEMBER_ADVANCE_END;
+  return isDecemberSchedule(schedule) && now >= DECEMBER_PAID_OPEN_START;
 }
 
-/** 진단 포함 — 특강/스타트/진단 모두 사전예약 할인 대상 */
+/**
+ * 11/12~11/15 한정 5,000원 오픈 할인 기간.
+ * 11/16 0시부터 false → 정상가.
+ */
+export function hasDecemberOpenDiscount(
+  schedule?: { year: number; month: number } | null,
+  now = Date.now(),
+) {
+  return (
+    isDecemberSchedule(schedule) &&
+    now >= DECEMBER_PAID_OPEN_START &&
+    now < DECEMBER_BENEFIT_END
+  );
+}
+
+/** @deprecated 호환 — 오픈 한정 할인과 동일 */
+export function hasDecemberBenefit(
+  schedule?: { year: number; month: number } | null,
+  now = Date.now(),
+) {
+  return hasDecemberOpenDiscount(schedule, now);
+}
+
+/** 진단 포함 — 특강/스타트/진단 모두 사전예약·오픈 할인 대상 */
 export function isDecemberDiscountEligibleClass(className: string): boolean {
   const name = String(className || "").trim();
   if (!name) return false;
@@ -55,11 +88,11 @@ export function isDecemberDiscountEligibleClass(className: string): boolean {
   }
 
   if (isDiagnosisEnrollmentKey(name) || /진단/.test(name)) {
-    console.log("[12월사전예약] 진단 클래스 할인 대상:", name);
+    console.log("[12월오픈혜택] 진단 클래스 할인 대상:", name);
     return true;
   }
   if (isStartTurnEnrollmentKey(name)) {
-    console.log("[12월사전예약] 스타트 클래스 할인 대상:", name);
+    console.log("[12월오픈혜택] 스타트 클래스 할인 대상:", name);
     return true;
   }
   if (/^\[[^\]]+\]\s+\d+부\s*특강\s+(자유형|평영|접영)$/.test(name)) {
@@ -68,7 +101,7 @@ export function isDecemberDiscountEligibleClass(className: string): boolean {
   return false;
 }
 
-export type DecemberAdvanceBenefit = {
+export type DecemberOpenBenefit = {
   originalAmount: number;
   discountAmount: number;
   expectedAmount: number;
@@ -76,13 +109,16 @@ export type DecemberAdvanceBenefit = {
   reservedAt: string;
 };
 
+/** @deprecated 호환 별칭 */
+export type DecemberAdvanceBenefit = DecemberOpenBenefit;
+
 function resolveDecemberBaseAmount(className: string): number | null {
   const name = String(className || "").trim();
   if (isDiagnosisEnrollmentKey(name) || /진단/.test(name)) {
     return DECEMBER_DIAGNOSIS_BASE_AMOUNT;
   }
   if (isStartTurnEnrollmentKey(name)) {
-    // 사전예약 할인은 정상가 80,000원 기준 (런칭특가와 별도)
+    // 할인은 정상가 80,000원 기준 (런칭특가와 별도)
     return DECEMBER_SPECIAL_BASE_AMOUNT;
   }
   if (/^\[[^\]]+\]\s+\d+부\s*특강\s+(자유형|평영|접영)$/.test(name)) {
@@ -101,9 +137,46 @@ function resolveDecemberBaseAmount(className: string): number | null {
   return null;
 }
 
+/** 정상가 기준 오픈 할인 정보 (해당 없으면 null) */
+export function resolveDecemberOpenBenefit(
+  className: string,
+  originalAmount?: number,
+  now = Date.now(),
+): DecemberOpenBenefit | null {
+  const resolved = resolveClassScheduleFromEnrollmentKey(className);
+  if (!resolved?.schedule) return null;
+  if (!hasDecemberOpenDiscount(resolved.schedule, now)) return null;
+  if (!isDecemberDiscountEligibleClass(className)) return null;
+
+  // 스타트 등은 런칭특가(75,000)가 base로 올 수 있어, 12월 할인 기준가(80,000)를 우선한다.
+  const decemberBase = resolveDecemberBaseAmount(className);
+  const base =
+    decemberBase != null && Number.isFinite(decemberBase)
+      ? decemberBase
+      : originalAmount != null && Number.isFinite(originalAmount)
+        ? originalAmount
+        : null;
+  if (base == null || !Number.isFinite(base) || base <= DECEMBER_BENEFIT_AMOUNT) {
+    return null;
+  }
+
+  const benefit: DecemberOpenBenefit = {
+    originalAmount: base,
+    discountAmount: DECEMBER_BENEFIT_AMOUNT,
+    expectedAmount: base - DECEMBER_BENEFIT_AMOUNT,
+    benefitName: DECEMBER_BENEFIT_NAME,
+    reservedAt: new Date(now).toISOString(),
+  };
+  console.log("[12월오픈혜택] 할인 적용", {
+    className,
+    ...benefit,
+  });
+  return benefit;
+}
+
 /**
- * 사전예약 API용 (11/15까지).
- * 특강·스타트·진단 모두 접수. 진단 정상가 40,000원 · 사전예약 35,000원.
+ * 사전예약 API용 (11/12 0시 미만만).
+ * 11/12 이후에는 null — 일반 결제(+오픈 할인) 플로우만 사용.
  */
 export function resolveDecemberReservation(
   classId: number,
@@ -117,7 +190,8 @@ export function resolveDecemberReservation(
     console.log("[12월사전예약] 기간 종료 — 정식 오픈/결제 플로우", {
       classId,
       classKey,
-      paidOpenFrom: new Date(DECEMBER_ADVANCE_END).toISOString(),
+      paidOpenFrom: new Date(DECEMBER_PAID_OPEN_START).toISOString(),
+      benefitEndsAt: new Date(DECEMBER_BENEFIT_END).toISOString(),
     });
     return null;
   }
@@ -154,7 +228,7 @@ export function resolveDecemberReservation(
     return null;
   }
 
-  const benefit: DecemberAdvanceBenefit = {
+  const benefit: DecemberOpenBenefit = {
     originalAmount,
     discountAmount: DECEMBER_BENEFIT_AMOUNT,
     expectedAmount: originalAmount - DECEMBER_BENEFIT_AMOUNT,

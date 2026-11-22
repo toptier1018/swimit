@@ -65,6 +65,16 @@ import {
   isDecemberPaidOpen,
   isDecemberSchedule,
 } from "@/lib/december-reservation";
+import {
+  JANUARY_BENEFIT_AMOUNT,
+  JANUARY_BENEFIT_END,
+  JANUARY_PAID_OPEN_START,
+  hasJanuaryOpenDiscount,
+  isJanuaryAdvanceReservationOpen,
+  isJanuaryDiscountEligibleClass,
+  isJanuaryPaidOpen,
+  isJanuarySchedule,
+} from "@/lib/january-reservation";
 import { checkDuplicateForSameClass } from "@/app/actions/google-sheets";
 import {
   EMPTY_TRAFFIC_SOURCE,
@@ -217,7 +227,7 @@ const AQUARIUM_SHOT_EMBED_URL = `https://www.youtube.com/embed/${AQUARIUM_SHOT_Y
 
 const formatWon = (amount: number) => `₩${amount.toLocaleString()}`;
 
-/** 12월 사전예약 정상가 — 특강/스타트 8만 · 진단 4만 · 동탄 장거리 11.5만 */
+/** 12·1월 사전등록 정상가 — 특강/스타트 8만 · 진단 4만 · 동탄 장거리 11.5만 */
 const getDecemberListPrice = (input: {
   schedule?: { specialClass?: SpecialClassInfo | null } | null;
   productType?: ProductType | null;
@@ -234,6 +244,25 @@ const getDecemberListPrice = (input: {
   }
   return 80000;
 };
+
+/** 12월·1월 사전등록(결제 없음) 공통 */
+const isDecOrJanAdvanceOpen = (
+  schedule?: { year: number; month: number } | null,
+) =>
+  isDecemberAdvanceReservationOpen(schedule) ||
+  isJanuaryAdvanceReservationOpen(schedule);
+
+/** 12월·1월 오픈 할인 결제 기간 공통 */
+const hasDecOrJanOpenDiscount = (
+  schedule?: { year: number; month: number } | null,
+) => hasDecemberOpenDiscount(schedule) || hasJanuaryOpenDiscount(schedule);
+
+const getAdvanceDiscountUntilHint = (
+  schedule?: { year: number; month: number } | null,
+) =>
+  isJanuarySchedule(schedule) || hasJanuaryOpenDiscount(schedule)
+    ? "12월 15일까지"
+    : "11월 15일까지";
 
 /** 정가 취소선 + 할인가 표시 */
 const ProductPriceLabel = ({
@@ -1156,11 +1185,11 @@ const TIMETABLE_BUSAN_NOVEMBER: TimetableRow[] = [
   },
 ];
 
-/** 올스위머 상인점 12/5 특강 (대구) — 평영·접영만 (자유형·진단 미운영) */
-const TIMETABLE_DAEGU_DECEMBER: TimetableRow[] = [
+/** 올스위머 상인점 1/9 특강 (대구) — 평영·접영만 (자유형·진단 미운영) · 16:30~18:30 */
+const TIMETABLE_DAEGU_JANUARY: TimetableRow[] = [
   {
     session: "1부 특강",
-    time: "14:00 ~ 16:00",
+    time: "16:30 ~ 18:30",
     lanes: [
       { lane: UNASSIGNED_LANE, title: "평영", price: 80000 },
       { lane: UNASSIGNED_LANE, title: "접영", price: 80000 },
@@ -1168,8 +1197,8 @@ const TIMETABLE_DAEGU_DECEMBER: TimetableRow[] = [
   },
 ];
 
-/** 조이풀스윔 12/6 특강 (부산) — 특강+진단, 레인 미표시 */
-const TIMETABLE_BUSAN_DECEMBER: TimetableRow[] = [
+/** 조이풀스윔 1/10 특강 (부산) — 특강+진단, 레인 미표시 · 14:00~16:00 */
+const TIMETABLE_BUSAN_JANUARY: TimetableRow[] = [
   {
     session: "1부 특강",
     time: "14:00 ~ 16:00",
@@ -1257,8 +1286,8 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   // 25: 강남 11/15 취소 — TIMETABLE 보관만 (목록 미노출)
   26: TIMETABLE_MOKDONG_SEPTEMBER, // 11/22 목동
   27: TIMETABLE_DONGTAN_INTENSIVE, // 11/29 동탄 3시간 집중 (진단 없음)
-  33: TIMETABLE_DAEGU_DECEMBER, // 12/5 대구 (평영·접영만, 진단 없음)
-  28: TIMETABLE_BUSAN_DECEMBER, // 12/6 부산 (특강+진단)
+  33: TIMETABLE_DAEGU_JANUARY, // 1/9 대구 (평영·접영만, 진단 없음)
+  28: TIMETABLE_BUSAN_JANUARY, // 1/10 부산 (특강+진단)
   29: TIMETABLE_EUNPYEONG_DECEMBER, // 12/12 은평 (자유형·평영·접영 + 스타트)
   30: TIMETABLE_SONGPA_DECEMBER, // 12/19 송파 (특강+진단)
   31: TIMETABLE_MOKDONG_SEPTEMBER, // 12/20 목동 (특강+진단)
@@ -2068,14 +2097,17 @@ export default function SwimmingClassPage() {
       "동탄 11/29": "영법별 장거리 집중 14:00~17:00 · 115,000원",
     });
     console.log("[특강일정] 12월 일정 추가", {
-      "대구 12/5": "특강만 14:00~16:00 · 평영·접영 (자유형·진단 제외)",
-      "부산 12/6": "특강+진단 14:00~16:00",
       "은평 12/12": "특강+스타트 17:00~19:00 · 자유형·평영·접영 (진단 제외)",
       "송파 12/19": "특강+진단 17:15~19:15",
       "목동 12/20": "특강+진단 14:00~16:00 · 접영 14명",
       "동탄 12/27": "영법별 장거리 집중 14:00~17:00 · 115,000원 (진단 미운영)",
+      removed: "대구 12/5·부산 12/6 취소 → 1월로 변경",
+    });
+    console.log("[특강일정] 1월 일정 추가", {
+      "대구 1/9": "특강만 16:30~18:30 · 평영·접영 (자유형·진단 제외)",
+      "부산 1/10": "특강+진단 14:00~16:00",
       advance:
-        "11/12부터 할인 결제 · 11/15까지 특강·스타트·진단 5,000원 혜택(진단 정상가 40,000→35,000)",
+        "사전등록(결제 없음) · 12/12~12/15 결제 시 5,000원 할인(진단 40,000→35,000)",
     });
     console.log("[특강일정] 스타트·턴 연결 특강(1부·별도 정원)", {
       dates: CLASS_SCHEDULES.filter(
@@ -3119,8 +3151,11 @@ export default function SwimmingClassPage() {
     const price = offering?.price ?? product.price;
     const isFull = isClassFull(classKey);
     const schedule = classes.find((c) => c.id === classId);
-    const advanceOpen = isDecemberAdvanceReservationOpen(schedule);
-    const openDiscountActive = hasDecemberOpenDiscount(schedule);
+    const advanceOpen =
+      isDecemberAdvanceReservationOpen(schedule) ||
+      isJanuaryAdvanceReservationOpen(schedule);
+    const openDiscountActive =
+      hasDecemberOpenDiscount(schedule) || hasJanuaryOpenDiscount(schedule);
     console.log("[상품] 저항 진단 신청 확정 (영법 선택 없음):", {
       classId,
       classKey,
@@ -3191,9 +3226,7 @@ export default function SwimmingClassPage() {
     }) &&
     !isStartTurnSelection;
   // 12월: 11/12 이전만 사전예약(결제 없음). 이후는 결제 플로우.
-  const decemberAdvanceOpen = isDecemberAdvanceReservationOpen(
-    selectedScheduleForPayment,
-  );
+  const decemberAdvanceOpen = isDecOrJanAdvanceOpen(selectedScheduleForPayment);
   const isDecemberReservation = Boolean(
     selectedTimeSlot &&
       decemberAdvanceOpen &&
@@ -3203,8 +3236,21 @@ export default function SwimmingClassPage() {
         /진단/.test(selectedTimeSlot.name || "") ||
         /진단/.test(selectedTimeSlot.title || "")),
   );
+  // 1월: 12/12 이전만 사전등록(결제 없음). 이후는 결제 플로우.
+  const januaryAdvanceOpen = isJanuaryAdvanceReservationOpen(
+    selectedScheduleForPayment,
+  );
+  const isJanuaryReservation = Boolean(
+    selectedTimeSlot &&
+      januaryAdvanceOpen &&
+      (isJanuaryDiscountEligibleClass(selectedTimeSlot.name) ||
+        selectedTimeSlot.productType === "diagnosis" ||
+        isStartTurnSelection ||
+        /진단/.test(selectedTimeSlot.name || "") ||
+        /진단/.test(selectedTimeSlot.title || "")),
+  );
   const isAdvanceNoPayReservation =
-    isNovemberReservation || isDecemberReservation;
+    isNovemberReservation || isDecemberReservation || isJanuaryReservation;
   // 10/13~10/15: 진단 제외 특강·스타트·장거리에 5,000원 오픈 할인
   const novemberDiscountEligible = Boolean(
     selectedTimeSlot &&
@@ -3227,7 +3273,20 @@ export default function SwimmingClassPage() {
   const decemberDiscount = decemberDiscountEligible
     ? DECEMBER_BENEFIT_AMOUNT
     : 0;
-  const openDiscount = novemberDiscount || decemberDiscount;
+  // 12/12~12/15: 1월 특강·진단 5,000원 오픈 할인 (결제)
+  const januaryDiscountEligible = Boolean(
+    selectedTimeSlot &&
+      hasJanuaryOpenDiscount(selectedScheduleForPayment) &&
+      (isJanuaryDiscountEligibleClass(selectedTimeSlot.name) ||
+        selectedTimeSlot.productType === "diagnosis" ||
+        isStartTurnSelection ||
+        /진단/.test(selectedTimeSlot.name || "") ||
+        /진단/.test(selectedTimeSlot.title || "")),
+  );
+  const januaryDiscount = januaryDiscountEligible
+    ? JANUARY_BENEFIT_AMOUNT
+    : 0;
+  const openDiscount = novemberDiscount || decemberDiscount || januaryDiscount;
   useEffect(() => {
     if (isNovemberSchedule(selectedScheduleForPayment)) {
       console.log("[11월특강] 신청 모드", {
@@ -3256,7 +3315,7 @@ export default function SwimmingClassPage() {
         productType: selectedTimeSlot?.productType,
         advanceReservationOpen: decemberAdvanceOpen,
         paidOpen: isDecemberPaidOpen(selectedScheduleForPayment),
-        openDiscount: hasDecemberOpenDiscount(selectedScheduleForPayment),
+        openDiscount: hasDecOrJanOpenDiscount(selectedScheduleForPayment),
         mode: isDecemberReservation
           ? "사전예약(결제없음·특강/스타트/진단)"
           : decemberDiscount > 0
@@ -3273,15 +3332,42 @@ export default function SwimmingClassPage() {
         benefitEndsAt: new Date(DECEMBER_BENEFIT_END).toISOString(),
       });
     }
+    if (isJanuarySchedule(selectedScheduleForPayment)) {
+      console.log("[1월특강] 신청 모드", {
+        classId: selectedScheduleForPayment?.id,
+        date: selectedScheduleForPayment?.date,
+        classKey: selectedTimeSlot?.name,
+        productType: selectedTimeSlot?.productType,
+        advanceReservationOpen: januaryAdvanceOpen,
+        paidOpen: isJanuaryPaidOpen(selectedScheduleForPayment),
+        openDiscount: hasJanuaryOpenDiscount(selectedScheduleForPayment),
+        mode: isJanuaryReservation
+          ? "사전등록(결제없음·특강/진단)"
+          : januaryDiscount > 0
+            ? "정식오픈+한정할인(특강/진단)"
+            : "정식오픈(정상가)",
+        isJanuaryReservation,
+        discount: januaryDiscount,
+        price:
+          selectedTimeSlot?.price ??
+          selectedScheduleForPayment?.specialClass?.price ??
+          80000,
+        paidOpenFrom: new Date(JANUARY_PAID_OPEN_START).toISOString(),
+        benefitEndsAt: new Date(JANUARY_BENEFIT_END).toISOString(),
+      });
+    }
   }, [
     isNovemberReservation,
     isDecemberReservation,
+    isJanuaryReservation,
     decemberAdvanceOpen,
+    januaryAdvanceOpen,
     isStartTurnSelection,
     selectedScheduleForPayment?.id,
     selectedScheduleForPayment?.date,
     novemberDiscount,
     decemberDiscount,
+    januaryDiscount,
     selectedTimeSlot?.name,
     selectedTimeSlot?.productType,
     selectedTimeSlot?.price,
@@ -3315,6 +3401,7 @@ export default function SwimmingClassPage() {
 
   const paymentCtaLabel = (() => {
     if (!selectedTimeSlot) return "일정을 선택해 주세요";
+    if (isJanuaryReservation) return "1월 사전등록하기";
     if (isDecemberReservation) return "12월 사전예약 등록하기";
     if (isNovemberReservation) return "11월 예약대기 등록하기";
     if (
@@ -3415,14 +3502,18 @@ export default function SwimmingClassPage() {
     return () => window.clearTimeout(timer);
   }, [reservationReceipt, step]);
 
-  const submitAdvanceNoPayReservation = async (month: "november" | "december") => {
+  const submitAdvanceNoPayReservation = async (
+    month: "november" | "december" | "january",
+  ) => {
     if (!selectedTimeSlot || !selectedScheduleForPayment || reservationSubmittingRef.current) return;
     reservationSubmittingRef.current = true;
     setIsSubmitting(true);
     const apiPath =
-      month === "december"
-        ? "/api/reservations/december"
-        : "/api/reservations/november";
+      month === "january"
+        ? "/api/reservations/january"
+        : month === "december"
+          ? "/api/reservations/december"
+          : "/api/reservations/november";
     try {
       console.log(`[사전예약] ${month} 등록 요청:`, {
         classId: selectedScheduleForPayment.id,
@@ -3460,6 +3551,8 @@ export default function SwimmingClassPage() {
     submitAdvanceNoPayReservation("november");
   const submitDecemberReservation = () =>
     submitAdvanceNoPayReservation("december");
+  const submitJanuaryReservation = () =>
+    submitAdvanceNoPayReservation("january");
 
   const handleClassPgTestPayment = async () => {
     if (isAdvanceNoPayReservation) return;
@@ -5026,11 +5119,14 @@ export default function SwimmingClassPage() {
                           selectedClass === String(classItem.id);
                         const isNovemberCard = isNovemberSchedule(classItem);
                         const isDecemberCard = isDecemberSchedule(classItem);
+                        const isJanuaryCard = isJanuarySchedule(classItem);
                         const isAdvanceCard =
                           (isNovemberCard &&
                             isNovemberAdvanceReservationOpen(classItem)) ||
                           (isDecemberCard &&
-                            isDecemberAdvanceReservationOpen(classItem));
+                            isDecOrJanAdvanceOpen(classItem)) ||
+                          (isJanuaryCard &&
+                            isJanuaryAdvanceReservationOpen(classItem));
                         const isFirstNovemberCard =
                           isNovemberCard &&
                           (scheduleIndex === 0 ||
@@ -5041,6 +5137,12 @@ export default function SwimmingClassPage() {
                           isDecemberCard &&
                           (scheduleIndex === 0 ||
                             !isDecemberSchedule(
+                              activeScheduleClasses[scheduleIndex - 1],
+                            ));
+                        const isFirstJanuaryCard =
+                          isJanuaryCard &&
+                          (scheduleIndex === 0 ||
+                            !isJanuarySchedule(
                               activeScheduleClasses[scheduleIndex - 1],
                             ));
                         return (
@@ -5059,6 +5161,23 @@ export default function SwimmingClassPage() {
                                 {hasDecemberOpenDiscount(classItem)
                                   ? "11월 15일까지 5,000원 할인 결제 · 특강·스타트 80,000원 → 75,000원 · 진단 40,000원 → 35,000원"
                                   : "11월 15일까지 결제 없이 사전예약 · 특강·스타트 80,000원 · 진단 40,000원 · 모두 5,000원 할인"}
+                              </p>
+                            </div>
+                          ) : null}
+                          {isFirstJanuaryCard ? (
+                            <div
+                              id="january-schedule-start"
+                              className="rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-3 text-sm leading-6 text-blue-950"
+                            >
+                              <p className="font-bold text-blue-800">
+                                {hasJanuaryOpenDiscount(classItem)
+                                  ? "1월 특강 할인 결제"
+                                  : "1월 특강 사전등록"}
+                              </p>
+                              <p className="mt-1 break-keep">
+                                {hasJanuaryOpenDiscount(classItem)
+                                  ? "12월 15일까지 5,000원 할인 결제 · 특강 80,000원 → 75,000원 · 진단 40,000원 → 35,000원"
+                                  : "지금 결제 없이 사전등록 · 12월 12일~15일 결제 시 5,000원 할인 · 특강 80,000원 · 진단 40,000원"}
                               </p>
                             </div>
                           ) : null}
@@ -5261,8 +5380,8 @@ export default function SwimmingClassPage() {
                                         ※ 다른 할인·쿠폰과 중복 적용 불가
                                       </p>
                                     </div>
-                                  ) : (isDecemberAdvanceReservationOpen(classItem) ||
-                                      hasDecemberOpenDiscount(classItem)) &&
+                                  ) : (isDecOrJanAdvanceOpen(classItem) ||
+                                      hasDecOrJanOpenDiscount(classItem)) &&
                                     !isFishtankEntry ? (
                                     <div className="mt-3">
                                       <p className="text-[11px] font-bold text-gray-500">
@@ -5272,7 +5391,7 @@ export default function SwimmingClassPage() {
                                         {classItem.specialClass.price.toLocaleString()}원
                                       </p>
                                       <p className="mt-2 text-[11px] font-bold tracking-wide text-blue-700">
-                                        {hasDecemberOpenDiscount(classItem)
+                                        {hasDecOrJanOpenDiscount(classItem)
                                           ? "할인 결제 금액"
                                           : "나중에 결제 금액"}
                                       </p>
@@ -5286,14 +5405,14 @@ export default function SwimmingClassPage() {
                                         </span>
                                       </p>
                                       <p className="mt-1.5 inline-flex rounded-md bg-white px-2 py-0.5 text-[11px] font-bold text-blue-800 shadow-sm">
-                                        {hasDecemberOpenDiscount(classItem)
-                                          ? "5,000원 할인 · 11월 15일까지"
-                                          : "5,000원 할인 혜택 · 사전예약"}
+                                        {hasDecOrJanOpenDiscount(classItem)
+                                          ? `5,000원 할인 · ${getAdvanceDiscountUntilHint(classItem)}`
+                                          : "5,000원 할인 혜택 · 사전등록"}
                                       </p>
                                       <p className="mt-2 text-[11px] leading-5 text-gray-600">
-                                        {hasDecemberOpenDiscount(classItem)
-                                          ? "지금 신청·결제 가능 · 11월 15일까지"
-                                          : "지금 결제 없이 등록 · 11월 15일까지"}
+                                        {hasDecOrJanOpenDiscount(classItem)
+                                          ? `지금 신청·결제 가능 · ${getAdvanceDiscountUntilHint(classItem)}`
+                                          : `지금 결제 없이 등록 · ${getAdvanceDiscountUntilHint(classItem)}`}
                                       </p>
                                     </div>
                                   ) : (
@@ -5350,7 +5469,7 @@ export default function SwimmingClassPage() {
                                 <p className="mt-0.5 text-xs text-blue-800">10월 15일까지 · 지금 신청·결제 가능</p>
                               </div>
                             )}
-                            {hasDecemberOpenDiscount(classItem) &&
+                            {hasDecOrJanOpenDiscount(classItem) &&
                               !isFishtankEntry &&
                               !classItem.specialClass && (
                               <div className="mb-3 rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-sm leading-5 text-blue-950">
@@ -5387,19 +5506,15 @@ export default function SwimmingClassPage() {
                                   offer={classItem.addonSpecialClass}
                                   openDiscount={
                                     hasNovemberOpenDiscount(classItem) ||
-                                    hasDecemberOpenDiscount(classItem)
+                                    hasDecOrJanOpenDiscount(classItem)
                                   }
-                                  openDiscountFromList={hasDecemberOpenDiscount(
-                                    classItem,
-                                  )}
+                                  openDiscountFromList={hasDecOrJanOpenDiscount(classItem)}
                                   openDiscountUntil={
-                                    hasDecemberOpenDiscount(classItem)
-                                      ? "11월 15일까지"
+                                    hasDecOrJanOpenDiscount(classItem)
+                                      ? getAdvanceDiscountUntilHint(classItem)
                                       : "10월 15일까지"
                                   }
-                                  advanceReservation={isDecemberAdvanceReservationOpen(
-                                    classItem,
-                                  )}
+                                  advanceReservation={isDecOrJanAdvanceOpen(classItem)}
                                   badge={getAvailabilityBadge(
                                     getStartTurnEnrollmentKey(classItem),
                                   )}
@@ -5451,25 +5566,35 @@ export default function SwimmingClassPage() {
                                       : "text-green-600"
                                   }`}
                                 >
-                                  {isDecemberCard &&
+                                  {isJanuaryCard &&
                                   !isFishtankEntry &&
-                                  isDecemberAdvanceReservationOpen(classItem)
-                                    ? "사전예약 접수 중 · 11/15까지 · 지금 결제하지 않아요"
-                                    : isDecemberCard &&
+                                  isJanuaryAdvanceReservationOpen(classItem)
+                                    ? "사전등록 접수 중 · 12/12~15 결제 · 지금 결제하지 않아요"
+                                    : isJanuaryCard &&
                                         !isFishtankEntry &&
-                                        hasDecemberOpenDiscount(classItem)
-                                      ? "신청·결제 가능 · 오픈 혜택 5,000원 할인 (11/15까지)"
-                                      : isNovemberCard &&
+                                        hasJanuaryOpenDiscount(classItem)
+                                      ? "신청·결제 가능 · 사전등록 혜택 5,000원 할인 (12/15까지)"
+                                      : isDecemberCard &&
                                           !isFishtankEntry &&
-                                          isNovemberAdvanceReservationOpen(
-                                            classItem,
-                                          )
-                                        ? "우선예약 접수 중 · 지금 결제하지 않아요"
-                                        : isNovemberCard &&
+                                          isDecOrJanAdvanceOpen(classItem)
+                                        ? "사전예약 접수 중 · 11/15까지 · 지금 결제하지 않아요"
+                                        : isDecemberCard &&
                                             !isFishtankEntry &&
-                                            hasNovemberOpenDiscount(classItem)
-                                          ? "신청·결제 가능 · 오픈 혜택 5,000원 할인 (10/15까지)"
-                                          : "예약 가능 · 코치 1명 당 최대 7명 소수 정예 클래스"}
+                                            hasDecOrJanOpenDiscount(classItem)
+                                          ? "신청·결제 가능 · 오픈 혜택 5,000원 할인 (11/15까지)"
+                                          : isNovemberCard &&
+                                              !isFishtankEntry &&
+                                              isNovemberAdvanceReservationOpen(
+                                                classItem,
+                                              )
+                                            ? "우선예약 접수 중 · 지금 결제하지 않아요"
+                                            : isNovemberCard &&
+                                                !isFishtankEntry &&
+                                                hasNovemberOpenDiscount(
+                                                  classItem,
+                                                )
+                                              ? "신청·결제 가능 · 오픈 혜택 5,000원 할인 (10/15까지)"
+                                              : "예약 가능 · 코치 1명 당 최대 7명 소수 정예 클래스"}
                                 </span>
                               </div>
                               {isFishtankEntry && !classItem.specialClass ? (
@@ -6641,36 +6766,32 @@ export default function SwimmingClassPage() {
                                           reservationOnly={
                                             (isNovemberAdvanceReservationOpen(selectedScheduleForPayment) &&
                                               product.name === PRODUCT_CATALOG.zero.name) ||
-                                            isDecemberAdvanceReservationOpen(selectedScheduleForPayment)
+                                            isDecOrJanAdvanceOpen(selectedScheduleForPayment)
                                           }
                                           reservationBenefit={
                                             (hasNovemberOpenDiscount(selectedScheduleForPayment) &&
                                               product.name === PRODUCT_CATALOG.zero.name) ||
-                                            isDecemberAdvanceReservationOpen(selectedScheduleForPayment) ||
-                                            hasDecemberOpenDiscount(selectedScheduleForPayment)
+                                            isDecOrJanAdvanceOpen(selectedScheduleForPayment) ||
+                                            hasDecOrJanOpenDiscount(selectedScheduleForPayment)
                                           }
                                           reservationOnlyTitle={
-                                            isDecemberAdvanceReservationOpen(
-                                              selectedScheduleForPayment,
-                                            )
+                                            isDecOrJanAdvanceOpen(selectedScheduleForPayment)
                                               ? "사전예약"
                                               : "우선예약"
                                           }
                                           reservationOnlyHint={
-                                            isDecemberAdvanceReservationOpen(
-                                              selectedScheduleForPayment,
-                                            )
-                                              ? "11월 15일까지"
+                                            isDecOrJanAdvanceOpen(selectedScheduleForPayment)
+                                              ? getAdvanceDiscountUntilHint(selectedScheduleForPayment)
                                               : "10월 13일부터 정식 오픈·결제"
                                           }
                                           advanceListPrice={
-                                            isDecemberAdvanceReservationOpen(selectedScheduleForPayment)
+                                            isDecOrJanAdvanceOpen(selectedScheduleForPayment)
                                               ? getDecemberListPrice({ schedule: selectedScheduleForPayment, productType: product.name === PRODUCT_CATALOG.diagnosis.name ? "diagnosis" : "zero" })
                                               : undefined
                                           }
                                             price={
-                                              isDecemberAdvanceReservationOpen(selectedScheduleForPayment) ||
-                                              hasDecemberOpenDiscount(selectedScheduleForPayment)
+                                              isDecOrJanAdvanceOpen(selectedScheduleForPayment) ||
+                                              hasDecOrJanOpenDiscount(selectedScheduleForPayment)
                                                 ? getDecemberListPrice({ schedule: selectedScheduleForPayment, productType: product.name === PRODUCT_CATALOG.diagnosis.name ? "diagnosis" : "zero" })
                                                 : product.price
                                             }
@@ -6744,26 +6865,26 @@ export default function SwimmingClassPage() {
                                           reservationOnly={
                                             (isNovemberAdvanceReservationOpen(selectedScheduleForPayment) &&
                                               product.name === PRODUCT_CATALOG.zero.name) ||
-                                            isDecemberAdvanceReservationOpen(selectedScheduleForPayment)
+                                            isDecOrJanAdvanceOpen(selectedScheduleForPayment)
                                           }
                                           reservationBenefit={
                                             (hasNovemberOpenDiscount(selectedScheduleForPayment) &&
                                               product.name === PRODUCT_CATALOG.zero.name) ||
-                                            isDecemberAdvanceReservationOpen(selectedScheduleForPayment) ||
-                                            hasDecemberOpenDiscount(selectedScheduleForPayment)
+                                            isDecOrJanAdvanceOpen(selectedScheduleForPayment) ||
+                                            hasDecOrJanOpenDiscount(selectedScheduleForPayment)
                                           }
                                           reservationOnlyTitle={
-                                            isDecemberAdvanceReservationOpen(selectedScheduleForPayment)
+                                            isDecOrJanAdvanceOpen(selectedScheduleForPayment)
                                               ? "사전예약"
                                               : "우선예약"
                                           }
                                           reservationOnlyHint={
-                                            isDecemberAdvanceReservationOpen(selectedScheduleForPayment)
-                                              ? "11월 15일까지"
+                                            isDecOrJanAdvanceOpen(selectedScheduleForPayment)
+                                              ? getAdvanceDiscountUntilHint(selectedScheduleForPayment)
                                               : "10월 13일부터 정식 오픈·결제"
                                           }
                                           advanceListPrice={
-                                            isDecemberAdvanceReservationOpen(selectedScheduleForPayment)
+                                            isDecOrJanAdvanceOpen(selectedScheduleForPayment)
                                               ? getDecemberListPrice({
                                                   schedule: selectedScheduleForPayment,
                                                   productType: selectedProductType,
@@ -6771,8 +6892,8 @@ export default function SwimmingClassPage() {
                                               : undefined
                                           }
                                     price={
-                                      isDecemberAdvanceReservationOpen(selectedScheduleForPayment) ||
-                                      hasDecemberOpenDiscount(selectedScheduleForPayment)
+                                      isDecOrJanAdvanceOpen(selectedScheduleForPayment) ||
+                                      hasDecOrJanOpenDiscount(selectedScheduleForPayment)
                                         ? getDecemberListPrice({
                                             schedule: selectedScheduleForPayment,
                                             productType: selectedProductType,
@@ -6868,26 +6989,26 @@ export default function SwimmingClassPage() {
                                           reservationOnly={
                                             (isNovemberAdvanceReservationOpen(selectedScheduleForPayment) &&
                                               product.name === PRODUCT_CATALOG.zero.name) ||
-                                            isDecemberAdvanceReservationOpen(selectedScheduleForPayment)
+                                            isDecOrJanAdvanceOpen(selectedScheduleForPayment)
                                           }
                                           reservationBenefit={
                                             (hasNovemberOpenDiscount(selectedScheduleForPayment) &&
                                               product.name === PRODUCT_CATALOG.zero.name) ||
-                                            isDecemberAdvanceReservationOpen(selectedScheduleForPayment) ||
-                                            hasDecemberOpenDiscount(selectedScheduleForPayment)
+                                            isDecOrJanAdvanceOpen(selectedScheduleForPayment) ||
+                                            hasDecOrJanOpenDiscount(selectedScheduleForPayment)
                                           }
                                           reservationOnlyTitle={
-                                            isDecemberAdvanceReservationOpen(selectedScheduleForPayment)
+                                            isDecOrJanAdvanceOpen(selectedScheduleForPayment)
                                               ? "사전예약"
                                               : "우선예약"
                                           }
                                           reservationOnlyHint={
-                                            isDecemberAdvanceReservationOpen(selectedScheduleForPayment)
-                                              ? "11월 15일까지"
+                                            isDecOrJanAdvanceOpen(selectedScheduleForPayment)
+                                              ? getAdvanceDiscountUntilHint(selectedScheduleForPayment)
                                               : "10월 13일부터 정식 오픈·결제"
                                           }
                                           advanceListPrice={
-                                            isDecemberAdvanceReservationOpen(selectedScheduleForPayment)
+                                            isDecOrJanAdvanceOpen(selectedScheduleForPayment)
                                               ? getDecemberListPrice({
                                                   schedule: selectedScheduleForPayment,
                                                   productType: "zero",
@@ -6895,8 +7016,8 @@ export default function SwimmingClassPage() {
                                               : undefined
                                           }
                                               price={
-                                                isDecemberAdvanceReservationOpen(selectedScheduleForPayment) ||
-                                                hasDecemberOpenDiscount(selectedScheduleForPayment)
+                                                isDecOrJanAdvanceOpen(selectedScheduleForPayment) ||
+                                                hasDecOrJanOpenDiscount(selectedScheduleForPayment)
                                                   ? getDecemberListPrice({
                                                       schedule: selectedScheduleForPayment,
                                                       productType: "zero",
@@ -6908,7 +7029,7 @@ export default function SwimmingClassPage() {
                                               }
                                               badge={product.priceBadge}
                                             />
-                                            {!(isNovemberAdvanceReservationOpen(selectedScheduleForPayment) || isDecemberAdvanceReservationOpen(selectedScheduleForPayment)) && (
+                                            {!(isNovemberAdvanceReservationOpen(selectedScheduleForPayment) || isDecOrJanAdvanceOpen(selectedScheduleForPayment)) && (
 <span
                                               className={getAvailabilityBadgeClassName(
                                                 availabilityBadge.tone,
@@ -7009,12 +7130,8 @@ export default function SwimmingClassPage() {
                                             String(c.id) === selectedClass,
                                         );
                                         const listPrice =
-                                          isDecemberAdvanceReservationOpen(
-                                            selectedScheduleForPayment,
-                                          ) ||
-                                          hasDecemberOpenDiscount(
-                                            selectedScheduleForPayment,
-                                          )
+                                          isDecOrJanAdvanceOpen(selectedScheduleForPayment) ||
+                                          hasDecOrJanOpenDiscount(selectedScheduleForPayment)
                                             ? getDecemberListPrice({
                                                 schedule:
                                                   selectedScheduleForPayment,
@@ -7141,24 +7258,24 @@ export default function SwimmingClassPage() {
                                           )
                                         ) : (
                                           <ProductPriceLabel
-                                            reservationOnly={isNovemberAdvanceReservationOpen(selectedScheduleForPayment) || isDecemberAdvanceReservationOpen(selectedScheduleForPayment)}
+                                            reservationOnly={isNovemberAdvanceReservationOpen(selectedScheduleForPayment) || isDecOrJanAdvanceOpen(selectedScheduleForPayment)}
                                             reservationBenefit={
                                               hasNovemberOpenDiscount(selectedScheduleForPayment) ||
-                                              isDecemberAdvanceReservationOpen(selectedScheduleForPayment) ||
-                                              hasDecemberOpenDiscount(selectedScheduleForPayment)
+                                              isDecOrJanAdvanceOpen(selectedScheduleForPayment) ||
+                                              hasDecOrJanOpenDiscount(selectedScheduleForPayment)
                                             }
                                             reservationOnlyTitle={
-                                              isDecemberAdvanceReservationOpen(selectedScheduleForPayment)
+                                              isDecOrJanAdvanceOpen(selectedScheduleForPayment)
                                                 ? "사전예약"
                                                 : "우선예약"
                                             }
                                             reservationOnlyHint={
-                                            isDecemberAdvanceReservationOpen(selectedScheduleForPayment)
-                                              ? "11월 15일까지"
+                                            isDecOrJanAdvanceOpen(selectedScheduleForPayment)
+                                              ? getAdvanceDiscountUntilHint(selectedScheduleForPayment)
                                               : "10월 13일부터 정식 오픈·결제"
                                             }
                                             advanceListPrice={
-                                              isDecemberAdvanceReservationOpen(selectedScheduleForPayment)
+                                              isDecOrJanAdvanceOpen(selectedScheduleForPayment)
                                                 ? getDecemberListPrice({
                                                     schedule: selectedScheduleForPayment,
                                                     productType: "zero",
@@ -7166,8 +7283,8 @@ export default function SwimmingClassPage() {
                                                 : undefined
                                             }
                                             price={
-                                              isDecemberAdvanceReservationOpen(selectedScheduleForPayment) ||
-                                              hasDecemberOpenDiscount(selectedScheduleForPayment)
+                                              isDecOrJanAdvanceOpen(selectedScheduleForPayment) ||
+                                              hasDecOrJanOpenDiscount(selectedScheduleForPayment)
                                                 ? getDecemberListPrice({
                                                     schedule: selectedScheduleForPayment,
                                                     productType: "zero",
@@ -7182,7 +7299,7 @@ export default function SwimmingClassPage() {
                                             }
                                           />
                                         )}
-                                        {!(isNovemberAdvanceReservationOpen(selectedScheduleForPayment) || isDecemberAdvanceReservationOpen(selectedScheduleForPayment)) && (
+                                        {!(isNovemberAdvanceReservationOpen(selectedScheduleForPayment) || isDecOrJanAdvanceOpen(selectedScheduleForPayment)) && (
 <span
                                           className={getAvailabilityBadgeClassName(
                                             availabilityBadge.tone,
@@ -7207,13 +7324,9 @@ export default function SwimmingClassPage() {
                                   const isSelected =
                                     selectedTimeSlot?.name === classKey;
                                   const diagnosisAdvanceOpen =
-                                    isDecemberAdvanceReservationOpen(
-                                      selectedScheduleForPayment,
-                                    );
+                                    isDecOrJanAdvanceOpen(selectedScheduleForPayment);
                                   const diagnosisOpenDiscount =
-                                    hasDecemberOpenDiscount(
-                                      selectedScheduleForPayment,
-                                    );
+                                    hasDecOrJanOpenDiscount(selectedScheduleForPayment);
 
                                   return (
                                     <button
@@ -7255,7 +7368,7 @@ export default function SwimmingClassPage() {
                                               diagnosisOpenDiscount
                                             }
                                             reservationOnlyTitle="사전예약 혜택"
-                                            reservationOnlyHint="11월 15일까지 · 5,000원 할인"
+                                            reservationOnlyHint={`${getAdvanceDiscountUntilHint(selectedScheduleForPayment)} · 5,000원 할인`}
                                             advanceListPrice={
                                               diagnosisAdvanceOpen
                                                 ? DIAGNOSIS_BASE_AMOUNT
@@ -7308,13 +7421,9 @@ export default function SwimmingClassPage() {
                                   const isSelected =
                                     selectedTimeSlot?.name === classKey;
                                   const startAdvanceOpen =
-                                    isDecemberAdvanceReservationOpen(
-                                      selectedScheduleForPayment,
-                                    );
+                                    isDecOrJanAdvanceOpen(selectedScheduleForPayment);
                                   const startOpenDiscount =
-                                    hasDecemberOpenDiscount(
-                                      selectedScheduleForPayment,
-                                    );
+                                    hasDecOrJanOpenDiscount(selectedScheduleForPayment);
                                   const startBasePrice =
                                     addon.originalPrice ?? 80000;
                                   console.log("[스타트·턴] 선택 카드 표시:", {
@@ -7388,7 +7497,7 @@ export default function SwimmingClassPage() {
                                               startAdvanceOpen || startOpenDiscount
                                             }
                                             reservationOnlyTitle="사전예약"
-                                            reservationOnlyHint="11월 15일까지"
+                                            reservationOnlyHint={getAdvanceDiscountUntilHint(selectedScheduleForPayment)}
                                             advanceListPrice={
                                               startAdvanceOpen ? 80000 : undefined
                                             }
@@ -7888,10 +7997,13 @@ export default function SwimmingClassPage() {
                     </div>
                   </div>
 
-                  {isDecemberReservation && selectedTimeSlot && (
+                  {(isDecemberReservation || isJanuaryReservation) &&
+                    selectedTimeSlot && (
                     <div className="mt-3 space-y-1 text-center text-sm leading-6 text-gray-700">
                       <p>
-                        지금은 결제하지 않아요. 사전예약은 11월 15일까지입니다.
+                        {isJanuaryReservation
+                          ? "지금은 결제하지 않아요. 사전등록 후 12월 12일~15일에 할인 결제합니다."
+                          : "지금은 결제하지 않아요. 사전예약은 11월 15일까지입니다."}
                       </p>
                       <p>
                         <span className="text-gray-400 line-through">
@@ -7913,7 +8025,10 @@ export default function SwimmingClassPage() {
                               schedule: selectedScheduleForPayment,
                               productType: selectedTimeSlot.productType,
                               classKey: selectedTimeSlot.name,
-                            }) - DECEMBER_BENEFIT_AMOUNT
+                            }) -
+                            (isJanuaryReservation
+                              ? JANUARY_BENEFIT_AMOUNT
+                              : DECEMBER_BENEFIT_AMOUNT)
                           ).toLocaleString()}
                           원
                         </span>
@@ -8037,6 +8152,10 @@ export default function SwimmingClassPage() {
                         }
                         setRegionError(false);
 
+                        if (isJanuaryReservation) {
+                          await submitJanuaryReservation();
+                          return;
+                        }
                         if (isDecemberReservation) {
                           await submitDecemberReservation();
                           return;
@@ -8701,20 +8820,31 @@ export default function SwimmingClassPage() {
                   <div className="rounded-xl border border-emerald-200 bg-white p-6 text-center shadow-sm">
                     <h2 className="text-2xl font-bold">
                       {String(reservationReceipt?.benefitName || "").includes(
-                        "12월",
-                      ) || isDecemberSchedule(selectedScheduleForPayment)
-                        ? "12월 사전예약 등록이 완료되었습니다."
-                        : "11월 우선예약 등록이 완료되었습니다."}
+                        "1월",
+                      ) || isJanuarySchedule(selectedScheduleForPayment)
+                        ? "1월 사전등록이 완료되었습니다."
+                        : String(reservationReceipt?.benefitName || "").includes(
+                              "12월",
+                            ) || isDecemberSchedule(selectedScheduleForPayment)
+                          ? "12월 사전예약 등록이 완료되었습니다."
+                          : "11월 우선예약 등록이 완료되었습니다."}
                     </h2>
                     <p className="mt-3 leading-7 text-gray-700">
-                      10월 13일부터 정식 오픈되며, 입력하신 연락처로 결제·신청을
-                      안내드릴 수 있습니다. 기존 우선예약 정보는 그대로
-                      유지됩니다.
+                      {isJanuarySchedule(selectedScheduleForPayment) ||
+                      String(reservationReceipt?.benefitName || "").includes(
+                        "1월",
+                      )
+                        ? "12월 12일~15일에 할인 결제를 안내드립니다. 입력하신 연락처로 결제·신청을 안내드릴 수 있습니다."
+                        : "10월 13일부터 정식 오픈되며, 입력하신 연락처로 결제·신청을 안내드릴 수 있습니다. 기존 우선예약 정보는 그대로 유지됩니다."}
                     </p>
                     {reservationReceipt.discountAmount > 0 ? (
                       <p className="mt-2 leading-7 text-gray-700">
-                        오픈 기간(10/13~10/15)에는 5,000원 할인 금액으로 결제할
-                        수 있습니다.
+                        {isJanuarySchedule(selectedScheduleForPayment) ||
+                        String(reservationReceipt?.benefitName || "").includes(
+                          "1월",
+                        )
+                          ? "결제 기간(12/12~12/15)에는 5,000원 할인 금액으로 결제할 수 있습니다."
+                          : "오픈 기간(10/13~10/15)에는 5,000원 할인 금액으로 결제할 수 있습니다."}
                       </p>
                     ) : null}
                     {reservationReceipt.status === "예약대기" ? (

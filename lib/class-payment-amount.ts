@@ -8,6 +8,7 @@ import {
   resolveClassScheduleFromEnrollmentKey,
 } from "@/lib/class-schedule-data";
 import { resolveDecemberOpenBenefit } from "@/lib/december-reservation";
+import { resolveJanuaryOpenBenefit } from "@/lib/january-reservation";
 import { resolveNovemberOpenBenefit } from "@/lib/november-reservation";
 
 /** 저항 진단 프로그램 정상가 (12월 오픈 할인은 december-reservation에서 처리) */
@@ -57,14 +58,17 @@ export function resolveClassPaymentAmount(className: string): number | null {
     return null;
   }
 
-  // 진단: 12월 오픈 할인만 적용 (11월 오픈 할인은 진단 제외)
+  // 진단: 12·1월 오픈 할인 적용 (11월 오픈 할인은 진단 제외)
   if (/진단/.test(name)) {
     const decemberBenefit = resolveDecemberOpenBenefit(name, base);
-    const amount = decemberBenefit ? decemberBenefit.expectedAmount : base;
+    const januaryBenefit = resolveJanuaryOpenBenefit(name, base);
+    const benefit = decemberBenefit ?? januaryBenefit;
+    const amount = benefit ? benefit.expectedAmount : base;
     console.log("[금액검증] 진단 프로그램 금액:", {
       className: name,
       base,
-      openDiscount: decemberBenefit?.discountAmount ?? 0,
+      openDiscount: benefit?.discountAmount ?? 0,
+      benefitName: benefit?.benefitName ?? null,
       amount,
     });
     return amount;
@@ -72,7 +76,8 @@ export function resolveClassPaymentAmount(className: string): number | null {
 
   const novemberBenefit = resolveNovemberOpenBenefit(name, base);
   const decemberBenefit = resolveDecemberOpenBenefit(name, base);
-  const benefit = novemberBenefit ?? decemberBenefit;
+  const januaryBenefit = resolveJanuaryOpenBenefit(name, base);
+  const benefit = novemberBenefit ?? decemberBenefit ?? januaryBenefit;
   const amount = benefit ? benefit.expectedAmount : base;
   console.log("[금액검증] 클래스 결제 금액:", {
     className: name,

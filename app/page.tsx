@@ -8733,7 +8733,12 @@ export default function SwimmingClassPage() {
                           (5,000원 할인 혜택 적용)
                         </p>
                       )}
-                      <p className="break-all text-xs text-gray-500">예약번호 {reservationReceipt.orderNumber}</p>
+                      <div className="flex justify-between gap-3 pt-1 text-left">
+                        <span className="shrink-0 text-gray-600">주문번호</span>
+                        <span className="break-all text-right font-mono text-xs font-semibold text-gray-900">
+                          {reservationReceipt.orderNumber}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 ) : paymentStatus === "예약대기" ? (

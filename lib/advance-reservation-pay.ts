@@ -617,7 +617,7 @@ export async function createAdvanceReservationTossOrder(input: {
   const orderNumber = String(input.orderNumber || "").trim();
   // 구형식 NR-… / 신규 WC-… 주문번호 모두 허용
   if (!orderNumber.startsWith("NR-") && !orderNumber.startsWith("WC-")) {
-    return { success: false, error: "신청번호가 올바르지 않습니다.", code: "BAD_ORDER" };
+    return { success: false, error: "주문번호가 올바르지 않습니다.", code: "BAD_ORDER" };
   }
 
   const full = normalizePhoneDigits(input.phoneFull || "");

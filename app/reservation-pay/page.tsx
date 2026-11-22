@@ -453,6 +453,12 @@ export default function ReservationPayPage() {
                               {item.statusLabel}
                             </span>
                           </div>
+                          <p className="mt-1 break-all text-left text-[11px] text-gray-500">
+                            주문번호{" "}
+                            <span className="font-mono font-semibold text-gray-700">
+                              {item.orderNumber}
+                            </span>
+                          </p>
                           {item.status === "unpaid" ? (
                             <p className="mt-2 text-base font-extrabold text-blue-800">
                               {item.amount.toLocaleString()}원

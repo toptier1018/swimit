@@ -103,8 +103,11 @@ function SuccessContent() {
                 </span>
               </p>
               {orderNumber ? (
-                <p className="break-all text-xs text-gray-500">
-                  신청번호 {orderNumber}
+                <p className="flex justify-between gap-3 break-all text-left">
+                  <span className="shrink-0 text-gray-500">주문번호</span>
+                  <span className="font-mono font-semibold text-gray-950">
+                    {orderNumber}
+                  </span>
                 </p>
               ) : null}
             </div>

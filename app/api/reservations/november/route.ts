@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { appendAdvanceReservationToGoogleSheet } from "@/lib/google-sheets";
 import { checkGoogleSheetDuplicateForSameClass, getOpsSheetEnrollmentCounts, formatOpsSheetDateTime } from "@/lib/ops-sheet-enrollment";
@@ -80,7 +79,9 @@ export async function POST(request: NextRequest) {
     const capacity = settings.thresholds[data.classKey] ?? DEFAULT_CAPACITY_BY_CLASS[data.classKey];
     const isWaitlist = settings.waitlistClasses.includes(data.classKey) || (enrollment.counts[data.classKey] || 0) >= capacity;
     const status = isWaitlist ? "예약대기" : "사전예약";
-    const orderNumber = `NR-${randomUUID()}`;
+    // 일반 신청과 동일한 주문번호 형식 (WC-시간-난수)
+    const orderNumber = `WC-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+    console.log("[11월사전예약] 주문번호 발급:", { orderNumber, status });
     const confirmedOffer = resolveNovemberReservation(data.classId, data.classKey);
     if (!confirmedOffer) return NextResponse.json({ error: "예약 접수가 종료되었습니다." }, { status: 400 });
     const result = await appendAdvanceReservationToGoogleSheet({

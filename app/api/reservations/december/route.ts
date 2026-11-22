@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { appendAdvanceReservationToGoogleSheet } from "@/lib/google-sheets";
 import {
@@ -132,7 +131,9 @@ export async function POST(request: NextRequest) {
       settings.waitlistClasses.includes(data.classKey) ||
       (enrollment.counts[data.classKey] || 0) >= capacity;
     const status = isWaitlist ? "예약대기" : "사전예약";
-    const orderNumber = `NR-${randomUUID()}`;
+    // 일반 신청과 동일한 주문번호 형식 (WC-시간-난수). 예전 NR-UUID 는 더 이상 발급하지 않음.
+    const orderNumber = `WC-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+    console.log("[12월사전예약] 주문번호 발급:", { orderNumber, status });
 
     const confirmedOffer = resolveDecemberReservation(
       data.classId,

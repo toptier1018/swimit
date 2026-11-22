@@ -1,7 +1,7 @@
 /**
  * 사전예약 공용 결제 (/reservation-pay)
  * - 휴대폰 뒤 4자리 조회 → (중복 시) 전체번호 → 예약 선택 → 결제
- * - 새 신청 row 생성 없음. 기존 NR- row만 확정·입금완료로 갱신
+ * - 새 신청 row 생성 없음. 기존 사전예약 row(NR- 구형식 / WC- 주문번호)만 확정·입금완료로 갱신
  */
 import "server-only";
 import { google } from "googleapis";
@@ -310,7 +310,21 @@ async function loadAdvanceRows(): Promise<{
   for (let i = 1; i < values.length; i++) {
     const row = values[i] || [];
     const orderNumber = String(row[colOrder] ?? "").trim();
-    if (!orderNumber.startsWith("NR-")) continue;
+    const expectedAmountRaw =
+      colExpected >= 0 ? String(row[colExpected] ?? "").trim() : "";
+    const discountAmountRaw =
+      colDiscount >= 0 ? String(row[colDiscount] ?? "").trim() : "";
+    const tossOrderId =
+      colToss >= 0 ? String(row[colToss] ?? "").trim() : "";
+
+    // 구형식 NR-UUID 또는 신규 WC-주문번호(혜택열/NRPAY로 일반 신청과 구분)
+    const isLegacyNr = orderNumber.startsWith("NR-");
+    const isWcAdvance =
+      orderNumber.startsWith("WC-") &&
+      (expectedAmountRaw !== "" ||
+        discountAmountRaw !== "" ||
+        tossOrderId.startsWith("NRPAY-"));
+    if (!isLegacyNr && !isWcAdvance) continue;
 
     const statusRaw =
       colStatus >= 0 ? String(row[colStatus] ?? "").trim() : "";
@@ -342,13 +356,11 @@ async function loadAdvanceRows(): Promise<{
       statusRaw,
       confirmedRaw,
       paymentRaw,
-      expectedAmountRaw:
-        colExpected >= 0 ? String(row[colExpected] ?? "").trim() : "",
+      expectedAmountRaw,
       originalAmountRaw:
         colOriginal >= 0 ? String(row[colOriginal] ?? "").trim() : "",
-      discountAmountRaw:
-        colDiscount >= 0 ? String(row[colDiscount] ?? "").trim() : "",
-      tossOrderId: colToss >= 0 ? String(row[colToss] ?? "").trim() : "",
+      discountAmountRaw,
+      tossOrderId,
     });
   }
 
@@ -603,7 +615,8 @@ export async function createAdvanceReservationTossOrder(input: {
   }
 
   const orderNumber = String(input.orderNumber || "").trim();
-  if (!orderNumber.startsWith("NR-")) {
+  // 구형식 NR-… / 신규 WC-… 주문번호 모두 허용
+  if (!orderNumber.startsWith("NR-") && !orderNumber.startsWith("WC-")) {
     return { success: false, error: "신청번호가 올바르지 않습니다.", code: "BAD_ORDER" };
   }
 
@@ -766,7 +779,7 @@ export async function createAdvanceReservationTossOrder(input: {
 }
 
 /**
- * Toss 승인 후 기존 NR- row → 예약확정 + 입금완료
+ * Toss 승인 후 기존 사전예약 row → 예약확정 + 입금완료
  */
 export async function confirmAdvanceReservationPayment(input: {
   paymentKey: string;
@@ -931,7 +944,7 @@ export async function confirmAdvanceReservationPayment(input: {
       };
     }
 
-    // 기존 NR- row 업데이트 (새 row 생성 금지)
+    // 기존 사전예약 row 업데이트 (새 row 생성 금지)
     // - 수강자 시트만: 예약상태(Q) = 결제완료
     // - 운영 시트: 예약상태(Q)는 변경하지 않음
     // - 입금상태(S) = 입금완료 / 확정예약상태(R) = 예약확정

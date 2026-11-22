@@ -5133,12 +5133,6 @@ export default function SwimmingClassPage() {
                             !isNovemberSchedule(
                               activeScheduleClasses[scheduleIndex - 1],
                             ));
-                        const isFirstDecemberCard =
-                          isDecemberCard &&
-                          (scheduleIndex === 0 ||
-                            !isDecemberSchedule(
-                              activeScheduleClasses[scheduleIndex - 1],
-                            ));
                         const isFirstJanuaryCard =
                           isJanuaryCard &&
                           (scheduleIndex === 0 ||
@@ -5147,23 +5141,6 @@ export default function SwimmingClassPage() {
                             ));
                         return (
                           <div key={classItem.id} className="space-y-3">
-                          {isFirstDecemberCard ? (
-                            <div
-                              id="december-schedule-start"
-                              className="rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-3 text-sm leading-6 text-blue-950"
-                            >
-                              <p className="font-bold text-blue-800">
-                                {hasDecemberOpenDiscount(classItem)
-                                  ? "12월 특강 할인 결제"
-                                  : "12월 특강 사전예약"}
-                              </p>
-                              <p className="mt-1 break-keep">
-                                {hasDecemberOpenDiscount(classItem)
-                                  ? "11월 15일까지 5,000원 할인 결제 · 특강·스타트 80,000원 → 75,000원 · 진단 40,000원 → 35,000원"
-                                  : "11월 15일까지 결제 없이 사전예약 · 특강·스타트 80,000원 · 진단 40,000원 · 모두 5,000원 할인"}
-                              </p>
-                            </div>
-                          ) : null}
                           {isFirstJanuaryCard ? (
                             <div
                               id="january-schedule-start"

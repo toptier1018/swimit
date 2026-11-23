@@ -6344,10 +6344,10 @@ export default function SwimmingClassPage() {
                       <div className="space-y-2">
                         <Label className="text-sm font-semibold flex items-center gap-1">
                           <MessageSquare className="h-4 w-4" />
-                          특강에서 해결하고 싶은 단 한가지
+                          특강에서 가장 해결하고 싶은 단 한가지
                         </Label>
                         <p className="text-xs leading-5 text-gray-500">
-                          (핵심 한,두가지를 일단 집중 교정 합니다)
+                          (핵심 한가지 문제를 먼저 교정 후 2차 디테일 교정 합니다)
                         </p>
                         <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
                           {FOCUS_GOAL_OPTIONS.map((goal) => {

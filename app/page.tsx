@@ -6337,8 +6337,8 @@ export default function SwimmingClassPage() {
                           특강에서 가장 해결하고 싶은 문제 한가지
                         </Label>
                         <p className="text-xs leading-5 text-gray-500">
-                          (핵심 한가지 문제를 먼저 교정 후 2차 디테일 교정
-                          합니다- 일단 한가지만 선택해주세요)
+                          (일단 한가지 문제 위주로 교정 합니다. 이후 2차 디테일
+                          교정 진행)
                         </p>
                         <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
                           {FOCUS_GOAL_OPTIONS.map((goal) => {

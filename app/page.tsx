@@ -23,6 +23,7 @@ import {
   Check,
   MessageCircle,
   RefreshCw,
+  BadgePercent,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -5332,6 +5333,15 @@ export default function SwimmingClassPage() {
                                     {classItem.badge}
                                   </span>
                                 ) : null}
+                                {isAdvanceCard && !isFishtankEntry ? (
+                                  <span className="inline-flex items-center gap-0.5 rounded-full bg-red-500 px-2 py-0.5 text-[11px] font-extrabold text-white">
+                                    <BadgePercent
+                                      className="h-3 w-3"
+                                      aria-hidden
+                                    />
+                                    5천원 할인
+                                  </span>
+                                ) : null}
                               </div>
                               {isSelectedSchedule && (
                                 <span className="shrink-0 rounded-full bg-primary px-2.5 py-1 text-xs font-bold text-white">
@@ -5560,15 +5570,24 @@ export default function SwimmingClassPage() {
                                 isDecemberSchedule(classItem))) &&
                               !isFishtankEntry &&
                               !classItem.specialClass && (
-                              <div className="mb-3 rounded-lg border border-blue-100 bg-blue-50 px-3 py-2.5 text-sm leading-5 text-blue-950">
-                                <span className="block text-xs font-bold text-blue-700">
-                                  사전등록 할인
-                                </span>
-                                <div className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                              <div className="mb-3 rounded-xl border-2 border-blue-300 bg-gradient-to-br from-blue-50 to-sky-50 px-3.5 py-3 text-sm leading-5 text-blue-950 shadow-sm">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <span className="inline-flex items-center gap-1 rounded-md bg-red-500 px-2 py-1 text-[11px] font-extrabold tracking-wide text-white shadow-sm">
+                                    <BadgePercent
+                                      className="h-3.5 w-3.5"
+                                      aria-hidden
+                                    />
+                                    5,000원 할인
+                                  </span>
+                                  <span className="text-xs font-bold text-blue-800">
+                                    사전등록 혜택
+                                  </span>
+                                </div>
+                                <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
                                   <span className="text-xs text-gray-500 line-through">
                                     80,000원
                                   </span>
-                                  <span className="text-base font-extrabold text-blue-800">
+                                  <span className="text-xl font-extrabold tracking-tight text-blue-800">
                                     75,000원
                                   </span>
                                   {getDiagnosisOfferingForClass(classItem.id) ? (
@@ -5577,8 +5596,8 @@ export default function SwimmingClassPage() {
                                     </span>
                                   ) : null}
                                 </div>
-                                <p className="mt-1 text-xs text-blue-800">
-                                  5,000원 할인 · 지금 결제하지 않아요
+                                <p className="mt-1.5 text-xs font-semibold text-blue-800">
+                                  지금 결제하지 않아요
                                 </p>
                               </div>
                             )}

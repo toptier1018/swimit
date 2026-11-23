@@ -227,7 +227,7 @@ const AQUARIUM_SHOT_EMBED_URL = `https://www.youtube.com/embed/${AQUARIUM_SHOT_Y
 
 const formatWon = (amount: number) => `₩${amount.toLocaleString()}`;
 
-/** 특강에서 해결하고 싶은 점 — 최대 2개 선택 */
+/** 특강에서 해결하고 싶은 점 — 1개만 선택 */
 const FOCUS_GOAL_OTHER = "기타";
 const FOCUS_GOAL_OPTIONS = [
   "호흡 개선",
@@ -1877,7 +1877,7 @@ export default function SwimmingClassPage() {
     swimmingExperience: "",
     message: "",
   });
-  /** 특강 해결 목표 — 최대 2개. message에 합쳐 시트 해결문제로 저장 */
+  /** 특강 해결 목표 — 1개만. message에 합쳐 시트 해결문제로 저장 */
   const [focusGoals, setFocusGoals] = useState<string[]>([]);
   const [focusGoalOther, setFocusGoalOther] = useState("");
   const [agreeAll, setAgreeAll] = useState(false);
@@ -2523,14 +2523,10 @@ export default function SwimmingClassPage() {
       let next: string[];
       if (has) {
         next = prev.filter((item) => item !== goal);
-      } else if (prev.length >= 2) {
-        toast({
-          title: "최대 2개까지 선택",
-          description: "핵심 한·두 가지만 골라 주세요.",
-          variant: "destructive",
-        });
-        console.log("[설문] 해결 목표 최대 2개 초과 차단:", goal);
-        return prev;
+      } else if (prev.length >= 1) {
+        // 한 가지만 선택 — 새로 고른 항목으로 교체
+        next = [goal];
+        console.log("[설문] 해결 목표 1개로 교체:", { from: prev, to: next });
       } else {
         next = [...prev, goal];
       }
@@ -2552,20 +2548,14 @@ export default function SwimmingClassPage() {
     ) {
       return true;
     }
-    if (focusGoals.length < 1) {
+    if (focusGoals.length !== 1) {
       toast({
         title: "해결 목표를 선택해 주세요",
-        description: "특강에서 집중할 핵심을 1~2개 골라 주세요.",
+        description: "일단 한가지만 선택해 주세요.",
         variant: "destructive",
       });
-      console.log("[신청/결제] 해결 목표 미선택 - 차단");
-      return false;
-    }
-    if (focusGoals.length > 2) {
-      toast({
-        title: "최대 2개까지 선택",
-        description: "핵심 한·두 가지만 골라 주세요.",
-        variant: "destructive",
+      console.log("[신청/결제] 해결 목표 미선택/초과 - 차단", {
+        count: focusGoals.length,
       });
       return false;
     }
@@ -6347,7 +6337,8 @@ export default function SwimmingClassPage() {
                           특강에서 가장 해결하고 싶은 단 한가지
                         </Label>
                         <p className="text-xs leading-5 text-gray-500">
-                          (핵심 한가지 문제를 먼저 교정 후 2차 디테일 교정 합니다)
+                          (핵심 한가지 문제를 먼저 교정 후 2차 디테일 교정
+                          합니다- 일단 한가지만 선택해주세요)
                         </p>
                         <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
                           {FOCUS_GOAL_OPTIONS.map((goal) => {
@@ -7915,7 +7906,8 @@ export default function SwimmingClassPage() {
                                 특강에서 가장 해결하고 싶은 단 한가지
                               </Label>
                               <p className="text-xs leading-5 text-gray-500">
-                                (핵심 한가지 문제를 먼저 교정 후 2차 디테일 교정 합니다)
+                                (핵심 한가지 문제를 먼저 교정 후 2차 디테일
+                                교정 합니다- 일단 한가지만 선택해주세요)
                               </p>
                               <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
                                 {FOCUS_GOAL_OPTIONS.map((goal) => {

@@ -6334,7 +6334,7 @@ export default function SwimmingClassPage() {
                       <div className="space-y-2">
                         <Label className="text-sm font-semibold flex items-center gap-1">
                           <MessageSquare className="h-4 w-4" />
-                          특강에서 가장 해결하고 싶은 단 한가지
+                          특강에서 가장 해결하고 싶은 문제 한가지
                         </Label>
                         <p className="text-xs leading-5 text-gray-500">
                           (핵심 한가지 문제를 먼저 교정 후 2차 디테일 교정
@@ -7903,7 +7903,7 @@ export default function SwimmingClassPage() {
                             <div className="space-y-2">
                               <Label className="text-sm font-semibold flex items-center gap-1">
                                 <MessageSquare className="h-4 w-4" />
-                                특강에서 가장 해결하고 싶은 단 한가지
+                                특강에서 가장 해결하고 싶은 문제 한가지
                               </Label>
                               <p className="text-xs leading-5 text-gray-500">
                                 (핵심 한가지 문제를 먼저 교정 후 2차 디테일

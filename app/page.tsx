@@ -27,7 +27,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
@@ -226,6 +225,31 @@ const AQUARIUM_SHOT_YOUTUBE_ID = "d3UT4FzduME";
 const AQUARIUM_SHOT_EMBED_URL = `https://www.youtube.com/embed/${AQUARIUM_SHOT_YOUTUBE_ID}?autoplay=1&mute=1&loop=1&playlist=${AQUARIUM_SHOT_YOUTUBE_ID}&playsinline=1&rel=0&modestbranding=1`;
 
 const formatWon = (amount: number) => `₩${amount.toLocaleString()}`;
+
+/** 특강에서 해결하고 싶은 점 — 최대 2개 선택 */
+const FOCUS_GOAL_OTHER = "기타";
+const FOCUS_GOAL_OPTIONS = [
+  "호흡 개선",
+  "발차기 개선",
+  "팔돌리기 개선",
+  "몸이나 다리가 가라앉아요",
+  "타이밍 개선",
+  "웨이브 개선",
+  "롤링 개선",
+  "어떤 동작부터 고쳐야 할지 모르겠어요.",
+  FOCUS_GOAL_OTHER,
+] as const;
+
+function buildFocusGoalMessage(selected: string[], otherText: string): string {
+  return selected
+    .map((item) =>
+      item === FOCUS_GOAL_OTHER
+        ? `기타: ${otherText.trim()}`
+        : item,
+    )
+    .filter((item) => item !== "기타:")
+    .join(", ");
+}
 
 /** 12·1월 사전등록 정상가 — 특강/스타트 8만 · 진단 4만 · 동탄 장거리 11.5만 */
 const getDecemberListPrice = (input: {
@@ -1852,6 +1876,9 @@ export default function SwimmingClassPage() {
     swimmingExperience: "",
     message: "",
   });
+  /** 특강 해결 목표 — 최대 2개. message에 합쳐 시트 해결문제로 저장 */
+  const [focusGoals, setFocusGoals] = useState<string[]>([]);
+  const [focusGoalOther, setFocusGoalOther] = useState("");
   const [agreeAll, setAgreeAll] = useState(false);
   const [agree1, setAgree1] = useState(false); // 개인정보 수집
   const [agree2, setAgree2] = useState(false); // 서비스 이용약관
@@ -2482,6 +2509,89 @@ export default function SwimmingClassPage() {
     });
   };
 
+  const syncFocusGoalMessage = (selected: string[], otherText: string) => {
+    const message = buildFocusGoalMessage(selected, otherText);
+    console.log("[설문] 해결 목표 선택:", { selected, otherText, message });
+    setFormData((prev) => ({ ...prev, message }));
+    return message;
+  };
+
+  const toggleFocusGoal = (goal: string) => {
+    setFocusGoals((prev) => {
+      const has = prev.includes(goal);
+      let next: string[];
+      if (has) {
+        next = prev.filter((item) => item !== goal);
+      } else if (prev.length >= 2) {
+        toast({
+          title: "최대 2개까지 선택",
+          description: "핵심 한·두 가지만 골라 주세요.",
+          variant: "destructive",
+        });
+        console.log("[설문] 해결 목표 최대 2개 초과 차단:", goal);
+        return prev;
+      } else {
+        next = [...prev, goal];
+      }
+      if (!next.includes(FOCUS_GOAL_OTHER)) {
+        setFocusGoalOther("");
+        syncFocusGoalMessage(next, "");
+      } else {
+        syncFocusGoalMessage(next, focusGoalOther);
+      }
+      return next;
+    });
+  };
+
+  const validateFocusGoalsForClass = () => {
+    // 진단은 해결 목표 문항 생략
+    if (
+      selectedProductType === "diagnosis" ||
+      selectedTimeSlot?.productType === "diagnosis"
+    ) {
+      return true;
+    }
+    if (focusGoals.length < 1) {
+      toast({
+        title: "해결 목표를 선택해 주세요",
+        description: "특강에서 집중할 핵심을 1~2개 골라 주세요.",
+        variant: "destructive",
+      });
+      console.log("[신청/결제] 해결 목표 미선택 - 차단");
+      return false;
+    }
+    if (focusGoals.length > 2) {
+      toast({
+        title: "최대 2개까지 선택",
+        description: "핵심 한·두 가지만 골라 주세요.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    if (
+      focusGoals.includes(FOCUS_GOAL_OTHER) &&
+      !focusGoalOther.trim()
+    ) {
+      toast({
+        title: "기타 내용을 입력해 주세요",
+        description: "기타를 선택하셨다면 내용을 적어 주세요.",
+        variant: "destructive",
+      });
+      console.log("[신청/결제] 기타 내용 미입력 - 차단");
+      return false;
+    }
+    return true;
+  };
+
+  const getFormDataWithFocusGoals = () => {
+    const message =
+      selectedProductType === "diagnosis" ||
+      selectedTimeSlot?.productType === "diagnosis"
+        ? formData.message
+        : syncFocusGoalMessage(focusGoals, focusGoalOther);
+    return { ...formData, message };
+  };
+
   // 전체 예약대기 강제 모드 로그 (한 번만)
   useEffect(() => {
     if (FORCE_ALL_WAITLIST) {
@@ -3061,6 +3171,10 @@ export default function SwimmingClassPage() {
       return false;
     }
 
+    if (!validateFocusGoalsForClass()) {
+      return false;
+    }
+
     return true;
   };
 
@@ -3515,15 +3629,17 @@ export default function SwimmingClassPage() {
           ? "/api/reservations/december"
           : "/api/reservations/november";
     try {
+      const formPayload = getFormDataWithFocusGoals();
       console.log(`[사전예약] ${month} 등록 요청:`, {
         classId: selectedScheduleForPayment.id,
         classKey: selectedTimeSlot.name,
+        해결문제: formPayload.message,
       });
       const response = await fetch(apiPath, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           classId: selectedScheduleForPayment.id, classKey: selectedTimeSlot.name,
-          form: formData, agreed: agreeAll, contentConsent: getPaymentContentConsent(),
+          form: formPayload, agreed: agreeAll, contentConsent: getPaymentContentConsent(),
         }),
       });
       const result = await response.json();
@@ -3732,7 +3848,7 @@ export default function SwimmingClassPage() {
           location: formData.location,
           swimmingExperience: formData.swimmingExperience || "",
           painAreas: formData.painAreas,
-          message: formData.message || "",
+          message: getFormDataWithFocusGoals().message || "",
         },
         selectedClassName: selectedTimeSlot.name,
         timeSlot: timeSlotLabel,
@@ -5133,31 +5249,8 @@ export default function SwimmingClassPage() {
                             !isNovemberSchedule(
                               activeScheduleClasses[scheduleIndex - 1],
                             ));
-                        const isFirstJanuaryCard =
-                          isJanuaryCard &&
-                          (scheduleIndex === 0 ||
-                            !isJanuarySchedule(
-                              activeScheduleClasses[scheduleIndex - 1],
-                            ));
                         return (
                           <div key={classItem.id} className="space-y-3">
-                          {isFirstJanuaryCard ? (
-                            <div
-                              id="january-schedule-start"
-                              className="rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-3 text-sm leading-6 text-blue-950"
-                            >
-                              <p className="font-bold text-blue-800">
-                                {hasJanuaryOpenDiscount(classItem)
-                                  ? "1월 특강 할인 결제"
-                                  : "1월 특강 사전등록"}
-                              </p>
-                              <p className="mt-1 break-keep">
-                                {hasJanuaryOpenDiscount(classItem)
-                                  ? "12월 15일까지 5,000원 할인 결제 · 특강 80,000원 → 75,000원 · 진단 40,000원 → 35,000원"
-                                  : "지금 결제 없이 사전등록 · 12월 12일~15일 결제 시 5,000원 할인 · 특강 80,000원 · 진단 40,000원"}
-                              </p>
-                            </div>
-                          ) : null}
                           {isFirstNovemberCard &&
                           hasNovemberOpenDiscount(classItem) &&
                           !isFishtankEntry ? (
@@ -5450,9 +5543,43 @@ export default function SwimmingClassPage() {
                               !isFishtankEntry &&
                               !classItem.specialClass && (
                               <div className="mb-3 rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-sm leading-5 text-blue-950">
-                                <span className="block text-xs font-bold text-blue-700">12월 특강 오픈</span>
+                                <span className="block text-xs font-bold text-blue-700">
+                                  {isJanuarySchedule(classItem)
+                                    ? "1월 특강 오픈"
+                                    : "12월 특강 오픈"}
+                                </span>
                                 <strong>오픈 혜택 5,000원 할인</strong>
-                                <p className="mt-0.5 text-xs text-blue-800">11월 15일까지 · 특강·스타트·진단 모두 · 지금 신청·결제 가능</p>
+                                <p className="mt-0.5 text-xs text-blue-800">
+                                  {getAdvanceDiscountUntilHint(classItem)} ·
+                                  지금 신청·결제 가능
+                                </p>
+                              </div>
+                            )}
+                            {(isJanuaryAdvanceReservationOpen(classItem) ||
+                              (isDecemberAdvanceReservationOpen(classItem) &&
+                                isDecemberSchedule(classItem))) &&
+                              !isFishtankEntry &&
+                              !classItem.specialClass && (
+                              <div className="mb-3 rounded-lg border border-blue-100 bg-blue-50 px-3 py-2.5 text-sm leading-5 text-blue-950">
+                                <span className="block text-xs font-bold text-blue-700">
+                                  사전등록 할인
+                                </span>
+                                <div className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                                  <span className="text-xs text-gray-500 line-through">
+                                    80,000원
+                                  </span>
+                                  <span className="text-base font-extrabold text-blue-800">
+                                    75,000원
+                                  </span>
+                                  {getDiagnosisOfferingForClass(classItem.id) ? (
+                                    <span className="text-[11px] font-bold text-blue-700">
+                                      · 진단 35,000원
+                                    </span>
+                                  ) : null}
+                                </div>
+                                <p className="mt-1 text-xs text-blue-800">
+                                  5,000원 할인 · 지금 결제하지 않아요
+                                </p>
                               </div>
                             )}
                             <div className="bg-blue-50 rounded-lg p-4 mb-4 border border-blue-100">
@@ -5546,19 +5673,19 @@ export default function SwimmingClassPage() {
                                   {isJanuaryCard &&
                                   !isFishtankEntry &&
                                   isJanuaryAdvanceReservationOpen(classItem)
-                                    ? "사전등록 접수 중 · 12/12~15 결제 · 지금 결제하지 않아요"
+                                    ? "사전등록 · 지금 결제 없음 · 5,000원 할인"
                                     : isJanuaryCard &&
                                         !isFishtankEntry &&
                                         hasJanuaryOpenDiscount(classItem)
-                                      ? "신청·결제 가능 · 사전등록 혜택 5,000원 할인 (12/15까지)"
+                                      ? "신청·결제 가능 · 5,000원 할인"
                                       : isDecemberCard &&
                                           !isFishtankEntry &&
                                           isDecOrJanAdvanceOpen(classItem)
-                                        ? "사전예약 접수 중 · 11/15까지 · 지금 결제하지 않아요"
+                                        ? "사전예약 · 지금 결제 없음 · 5,000원 할인"
                                         : isDecemberCard &&
                                             !isFishtankEntry &&
                                             hasDecOrJanOpenDiscount(classItem)
-                                          ? "신청·결제 가능 · 오픈 혜택 5,000원 할인 (11/15까지)"
+                                          ? "신청·결제 가능 · 5,000원 할인"
                                           : isNovemberCard &&
                                               !isFishtankEntry &&
                                               isNovemberAdvanceReservationOpen(
@@ -6193,27 +6320,52 @@ export default function SwimmingClassPage() {
                       </div>
                     )}
 
-                    {/* Message Field — 진단 프로그램에서는 생략 */}
+                    {/* 해결 목표 — 진단 프로그램에서는 생략 */}
                     {selectedProductType !== "diagnosis" && (
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="message"
-                        className="text-sm font-semibold flex items-center gap-1"
-                      >
-                        <MessageSquare className="h-4 w-4" />
-                        이번 특강을 통해 가장 해결하고 싶은 단 하나는
-                        무엇인가요?
-                      </Label>
-                      <Textarea
-                        id="message"
-                        rows={4}
-                        placeholder="예시: 숨쉬기 때문에 자세가 무너지는 문제를 해결하고 싶어요."
-                        value={formData.message}
-                        onChange={(e) =>
-                          setFormData({ ...formData, message: e.target.value })
-                        }
-                      />
-                    </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm font-semibold flex items-center gap-1">
+                          <MessageSquare className="h-4 w-4" />
+                          특강에서 해결하고 싶은 단 한가지
+                        </Label>
+                        <p className="text-xs leading-5 text-gray-500">
+                          (핵심 한,두가지를 일단 집중 교정 합니다)
+                        </p>
+                        <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
+                          {FOCUS_GOAL_OPTIONS.map((goal) => {
+                            const checked = focusGoals.includes(goal);
+                            return (
+                              <label
+                                key={goal}
+                                className="flex cursor-pointer items-start gap-2 rounded-md border border-gray-200 px-3 py-2 hover:border-primary/60"
+                              >
+                                <Checkbox
+                                  className="mt-0.5"
+                                  checked={checked}
+                                  onCheckedChange={() => toggleFocusGoal(goal)}
+                                />
+                                <span className="break-keep leading-5">
+                                  {goal === FOCUS_GOAL_OTHER
+                                    ? "기타"
+                                    : goal}
+                                </span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                        {focusGoals.includes(FOCUS_GOAL_OTHER) ? (
+                          <Input
+                            id="focus-goal-other"
+                            placeholder="기타 내용을 적어 주세요"
+                            value={focusGoalOther}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setFocusGoalOther(value);
+                              syncFocusGoalMessage(focusGoals, value);
+                            }}
+                            className="mt-1"
+                          />
+                        ) : null}
+                      </div>
                     )}
 
                     {/* Required Agreements */}
@@ -6512,6 +6664,9 @@ export default function SwimmingClassPage() {
                         formData.swimmingExperience &&
                         agreeAll
                       ) {
+                        if (!validateFocusGoalsForClass()) {
+                          return;
+                        }
                         // 개인정보 입력 단계: Notion 조회 후 있으면 재사용, 없으면 신규 생성
                         try {
                           setIsSubmitting(true);
@@ -7736,25 +7891,50 @@ export default function SwimmingClassPage() {
                             </div>
 
                             <div className="space-y-2">
-                              <Label
-                                htmlFor="combined-message"
-                                className="text-sm font-semibold flex items-center gap-1"
-                              >
+                              <Label className="text-sm font-semibold flex items-center gap-1">
                                 <MessageSquare className="h-4 w-4" />
-                                이번 특강에서 해결하고 싶은 점
+                                특강에서 해결하고 싶은 단 한가지
                               </Label>
-                              <Textarea
-                                id="combined-message"
-                                rows={3}
-                                placeholder="예시: 숨쉬기 때문에 자세가 무너지는 문제를 해결하고 싶어요."
-                                value={formData.message}
-                                onChange={(e) =>
-                                  setFormData({
-                                    ...formData,
-                                    message: e.target.value,
-                                  })
-                                }
-                              />
+                              <p className="text-xs leading-5 text-gray-500">
+                                (핵심 한,두가지를 일단 집중 교정 합니다)
+                              </p>
+                              <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
+                                {FOCUS_GOAL_OPTIONS.map((goal) => {
+                                  const checked = focusGoals.includes(goal);
+                                  return (
+                                    <label
+                                      key={`combined-${goal}`}
+                                      className="flex cursor-pointer items-start gap-2 rounded-md border border-gray-200 px-3 py-2 hover:border-primary/60"
+                                    >
+                                      <Checkbox
+                                        className="mt-0.5"
+                                        checked={checked}
+                                        onCheckedChange={() =>
+                                          toggleFocusGoal(goal)
+                                        }
+                                      />
+                                      <span className="break-keep leading-5">
+                                        {goal === FOCUS_GOAL_OTHER
+                                          ? "기타"
+                                          : goal}
+                                      </span>
+                                    </label>
+                                  );
+                                })}
+                              </div>
+                              {focusGoals.includes(FOCUS_GOAL_OTHER) ? (
+                                <Input
+                                  id="combined-focus-goal-other"
+                                  placeholder="기타 내용을 적어 주세요"
+                                  value={focusGoalOther}
+                                  onChange={(e) => {
+                                    const value = e.target.value;
+                                    setFocusGoalOther(value);
+                                    syncFocusGoalMessage(focusGoals, value);
+                                  }}
+                                  className="mt-1"
+                                />
+                              ) : null}
                             </div>
                           </>
                         )}
@@ -8356,7 +8536,9 @@ export default function SwimmingClassPage() {
                                         수영경력:
                                           formData.swimmingExperience || "",
                                         통증부위: formData.painAreas.join(", "),
-                                        해결문제: formData.message || "",
+                                        해결문제:
+                                          getFormDataWithFocusGoals().message ||
+                                          "",
                                         클래스: getSelectedClassSheetLabel(
                                           selectedTimeSlot,
                                         ),
@@ -8566,7 +8748,9 @@ export default function SwimmingClassPage() {
                                         수영경력:
                                           formData.swimmingExperience || "",
                                         통증부위: formData.painAreas.join(", "),
-                                        해결문제: formData.message || "",
+                                        해결문제:
+                                          getFormDataWithFocusGoals().message ||
+                                          "",
                                         클래스: getSelectedClassSheetLabel(
                                           selectedTimeSlot,
                                         ),

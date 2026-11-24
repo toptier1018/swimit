@@ -150,14 +150,12 @@ const STROKE_ORDER: StrokeType[] = ["자유형", "평영", "접영"];
 /** 시간표에 턴·배영이 있을 때도 선택 목록에 포함 */
 const STROKE_ORDER_ALL: StrokeType[] = ["자유형", "평영", "접영", "턴", "배영"];
 
-/** 제로 특강과 진단 프로그램을 서로 다른 부로 운영하는 동탄 일정 */
+/** 제로 특강과 진단 프로그램을 서로 다른 부로 운영하는 동탄 일정 (1/31은 12/27처럼 동시 운영) */
 const DONGTAN_AUGUST_CLASS_ID = 13;
 const DONGTAN_OCTOBER_CLASS_ID = 23;
-const DONGTAN_JAN31_CLASS_ID = 35;
 const DONGTAN_DUAL_PRODUCT_CLASS_IDS = new Set([
   DONGTAN_AUGUST_CLASS_ID,
   DONGTAN_OCTOBER_CLASS_ID,
-  DONGTAN_JAN31_CLASS_ID,
 ]);
 
 const PRODUCT_CATALOG: Record<
@@ -663,7 +661,8 @@ const DiagnosisCouponBanner = () => null;
 
 /**
  * 동탄처럼 제로·진단을 나눠 받을 때, 진단이 열리는 회차.
- * 8/23·1/31은 2부 16:00~18:00, 10/25는 1부와 같은 14:00~16:00.
+ * 8/23은 2부 16:00~18:00, 10/25는 1부와 같은 14:00~16:00.
+ * (1/31은 12/27과 같이 시간표에 진단이 포함되어 dual product가 아님)
  */
 const getDualDiagnosisSchedule = (classId: number) => {
   if (classId === DONGTAN_OCTOBER_CLASS_ID) {
@@ -674,10 +673,7 @@ const getDualDiagnosisSchedule = (classId: number) => {
       timeLabel: "14:00~16:00 · 2시간",
     };
   }
-  if (
-    classId === DONGTAN_AUGUST_CLASS_ID ||
-    classId === DONGTAN_JAN31_CLASS_ID
-  ) {
+  if (classId === DONGTAN_AUGUST_CLASS_ID) {
     return {
       session: "2부 진단",
       sessionLabel: "2부",
@@ -1047,15 +1043,44 @@ const TIMETABLE_DONGTAN_AUGUST: TimetableRow[] = [
   },
 ];
 
-/** 동탄 1/31 — 1부 특강 14:00~16:00 (진단은 2부 16:00~18:00, dual product) */
+/** 동탄 1/31 장거리 집중(3시간) + 저항 진단(2시간) — 12/27과 동일 구성 */
 const TIMETABLE_DONGTAN_JANUARY: TimetableRow[] = [
   {
     session: "1부 특강",
+    time: "14:00 ~ 17:00",
+    lanes: [
+      {
+        lane: UNASSIGNED_LANE,
+        title: "자유형",
+        price:
+          CLASS_SCHEDULES.find((item) => item.id === 35)?.specialClass?.price ??
+          115000,
+      },
+      {
+        lane: UNASSIGNED_LANE,
+        title: "평영",
+        price:
+          CLASS_SCHEDULES.find((item) => item.id === 35)?.specialClass?.price ??
+          115000,
+      },
+      {
+        lane: UNASSIGNED_LANE,
+        title: "접영",
+        price:
+          CLASS_SCHEDULES.find((item) => item.id === 35)?.specialClass?.price ??
+          115000,
+      },
+    ],
+  },
+  {
+    session: "1부 진단",
     time: "14:00 ~ 16:00",
     lanes: [
-      { lane: UNASSIGNED_LANE, title: "자유형", price: 80000 },
-      { lane: UNASSIGNED_LANE, title: "평영", price: 80000 },
-      { lane: UNASSIGNED_LANE, title: "접영", price: 80000 },
+      {
+        lane: UNASSIGNED_LANE,
+        title: DIAGNOSIS_LANE_TITLE,
+        price: PRODUCT_CATALOG.diagnosis.price,
+      },
     ],
   },
 ];
@@ -1382,7 +1407,7 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   33: TIMETABLE_DAEGU_JANUARY, // 1/9 대구 (자유형·접영, 평영·진단 없음)
   28: TIMETABLE_BUSAN_JANUARY, // 1/10 부산 (특강+진단)
   34: TIMETABLE_MOKDONG_SEPTEMBER, // 1/24 목동 (특강+진단 14:00~16:00)
-  35: TIMETABLE_DONGTAN_JANUARY, // 1/31 동탄 (특강 14~16 · 진단 16~18)
+  35: TIMETABLE_DONGTAN_JANUARY, // 1/31 동탄 3시간 집중 + 진단 2시간 (12/27과 동일)
   29: TIMETABLE_EUNPYEONG_DECEMBER, // 12/12 은평 (자유형·평영·접영 + 스타트)
   30: TIMETABLE_SONGPA_DECEMBER, // 12/19 송파 (특강+진단)
   31: TIMETABLE_MOKDONG_SEPTEMBER, // 12/20 목동 (특강+진단)
@@ -1570,6 +1595,8 @@ const ENROLLMENT_MERGE_TO: Record<string, string> = {
   "[부산 8/30] 1부 특강 접영": "[부산 9/6] 1부 특강 접영",
   // 동탄 10/25 진단을 2부에서 1부 시간으로 옮긴 뒤, 이미 받은 신청은 1부로 합산
   "[동탄 10/25] 2부 진단": "[동탄 10/25] 1부 진단",
+  // 동탄 1/31: 초기 2부 진단 → 12/27과 동일한 1부 진단(14:00~16:00)으로 합산
+  "[동탄 1/31] 2부 진단": "[동탄 1/31] 1부 진단",
   // 스타트·턴: 과거 2부/표시명 키 → 현재 1부 특강 스타트
   "[목동 10/18] 2부 특강 스타트": "[목동 10/18] 1부 특강 스타트",
   "[목동 10/18] 2부 특강 스타트·턴 연결": "[목동 10/18] 1부 특강 스타트",
@@ -2207,7 +2234,7 @@ export default function SwimmingClassPage() {
       "부산 1/10": "특강+진단 14:00~16:00",
       "목동 1/24": "특강+진단 14:00~16:00 · 접영 14명 · 사전등록 할인",
       "동탄 1/31":
-        "특강 14:00~16:00 · 진단 16:00~18:00 · 사전등록 할인",
+        "영법별 장거리 집중 14:00~17:00 · 115,000원 + 진단 14:00~16:00 (2시간) · 사전등록 할인",
       advance:
         "사전등록(결제 없음) · 12/12~12/15 결제 시 5,000원 할인(진단 40,000→35,000)",
     });

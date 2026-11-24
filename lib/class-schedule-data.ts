@@ -150,6 +150,13 @@ export const DONGTAN_DEC27_INTENSIVE: SpecialClassInfo = {
     "12월 27일 동탄은 영법별 장거리 집중 특강과 2시간 저항 진단 프로그램을 함께 운영합니다.",
 };
 
+/** 동탄 1/31 영법별 장거리 집중(3시간) + 진단 2시간 — 12/27과 동일 구성 */
+export const DONGTAN_JAN31_INTENSIVE: SpecialClassInfo = {
+  ...DONGTAN_INTENSIVE_3H,
+  summary:
+    "1월 31일 동탄은 영법별 장거리 집중 특강과 2시간 저항 진단 프로그램을 함께 운영합니다.",
+};
+
 /** enrollment key가 해당 일정의 specialClass 옵션인지 (예: 동탄 3시간 집중반) */
 export function matchesSpecialClassOption(
   className: string,
@@ -637,10 +644,11 @@ export const CLASS_SCHEDULES: ClassScheduleItem[] = [
       "경기도 화성시 동탄구 동탄신리천로 414 경서타워 4층 스윔스튜디오제이",
     spots: "자유형 14명 · 평영·접영 각 7명 · 진단 14명",
     scheduleSummaryLines: [
-      "1부 특강 · 14:00~16:00 (2시간)",
-      "2부 진단 프로그램 · 16:00~18:00 (2시간)",
+      "영법별 장거리 집중 특강 · 14:00~17:00",
+      "1부 진단 프로그램 · 14:00~16:00 (2시간)",
     ],
-    badge: "특강 + 진단 운영",
+    badge: "SPECIAL + 진단",
+    specialClass: DONGTAN_JAN31_INTENSIVE,
   },
 ];
 
@@ -757,11 +765,11 @@ export const DEFAULT_CAPACITY_BY_CLASS: Record<string, number> = {
   "[목동 1/24] 1부 특강 평영": 7,
   "[목동 1/24] 1부 특강 접영": 14,
   "[목동 1/24] 1부 진단": 14,
-  // 동탄 1/31 · 특강 14:00~16:00 · 진단 16:00~18:00 (사전등록 할인 대상)
+  // 동탄 1/31 영법별 장거리 집중(3시간) + 진단 2시간 (사전등록 할인 대상 · 12/27과 동일)
   "[동탄 1/31] 1부 특강 자유형": 14,
   "[동탄 1/31] 1부 특강 평영": 7,
   "[동탄 1/31] 1부 특강 접영": 7,
-  "[동탄 1/31] 2부 진단": 14,
+  "[동탄 1/31] 1부 진단": 14,
   // 은평 12/12 북한산힐스테이트 (진단 미운영)
   "[은평 12/12] 1부 특강 자유형": 7,
   "[은평 12/12] 1부 특강 평영": 7,

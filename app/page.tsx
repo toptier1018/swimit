@@ -1093,7 +1093,7 @@ const TIMETABLE_BUSAN_SEPTEMBER: TimetableRow[] = [
   },
 ];
 
-/** 동탄 스윔스튜디오제이 장거리 집중(3시간) — 11/29·12/27. 가격은 specialClass */
+/** 동탄 스윔스튜디오제이 장거리 집중(3시간) — 11/29. 가격은 specialClass */
 const TIMETABLE_DONGTAN_INTENSIVE: TimetableRow[] = [
   {
     session: "1부 특강",
@@ -1119,6 +1119,48 @@ const TIMETABLE_DONGTAN_INTENSIVE: TimetableRow[] = [
         price:
           CLASS_SCHEDULES.find((item) => item.specialClass?.specialType === "intensive-3h")
             ?.specialClass?.price ?? 115000,
+      },
+    ],
+  },
+];
+
+/** 동탄 12/27 장거리 집중(3시간) + 저항 진단(2시간) */
+const TIMETABLE_DONGTAN_DEC27: TimetableRow[] = [
+  {
+    session: "1부 특강",
+    time: "14:00 ~ 17:00",
+    lanes: [
+      {
+        lane: UNASSIGNED_LANE,
+        title: "자유형",
+        price:
+          CLASS_SCHEDULES.find((item) => item.id === 32)?.specialClass?.price ??
+          115000,
+      },
+      {
+        lane: UNASSIGNED_LANE,
+        title: "평영",
+        price:
+          CLASS_SCHEDULES.find((item) => item.id === 32)?.specialClass?.price ??
+          115000,
+      },
+      {
+        lane: UNASSIGNED_LANE,
+        title: "접영",
+        price:
+          CLASS_SCHEDULES.find((item) => item.id === 32)?.specialClass?.price ??
+          115000,
+      },
+    ],
+  },
+  {
+    session: "1부 진단",
+    time: "14:00 ~ 16:00",
+    lanes: [
+      {
+        lane: UNASSIGNED_LANE,
+        title: DIAGNOSIS_LANE_TITLE,
+        price: PRODUCT_CATALOG.diagnosis.price,
       },
     ],
   },
@@ -1210,12 +1252,13 @@ const TIMETABLE_BUSAN_NOVEMBER: TimetableRow[] = [
   },
 ];
 
-/** 올스위머 상인점 1/9 특강 (대구) — 평영·접영만 (자유형·진단 미운영) · 16:30~18:30 */
+/** 올스위머 상인점 1/9 특강 (대구) — 자유형·평영·접영 (진단 미운영) · 16:30~18:30 */
 const TIMETABLE_DAEGU_JANUARY: TimetableRow[] = [
   {
     session: "1부 특강",
     time: "16:30 ~ 18:30",
     lanes: [
+      { lane: UNASSIGNED_LANE, title: "자유형", price: 80000 },
       { lane: UNASSIGNED_LANE, title: "평영", price: 80000 },
       { lane: UNASSIGNED_LANE, title: "접영", price: 80000 },
     ],
@@ -1311,12 +1354,12 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   // 25: 강남 11/15 취소 — TIMETABLE 보관만 (목록 미노출)
   26: TIMETABLE_MOKDONG_SEPTEMBER, // 11/22 목동
   27: TIMETABLE_DONGTAN_INTENSIVE, // 11/29 동탄 3시간 집중 (진단 없음)
-  33: TIMETABLE_DAEGU_JANUARY, // 1/9 대구 (평영·접영만, 진단 없음)
+  33: TIMETABLE_DAEGU_JANUARY, // 1/9 대구 (자유형·평영·접영, 진단 없음)
   28: TIMETABLE_BUSAN_JANUARY, // 1/10 부산 (특강+진단)
   29: TIMETABLE_EUNPYEONG_DECEMBER, // 12/12 은평 (자유형·평영·접영 + 스타트)
   30: TIMETABLE_SONGPA_DECEMBER, // 12/19 송파 (특강+진단)
   31: TIMETABLE_MOKDONG_SEPTEMBER, // 12/20 목동 (특강+진단)
-  32: TIMETABLE_DONGTAN_INTENSIVE, // 12/27 동탄 3시간 집중 (진단 없음)
+  32: TIMETABLE_DONGTAN_DEC27, // 12/27 동탄 3시간 집중 + 진단 2시간
 };
 
 const getAvailableStrokesForClass = (classId: number) => {
@@ -2128,11 +2171,12 @@ export default function SwimmingClassPage() {
       "은평 12/12": "특강+스타트 17:00~19:00 · 자유형·평영·접영 (진단 제외)",
       "송파 12/19": "특강+진단 17:15~19:15",
       "목동 12/20": "특강+진단 14:00~16:00 · 접영 14명",
-      "동탄 12/27": "영법별 장거리 집중 14:00~17:00 · 115,000원 (진단 미운영)",
+      "동탄 12/27":
+        "영법별 장거리 집중 14:00~17:00 · 115,000원 + 진단 14:00~16:00 (2시간)",
       removed: "대구 12/5·부산 12/6 취소 → 1월로 변경",
     });
     console.log("[특강일정] 1월 일정 추가", {
-      "대구 1/9": "특강만 16:30~18:30 · 평영·접영 (자유형·진단 제외)",
+      "대구 1/9": "특강만 16:30~18:30 · 자유형·평영·접영 (진단 제외)",
       "부산 1/10": "특강+진단 14:00~16:00",
       advance:
         "사전등록(결제 없음) · 12/12~12/15 결제 시 5,000원 할인(진단 40,000→35,000)",
@@ -7906,8 +7950,8 @@ export default function SwimmingClassPage() {
                                 특강에서 가장 해결하고 싶은 문제 한가지
                               </Label>
                               <p className="text-xs leading-5 text-gray-500">
-                                (핵심 한가지 문제를 먼저 교정 후 2차 디테일
-                                교정 합니다- 일단 한가지만 선택해주세요)
+                                (일단 한가지 문제 위주로 교정 합니다. 이후 2차
+                                디테일 교정 진행)
                               </p>
                               <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
                                 {FOCUS_GOAL_OPTIONS.map((goal) => {

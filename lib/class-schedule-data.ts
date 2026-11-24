@@ -607,6 +607,23 @@ export const CLASS_SCHEDULES: ClassScheduleItem[] = [
     ],
     badge: "특강 + 진단 운영",
   },
+  {
+    id: 34,
+    year: 2027,
+    location: "서울 목동 · 목동스포츠센터",
+    locationCode: "목동",
+    date: "1월 24일 (일)",
+    dateNum: 24,
+    month: 1,
+    venue: "목동스포츠센터",
+    address: "서울특별시 양천구 목동서로 130 목동스포츠센터",
+    spots: "자유형 14명 · 평영 7명 · 접영 14명 · 진단 14명",
+    scheduleSummaryLines: [
+      "1부 특강 · 14:00~16:00 (2시간)",
+      "1부 진단 프로그램 · 14:00~16:00",
+    ],
+    badge: "특강 + 진단 운영",
+  },
 ];
 
 export const DEFAULT_CAPACITY_BY_CLASS: Record<string, number> = {
@@ -717,6 +734,11 @@ export const DEFAULT_CAPACITY_BY_CLASS: Record<string, number> = {
   "[부산 1/10] 1부 특강 평영": 7,
   "[부산 1/10] 1부 특강 접영": 7,
   "[부산 1/10] 1부 진단": 14,
+  // 목동 1/24 · 14:00~16:00 (사전등록 할인 대상)
+  "[목동 1/24] 1부 특강 자유형": 14,
+  "[목동 1/24] 1부 특강 평영": 7,
+  "[목동 1/24] 1부 특강 접영": 14,
+  "[목동 1/24] 1부 진단": 14,
   // 은평 12/12 북한산힐스테이트 (진단 미운영)
   "[은평 12/12] 1부 특강 자유형": 7,
   "[은평 12/12] 1부 특강 평영": 7,

@@ -1355,6 +1355,7 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   27: TIMETABLE_DONGTAN_INTENSIVE, // 11/29 동탄 3시간 집중 (진단 없음)
   33: TIMETABLE_DAEGU_JANUARY, // 1/9 대구 (자유형·접영, 평영·진단 없음)
   28: TIMETABLE_BUSAN_JANUARY, // 1/10 부산 (특강+진단)
+  34: TIMETABLE_MOKDONG_SEPTEMBER, // 1/24 목동 (특강+진단 14:00~16:00)
   29: TIMETABLE_EUNPYEONG_DECEMBER, // 12/12 은평 (자유형·평영·접영 + 스타트)
   30: TIMETABLE_SONGPA_DECEMBER, // 12/19 송파 (특강+진단)
   31: TIMETABLE_MOKDONG_SEPTEMBER, // 12/20 목동 (특강+진단)
@@ -2177,6 +2178,7 @@ export default function SwimmingClassPage() {
     console.log("[특강일정] 1월 일정 추가", {
       "대구 1/9": "특강만 16:30~18:30 · 자유형·접영 (평영·진단 제외)",
       "부산 1/10": "특강+진단 14:00~16:00",
+      "목동 1/24": "특강+진단 14:00~16:00 · 접영 14명 · 사전등록 할인",
       advance:
         "사전등록(결제 없음) · 12/12~12/15 결제 시 5,000원 할인(진단 40,000→35,000)",
     });

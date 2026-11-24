@@ -624,6 +624,24 @@ export const CLASS_SCHEDULES: ClassScheduleItem[] = [
     ],
     badge: "특강 + 진단 운영",
   },
+  {
+    id: 35,
+    year: 2027,
+    location: "경기 동탄 · 스윔스튜디오제이",
+    locationCode: "동탄",
+    date: "1월 31일 (일)",
+    dateNum: 31,
+    month: 1,
+    venue: "스윔스튜디오제이",
+    address:
+      "경기도 화성시 동탄구 동탄신리천로 414 경서타워 4층 스윔스튜디오제이",
+    spots: "자유형 14명 · 평영·접영 각 7명 · 진단 14명",
+    scheduleSummaryLines: [
+      "1부 특강 · 14:00~16:00 (2시간)",
+      "2부 진단 프로그램 · 16:00~18:00 (2시간)",
+    ],
+    badge: "특강 + 진단 운영",
+  },
 ];
 
 export const DEFAULT_CAPACITY_BY_CLASS: Record<string, number> = {
@@ -739,6 +757,11 @@ export const DEFAULT_CAPACITY_BY_CLASS: Record<string, number> = {
   "[목동 1/24] 1부 특강 평영": 7,
   "[목동 1/24] 1부 특강 접영": 14,
   "[목동 1/24] 1부 진단": 14,
+  // 동탄 1/31 · 특강 14:00~16:00 · 진단 16:00~18:00 (사전등록 할인 대상)
+  "[동탄 1/31] 1부 특강 자유형": 14,
+  "[동탄 1/31] 1부 특강 평영": 7,
+  "[동탄 1/31] 1부 특강 접영": 7,
+  "[동탄 1/31] 2부 진단": 14,
   // 은평 12/12 북한산힐스테이트 (진단 미운영)
   "[은평 12/12] 1부 특강 자유형": 7,
   "[은평 12/12] 1부 특강 평영": 7,

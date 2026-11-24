@@ -89,17 +89,9 @@ export function DiagnosisPriceBlock({
     );
   }
 
-  console.log("[저항진단] 정상가 표시", { list: DIAGNOSIS_BASE_AMOUNT });
-  return (
-    <div
-      className={`rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3.5 ${className}`}
-    >
-      <p className="text-xs font-bold tracking-wide text-slate-600">정상가</p>
-      <p className="mt-1 text-xl font-extrabold text-gray-950 sm:text-2xl">
-        {DIAGNOSIS_BASE_AMOUNT.toLocaleString()}원
-      </p>
-    </div>
-  );
+  // 할인 기간이 아닐 때는 정상가 박스(정상가 40,000원)를 숨김
+  console.log("[저항진단] 정상가 표시 숨김", { list: DIAGNOSIS_BASE_AMOUNT });
+  return null;
 }
 
 export function DiagnosisBenefitCards({ className = "" }: { className?: string }) {

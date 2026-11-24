@@ -1252,14 +1252,13 @@ const TIMETABLE_BUSAN_NOVEMBER: TimetableRow[] = [
   },
 ];
 
-/** 올스위머 상인점 1/9 특강 (대구) — 자유형·평영·접영 (진단 미운영) · 16:30~18:30 */
+/** 올스위머 상인점 1/9 특강 (대구) — 자유형·접영 (평영·진단 미운영) · 16:30~18:30 */
 const TIMETABLE_DAEGU_JANUARY: TimetableRow[] = [
   {
     session: "1부 특강",
     time: "16:30 ~ 18:30",
     lanes: [
       { lane: UNASSIGNED_LANE, title: "자유형", price: 80000 },
-      { lane: UNASSIGNED_LANE, title: "평영", price: 80000 },
       { lane: UNASSIGNED_LANE, title: "접영", price: 80000 },
     ],
   },
@@ -1354,7 +1353,7 @@ const TIMETABLE_BY_CLASS_ID: Record<number, TimetableRow[]> = {
   // 25: 강남 11/15 취소 — TIMETABLE 보관만 (목록 미노출)
   26: TIMETABLE_MOKDONG_SEPTEMBER, // 11/22 목동
   27: TIMETABLE_DONGTAN_INTENSIVE, // 11/29 동탄 3시간 집중 (진단 없음)
-  33: TIMETABLE_DAEGU_JANUARY, // 1/9 대구 (자유형·평영·접영, 진단 없음)
+  33: TIMETABLE_DAEGU_JANUARY, // 1/9 대구 (자유형·접영, 평영·진단 없음)
   28: TIMETABLE_BUSAN_JANUARY, // 1/10 부산 (특강+진단)
   29: TIMETABLE_EUNPYEONG_DECEMBER, // 12/12 은평 (자유형·평영·접영 + 스타트)
   30: TIMETABLE_SONGPA_DECEMBER, // 12/19 송파 (특강+진단)

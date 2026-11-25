@@ -90,7 +90,7 @@ export const START_TURN_SPECIAL_MOKDONG_OCT18: SpecialClassInfo = {
     "첫 런칭 회차 한정 10,000원 할인 · 다른 할인·쿠폰 중복 불가",
 };
 
-/** 은평 12/12 북한산힐스테이트 — 17:00~19:00 · 정원 7 */
+/** 은평 북한산힐스테이트 — 17:00~19:00 · 정원 7 (12/12·1/16 공통) */
 export const START_TURN_SPECIAL_EUNPYEONG_DEC12: SpecialClassInfo = {
   ...START_TURN_SPECIAL,
   timeLabel: "17:00~19:00",
@@ -99,6 +99,10 @@ export const START_TURN_SPECIAL_EUNPYEONG_DEC12: SpecialClassInfo = {
 
 /** @deprecated 이름 호환 — DEC12와 동일 */
 export const START_TURN_SPECIAL_EUNPYEONG_DEC13 =
+  START_TURN_SPECIAL_EUNPYEONG_DEC12;
+
+/** 은평 1/16 — 12/12와 동일 구성 */
+export const START_TURN_SPECIAL_EUNPYEONG_JAN16 =
   START_TURN_SPECIAL_EUNPYEONG_DEC12;
 
 const DONGTAN_INTENSIVE_3H_CLASSES: SpecialClassInfo["classes"] = [
@@ -619,6 +623,24 @@ export const CLASS_SCHEDULES: ClassScheduleItem[] = [
     badge: "특강 + 진단 운영",
   },
   {
+    id: 36,
+    year: 2027,
+    location: "서울 은평 · 북한산힐스테이트3차",
+    locationCode: "은평",
+    date: "1월 16일 (토)",
+    dateNum: 16,
+    month: 1,
+    venue: "북한산힐스테이트3차 커뮤니티센터",
+    address: "서울시 은평구 불광로 122-10 커뮤니티센터",
+    spots: "영법 각 7명 · 스타트·턴 7명",
+    scheduleSummaryLines: [
+      "1부 특강 · 17:00~19:00 (2시간) · 자유형·평영·접영",
+      "1부 스타트·턴 연결 특강 · 17:00~19:00 (2시간)",
+    ],
+    badge: "특강 + SPECIAL",
+    addonSpecialClass: START_TURN_SPECIAL_EUNPYEONG_JAN16,
+  },
+  {
     id: 34,
     year: 2027,
     location: "서울 목동 · 목동스포츠센터",
@@ -781,6 +803,13 @@ export const DEFAULT_CAPACITY_BY_CLASS: Record<string, number> = {
   "[은평 12/12] 1부 특강 스타트": 7,
   "[은평 12/12] 1부 특강 스타트·턴 연결": 7,
   "[은평 12/12] 1부 진단": 0,
+  // 은평 1/16 북한산힐스테이트 — 12/12와 동일 · 사전등록 할인 대상 (진단 미운영)
+  "[은평 1/16] 1부 특강 자유형": 7,
+  "[은평 1/16] 1부 특강 평영": 7,
+  "[은평 1/16] 1부 특강 접영": 7,
+  "[은평 1/16] 1부 특강 스타트": 7,
+  "[은평 1/16] 1부 특강 스타트·턴 연결": 7,
+  "[은평 1/16] 1부 진단": 0,
   // 구 키 호환 (12/13 → 12/12)
   "[은평 12/13] 1부 특강 자유형": 7,
   "[은평 12/13] 1부 특강 평영": 7,

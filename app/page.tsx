@@ -581,7 +581,11 @@ const DongtanIntensivePromo = ({ onViewSchedule }: { onViewSchedule: () => void 
           </p>
         </header>
 
-        <div className="grid gap-2.5 md:grid-cols-3 md:gap-3">
+        <div
+          className={`grid gap-2.5 md:gap-3 ${
+            offer.classes.length <= 2 ? "md:grid-cols-2" : "md:grid-cols-3"
+          }`}
+        >
           {offer.classes.map((item) => (
             <div key={item.key} className="rounded-xl bg-blue-50/60 px-3.5 py-3">
               <p className="break-keep text-[13px] font-bold text-gray-950 sm:text-sm">
@@ -1144,7 +1148,7 @@ const TIMETABLE_BUSAN_SEPTEMBER: TimetableRow[] = [
   },
 ];
 
-/** 동탄 스윔스튜디오제이 장거리 집중(3시간) — 11/29. 가격은 specialClass */
+/** 동탄 스윔스튜디오제이 장거리 집중(3시간) — 11/29 (평영 미운영). 가격은 specialClass */
 const TIMETABLE_DONGTAN_INTENSIVE: TimetableRow[] = [
   {
     session: "1부 특강",
@@ -1154,22 +1158,15 @@ const TIMETABLE_DONGTAN_INTENSIVE: TimetableRow[] = [
         lane: UNASSIGNED_LANE,
         title: "자유형",
         price:
-          CLASS_SCHEDULES.find((item) => item.specialClass?.specialType === "intensive-3h")
-            ?.specialClass?.price ?? 115000,
-      },
-      {
-        lane: UNASSIGNED_LANE,
-        title: "평영",
-        price:
-          CLASS_SCHEDULES.find((item) => item.specialClass?.specialType === "intensive-3h")
-            ?.specialClass?.price ?? 115000,
+          CLASS_SCHEDULES.find((item) => item.id === 27)?.specialClass?.price ??
+          115000,
       },
       {
         lane: UNASSIGNED_LANE,
         title: "접영",
         price:
-          CLASS_SCHEDULES.find((item) => item.specialClass?.specialType === "intensive-3h")
-            ?.specialClass?.price ?? 115000,
+          CLASS_SCHEDULES.find((item) => item.id === 27)?.specialClass?.price ??
+          115000,
       },
     ],
   },
@@ -2219,7 +2216,8 @@ export default function SwimmingClassPage() {
       "부산 11/8": "특강만 14:00~16:00 · 자유형·접영 (평영·진단·스타트·턴 미운영)",
       "강남 11/15": "일정 취소 (모집 중단)",
       "목동 11/22": "특강+진단 14:00~16:00 (스타트·턴 미운영)",
-      "동탄 11/29": "영법별 장거리 집중 14:00~17:00 · 115,000원",
+      "동탄 11/29":
+        "영법별 장거리 집중 14:00~17:00 · 115,000원 · 자유형·접영 (평영 미운영)",
     });
     console.log("[특강일정] 12월 일정 추가", {
       "은평 12/12": "특강+스타트 17:00~19:00 · 자유형·평영·접영 (진단 제외)",

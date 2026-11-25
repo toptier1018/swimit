@@ -140,7 +140,9 @@ export const DONGTAN_INTENSIVE_3H: SpecialClassInfo = {
 export const DONGTAN_NOV29_INTENSIVE: SpecialClassInfo = {
   ...DONGTAN_INTENSIVE_3H,
   summary:
-    "11월 29일 동탄은 일반 2시간 특강이 아닌 영법별 장거리 집중 특강입니다.",
+    "11월 29일 동탄은 일반 2시간 특강이 아닌 영법별 장거리 집중 특강입니다. (평영 미운영)",
+  // 11/29만 평영 장거리 집중반 미운영 — 자유형·접영만
+  classes: DONGTAN_INTENSIVE_3H_CLASSES.filter((item) => item.key !== "평영"),
 };
 
 /** 동탄 12/27 영법별 장거리 집중(3시간) + 진단 2시간 */
@@ -505,8 +507,10 @@ export const CLASS_SCHEDULES: ClassScheduleItem[] = [
     venue: "스윔스튜디오제이",
     address:
       "경기도 화성시 동탄구 동탄신리천로 414 경서타워 4층 스윔스튜디오제이",
-    spots: "자유형 14명 · 평영·접영 각 7명",
-    scheduleSummaryLines: ["영법별 장거리 집중 특강 · 14:00~17:00"],
+    spots: "자유형 14명 · 접영 7명 (평영 미운영)",
+    scheduleSummaryLines: [
+      "영법별 장거리 집중 특강 · 14:00~17:00 · 자유형·접영 (평영 제외)",
+    ],
     badge: "SPECIAL",
     specialClass: DONGTAN_NOV29_INTENSIVE,
   },
@@ -732,9 +736,9 @@ export const DEFAULT_CAPACITY_BY_CLASS: Record<string, number> = {
   "[목동 11/22] 2부 특강 스타트": 0,
   "[목동 11/22] 2부 특강 스타트·턴 연결": 0,
   "[목동 11/22] 1부 특강 스타트·턴 연결": 0,
-  // 동탄 11/29
+  // 동탄 11/29 (평영 장거리 집중반 미운영)
   "[동탄 11/29] 1부 특강 자유형": 14,
-  "[동탄 11/29] 1부 특강 평영": 7,
+  "[동탄 11/29] 1부 특강 평영": 0,
   "[동탄 11/29] 1부 특강 접영": 7,
   // 동탄 12/27 영법별 장거리 집중(3시간) + 진단 2시간
   "[동탄 12/27] 1부 특강 자유형": 14,
